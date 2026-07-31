@@ -99,11 +99,47 @@ export function optionalTeamKeys(
 }
 
 /**
+ * The deployment cannot say where a mailed link should point.
+ *
+ * Its own class because it is neither the caller's fault nor a transient fault: it is a
+ * missing configuration value, and the sentence that names the variable is safe to return
+ * — it describes this deployment's setup, not a driver's internals. Lives here rather
+ * than in `guard.ts` so `failure()` can recognise it without `http.ts` importing
+ * `guard.ts`, which would be a cycle.
+ */
+export class LinkOriginUnavailableError extends Error {
+  readonly detail: string;
+
+  constructor(detail: string) {
+    super(detail);
+    this.name = 'LinkOriginUnavailableError';
+    this.detail = detail;
+  }
+}
+
+/**
+ * The one sentence an unexpected failure is allowed to say.
+ *
+ * A driver or connection error's `message` carries host, port, user and sometimes the
+ * database name. `/api/auth/login`, `/api/auth/magic-link` and
+ * `/api/auth/password-reset` are public, so returning it would hand an unauthenticated
+ * caller a description of the infrastructure. The detail is logged instead, where an
+ * operator can read it and a stranger cannot.
+ */
+export const UNAVAILABLE_SENTENCE =
+  'Compass could not reach its own records, so nothing was changed. This is a fault on our side, not a problem ' +
+  'with your request. `/api/health` names which capability is unavailable.';
+
+/**
  * Maps a thrown domain error onto a response.
  *
  * `LastOwnerError` is a 409 and not a 400: the request was well formed and the *state*
  * is the problem, and the message says what to do instead. A 400 would read as "you
  * sent something wrong", which sends the reader looking at their JSON.
+ *
+ * The typed branches all state the caller's *own* request back to them, which is exactly
+ * what they need. The final branch does not: an unrecognised error came from underneath
+ * this layer, and its message is not the caller's business.
  */
 export function failure(error: unknown): NextResponse {
   if (error instanceof LastOwnerError) {
@@ -118,9 +154,14 @@ export function failure(error: unknown): NextResponse {
   if (error instanceof AuthRequestError) {
     return jsonError('invalid_request', error.detail, 400);
   }
-  return jsonError(
-    'unavailable',
-    error instanceof Error ? error.message : 'The request could not be completed.',
-    503,
+  if (error instanceof LinkOriginUnavailableError) {
+    return jsonError('link_origin_unconfigured', error.detail, 503);
+  }
+
+  // Logged, never returned. `no-console` allows `error` for exactly this.
+  console.error(
+    `[compass] unhandled request failure: ${error instanceof Error ? (error.stack ?? error.message) : String(error)}`,
   );
+
+  return jsonError('unavailable', UNAVAILABLE_SENTENCE, 503);
 }

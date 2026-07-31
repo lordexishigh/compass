@@ -103,16 +103,70 @@ export async function organizationName(scoped: ScopedDb): Promise<string> {
   return organization?.name ?? 'Compass';
 }
 
-/** The absolute origin to put in a mailed link. */
+/**
+ * Hosts a mailed link may point at without `COMPASS_BASE_URL` being set.
+ *
+ * Loopback only. A link to the reader's own machine is harmless whoever asked for it,
+ * which is what makes the zero-config path — `docker compose up`, then a browser on
+ * `localhost:3000` — work with nothing configured.
+ */
+const LOOPBACK_HOSTNAMES: ReadonlySet<string> = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
+
+/**
+ * The absolute origin to put in a mailed link.
+ *
+ * ## Why this does not read `x-forwarded-host`
+ *
+ * `POST /api/auth/password-reset` is public and answers identically for an address that
+ * has a seat and one that does not — deliberately, so the form is not a membership
+ * oracle. That means an unauthenticated caller can make Compass mail a *valid single-use
+ * token* to somebody else. If the origin of that link came from a request header, the
+ * caller would also choose where the victim's token pointed: send
+ * `x-forwarded-host: evil.example`, and the reset link in the victim's inbox is an
+ * attacker's page that receives the token when clicked.
+ *
+ * It is not exploitable while `mailer()` is `ConsoleMailer` — the link goes to the
+ * process log. It becomes exploitable the day a real transport lands, which is why it is
+ * fixed now rather than then.
+ *
+ * So the origin comes from configuration, or from a loopback Host, or not at all. There
+ * is no third source. Refusing is the right failure: a deployment that cannot say where
+ * its own links point must not guess, and `failure()` turns this into a 503 naming the
+ * variable to set.
+ */
 export function baseUrlFor(request: Request): string {
   const configured = process.env['COMPASS_BASE_URL'];
-  if (configured !== undefined && configured.length > 0) return configured.replace(/\/+$/, '');
 
-  const forwardedHost = request.headers.get('x-forwarded-host');
+  if (configured !== undefined && configured.length > 0) {
+    let parsed: URL;
+    try {
+      parsed = new URL(configured);
+    } catch {
+      throw new LinkOriginUnavailableError(
+        `COMPASS_BASE_URL is set to \`${configured}\`, which is not an absolute URL. It must look like ` +
+          '`https://compass.your-company.com` — Compass will not mail a link it cannot construct.',
+      );
+    }
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+      throw new LinkOriginUnavailableError(
+        `COMPASS_BASE_URL must be an http or https URL; \`${parsed.protocol}\` is neither.`,
+      );
+    }
+    return `${parsed.protocol}//${parsed.host}`;
+  }
+
+  // No configuration. The Host header is only trusted when it names this machine.
   const url = new URL(request.url);
-  const host = forwardedHost ?? url.host;
-  const proto = request.headers.get('x-forwarded-proto')?.split(',')[0]?.trim() ?? url.protocol.replace(':', '');
-  return `${proto}://${host}`;
+  if (LOOPBACK_HOSTNAMES.has(url.hostname)) {
+    return `${url.protocol}//${url.host}`;
+  }
+
+  throw new LinkOriginUnavailableError(
+    'COMPASS_BASE_URL is not set, so Compass does not know which address to put in the link it would send. It is ' +
+      'deliberately not taken from the request: this endpoint can be called by anyone, so a caller who chose the ' +
+      'host would choose where somebody else’s sign-in token pointed. Set COMPASS_BASE_URL to this deployment’s ' +
+      'own origin and try again.',
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -144,6 +198,16 @@ export interface GuardAllowed {
 export interface GuardRefused {
   readonly allowed: false;
   readonly response: NextResponse;
+  /**
+   * True when the refusal is Compass's own fault rather than the caller's — the database
+   * could not be reached, so who is asking could not be established at all.
+   *
+   * Every handler returns `response` either way. It exists for `/api/health`, whose whole
+   * job is to *report* that condition: that route lets an unavailable guard fall through
+   * to `readiness()` instead of answering with the guard's own 503, because a health
+   * endpoint that goes down with the thing it monitors is not one.
+   */
+  readonly unavailable: boolean;
 }
 
 export type GuardResult = GuardAllowed | GuardRefused;
@@ -178,17 +242,47 @@ export function denialResponse(
  * *sealed* (revoked, cookie cleared) even on a route the caller would have been
  * allowed anonymously. A dead cookie that is merely ignored keeps being presented on
  * every request for a month.
+ *
+ * ## This function never throws
+ *
+ * That is a contract, not a happy accident, and it exists because of where the call
+ * sits: `auth-http.test.ts` requires `guard()` to be the **first** statement in every
+ * handler, which puts it outside the try/catch that owns `failure()`. So anything it
+ * threw — a missing `DATABASE_URL`, an unreachable Postgres, a malformed cookie — came
+ * out of the handler as a framework 500 rather than as the stated 503 the product means
+ * to give. Wrapping the body here fixes every route at once and keeps the call in the
+ * position the coverage test insists on.
  */
 export async function guard(input: GuardInput): Promise<GuardResult> {
   const now = nowAtEdge();
-  const organizationId = requestOrganizationId();
-  const scoped = scopedFor(organizationId);
 
-  const resolution = await resolveIdentity({
-    scoped,
-    secret: readSessionCookie(input.request),
-    now,
-  });
+  let organizationId: string;
+  let scoped: ScopedDb;
+  let resolution: Awaited<ReturnType<typeof resolveIdentity>>;
+
+  try {
+    organizationId = requestOrganizationId();
+    scoped = scopedFor(organizationId);
+    resolution = await resolveIdentity({
+      scoped,
+      secret: readSessionCookie(input.request),
+      now,
+    });
+  } catch (error) {
+    // Not the caller's fault and not something they can act on, so it is stated as ours.
+    // `failure()` logs the detail and returns a fixed sentence; the same is done here so
+    // a driver error cannot describe the infrastructure to an unauthenticated caller.
+    console.error(
+      `[compass] guard could not establish identity for ${input.action} ${input.route}: ` +
+        `${error instanceof Error ? (error.stack ?? error.message) : String(error)}`,
+    );
+
+    return {
+      allowed: false,
+      unavailable: true,
+      response: jsonError('unavailable', UNAVAILABLE_SENTENCE, 503),
+    };
+  }
 
   const identity = resolution.kind === 'identified' ? resolution.identity : null;
   const principal: Principal = identity === null ? 'public' : identity.principal;
@@ -205,12 +299,16 @@ export async function guard(input: GuardInput): Promise<GuardResult> {
 
   if (!decision.allowed) {
     const response = denialResponse(decision, { teamKey: input.teamKey ?? null });
-    // A cookie that has stopped working is cleared on the way out, so the browser
-    // stops sending it and `/account` shows the sign-in form rather than a stale name.
+    // A cookie that has stopped working is cleared on the way out, so the browser stops
+    // sending it and `/account` shows the sign-in form rather than a stale name.
+    // `hasSessionCookie` rather than `readSessionCookie !== null`, because a cookie whose
+    // value cannot even be decoded is exactly the one that most needs clearing — and it
+    // reads as absent.
     return {
       allowed: false,
+      unavailable: false,
       response:
-        identity === null && readSessionCookie(input.request) !== null
+        identity === null && hasSessionCookie(input.request)
           ? clearSessionCookie(response, input.request)
           : response,
     };

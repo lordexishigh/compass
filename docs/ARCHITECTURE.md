@@ -219,8 +219,9 @@ waiting a fortnight.
 
 ### Passwords
 
-Argon2id via `@node-rs/argon2`, with the parameters in `ARGON2ID_PARAMETERS`
-(`packages/auth/src/password.ts`):
+Argon2id via `hash-wasm`, with the parameters in `ARGON2ID_PARAMETERS`
+(`packages/auth/src/password.ts` — which also documents why the WebAssembly build
+rather than a native binding):
 
 | parameter | value | why |
 | --- | --- | --- |
@@ -229,7 +230,7 @@ Argon2id via `@node-rs/argon2`, with the parameters in `ARGON2ID_PARAMETERS`
 | time cost | 2 | ~50 ms per hash on a server core. |
 | parallelism | 1 | One lane; a route handler is already on one request's thread. |
 | output | 32 bytes | 256 bits of tag. |
-| salt | 16 bytes | Generated per hash by the binding from the OS CSPRNG. Never passed in — a chosen salt is a reused salt waiting to happen. |
+| salt | 16 bytes | Fresh from `node:crypto.randomBytes` on every hash. `hash-wasm` will not invent one, so `hashPassword` generates it — in exactly one place, never derived from the address and never a constant. |
 
 The stored value is a PHC string, so raising the cost later verifies old hashes with
 no migration. `packages/auth/tests/password.test.ts` reads the parameters back *out of

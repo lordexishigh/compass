@@ -59,7 +59,21 @@ export const sessionCookieOptions = (request: Request): SessionCookieOptions => 
   maxAge: SESSION_COOKIE_MAX_AGE_SECONDS,
 });
 
-/** Reads the session secret a request presented, or null. */
+/**
+ * Reads the session secret a request presented, or null.
+ *
+ * Total by construction: **every** unusable value answers `null` rather than throwing,
+ * including one that is not valid percent-encoding. `decodeURIComponent('%zz')` raises a
+ * `URIError`, and this function is called from inside `guard()` before any handler's
+ * try/catch — so an unguarded decode turned one malformed cookie into a 500 on every
+ * route at once. Worse, it threw *before* the branch that clears a cookie which has
+ * stopped working, so the browser kept presenting the bad value and there was no way,
+ * from inside the product, to be rid of it.
+ *
+ * A value Compass cannot decode is not a session Compass issued. Treating it as absent is
+ * both true and the only answer that lets the caller recover: `guard()` sees a cookie
+ * present and no identity, and clears it.
+ */
 export function readSessionCookie(request: Request): string | null {
   const header = request.headers.get('cookie');
   if (header === null) return null;
@@ -68,10 +82,34 @@ export function readSessionCookie(request: Request): string | null {
     const separator = part.indexOf('=');
     if (separator === -1) continue;
     if (part.slice(0, separator).trim() !== SESSION_COOKIE_NAME) continue;
+
     const value = part.slice(separator + 1).trim();
-    return value.length === 0 ? null : decodeURIComponent(value);
+    if (value.length === 0) return null;
+
+    try {
+      return decodeURIComponent(value);
+    } catch {
+      return null;
+    }
   }
   return null;
+}
+
+/**
+ * Whether a request presented *something* under the session cookie's name.
+ *
+ * Distinct from `readSessionCookie` returning a value, and the distinction is the whole
+ * point: a malformed cookie reads as no session but is still on the browser, so
+ * `guard()` needs to know it is there in order to clear it.
+ */
+export function hasSessionCookie(request: Request): boolean {
+  const header = request.headers.get('cookie');
+  if (header === null) return false;
+
+  return header.split(';').some((part) => {
+    const separator = part.indexOf('=');
+    return separator !== -1 && part.slice(0, separator).trim() === SESSION_COOKIE_NAME;
+  });
 }
 
 /** Attaches a freshly-issued session to a response. */
