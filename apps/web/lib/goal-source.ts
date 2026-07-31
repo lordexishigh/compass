@@ -286,7 +286,11 @@ export function goalInputFrom(
     effectiveFrom,
     effectiveUntil,
     isCurrent,
-    archived: false,
+    // Inherited, not reset. Editing an archived goal's wording is a legitimate
+    // thing to do; silently resurrecting it as a side effect of that edit is not,
+    // and the DELETE response promises the archive holds. Un-archiving is a
+    // separate act and needs its own explicit request.
+    archived: defaults?.archived ?? false,
     // A hand-written revision is `declared`, and the sync refuses to supersede one.
     // That is what stops the next ingest quietly reverting this edit.
     origin: 'declared',

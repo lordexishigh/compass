@@ -90,8 +90,16 @@ export interface AlignmentView {
   /** "a configured chain", "an inferred tracker key", "a semantic match". */
   readonly tierLabel: string;
   readonly confidenceLabel: string;
-  readonly thresholdLabel: string;
+  /**
+   * The threshold, formatted — or null when the payload carried none.
+   *
+   * Null rather than `0.00`: a fabricated number here would be printed as the
+   * value the confidence was compared against, which is the one thing on this
+   * panel a manager is entitled to take literally.
+   */
+  readonly thresholdLabel: string | null;
   readonly thresholdId: string;
+  /** False whenever the threshold is unknown — an unknown bar is not cleared. */
   readonly clearsThreshold: boolean;
   readonly objectiveNodeId: string | null;
   readonly objectiveTitle: string | null;
@@ -275,7 +283,7 @@ function alignmentView(raw: unknown, stableId: string): AlignmentView | null {
 
   const tier = asText(record['resolvedTier']) ?? 'unattributed';
   const confidence = asNumber(record['confidence']) ?? 0;
-  const threshold = asNumber(record['threshold']) ?? 0;
+  const threshold = asNumber(record['threshold']);
   const evidence = record['evidence'];
   const evidenceRecord =
     evidence !== null && typeof evidence === 'object' && !Array.isArray(evidence)
@@ -286,7 +294,9 @@ function alignmentView(raw: unknown, stableId: string): AlignmentView | null {
   const chainTitles = asStringList(evidenceRecord['chainTitles']);
   const objectiveNodeId = asText(record['objectiveNodeId']);
   const confidenceLabel = confidence.toFixed(2);
-  const thresholdLabel = threshold.toFixed(2);
+  // Not `?? 0`: a payload with no threshold is a payload that cannot say what the
+  // confidence was compared against, and `0.00` would be read as that comparison.
+  const thresholdLabel = threshold === null ? null : threshold.toFixed(2);
 
   return {
     kind,
@@ -296,7 +306,9 @@ function alignmentView(raw: unknown, stableId: string): AlignmentView | null {
     confidenceLabel,
     thresholdLabel,
     thresholdId: asText(record['thresholdId']) ?? 'T17',
-    clearsThreshold: confidence >= threshold && threshold > 0,
+    // Presence, not magnitude: a threshold configured at 0 is a real threshold,
+    // and an accepted verdict must not be printed as sitting below it.
+    clearsThreshold: threshold !== null && confidence >= threshold,
     objectiveNodeId,
     objectiveTitle: asText(record['objectiveTitle']),
     question: asText(record['question']),
@@ -306,8 +318,14 @@ function alignmentView(raw: unknown, stableId: string): AlignmentView | null {
     subjectLabels: asStringList(record['subjectLabels']),
     summary:
       kind === 'off_goal'
-        ? `Resolved through ${TIER_LABELS[tier] ?? tier} — ${confidenceLabel} against a threshold of ${thresholdLabel}`
-        : `Nothing cleared the threshold — the closest match scored ${confidenceLabel} against ${thresholdLabel}`,
+        ? `Resolved through ${TIER_LABELS[tier] ?? tier} — ${confidenceLabel}${
+            thresholdLabel === null
+              ? ', against a threshold this report did not record'
+              : ` against a threshold of ${thresholdLabel}`
+          }`
+        : `Nothing cleared the threshold — the closest match scored ${confidenceLabel}${
+            thresholdLabel === null ? '' : ` against ${thresholdLabel}`
+          }`,
     panelId: `alignment-evidence-${stableId.replace(/[^a-zA-Z0-9]+/g, '-')}`,
   };
 }

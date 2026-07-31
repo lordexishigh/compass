@@ -28,6 +28,26 @@ import type { AlignmentView } from '../lib/view-model';
  * dense — 13px, tight leading, tabular mono, 8px rows. The contrast between the two
  * is a large part of the product's signature.
  */
+/**
+ * The closing note follows the tier the rows above it just reported.
+ *
+ * A single standing sentence would describe a wording comparison under a verdict
+ * that never compared any wording — an inferred verdict reads a tracker key out of
+ * the branch name and can sit at 1.00 confidence without a semantic score existing.
+ * The second clause is common to all three because it is the safety rule, and it
+ * holds whichever tier resolved the verdict.
+ */
+const RESOLUTION_CLAUSE =
+  'Compass labels work off-goal only above the threshold and only when a named objective the organization is no longer pursuing explains it better than the chain the work sits on.';
+
+const SEMANTIC_NOTE = `Compass compares the wording of the work with the wording of every goal it holds. ${RESOLUTION_CLAUSE}`;
+
+const OFF_GOAL_NOTES: Readonly<Record<string, string>> = {
+  configured: `This verdict came from the goal hierarchy itself: the work is attached to the goal above, and the chain states what that goal serves. No wording was compared. ${RESOLUTION_CLAUSE}`,
+  inferred: `This verdict came from an identifier Compass found in the text above — a tracker key, read at the offset shown — not from any comparison of wording. ${RESOLUTION_CLAUSE}`,
+  semantic: SEMANTIC_NOTE,
+};
+
 export function AlignmentEvidence({ alignment }: { readonly alignment: AlignmentView }) {
   return (
     <details className="evidence-disclosure mt-3" data-alignment-evidence={alignment.kind}>
@@ -52,9 +72,18 @@ export function AlignmentEvidence({ alignment }: { readonly alignment: Alignment
           <Row label="Confidence">
             <span className="data-token">{alignment.confidenceLabel}</span>
             <span className="evidence-rows__aside">
-              {alignment.clearsThreshold ? 'at or above' : 'below'} the threshold{' '}
-              <span className="data-token">{alignment.thresholdId}</span> sets, which is{' '}
-              <span className="data-token">{alignment.thresholdLabel}</span>
+              {alignment.thresholdLabel === null ? (
+                <>
+                  This report did not record the threshold it was compared against, so the score above stands on its
+                  own.
+                </>
+              ) : (
+                <>
+                  {alignment.clearsThreshold ? 'at or above' : 'below'} the threshold{' '}
+                  <span className="data-token">{alignment.thresholdId}</span> sets, which is{' '}
+                  <span className="data-token">{alignment.thresholdLabel}</span>
+                </>
+              )}
             </span>
           </Row>
 
@@ -128,7 +157,7 @@ export function AlignmentEvidence({ alignment }: { readonly alignment: Alignment
 
         <p className="evidence-disclosure__note">
           {alignment.kind === 'off_goal'
-            ? 'Compass compares the wording of the work with the wording of every goal it holds. It labels work off-goal only above the threshold and only when a named objective the organization is no longer pursuing explains it better than the chain the work sits on.'
+            ? (OFF_GOAL_NOTES[alignment.tier] ?? SEMANTIC_NOTE)
             : 'Nothing here cleared the threshold, so Compass has stated no verdict and named no person. If you know what this work served, the goal hierarchy is where to say so.'}
         </p>
       </div>

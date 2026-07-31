@@ -218,7 +218,12 @@ describe('the seeded off-goal stream survives the whole pipeline', () => {
   it('records the matched substring and offset on every inferred link', async () => {
     const links = await listObjectiveLinks(scoped(), run.now);
 
-    for (const link of links.filter((candidate) => candidate.source === 'inferred')) {
+    const inferred = links.filter((candidate) => candidate.source === 'inferred');
+
+    // Guarded, like the semantic block below: a seed that stopped producing
+    // inferred links would otherwise turn this into an assertion about nothing.
+    expect(inferred.length).toBeGreaterThan(0);
+    for (const link of inferred) {
       expect(link.matchedSubstring, link.subjectKey).not.toBeNull();
       expect(link.matchedOffset, link.subjectKey).not.toBeNull();
       expect(link.matchedIn, link.subjectKey).not.toBeNull();

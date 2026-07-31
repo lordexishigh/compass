@@ -69,6 +69,11 @@ export function GoalEditor({ nodes, resolvedAt }: { readonly nodes: readonly Goa
   const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
   const [error, setError] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<string | null>(null);
+  // `pending` covers only the refresh that follows a write. The request itself is
+  // in flight before that transition starts, and a submit button left live across
+  // it is how the same revision gets appended twice.
+  const [busy, setBusy] = useState(false);
+  const working = busy || pending;
 
   /**
    * One request path for all four verbs.
@@ -76,6 +81,10 @@ export function GoalEditor({ nodes, resolvedAt }: { readonly nodes: readonly Goa
    * The endpoint's own `detail` is shown verbatim on failure. Compass does not
    * paraphrase its own error messages into something vaguer — the field name is the
    * useful part.
+   *
+   * A transport failure is named in the same place rather than thrown: every call
+   * site is a click handler, so an unhandled rejection would leave the surface
+   * looking as though the click had not registered. This function never rejects.
    */
   const submit = async (
     input: RequestInfo,
@@ -84,20 +93,38 @@ export function GoalEditor({ nodes, resolvedAt }: { readonly nodes: readonly Goa
   ): Promise<void> => {
     setError(null);
     setConfirmation(null);
+    setBusy(true);
 
-    const response = await fetch(input, { ...init, headers: { 'content-type': 'application/json' } });
-    const body = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+    try {
+      let response: Response;
+      try {
+        response = await fetch(input, { ...init, headers: { 'content-type': 'application/json' } });
+      } catch (cause) {
+        // Named as what it is. A network failure and a rejected request are
+        // different conditions, and only one of them means the request was read.
+        setError(
+          `The request never reached Compass${
+            cause instanceof Error && cause.message.length > 0 ? ` — ${cause.message}` : ''
+          }. Nothing was changed and no revision was appended.`,
+        );
+        return;
+      }
 
-    if (!response.ok) {
-      setError(typeof body['detail'] === 'string' ? body['detail'] : `The request failed with ${response.status}.`);
-      return;
+      const body = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+
+      if (!response.ok) {
+        setError(typeof body['detail'] === 'string' ? body['detail'] : `The request failed with ${response.status}.`);
+        return;
+      }
+
+      setConfirmation(onSuccess(body));
+      setEditing(null);
+      setCreating(false);
+      setDraft(EMPTY_DRAFT);
+      startTransition(() => router.refresh());
+    } finally {
+      setBusy(false);
     }
-
-    setConfirmation(onSuccess(body));
-    setEditing(null);
-    setCreating(false);
-    setDraft(EMPTY_DRAFT);
-    startTransition(() => router.refresh());
   };
 
   const payloadFrom = (values: Draft): Record<string, unknown> => ({
@@ -176,7 +203,7 @@ export function GoalEditor({ nodes, resolvedAt }: { readonly nodes: readonly Goa
                   <button
                     type="button"
                     className="tertiary-action"
-                    disabled={pending}
+                    disabled={working}
                     onClick={() => {
                       void submit(`/api/goals/${encodeURIComponent(node.nodeId)}?note=Archived+from+the+goals+screen.`, { method: 'DELETE' }, (body) =>
                         revisionLine(body, 'Archived'),
@@ -191,7 +218,7 @@ export function GoalEditor({ nodes, resolvedAt }: { readonly nodes: readonly Goa
                   <GoalForm
                     draft={draft}
                     onChange={setDraft}
-                    pending={pending}
+                    pending={working}
                     submitLabel="Append revision"
                     lockNodeId
                     onSubmit={() => {
@@ -215,7 +242,7 @@ export function GoalEditor({ nodes, resolvedAt }: { readonly nodes: readonly Goa
           <GoalForm
             draft={draft}
             onChange={setDraft}
-            pending={pending}
+            pending={working}
             submitLabel="Create"
             onCancel={() => {
               setCreating(false);

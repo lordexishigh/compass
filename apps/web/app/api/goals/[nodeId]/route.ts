@@ -1,8 +1,8 @@
 import { GoalNodeNotFoundError } from '@compass/db';
 import { NextResponse } from 'next/server';
 
+import { NO_STORE, failure } from '../../../../lib/goal-http';
 import { archiveGoal, readGoal, updateGoal } from '../../../../lib/goal-source';
-import { failure } from '../route';
 
 /**
  * `/api/goals/<nodeId>` — read one goal's whole history, edit it, archive it.
@@ -18,11 +18,14 @@ import { failure } from '../route';
  *  - `DELETE` archives, which is also an append. Nothing is ever removed, because a
  *    report from before the archive still has to resolve its chain.
  *
- * In Next.js 15 route handlers, `params` is a Promise and has to be awaited.
+ * In Next.js 15 route handlers, `params` is a Promise and has to be awaited. It
+ * arrives percent-decoded, so `nodeId` is used as delivered and never decoded a
+ * second time — the same rule `app/artifact/[kind]/[artifactId]/page.tsx` states,
+ * and the reason a node id containing a literal `%` reaches the store intact
+ * instead of throwing a `URIError` that would be reported as an unreachable
+ * database.
  */
 export const dynamic = 'force-dynamic';
-
-const NO_STORE = { 'cache-control': 'no-store' } as const;
 
 type Context = { readonly params: Promise<{ readonly nodeId: string }> };
 
@@ -39,7 +42,7 @@ export async function GET(_request: Request, context: Context): Promise<NextResp
   const { nodeId } = await context.params;
 
   try {
-    const history = await readGoal(decodeURIComponent(nodeId));
+    const history = await readGoal(nodeId);
     return history === null ? notFound(nodeId) : NextResponse.json(history, { status: 200, headers: NO_STORE });
   } catch (error) {
     return failure(error);
@@ -67,7 +70,7 @@ export async function PATCH(request: Request, context: Context): Promise<NextRes
   }
 
   try {
-    return NextResponse.json(await updateGoal(decodeURIComponent(nodeId), body), { status: 200, headers: NO_STORE });
+    return NextResponse.json(await updateGoal(nodeId, body), { status: 200, headers: NO_STORE });
   } catch (error) {
     if (error instanceof GoalNodeNotFoundError) return notFound(nodeId);
     return failure(error);
@@ -86,7 +89,7 @@ export async function DELETE(request: Request, context: Context): Promise<NextRe
   const changeNote = new URL(request.url).searchParams.get('note');
 
   try {
-    const archived = await archiveGoal(decodeURIComponent(nodeId), changeNote);
+    const archived = await archiveGoal(nodeId, changeNote);
     return NextResponse.json(
       {
         ...archived,
