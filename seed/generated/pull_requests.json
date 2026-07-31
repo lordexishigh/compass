@@ -1,0 +1,5272 @@
+[
+  {
+    "authorIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "closedAt": "2026-05-20T17:32:00.000Z",
+    "createdAt": "2026-05-19T03:32:00.000Z",
+    "description": null,
+    "displayNumber": 8001,
+    "headRevisionId": "5fd8ae0",
+    "linkedWorkItemKeys": [
+      "PLAT-401"
+    ],
+    "mergeRevisionId": "88219de",
+    "mergedAt": "2026-05-20T17:32:00.000Z",
+    "occurredAt": "2026-05-20T17:32:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Aisha Bello",
+        "kind": "email",
+        "value": "aisha.bello@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-401-batch-writer-keeps-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8001",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-401 Batch writer keeps the ingest loop busy",
+    "updatedAt": "2026-05-20T17:32:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Oskar Lindqvist",
+      "kind": "email",
+      "value": "oskar.lindqvist@northwind.example"
+    },
+    "closedAt": "2026-05-22T11:57:00.000Z",
+    "createdAt": "2026-05-19T03:57:00.000Z",
+    "description": null,
+    "displayNumber": 8115,
+    "headRevisionId": "4feb246",
+    "linkedWorkItemKeys": [
+      "INS-101"
+    ],
+    "mergeRevisionId": "6820736",
+    "mergedAt": "2026-05-22T11:57:00.000Z",
+    "occurredAt": "2026-05-22T11:57:00.000Z",
+    "repositoryKey": "insights-etl",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Yusuf Demir",
+        "kind": "email",
+        "value": "yusuf.demir@northwind.example"
+      }
+    ],
+    "sourceBranch": "work/INS-101-settlement-export-drops-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8115",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "INS-101 Settlement export drops the final page",
+    "updatedAt": "2026-05-22T11:57:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rafael.lima@northwind.example"
+    },
+    "closedAt": "2026-05-23T09:55:00.000Z",
+    "createdAt": "2026-05-21T08:55:00.000Z",
+    "description": "Mobile keyboard covers the pay button. Raised by Ingrid Falk during triage.",
+    "displayNumber": 8065,
+    "headRevisionId": "cde53b0",
+    "linkedWorkItemKeys": [
+      "CHK-205"
+    ],
+    "mergeRevisionId": "e757be8",
+    "mergedAt": "2026-05-23T09:55:00.000Z",
+    "occurredAt": "2026-05-23T09:55:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Ingrid Falk",
+        "kind": "email",
+        "value": "ingrid.falk@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-205-mobile-keyboard-covers-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8065",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-205 Mobile keyboard covers the pay button",
+    "updatedAt": "2026-05-23T09:55:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "tom.whitfield@northwind.example"
+    },
+    "closedAt": "2026-05-24T16:15:00.000Z",
+    "createdAt": "2026-05-22T01:15:00.000Z",
+    "description": "Connection pool starves under a burst of authorizations. Raised by Aisha Bello during triage.",
+    "displayNumber": 8004,
+    "headRevisionId": "3d6b10a",
+    "linkedWorkItemKeys": [
+      "PLAT-407"
+    ],
+    "mergeRevisionId": "228c2d5",
+    "mergedAt": "2026-05-24T16:15:00.000Z",
+    "occurredAt": "2026-05-24T16:15:00.000Z",
+    "repositoryKey": "shared-ui",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Marcus Hale",
+        "kind": "email",
+        "value": "marcus.hale@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-407-connection-pool-starves-under",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8004",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-407 Connection pool starves under a burst of authorizations",
+    "updatedAt": "2026-05-24T16:15:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Yusuf Demir",
+      "kind": "email",
+      "value": "yusuf.demir@northwind.example"
+    },
+    "closedAt": "2026-05-25T08:06:00.000Z",
+    "createdAt": "2026-05-19T21:06:00.000Z",
+    "description": "Daily rollup double counts refunded orders. Raised by Clara Mbeki during triage.",
+    "displayNumber": 8116,
+    "headRevisionId": "ce3dbf8",
+    "linkedWorkItemKeys": [
+      "INS-102"
+    ],
+    "mergeRevisionId": "d7c3b18",
+    "mergedAt": "2026-05-25T08:06:00.000Z",
+    "occurredAt": "2026-05-25T08:06:00.000Z",
+    "repositoryKey": "insights-etl",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Oskar Lindqvist",
+        "kind": "email",
+        "value": "oskar.lindqvist@northwind.example"
+      }
+    ],
+    "sourceBranch": "work/INS-102-daily-rollup-double-counts",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8116",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "INS-102 Daily rollup double counts refunded orders",
+    "updatedAt": "2026-05-25T08:06:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ingrid.falk@northwind.example"
+    },
+    "closedAt": "2026-05-25T08:12:00.000Z",
+    "createdAt": "2026-05-19T12:12:00.000Z",
+    "description": "Guest session expires mid-payment with no warning. Raised by Ingrid Falk during triage.",
+    "displayNumber": 8064,
+    "headRevisionId": "0957ca8",
+    "linkedWorkItemKeys": [
+      "CHK-203"
+    ],
+    "mergeRevisionId": "22ca4df",
+    "mergedAt": "2026-05-25T08:12:00.000Z",
+    "occurredAt": "2026-05-25T08:12:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Rafael Lima",
+        "kind": "email",
+        "value": "rafael.lima@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-203-guest-session-expires-mid",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8064",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-203 Guest session expires mid-payment with no warning",
+    "updatedAt": "2026-05-25T08:12:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "closedAt": "2026-05-27T09:39:00.000Z",
+    "createdAt": "2026-05-20T17:39:00.000Z",
+    "description": "Fraud check blocks the payment path synchronously. Raised by Elena Sokolova during triage.",
+    "displayNumber": 8003,
+    "headRevisionId": "da39276",
+    "linkedWorkItemKeys": [
+      "PLAT-405"
+    ],
+    "mergeRevisionId": "d0da44c",
+    "mergedAt": "2026-05-27T09:39:00.000Z",
+    "occurredAt": "2026-05-27T09:39:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Tom Whitfield",
+        "kind": "email",
+        "value": "tom.whitfield@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-405-fraud-check-blocks-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8003",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-405 Fraud check blocks the payment path synchronously",
+    "updatedAt": "2026-05-27T09:39:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "closedAt": "2026-05-27T15:09:00.000Z",
+    "createdAt": "2026-05-22T15:09:00.000Z",
+    "description": "Email receipt omits the merchant name. Raised by Rafael Lima during triage.",
+    "displayNumber": 8066,
+    "headRevisionId": "d1ec2a4",
+    "linkedWorkItemKeys": [
+      "CHK-207"
+    ],
+    "mergeRevisionId": "c866384",
+    "mergedAt": "2026-05-27T15:09:00.000Z",
+    "occurredAt": "2026-05-27T15:09:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Rafael Lima",
+        "kind": "email",
+        "value": "rafael.lima@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-207-email-receipt-omits-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8066",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-207 Email receipt omits the merchant name",
+    "updatedAt": "2026-05-27T15:09:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Oskar Lindqvist",
+      "kind": "email",
+      "value": "oskar.lindqvist@northwind.example"
+    },
+    "closedAt": null,
+    "createdAt": "2026-05-23T19:46:00.000Z",
+    "description": "Timezone conversion shifts the settlement date. Raised by Clara Mbeki during triage.",
+    "displayNumber": 8117,
+    "headRevisionId": "1b81a2a",
+    "linkedWorkItemKeys": [
+      "INS-105"
+    ],
+    "mergeRevisionId": null,
+    "mergedAt": null,
+    "occurredAt": "2026-05-27T19:46:00.000Z",
+    "repositoryKey": "insights-etl",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Clara Mbeki",
+        "kind": "email",
+        "value": "clara.mbeki@northwind.example"
+      }
+    ],
+    "sourceBranch": "work/INS-105-timezone-conversion-shifts-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8117",
+    "state": "draft",
+    "targetBranch": "main",
+    "title": "INS-105 Timezone conversion shifts the settlement date",
+    "updatedAt": "2026-05-27T19:46:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "daniel.ortiz@northwind.example"
+    },
+    "closedAt": "2026-05-28T09:57:00.000Z",
+    "createdAt": "2026-05-26T01:57:00.000Z",
+    "description": null,
+    "displayNumber": 8068,
+    "headRevisionId": "fd4fa86",
+    "linkedWorkItemKeys": [
+      "CHK-213"
+    ],
+    "mergeRevisionId": "5a2bcd9",
+    "mergedAt": "2026-05-28T09:57:00.000Z",
+    "occurredAt": "2026-05-28T09:57:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Naomi Chen",
+        "kind": "email",
+        "value": "naomi.chen@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-213-back-navigation-resubmits-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8068",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-213 Back navigation resubmits the payment",
+    "updatedAt": "2026-05-28T09:57:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rafael.lima@northwind.example"
+    },
+    "closedAt": null,
+    "createdAt": "2026-05-24T08:22:00.000Z",
+    "description": null,
+    "displayNumber": 8067,
+    "headRevisionId": "26fd6c1",
+    "linkedWorkItemKeys": [
+      "CHK-210"
+    ],
+    "mergeRevisionId": null,
+    "mergedAt": null,
+    "occurredAt": "2026-05-28T15:22:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Naomi Chen",
+        "kind": "email",
+        "value": "naomi.chen@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-210-apple-wallet-button-renders",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8067",
+    "state": "draft",
+    "targetBranch": "main",
+    "title": "CHK-210 Apple wallet button renders on unsupported browsers",
+    "updatedAt": "2026-05-28T15:22:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ingrid.falk@northwind.example"
+    },
+    "closedAt": "2026-05-28T15:47:00.000Z",
+    "createdAt": "2026-05-19T20:47:00.000Z",
+    "description": "Address form loses state on a validation error. Raised by Daniel Ortiz during triage.",
+    "displayNumber": 8063,
+    "headRevisionId": "cde0ab8",
+    "linkedWorkItemKeys": [
+      "CHK-201"
+    ],
+    "mergeRevisionId": "547c042",
+    "mergedAt": "2026-05-28T15:47:00.000Z",
+    "occurredAt": "2026-05-28T15:47:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Daniel Ortiz",
+        "kind": "email",
+        "value": "daniel.ortiz@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-201-address-form-loses-state",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8063",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-201 Address form loses state on a validation error",
+    "updatedAt": "2026-05-28T15:47:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "closedAt": "2026-05-28T17:34:00.000Z",
+    "createdAt": "2026-05-25T16:34:00.000Z",
+    "description": null,
+    "displayNumber": 8007,
+    "headRevisionId": "4c39f10",
+    "linkedWorkItemKeys": [
+      "PLAT-413"
+    ],
+    "mergeRevisionId": "53eaa53",
+    "mergedAt": "2026-05-28T17:34:00.000Z",
+    "occurredAt": "2026-05-28T17:34:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Tom Whitfield",
+        "kind": "email",
+        "value": "tom.whitfield@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-413-migration-lock-blocks-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8007",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-413 Migration lock blocks the deploy for four minutes",
+    "updatedAt": "2026-05-28T17:34:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "elena.sokolova@northwind.example"
+    },
+    "closedAt": "2026-05-29T08:39:00.000Z",
+    "createdAt": "2026-05-19T22:39:00.000Z",
+    "description": "Tokenization path allocates on every request. Raised by Priya Raman during triage.",
+    "displayNumber": 8002,
+    "headRevisionId": "bdb0a53",
+    "linkedWorkItemKeys": [
+      "PLAT-403"
+    ],
+    "mergeRevisionId": "1566ebd",
+    "mergedAt": "2026-05-29T08:39:00.000Z",
+    "occurredAt": "2026-05-29T08:39:00.000Z",
+    "repositoryKey": "shared-ui",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Marcus Hale",
+        "kind": "email",
+        "value": "marcus.hale@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-403-tokenization-path-allocates-on",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8002",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-403 Tokenization path allocates on every request",
+    "updatedAt": "2026-05-29T08:39:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Clara Mbeki",
+      "kind": "email",
+      "value": "clara.mbeki@northwind.example"
+    },
+    "closedAt": "2026-05-29T13:59:00.000Z",
+    "createdAt": "2026-05-26T15:59:00.000Z",
+    "description": "Column rename breaks the downstream view. Raised by Oskar Lindqvist during triage.",
+    "displayNumber": 8118,
+    "headRevisionId": "2eab424",
+    "linkedWorkItemKeys": [
+      "INS-108"
+    ],
+    "mergeRevisionId": "9363ba9",
+    "mergedAt": "2026-05-29T13:59:00.000Z",
+    "occurredAt": "2026-05-29T13:59:00.000Z",
+    "repositoryKey": "insights-etl",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Yusuf Demir",
+        "kind": "email",
+        "value": "yusuf.demir@northwind.example"
+      }
+    ],
+    "sourceBranch": "work/INS-108-column-rename-breaks-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8118",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "INS-108 Column rename breaks the downstream view",
+    "updatedAt": "2026-05-29T13:59:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "closedAt": "2026-05-30T09:16:00.000Z",
+    "createdAt": "2026-05-23T04:16:00.000Z",
+    "description": "Gateway metrics under-report queue time. Raised by Elena Sokolova during triage.",
+    "displayNumber": 8005,
+    "headRevisionId": "6718d45",
+    "linkedWorkItemKeys": [
+      "PLAT-409"
+    ],
+    "mergeRevisionId": "f09f8fd",
+    "mergedAt": "2026-05-30T09:16:00.000Z",
+    "occurredAt": "2026-05-30T09:16:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Elena Sokolova",
+        "kind": "email",
+        "value": "elena.sokolova@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-409-gateway-metrics-under-report",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8005",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-409 Gateway metrics under-report queue time",
+    "updatedAt": "2026-05-30T09:16:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "closedAt": "2026-05-30T11:45:00.000Z",
+    "createdAt": "2026-05-29T13:45:00.000Z",
+    "description": "Profile lookup issues one query per merchant. Raised by Tom Whitfield during triage.",
+    "displayNumber": 8011,
+    "headRevisionId": "14d8716",
+    "linkedWorkItemKeys": [
+      "PLAT-422"
+    ],
+    "mergeRevisionId": "fb65edf",
+    "mergedAt": "2026-05-30T11:45:00.000Z",
+    "occurredAt": "2026-05-30T11:45:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Elena Sokolova",
+        "kind": "email",
+        "value": "elena.sokolova@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-422-profile-lookup-issues-one",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8011",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-422 Profile lookup issues one query per merchant",
+    "updatedAt": "2026-05-30T11:45:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Yusuf Demir",
+      "kind": "email",
+      "value": "yusuf.demir@northwind.example"
+    },
+    "closedAt": "2026-05-30T15:55:00.000Z",
+    "createdAt": "2026-05-29T21:55:00.000Z",
+    "description": null,
+    "displayNumber": 8119,
+    "headRevisionId": "7163ae9",
+    "linkedWorkItemKeys": [
+      "INS-111"
+    ],
+    "mergeRevisionId": "2d01a36",
+    "mergedAt": "2026-05-30T15:55:00.000Z",
+    "occurredAt": "2026-05-30T15:55:00.000Z",
+    "repositoryKey": "insights-etl",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Oskar Lindqvist",
+        "kind": "email",
+        "value": "oskar.lindqvist@northwind.example"
+      }
+    ],
+    "sourceBranch": "work/INS-111-null-merchant-identifier-passes",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8119",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "INS-111 Null merchant identifier passes validation",
+    "updatedAt": "2026-05-30T15:55:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "daniel.ortiz@northwind.example"
+    },
+    "closedAt": "2026-05-31T11:13:00.000Z",
+    "createdAt": "2026-05-28T15:13:00.000Z",
+    "description": null,
+    "displayNumber": 8070,
+    "headRevisionId": "a8043b9",
+    "linkedWorkItemKeys": [
+      "CHK-217"
+    ],
+    "mergeRevisionId": "069b6f6",
+    "mergedAt": "2026-05-31T11:13:00.000Z",
+    "occurredAt": "2026-05-31T11:13:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Rafael Lima",
+        "kind": "email",
+        "value": "rafael.lima@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-217-payment-sheet-flashes-before",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8070",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-217 Payment sheet flashes before the token loads",
+    "updatedAt": "2026-05-31T11:13:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rafael.lima@northwind.example"
+    },
+    "closedAt": "2026-05-31T14:47:00.000Z",
+    "createdAt": "2026-05-31T16:47:00.000Z",
+    "description": "Terms checkbox is not announced as required. Raised by Rafael Lima during triage.",
+    "displayNumber": 8072,
+    "headRevisionId": "c2b8831",
+    "linkedWorkItemKeys": [
+      "CHK-222"
+    ],
+    "mergeRevisionId": "3b07056",
+    "mergedAt": "2026-05-31T14:47:00.000Z",
+    "occurredAt": "2026-05-31T14:47:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Naomi Chen",
+        "kind": "email",
+        "value": "naomi.chen@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-222-terms-checkbox-is-not",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8072",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-222 Terms checkbox is not announced as required",
+    "updatedAt": "2026-05-31T14:47:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "daniel.ortiz@northwind.example"
+    },
+    "closedAt": "2026-05-31T16:03:00.000Z",
+    "createdAt": "2026-05-26T20:03:00.000Z",
+    "description": "Focus ring is invisible on the dark theme. Raised by Ingrid Falk during triage.",
+    "displayNumber": 8069,
+    "headRevisionId": "283f301",
+    "linkedWorkItemKeys": [
+      "CHK-215"
+    ],
+    "mergeRevisionId": "dbd9327",
+    "mergedAt": "2026-05-31T16:03:00.000Z",
+    "occurredAt": "2026-05-31T16:03:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Ingrid Falk",
+        "kind": "email",
+        "value": "ingrid.falk@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-215-focus-ring-is-invisible",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8069",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-215 Focus ring is invisible on the dark theme",
+    "updatedAt": "2026-05-31T16:03:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "closedAt": "2026-06-01T10:16:00.000Z",
+    "createdAt": "2026-05-26T08:16:00.000Z",
+    "description": "Gateway client retries on a non-idempotent verb. Raised by Priya Raman during triage.",
+    "displayNumber": 8008,
+    "headRevisionId": "90c6980",
+    "linkedWorkItemKeys": [
+      "PLAT-416"
+    ],
+    "mergeRevisionId": "e759d95",
+    "mergedAt": "2026-06-01T10:16:00.000Z",
+    "occurredAt": "2026-06-01T10:16:00.000Z",
+    "repositoryKey": "shared-ui",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Tom Whitfield",
+        "kind": "email",
+        "value": "tom.whitfield@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-416-gateway-client-retries-on",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8008",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-416 Gateway client retries on a non-idempotent verb",
+    "updatedAt": "2026-06-01T10:16:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "closedAt": "2026-06-02T10:59:00.000Z",
+    "createdAt": "2026-05-28T15:59:00.000Z",
+    "description": "Dead-letter queue has no drain procedure. Raised by Aisha Bello during triage.",
+    "displayNumber": 8010,
+    "headRevisionId": "ff45cdc",
+    "linkedWorkItemKeys": [
+      "PLAT-420"
+    ],
+    "mergeRevisionId": "3ae48c1",
+    "mergedAt": "2026-06-02T10:59:00.000Z",
+    "occurredAt": "2026-06-02T10:59:00.000Z",
+    "repositoryKey": "shared-ui",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Tom Whitfield",
+        "kind": "email",
+        "value": "tom.whitfield@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-420-dead-letter-queue-has",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8010",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-420 Dead-letter queue has no drain procedure",
+    "updatedAt": "2026-06-02T10:59:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Yusuf Demir",
+      "kind": "email",
+      "value": "yusuf.demir@northwind.example"
+    },
+    "closedAt": "2026-06-02T14:04:00.000Z",
+    "createdAt": "2026-05-31T06:04:00.000Z",
+    "description": null,
+    "displayNumber": 8120,
+    "headRevisionId": "5d14cf9",
+    "linkedWorkItemKeys": [
+      "INS-113"
+    ],
+    "mergeRevisionId": "18b2c46",
+    "mergedAt": "2026-06-02T14:04:00.000Z",
+    "occurredAt": "2026-06-02T14:04:00.000Z",
+    "repositoryKey": "insights-etl",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Oskar Lindqvist",
+        "kind": "email",
+        "value": "oskar.lindqvist@northwind.example"
+      }
+    ],
+    "sourceBranch": "work/INS-113-schedule-drifts-an-hour",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8120",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "INS-113 Schedule drifts an hour after the clock change",
+    "updatedAt": "2026-06-02T14:04:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "tom.whitfield@northwind.example"
+    },
+    "closedAt": "2026-06-02T17:01:00.000Z",
+    "createdAt": "2026-05-27T03:01:00.000Z",
+    "description": null,
+    "displayNumber": 8009,
+    "headRevisionId": "ba745bb",
+    "linkedWorkItemKeys": [
+      "PLAT-418"
+    ],
+    "mergeRevisionId": "c2bd193",
+    "mergedAt": "2026-06-02T17:01:00.000Z",
+    "occurredAt": "2026-06-02T17:01:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Aisha Bello",
+        "kind": "email",
+        "value": "aisha.bello@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-418-background-reconciler-holds-a",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8009",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-418 Background reconciler holds a transaction open",
+    "updatedAt": "2026-06-02T17:01:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "closedAt": "2026-06-03T12:41:00.000Z",
+    "createdAt": "2026-05-24T12:41:00.000Z",
+    "description": "Payment capture logs leak the card bin. Raised by Priya Raman during triage.",
+    "displayNumber": 8006,
+    "headRevisionId": "02a9b69",
+    "linkedWorkItemKeys": [
+      "PLAT-411"
+    ],
+    "mergeRevisionId": "ef5dcbd",
+    "mergedAt": "2026-06-03T12:41:00.000Z",
+    "occurredAt": "2026-06-03T12:41:00.000Z",
+    "repositoryKey": "shared-ui",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Elena Sokolova",
+        "kind": "email",
+        "value": "elena.sokolova@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-411-payment-capture-logs-leak",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8006",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-411 Payment capture logs leak the card bin",
+    "updatedAt": "2026-06-03T12:41:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Aisha Bello",
+      "kind": "email",
+      "value": "aisha.bello@northwind.example"
+    },
+    "closedAt": "2026-06-03T13:50:00.000Z",
+    "createdAt": "2026-05-31T17:50:00.000Z",
+    "description": null,
+    "displayNumber": 8013,
+    "headRevisionId": "e837bed",
+    "linkedWorkItemKeys": [
+      "PLAT-426"
+    ],
+    "mergeRevisionId": "69a058a",
+    "mergedAt": "2026-06-03T13:50:00.000Z",
+    "occurredAt": "2026-06-03T13:50:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Priya Raman",
+        "kind": "email",
+        "value": "priya.raman@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-426-cold-start-on-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8013",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-426 Cold start on the payment gateway exceeds two seconds on the retry path",
+    "updatedAt": "2026-06-03T13:50:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "closedAt": "2026-06-04T15:46:00.000Z",
+    "createdAt": "2026-05-29T19:46:00.000Z",
+    "description": "Guest email is not normalized before lookup. Raised by Naomi Chen during triage.",
+    "displayNumber": 8071,
+    "headRevisionId": "6377949",
+    "linkedWorkItemKeys": [
+      "CHK-219"
+    ],
+    "mergeRevisionId": "432423f",
+    "mergedAt": "2026-06-04T15:46:00.000Z",
+    "occurredAt": "2026-06-04T15:46:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Rafael Lima",
+        "kind": "email",
+        "value": "rafael.lima@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-219-guest-email-is-not",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8071",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-219 Guest email is not normalized before lookup",
+    "updatedAt": "2026-06-04T15:46:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rafael.lima@northwind.example"
+    },
+    "closedAt": "2026-06-05T11:43:00.000Z",
+    "createdAt": "2026-06-01T00:43:00.000Z",
+    "description": null,
+    "displayNumber": 8073,
+    "headRevisionId": "5652531",
+    "linkedWorkItemKeys": [
+      "CHK-224"
+    ],
+    "mergeRevisionId": "fe9c0c7",
+    "mergedAt": "2026-06-05T11:43:00.000Z",
+    "occurredAt": "2026-06-05T11:43:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Naomi Chen",
+        "kind": "email",
+        "value": "naomi.chen@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-224-session-cookie-is-set",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8073",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-224 Session cookie is set without the secure flag",
+    "updatedAt": "2026-06-05T11:43:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "closedAt": "2026-06-06T13:45:00.000Z",
+    "createdAt": "2026-06-01T13:45:00.000Z",
+    "description": "Merchant profile cache misses on every retry on the retry path. Raised by Aisha Bello during triage.",
+    "displayNumber": 8014,
+    "headRevisionId": "2513b1a",
+    "linkedWorkItemKeys": [
+      "PLAT-428"
+    ],
+    "mergeRevisionId": "3e86351",
+    "mergedAt": "2026-06-06T13:45:00.000Z",
+    "occurredAt": "2026-06-06T13:45:00.000Z",
+    "repositoryKey": "shared-ui",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Aisha Bello",
+        "kind": "email",
+        "value": "aisha.bello@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-428-merchant-profile-cache-misses",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8014",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-428 Merchant profile cache misses on every retry on the retry path",
+    "updatedAt": "2026-06-06T13:45:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "closedAt": "2026-06-06T14:09:00.000Z",
+    "createdAt": "2026-06-06T20:09:00.000Z",
+    "description": "Migration lock blocks the deploy for four minutes on the retry path. Raised by Marcus Hale during triage.",
+    "displayNumber": 8018,
+    "headRevisionId": "d03d932",
+    "linkedWorkItemKeys": [
+      "PLAT-437"
+    ],
+    "mergeRevisionId": "83d7958",
+    "mergedAt": "2026-06-06T14:09:00.000Z",
+    "occurredAt": "2026-06-06T14:09:00.000Z",
+    "repositoryKey": "shared-ui",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Marcus Hale",
+        "kind": "email",
+        "value": "marcus.hale@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-437-migration-lock-blocks-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8018",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-437 Migration lock blocks the deploy for four minutes on the retry path",
+    "updatedAt": "2026-06-06T14:09:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "daniel.ortiz@northwind.example"
+    },
+    "closedAt": "2026-06-06T14:50:00.000Z",
+    "createdAt": "2026-06-03T10:50:00.000Z",
+    "description": "Card entry field rejects a valid Maestro number on the retry path. Raised by Ingrid Falk during triage.",
+    "displayNumber": 8075,
+    "headRevisionId": "a13ff8e",
+    "linkedWorkItemKeys": [
+      "CHK-228"
+    ],
+    "mergeRevisionId": "b97547e",
+    "mergedAt": "2026-06-06T14:50:00.000Z",
+    "occurredAt": "2026-06-06T14:50:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Ingrid Falk",
+        "kind": "email",
+        "value": "ingrid.falk@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-228-card-entry-field-rejects",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8075",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-228 Card entry field rejects a valid Maestro number on the retry path",
+    "updatedAt": "2026-06-06T14:50:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "closedAt": "2026-06-07T08:55:00.000Z",
+    "createdAt": "2026-06-06T03:55:00.000Z",
+    "description": "Screen reader skips the payment error region on the retry path. Raised by Rafael Lima during triage.",
+    "displayNumber": 8077,
+    "headRevisionId": "e2b6a13",
+    "linkedWorkItemKeys": [
+      "CHK-233"
+    ],
+    "mergeRevisionId": "475f68c",
+    "mergedAt": "2026-06-07T08:55:00.000Z",
+    "occurredAt": "2026-06-07T08:55:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Daniel Ortiz",
+        "kind": "email",
+        "value": "daniel.ortiz@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-233-screen-reader-skips-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8077",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-233 Screen reader skips the payment error region on the retry path",
+    "updatedAt": "2026-06-07T08:55:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Aisha Bello",
+      "kind": "email",
+      "value": "aisha.bello@northwind.example"
+    },
+    "closedAt": "2026-06-09T08:35:00.000Z",
+    "createdAt": "2026-05-29T20:35:00.000Z",
+    "description": null,
+    "displayNumber": 8012,
+    "headRevisionId": "5965187",
+    "linkedWorkItemKeys": [
+      "PLAT-424"
+    ],
+    "mergeRevisionId": "3ff294f",
+    "mergedAt": "2026-06-09T08:35:00.000Z",
+    "occurredAt": "2026-06-09T08:35:00.000Z",
+    "repositoryKey": "shared-ui",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Elena Sokolova",
+        "kind": "email",
+        "value": "elena.sokolova@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-424-feature-flag-evaluation-blocks",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8012",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-424 Feature flag evaluation blocks on a network call",
+    "updatedAt": "2026-06-09T08:35:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "daniel.ortiz@northwind.example"
+    },
+    "closedAt": "2026-06-09T10:49:00.000Z",
+    "createdAt": "2026-06-02T02:49:00.000Z",
+    "description": "Declined card message names the wrong field on the retry path. Raised by Naomi Chen during triage.",
+    "displayNumber": 8074,
+    "headRevisionId": "5189153",
+    "linkedWorkItemKeys": [
+      "CHK-226"
+    ],
+    "mergeRevisionId": "494057b",
+    "mergedAt": "2026-06-09T10:49:00.000Z",
+    "occurredAt": "2026-06-09T10:49:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Naomi Chen",
+        "kind": "email",
+        "value": "naomi.chen@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-226-declined-card-message-names",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8074",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-226 Declined card message names the wrong field on the retry path",
+    "updatedAt": "2026-06-09T10:49:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "tom.whitfield@northwind.example"
+    },
+    "closedAt": "2026-06-09T14:08:00.000Z",
+    "createdAt": "2026-06-08T01:08:00.000Z",
+    "description": "Tokenization cache key ignores the merchant scope on the retry path. Raised by Aisha Bello during triage.",
+    "displayNumber": 8020,
+    "headRevisionId": "cefbcf2",
+    "linkedWorkItemKeys": [
+      "PLAT-441"
+    ],
+    "mergeRevisionId": "d6c6b28",
+    "mergedAt": "2026-06-09T14:08:00.000Z",
+    "occurredAt": "2026-06-09T14:08:00.000Z",
+    "repositoryKey": "shared-ui",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Priya Raman",
+        "kind": "email",
+        "value": "priya.raman@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-441-tokenization-cache-key-ignores",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8020",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-441 Tokenization cache key ignores the merchant scope on the retry path",
+    "updatedAt": "2026-06-09T14:08:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "closedAt": "2026-06-09T16:52:00.000Z",
+    "createdAt": "2026-06-05T06:52:00.000Z",
+    "description": null,
+    "displayNumber": 8017,
+    "headRevisionId": "268c097",
+    "linkedWorkItemKeys": [
+      "PLAT-435"
+    ],
+    "mergeRevisionId": "0367652",
+    "mergedAt": "2026-06-09T16:52:00.000Z",
+    "occurredAt": "2026-06-09T16:52:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Elena Sokolova",
+        "kind": "email",
+        "value": "elena.sokolova@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-435-payment-capture-logs-leak",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8017",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-435 Payment capture logs leak the card bin on the retry path",
+    "updatedAt": "2026-06-09T16:52:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Oskar Lindqvist",
+      "kind": "email",
+      "value": "oskar.lindqvist@northwind.example"
+    },
+    "closedAt": null,
+    "createdAt": "2026-06-05T22:15:00.000Z",
+    "description": null,
+    "displayNumber": 8121,
+    "headRevisionId": "dd84fff",
+    "linkedWorkItemKeys": [
+      "INS-118"
+    ],
+    "mergeRevisionId": null,
+    "mergedAt": null,
+    "occurredAt": "2026-06-10T02:15:00.000Z",
+    "repositoryKey": "insights-etl",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Yusuf Demir",
+        "kind": "email",
+        "value": "yusuf.demir@northwind.example"
+      }
+    ],
+    "sourceBranch": "work/INS-118-loader-holds-the-warehouse",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8121",
+    "state": "draft",
+    "targetBranch": "main",
+    "title": "INS-118 Loader holds the warehouse lock for an hour",
+    "updatedAt": "2026-06-10T02:15:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Yusuf Demir",
+      "kind": "email",
+      "value": "yusuf.demir@northwind.example"
+    },
+    "closedAt": null,
+    "createdAt": "2026-06-07T12:57:00.000Z",
+    "description": null,
+    "displayNumber": 8122,
+    "headRevisionId": "a34d3be",
+    "linkedWorkItemKeys": [
+      "INS-120"
+    ],
+    "mergeRevisionId": null,
+    "mergedAt": null,
+    "occurredAt": "2026-06-10T17:57:00.000Z",
+    "repositoryKey": "insights-etl",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Oskar Lindqvist",
+        "kind": "email",
+        "value": "oskar.lindqvist@northwind.example"
+      }
+    ],
+    "sourceBranch": "work/INS-120-data-contract-has-no",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8122",
+    "state": "draft",
+    "targetBranch": "main",
+    "title": "INS-120 Data contract has no owner recorded",
+    "updatedAt": "2026-06-10T17:57:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ingrid.falk@northwind.example"
+    },
+    "closedAt": "2026-06-11T08:33:00.000Z",
+    "createdAt": "2026-06-04T21:33:00.000Z",
+    "description": "Email receipt omits the merchant name on the retry path. Raised by Naomi Chen during triage.",
+    "displayNumber": 8076,
+    "headRevisionId": "5cb351e",
+    "linkedWorkItemKeys": [
+      "CHK-231"
+    ],
+    "mergeRevisionId": "7625d55",
+    "mergedAt": "2026-06-11T08:33:00.000Z",
+    "occurredAt": "2026-06-11T08:33:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Naomi Chen",
+        "kind": "email",
+        "value": "naomi.chen@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-231-email-receipt-omits-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8076",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-231 Email receipt omits the merchant name on the retry path",
+    "updatedAt": "2026-06-11T08:33:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "closedAt": "2026-06-11T14:27:00.000Z",
+    "createdAt": "2026-06-07T16:27:00.000Z",
+    "description": null,
+    "displayNumber": 8019,
+    "headRevisionId": "70649b5",
+    "linkedWorkItemKeys": [
+      "PLAT-439"
+    ],
+    "mergeRevisionId": "3388a88",
+    "mergedAt": "2026-06-11T14:27:00.000Z",
+    "occurredAt": "2026-06-11T14:27:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Marcus Hale",
+        "kind": "email",
+        "value": "marcus.hale@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-439-currency-rounding-disagrees-with",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8019",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-439 Currency rounding disagrees with the ledger on the retry path",
+    "updatedAt": "2026-06-11T14:27:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Aisha Bello",
+      "kind": "email",
+      "value": "aisha.bello@northwind.example"
+    },
+    "closedAt": null,
+    "createdAt": "2026-06-09T16:24:00.000Z",
+    "description": null,
+    "displayNumber": 8022,
+    "headRevisionId": "152c275",
+    "linkedWorkItemKeys": [
+      "PLAT-446"
+    ],
+    "mergeRevisionId": null,
+    "mergedAt": null,
+    "occurredAt": "2026-06-11T18:24:00.000Z",
+    "repositoryKey": "shared-ui",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Marcus Hale",
+        "kind": "email",
+        "value": "marcus.hale@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-446-profile-lookup-issues-one",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8022",
+    "state": "open",
+    "targetBranch": "main",
+    "title": "PLAT-446 Profile lookup issues one query per merchant on the retry path",
+    "updatedAt": "2026-06-11T18:24:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "elena.sokolova@northwind.example"
+    },
+    "closedAt": "2026-06-12T16:01:00.000Z",
+    "createdAt": "2026-06-04T17:01:00.000Z",
+    "description": "Gateway metrics under-report queue time on the retry path. Raised by Marcus Hale during triage.",
+    "displayNumber": 8016,
+    "headRevisionId": "2d30d03",
+    "linkedWorkItemKeys": [
+      "PLAT-433"
+    ],
+    "mergeRevisionId": "23d1ed9",
+    "mergedAt": "2026-06-12T16:01:00.000Z",
+    "occurredAt": "2026-06-12T16:01:00.000Z",
+    "repositoryKey": "shared-ui",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Aisha Bello",
+        "kind": "email",
+        "value": "aisha.bello@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-433-gateway-metrics-under-report",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8016",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-433 Gateway metrics under-report queue time on the retry path",
+    "updatedAt": "2026-06-12T16:01:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "closedAt": null,
+    "createdAt": "2026-06-08T20:32:00.000Z",
+    "description": "Alert threshold fires on a healthy rolling restart on the retry path. Raised by Priya Raman during triage.",
+    "displayNumber": 8021,
+    "headRevisionId": "93c38d7",
+    "linkedWorkItemKeys": [
+      "PLAT-443"
+    ],
+    "mergeRevisionId": null,
+    "mergedAt": null,
+    "occurredAt": "2026-06-13T01:32:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Elena Sokolova",
+        "kind": "email",
+        "value": "elena.sokolova@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-443-alert-threshold-fires-on",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8021",
+    "state": "draft",
+    "targetBranch": "main",
+    "title": "PLAT-443 Alert threshold fires on a healthy rolling restart on the retry path",
+    "updatedAt": "2026-06-13T01:32:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "tom.whitfield@northwind.example"
+    },
+    "closedAt": "2026-06-13T17:32:00.000Z",
+    "createdAt": "2026-06-03T06:32:00.000Z",
+    "description": "Connection pool starves under a burst of authorizations on the retry path. Raised by Elena Sokolova during triage.",
+    "displayNumber": 8015,
+    "headRevisionId": "11e5828",
+    "linkedWorkItemKeys": [
+      "PLAT-431"
+    ],
+    "mergeRevisionId": "e85f5e2",
+    "mergedAt": "2026-06-13T17:32:00.000Z",
+    "occurredAt": "2026-06-13T17:32:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Priya Raman",
+        "kind": "email",
+        "value": "priya.raman@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-431-connection-pool-starves-under",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8015",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-431 Connection pool starves under a burst of authorizations on the retry path",
+    "updatedAt": "2026-06-13T17:32:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ingrid.falk@northwind.example"
+    },
+    "closedAt": "2026-06-14T15:18:00.000Z",
+    "createdAt": "2026-06-09T05:18:00.000Z",
+    "description": null,
+    "displayNumber": 8079,
+    "headRevisionId": "3e1e41c",
+    "linkedWorkItemKeys": [
+      "CHK-237"
+    ],
+    "mergeRevisionId": "25e8f2d",
+    "mergedAt": "2026-06-14T15:18:00.000Z",
+    "occurredAt": "2026-06-14T15:18:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Rafael Lima",
+        "kind": "email",
+        "value": "rafael.lima@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-237-back-navigation-resubmits-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8079",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-237 Back navigation resubmits the payment on the retry path",
+    "updatedAt": "2026-06-14T15:18:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "closedAt": "2026-06-15T09:15:00.000Z",
+    "createdAt": "2026-06-10T10:15:00.000Z",
+    "description": null,
+    "displayNumber": 8080,
+    "headRevisionId": "bf1a714",
+    "linkedWorkItemKeys": [
+      "CHK-239"
+    ],
+    "mergeRevisionId": "c8a0634",
+    "mergedAt": "2026-06-15T09:15:00.000Z",
+    "occurredAt": "2026-06-15T09:15:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Rafael Lima",
+        "kind": "email",
+        "value": "rafael.lima@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-239-focus-ring-is-invisible",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8080",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-239 Focus ring is invisible on the dark theme on the retry path",
+    "updatedAt": "2026-06-15T09:15:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Oskar Lindqvist",
+      "kind": "email",
+      "value": "oskar.lindqvist@northwind.example"
+    },
+    "closedAt": "2026-06-15T13:49:00.000Z",
+    "createdAt": "2026-06-14T00:49:00.000Z",
+    "description": null,
+    "displayNumber": 8125,
+    "headRevisionId": "901f0cc",
+    "linkedWorkItemKeys": [
+      "INS-127"
+    ],
+    "mergeRevisionId": "3ac8fff",
+    "mergedAt": "2026-06-15T13:49:00.000Z",
+    "occurredAt": "2026-06-15T13:49:00.000Z",
+    "repositoryKey": "insights-etl",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Yusuf Demir",
+        "kind": "email",
+        "value": "yusuf.demir@northwind.example"
+      }
+    ],
+    "sourceBranch": "work/INS-127-late-arriving-events-never",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8125",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "INS-127 Late-arriving events never update the rollup on the retry path",
+    "updatedAt": "2026-06-15T13:49:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Oskar Lindqvist",
+      "kind": "email",
+      "value": "oskar.lindqvist@northwind.example"
+    },
+    "closedAt": "2026-06-15T16:24:00.000Z",
+    "createdAt": "2026-06-12T07:24:00.000Z",
+    "description": null,
+    "displayNumber": 8124,
+    "headRevisionId": "3b0dcb0",
+    "linkedWorkItemKeys": [
+      "INS-125"
+    ],
+    "mergeRevisionId": "bb39305",
+    "mergedAt": "2026-06-15T16:24:00.000Z",
+    "occurredAt": "2026-06-15T16:24:00.000Z",
+    "repositoryKey": "insights-etl",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Clara Mbeki",
+        "kind": "email",
+        "value": "clara.mbeki@northwind.example"
+      }
+    ],
+    "sourceBranch": "work/INS-125-timezone-conversion-shifts-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8124",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "INS-125 Timezone conversion shifts the settlement date on the retry path",
+    "updatedAt": "2026-06-15T16:24:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rafael.lima@northwind.example"
+    },
+    "closedAt": "2026-06-15T16:42:00.000Z",
+    "createdAt": "2026-06-14T04:42:00.000Z",
+    "description": "Terms checkbox is not announced as required on the retry path. Raised by Ingrid Falk during triage.",
+    "displayNumber": 8083,
+    "headRevisionId": "be4105c",
+    "linkedWorkItemKeys": [
+      "CHK-246"
+    ],
+    "mergeRevisionId": "1e156e0",
+    "mergedAt": "2026-06-15T16:42:00.000Z",
+    "occurredAt": "2026-06-15T16:42:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Naomi Chen",
+        "kind": "email",
+        "value": "naomi.chen@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-246-terms-checkbox-is-not",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8083",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-246 Terms checkbox is not announced as required on the retry path",
+    "updatedAt": "2026-06-15T16:42:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "closedAt": "2026-06-16T14:25:00.000Z",
+    "createdAt": "2026-06-10T23:25:00.000Z",
+    "description": "Delivery estimate ignores the merchant calendar on the retry path. Raised by Daniel Ortiz during triage.",
+    "displayNumber": 8081,
+    "headRevisionId": "eae1b85",
+    "linkedWorkItemKeys": [
+      "CHK-242"
+    ],
+    "mergeRevisionId": "746873d",
+    "mergedAt": "2026-06-16T14:25:00.000Z",
+    "occurredAt": "2026-06-16T14:25:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Ingrid Falk",
+        "kind": "email",
+        "value": "ingrid.falk@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-242-delivery-estimate-ignores-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8081",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-242 Delivery estimate ignores the merchant calendar on the retry path",
+    "updatedAt": "2026-06-16T14:25:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "closedAt": "2026-06-16T17:19:00.000Z",
+    "createdAt": "2026-06-14T08:19:00.000Z",
+    "description": null,
+    "displayNumber": 8026,
+    "headRevisionId": "cdac916",
+    "linkedWorkItemKeys": [
+      "PLAT-454"
+    ],
+    "mergeRevisionId": "ac1bec4",
+    "mergedAt": "2026-06-16T17:19:00.000Z",
+    "occurredAt": "2026-06-16T17:19:00.000Z",
+    "repositoryKey": "shared-ui",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Elena Sokolova",
+        "kind": "email",
+        "value": "elena.sokolova@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-454-retry-budget-is-unbounded",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8026",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-454 Retry budget is unbounded for gateway timeouts for large merchants",
+    "updatedAt": "2026-06-16T17:19:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ingrid.falk@northwind.example"
+    },
+    "closedAt": "2026-06-17T08:19:00.000Z",
+    "createdAt": "2026-06-16T13:19:00.000Z",
+    "description": "Guest session expires mid-payment with no warning for large merchants. Raised by Naomi Chen during triage.",
+    "displayNumber": 8085,
+    "headRevisionId": "0c8e04d",
+    "linkedWorkItemKeys": [
+      "CHK-251"
+    ],
+    "mergeRevisionId": "2600885",
+    "mergedAt": "2026-06-17T08:19:00.000Z",
+    "occurredAt": "2026-06-17T08:19:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Naomi Chen",
+        "kind": "email",
+        "value": "naomi.chen@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-251-guest-session-expires-mid",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8085",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-251 Guest session expires mid-payment with no warning for large merchants",
+    "updatedAt": "2026-06-17T08:19:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "tom.whitfield@northwind.example"
+    },
+    "closedAt": "2026-06-17T08:22:00.000Z",
+    "createdAt": "2026-06-10T16:22:00.000Z",
+    "description": null,
+    "displayNumber": 8023,
+    "headRevisionId": "e311018",
+    "linkedWorkItemKeys": [
+      "PLAT-448"
+    ],
+    "mergeRevisionId": "fc8384f",
+    "mergedAt": "2026-06-17T08:22:00.000Z",
+    "occurredAt": "2026-06-17T08:22:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Elena Sokolova",
+        "kind": "email",
+        "value": "elena.sokolova@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-448-feature-flag-evaluation-blocks",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8023",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-448 Feature flag evaluation blocks on a network call on the retry path",
+    "updatedAt": "2026-06-17T08:22:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Yusuf Demir",
+      "kind": "email",
+      "value": "yusuf.demir@northwind.example"
+    },
+    "closedAt": "2026-06-17T12:01:00.000Z",
+    "createdAt": "2026-06-09T16:01:00.000Z",
+    "description": null,
+    "displayNumber": 8123,
+    "headRevisionId": "e7d9e2f",
+    "linkedWorkItemKeys": [
+      "INS-123"
+    ],
+    "mergeRevisionId": "aafdf02",
+    "mergedAt": "2026-06-17T12:01:00.000Z",
+    "occurredAt": "2026-06-17T12:01:00.000Z",
+    "repositoryKey": "insights-etl",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Oskar Lindqvist",
+        "kind": "email",
+        "value": "oskar.lindqvist@northwind.example"
+      }
+    ],
+    "sourceBranch": "work/INS-123-warehouse-loader-retries-without",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8123",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "INS-123 Warehouse loader retries without a backoff on the retry path",
+    "updatedAt": "2026-06-17T12:01:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "daniel.ortiz@northwind.example"
+    },
+    "closedAt": "2026-06-17T13:42:00.000Z",
+    "createdAt": "2026-06-07T03:42:00.000Z",
+    "description": "Guest order cannot be claimed after sign-up on the retry path. Raised by Daniel Ortiz during triage.",
+    "displayNumber": 8078,
+    "headRevisionId": "243ac47",
+    "linkedWorkItemKeys": [
+      "CHK-235"
+    ],
+    "mergeRevisionId": "abec422",
+    "mergedAt": "2026-06-17T13:42:00.000Z",
+    "occurredAt": "2026-06-17T13:42:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Ingrid Falk",
+        "kind": "email",
+        "value": "ingrid.falk@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-235-guest-order-cannot-be",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8078",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-235 Guest order cannot be claimed after sign-up on the retry path",
+    "updatedAt": "2026-06-17T13:42:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rafael.lima@northwind.example"
+    },
+    "closedAt": "2026-06-18T12:46:00.000Z",
+    "createdAt": "2026-06-15T10:46:00.000Z",
+    "description": null,
+    "displayNumber": 8084,
+    "headRevisionId": "79b45eb",
+    "linkedWorkItemKeys": [
+      "CHK-248"
+    ],
+    "mergeRevisionId": "5960ee1",
+    "mergedAt": "2026-06-18T12:46:00.000Z",
+    "occurredAt": "2026-06-18T12:46:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Daniel Ortiz",
+        "kind": "email",
+        "value": "daniel.ortiz@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-248-session-cookie-is-set",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8084",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-248 Session cookie is set without the secure flag on the retry path",
+    "updatedAt": "2026-06-18T12:46:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "closedAt": "2026-06-18T14:26:00.000Z",
+    "createdAt": "2026-06-16T19:26:00.000Z",
+    "description": "Gateway metrics under-report queue time for large merchants. Raised by Priya Raman during triage.",
+    "displayNumber": 8027,
+    "headRevisionId": "3a3d5d4",
+    "linkedWorkItemKeys": [
+      "PLAT-457"
+    ],
+    "mergeRevisionId": "3ed9eb0",
+    "mergedAt": "2026-06-18T14:26:00.000Z",
+    "occurredAt": "2026-06-18T14:26:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Elena Sokolova",
+        "kind": "email",
+        "value": "elena.sokolova@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-457-gateway-metrics-under-report",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8027",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-457 Gateway metrics under-report queue time for large merchants",
+    "updatedAt": "2026-06-18T14:26:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Oskar Lindqvist",
+      "kind": "email",
+      "value": "oskar.lindqvist@northwind.example"
+    },
+    "closedAt": "2026-06-19T08:06:00.000Z",
+    "createdAt": "2026-06-17T23:06:00.000Z",
+    "description": null,
+    "displayNumber": 8127,
+    "headRevisionId": "034e544",
+    "linkedWorkItemKeys": [
+      "INS-131"
+    ],
+    "mergeRevisionId": "b4412b5",
+    "mergedAt": "2026-06-19T08:06:00.000Z",
+    "occurredAt": "2026-06-19T08:06:00.000Z",
+    "repositoryKey": "insights-etl",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Clara Mbeki",
+        "kind": "email",
+        "value": "clara.mbeki@northwind.example"
+      }
+    ],
+    "sourceBranch": "work/INS-131-null-merchant-identifier-passes",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8127",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "INS-131 Null merchant identifier passes validation on the retry path",
+    "updatedAt": "2026-06-19T08:06:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ingrid.falk@northwind.example"
+    },
+    "closedAt": "2026-06-19T08:40:00.000Z",
+    "createdAt": "2026-06-19T14:40:00.000Z",
+    "description": "Email receipt omits the merchant name for large merchants. Raised by Naomi Chen during triage.",
+    "displayNumber": 8087,
+    "headRevisionId": "4f41e1a",
+    "linkedWorkItemKeys": [
+      "CHK-255"
+    ],
+    "mergeRevisionId": "8606303",
+    "mergedAt": "2026-06-19T08:40:00.000Z",
+    "occurredAt": "2026-06-19T08:40:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Daniel Ortiz",
+        "kind": "email",
+        "value": "daniel.ortiz@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-255-email-receipt-omits-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8087",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-255 Email receipt omits the merchant name for large merchants",
+    "updatedAt": "2026-06-19T08:40:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "closedAt": "2026-06-20T09:10:00.000Z",
+    "createdAt": "2026-06-20T11:10:00.000Z",
+    "description": "Screen reader skips the payment error region for large merchants. Raised by Rafael Lima during triage.",
+    "displayNumber": 8088,
+    "headRevisionId": "4abab02",
+    "linkedWorkItemKeys": [
+      "CHK-257"
+    ],
+    "mergeRevisionId": "c133f4a",
+    "mergedAt": "2026-06-20T09:10:00.000Z",
+    "occurredAt": "2026-06-20T09:10:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Ingrid Falk",
+        "kind": "email",
+        "value": "ingrid.falk@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-257-screen-reader-skips-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8088",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-257 Screen reader skips the payment error region for large merchants",
+    "updatedAt": "2026-06-20T09:10:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "daniel.ortiz@northwind.example"
+    },
+    "closedAt": null,
+    "createdAt": "2026-06-18T00:59:00.000Z",
+    "description": "Mobile keyboard covers the pay button for large merchants. Raised by Rafael Lima during triage.",
+    "displayNumber": 8086,
+    "headRevisionId": "e173e14",
+    "linkedWorkItemKeys": [
+      "CHK-253"
+    ],
+    "mergeRevisionId": null,
+    "mergedAt": null,
+    "occurredAt": "2026-06-21T01:59:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Ingrid Falk",
+        "kind": "email",
+        "value": "ingrid.falk@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-253-mobile-keyboard-covers-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8086",
+    "state": "draft",
+    "targetBranch": "main",
+    "title": "CHK-253 Mobile keyboard covers the pay button for large merchants",
+    "updatedAt": "2026-06-21T01:59:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rafael.lima@northwind.example"
+    },
+    "closedAt": "2026-06-21T10:42:00.000Z",
+    "createdAt": "2026-06-13T12:42:00.000Z",
+    "description": null,
+    "displayNumber": 8082,
+    "headRevisionId": "afb3f3e",
+    "linkedWorkItemKeys": [
+      "CHK-244"
+    ],
+    "mergeRevisionId": "5143cf8",
+    "mergedAt": "2026-06-21T10:42:00.000Z",
+    "occurredAt": "2026-06-21T10:42:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Naomi Chen",
+        "kind": "email",
+        "value": "naomi.chen@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-244-retry-after-a-decline",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8082",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-244 Retry after a decline charges twice on slow networks on the retry path",
+    "updatedAt": "2026-06-21T10:42:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "elena.sokolova@northwind.example"
+    },
+    "closedAt": "2026-06-22T12:20:00.000Z",
+    "createdAt": "2026-06-12T13:20:00.000Z",
+    "description": null,
+    "displayNumber": 8024,
+    "headRevisionId": "f4d2d0c",
+    "linkedWorkItemKeys": [
+      "PLAT-450"
+    ],
+    "mergeRevisionId": "7e30e9d",
+    "mergedAt": "2026-06-22T12:20:00.000Z",
+    "occurredAt": "2026-06-22T12:20:00.000Z",
+    "repositoryKey": "shared-ui",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Marcus Hale",
+        "kind": "email",
+        "value": "marcus.hale@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-450-cold-start-on-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8024",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-450 Cold start on the payment gateway exceeds two seconds for large merchants",
+    "updatedAt": "2026-06-22T12:20:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "closedAt": "2026-06-22T12:36:00.000Z",
+    "createdAt": "2026-06-16T21:36:00.000Z",
+    "description": null,
+    "displayNumber": 8028,
+    "headRevisionId": "fa4d43f",
+    "linkedWorkItemKeys": [
+      "PLAT-460"
+    ],
+    "mergeRevisionId": "026ef21",
+    "mergedAt": "2026-06-22T12:36:00.000Z",
+    "occurredAt": "2026-06-22T12:36:00.000Z",
+    "repositoryKey": "shared-ui",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Tom Whitfield",
+        "kind": "email",
+        "value": "tom.whitfield@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-460-structured-logs-drop-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8028",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-460 Structured logs drop the correlation identifier for large merchants",
+    "updatedAt": "2026-06-22T12:36:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "tom.whitfield@northwind.example"
+    },
+    "closedAt": "2026-06-22T12:53:00.000Z",
+    "createdAt": "2026-06-21T04:53:00.000Z",
+    "description": "Alert threshold fires on a healthy rolling restart for large merchants. Raised by Aisha Bello during triage.",
+    "displayNumber": 8031,
+    "headRevisionId": "b9368db",
+    "linkedWorkItemKeys": [
+      "PLAT-467"
+    ],
+    "mergeRevisionId": "b0edd03",
+    "mergedAt": "2026-06-22T12:53:00.000Z",
+    "occurredAt": "2026-06-22T12:53:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Aisha Bello",
+        "kind": "email",
+        "value": "aisha.bello@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-467-alert-threshold-fires-on",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8031",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-467 Alert threshold fires on a healthy rolling restart for large merchants",
+    "updatedAt": "2026-06-22T12:53:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rafael.lima@northwind.example"
+    },
+    "closedAt": "2026-06-23T11:18:00.000Z",
+    "createdAt": "2026-06-23T14:18:00.000Z",
+    "description": "Back navigation resubmits the payment for large merchants. Raised by Rafael Lima during triage.",
+    "displayNumber": 8089,
+    "headRevisionId": "cc31813",
+    "linkedWorkItemKeys": [
+      "CHK-261"
+    ],
+    "mergeRevisionId": "d4532f5",
+    "mergedAt": "2026-06-23T11:18:00.000Z",
+    "occurredAt": "2026-06-23T11:18:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Ingrid Falk",
+        "kind": "email",
+        "value": "ingrid.falk@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-261-back-navigation-resubmits-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8089",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-261 Back navigation resubmits the payment for large merchants",
+    "updatedAt": "2026-06-23T11:18:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "closedAt": "2026-06-23T14:38:00.000Z",
+    "createdAt": "2026-06-12T21:38:00.000Z",
+    "description": null,
+    "displayNumber": 8025,
+    "headRevisionId": "1239386",
+    "linkedWorkItemKeys": [
+      "PLAT-452"
+    ],
+    "mergeRevisionId": "90d09e9",
+    "mergedAt": "2026-06-23T14:38:00.000Z",
+    "occurredAt": "2026-06-23T14:38:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Marcus Hale",
+        "kind": "email",
+        "value": "marcus.hale@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-452-merchant-profile-cache-misses",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8025",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-452 Merchant profile cache misses on every retry for large merchants",
+    "updatedAt": "2026-06-23T14:38:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Aisha Bello",
+      "kind": "email",
+      "value": "aisha.bello@northwind.example"
+    },
+    "closedAt": null,
+    "createdAt": "2026-06-20T14:22:00.000Z",
+    "description": null,
+    "displayNumber": 8030,
+    "headRevisionId": "315e009",
+    "linkedWorkItemKeys": [
+      "PLAT-465"
+    ],
+    "mergeRevisionId": null,
+    "mergedAt": null,
+    "occurredAt": "2026-06-23T15:22:00.000Z",
+    "repositoryKey": "shared-ui",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Tom Whitfield",
+        "kind": "email",
+        "value": "tom.whitfield@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-465-tokenization-cache-key-ignores",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8030",
+    "state": "open",
+    "targetBranch": "main",
+    "title": "PLAT-465 Tokenization cache key ignores the merchant scope for large merchants",
+    "updatedAt": "2026-06-23T15:22:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "closedAt": "2026-06-24T08:57:00.000Z",
+    "createdAt": "2026-06-19T07:57:00.000Z",
+    "description": null,
+    "displayNumber": 8029,
+    "headRevisionId": "66de0fd",
+    "linkedWorkItemKeys": [
+      "PLAT-463"
+    ],
+    "mergeRevisionId": "f064cb5",
+    "mergedAt": "2026-06-24T08:57:00.000Z",
+    "occurredAt": "2026-06-24T08:57:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Elena Sokolova",
+        "kind": "email",
+        "value": "elena.sokolova@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-463-currency-rounding-disagrees-with",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8029",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-463 Currency rounding disagrees with the ledger for large merchants",
+    "updatedAt": "2026-06-24T08:57:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Oskar Lindqvist",
+      "kind": "email",
+      "value": "oskar.lindqvist@northwind.example"
+    },
+    "closedAt": "2026-06-24T10:08:00.000Z",
+    "createdAt": "2026-06-23T22:08:00.000Z",
+    "description": "Payout summary omits negative adjustments on the retry path. Raised by Yusuf Demir during triage.",
+    "displayNumber": 8130,
+    "headRevisionId": "2b61053",
+    "linkedWorkItemKeys": [
+      "INS-137"
+    ],
+    "mergeRevisionId": "11ee81b",
+    "mergedAt": "2026-06-24T10:08:00.000Z",
+    "occurredAt": "2026-06-24T10:08:00.000Z",
+    "repositoryKey": "insights-etl",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Yusuf Demir",
+        "kind": "email",
+        "value": "yusuf.demir@northwind.example"
+      }
+    ],
+    "sourceBranch": "work/INS-137-payout-summary-omits-negative",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8130",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "INS-137 Payout summary omits negative adjustments on the retry path",
+    "updatedAt": "2026-06-24T10:08:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Yusuf Demir",
+      "kind": "email",
+      "value": "yusuf.demir@northwind.example"
+    },
+    "closedAt": null,
+    "createdAt": "2026-06-21T17:54:00.000Z",
+    "description": "Freshness check reports green on a stale table on the retry path. Raised by Oskar Lindqvist during triage.",
+    "displayNumber": 8129,
+    "headRevisionId": "e6d8edb",
+    "linkedWorkItemKeys": [
+      "INS-135"
+    ],
+    "mergeRevisionId": null,
+    "mergedAt": null,
+    "occurredAt": "2026-06-25T18:54:00.000Z",
+    "repositoryKey": "insights-etl",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Clara Mbeki",
+        "kind": "email",
+        "value": "clara.mbeki@northwind.example"
+      }
+    ],
+    "sourceBranch": "work/INS-135-freshness-check-reports-green",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8129",
+    "state": "open",
+    "targetBranch": "main",
+    "title": "INS-135 Freshness check reports green on a stale table on the retry path",
+    "updatedAt": "2026-06-25T18:54:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rafael.lima@northwind.example"
+    },
+    "closedAt": null,
+    "createdAt": "2026-06-24T04:21:00.000Z",
+    "description": null,
+    "displayNumber": 8090,
+    "headRevisionId": "10be284",
+    "linkedWorkItemKeys": [
+      "CHK-263"
+    ],
+    "mergeRevisionId": null,
+    "mergedAt": null,
+    "occurredAt": "2026-06-26T05:21:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Ingrid Falk",
+        "kind": "email",
+        "value": "ingrid.falk@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-263-focus-ring-is-invisible",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8090",
+    "state": "draft",
+    "targetBranch": "main",
+    "title": "CHK-263 Focus ring is invisible on the dark theme for large merchants",
+    "updatedAt": "2026-06-26T05:21:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "closedAt": "2026-06-26T09:54:00.000Z",
+    "createdAt": "2026-06-24T14:54:00.000Z",
+    "description": "Cold start on the payment gateway exceeds two seconds under sustained load. Raised by Tom Whitfield during triage.",
+    "displayNumber": 8034,
+    "headRevisionId": "baa0725",
+    "linkedWorkItemKeys": [
+      "PLAT-474"
+    ],
+    "mergeRevisionId": "99386f9",
+    "mergedAt": "2026-06-26T09:54:00.000Z",
+    "occurredAt": "2026-06-26T09:54:00.000Z",
+    "repositoryKey": "shared-ui",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Marcus Hale",
+        "kind": "email",
+        "value": "marcus.hale@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-474-cold-start-on-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8034",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-474 Cold start on the payment gateway exceeds two seconds under sustained load",
+    "updatedAt": "2026-06-26T09:54:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Clara Mbeki",
+      "kind": "email",
+      "value": "clara.mbeki@northwind.example"
+    },
+    "closedAt": "2026-06-26T10:00:00.000Z",
+    "createdAt": "2026-06-15T22:00:00.000Z",
+    "description": "Extract runs before the upstream snapshot lands on the retry path. Raised by Clara Mbeki during triage.",
+    "displayNumber": 8126,
+    "headRevisionId": "718d4e8",
+    "linkedWorkItemKeys": [
+      "INS-129"
+    ],
+    "mergeRevisionId": "f024b4b",
+    "mergedAt": "2026-06-26T10:00:00.000Z",
+    "occurredAt": "2026-06-26T10:00:00.000Z",
+    "repositoryKey": "insights-etl",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Yusuf Demir",
+        "kind": "email",
+        "value": "yusuf.demir@northwind.example"
+      }
+    ],
+    "sourceBranch": "work/INS-129-extract-runs-before-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8126",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "INS-129 Extract runs before the upstream snapshot lands on the retry path",
+    "updatedAt": "2026-06-26T10:00:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Clara Mbeki",
+      "kind": "email",
+      "value": "clara.mbeki@northwind.example"
+    },
+    "closedAt": "2026-06-27T17:01:00.000Z",
+    "createdAt": "2026-06-20T21:01:00.000Z",
+    "description": "Schedule drifts an hour after the clock change on the retry path. Raised by Yusuf Demir during triage.",
+    "displayNumber": 8128,
+    "headRevisionId": "bd269a7",
+    "linkedWorkItemKeys": [
+      "INS-133"
+    ],
+    "mergeRevisionId": "fa028d4",
+    "mergedAt": "2026-06-27T17:01:00.000Z",
+    "occurredAt": "2026-06-27T17:01:00.000Z",
+    "repositoryKey": "insights-etl",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Oskar Lindqvist",
+        "kind": "email",
+        "value": "oskar.lindqvist@northwind.example"
+      }
+    ],
+    "sourceBranch": "work/INS-133-schedule-drifts-an-hour",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8128",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "INS-133 Schedule drifts an hour after the clock change on the retry path",
+    "updatedAt": "2026-06-27T17:01:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "daniel.ortiz@northwind.example"
+    },
+    "closedAt": "2026-06-28T11:17:00.000Z",
+    "createdAt": "2026-06-25T15:17:00.000Z",
+    "description": "Guest email is not normalized before lookup for large merchants. Raised by Daniel Ortiz during triage.",
+    "displayNumber": 8092,
+    "headRevisionId": "f4a2106",
+    "linkedWorkItemKeys": [
+      "CHK-267"
+    ],
+    "mergeRevisionId": "fc52c4a",
+    "mergedAt": "2026-06-28T11:17:00.000Z",
+    "occurredAt": "2026-06-28T11:17:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Naomi Chen",
+        "kind": "email",
+        "value": "naomi.chen@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-267-guest-email-is-not",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8092",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-267 Guest email is not normalized before lookup for large merchants",
+    "updatedAt": "2026-06-28T11:17:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Clara Mbeki",
+      "kind": "email",
+      "value": "clara.mbeki@northwind.example"
+    },
+    "closedAt": null,
+    "createdAt": "2026-06-25T19:56:00.000Z",
+    "description": "Loader holds the warehouse lock for an hour on the retry path. Raised by Clara Mbeki during triage.",
+    "displayNumber": 8131,
+    "headRevisionId": "cd61dab",
+    "linkedWorkItemKeys": [
+      "INS-138"
+    ],
+    "mergeRevisionId": null,
+    "mergedAt": null,
+    "occurredAt": "2026-06-29T01:56:00.000Z",
+    "repositoryKey": "insights-etl",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Yusuf Demir",
+        "kind": "email",
+        "value": "yusuf.demir@northwind.example"
+      }
+    ],
+    "sourceBranch": "work/INS-138-loader-holds-the-warehouse",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8131",
+    "state": "draft",
+    "targetBranch": "main",
+    "title": "INS-138 Loader holds the warehouse lock for an hour on the retry path",
+    "updatedAt": "2026-06-29T01:56:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "daniel.ortiz@northwind.example"
+    },
+    "closedAt": "2026-06-29T17:29:00.000Z",
+    "createdAt": "2026-06-27T05:29:00.000Z",
+    "description": "Form autofill overwrites the entered postcode for large merchants. Raised by Ingrid Falk during triage.",
+    "displayNumber": 8093,
+    "headRevisionId": "392eb77",
+    "linkedWorkItemKeys": [
+      "CHK-269"
+    ],
+    "mergeRevisionId": "c107449",
+    "mergedAt": "2026-06-29T17:29:00.000Z",
+    "occurredAt": "2026-06-29T17:29:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Naomi Chen",
+        "kind": "email",
+        "value": "naomi.chen@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-269-form-autofill-overwrites-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8093",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-269 Form autofill overwrites the entered postcode for large merchants",
+    "updatedAt": "2026-06-29T17:29:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "closedAt": null,
+    "createdAt": "2026-06-26T02:10:00.000Z",
+    "description": "Fraud check blocks the payment path synchronously under sustained load. Raised by Elena Sokolova during triage.",
+    "displayNumber": 8035,
+    "headRevisionId": "aad62bf",
+    "linkedWorkItemKeys": [
+      "PLAT-477"
+    ],
+    "mergeRevisionId": null,
+    "mergedAt": null,
+    "occurredAt": "2026-06-30T02:10:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Elena Sokolova",
+        "kind": "email",
+        "value": "elena.sokolova@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-477-fraud-check-blocks-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8035",
+    "state": "open",
+    "targetBranch": "main",
+    "title": "PLAT-477 Fraud check blocks the payment path synchronously under sustained load",
+    "updatedAt": "2026-06-30T02:10:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "tom.whitfield@northwind.example"
+    },
+    "closedAt": "2026-06-30T10:41:00.000Z",
+    "createdAt": "2026-06-23T05:41:00.000Z",
+    "description": "Feature flag evaluation blocks on a network call for large merchants. Raised by Priya Raman during triage.",
+    "displayNumber": 8033,
+    "headRevisionId": "e5d7405",
+    "linkedWorkItemKeys": [
+      "PLAT-472"
+    ],
+    "mergeRevisionId": "6e48e7e",
+    "mergedAt": "2026-06-30T10:41:00.000Z",
+    "occurredAt": "2026-06-30T10:41:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Marcus Hale",
+        "kind": "email",
+        "value": "marcus.hale@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-472-feature-flag-evaluation-blocks",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8033",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-472 Feature flag evaluation blocks on a network call for large merchants",
+    "updatedAt": "2026-06-30T10:41:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "closedAt": "2026-07-01T16:43:00.000Z",
+    "createdAt": "2026-06-27T22:43:00.000Z",
+    "description": "Gateway metrics under-report queue time under sustained load. Raised by Marcus Hale during triage.",
+    "displayNumber": 8036,
+    "headRevisionId": "e603f06",
+    "linkedWorkItemKeys": [
+      "PLAT-481"
+    ],
+    "mergeRevisionId": "6f8aabe",
+    "mergedAt": "2026-07-01T16:43:00.000Z",
+    "occurredAt": "2026-07-01T16:43:00.000Z",
+    "repositoryKey": "shared-ui",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Tom Whitfield",
+        "kind": "email",
+        "value": "tom.whitfield@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-481-gateway-metrics-under-report",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8036",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-481 Gateway metrics under-report queue time under sustained load",
+    "updatedAt": "2026-07-01T16:43:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "tom.whitfield@northwind.example"
+    },
+    "closedAt": "2026-07-02T11:40:00.000Z",
+    "createdAt": "2026-06-22T13:40:00.000Z",
+    "description": "Timeout budget is duplicated in three modules for large merchants. Raised by Marcus Hale during triage.",
+    "displayNumber": 8032,
+    "headRevisionId": "a2d0254",
+    "linkedWorkItemKeys": [
+      "PLAT-469"
+    ],
+    "mergeRevisionId": "08ed716",
+    "mergedAt": "2026-07-02T11:40:00.000Z",
+    "occurredAt": "2026-07-02T11:40:00.000Z",
+    "repositoryKey": "shared-ui",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Elena Sokolova",
+        "kind": "email",
+        "value": "elena.sokolova@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-469-timeout-budget-is-duplicated",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8032",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-469 Timeout budget is duplicated in three modules for large merchants",
+    "updatedAt": "2026-07-02T11:40:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "daniel.ortiz@northwind.example"
+    },
+    "closedAt": "2026-07-02T13:46:00.000Z",
+    "createdAt": "2026-06-29T04:46:00.000Z",
+    "description": "Session cookie is set without the secure flag for large merchants. Raised by Rafael Lima during triage.",
+    "displayNumber": 8094,
+    "headRevisionId": "69dae8d",
+    "linkedWorkItemKeys": [
+      "CHK-272"
+    ],
+    "mergeRevisionId": "c6b70e0",
+    "mergedAt": "2026-07-02T13:46:00.000Z",
+    "occurredAt": "2026-07-02T13:46:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Ingrid Falk",
+        "kind": "email",
+        "value": "ingrid.falk@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-272-session-cookie-is-set",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8094",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-272 Session cookie is set without the secure flag for large merchants",
+    "updatedAt": "2026-07-02T13:46:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Aisha Bello",
+      "kind": "email",
+      "value": "aisha.bello@northwind.example"
+    },
+    "closedAt": "2026-07-02T15:43:00.000Z",
+    "createdAt": "2026-07-02T05:43:00.000Z",
+    "description": "Tokenization cache key ignores the merchant scope under sustained load. Raised by Priya Raman during triage.",
+    "displayNumber": 8040,
+    "headRevisionId": "c6c1a7b",
+    "linkedWorkItemKeys": [
+      "PLAT-489"
+    ],
+    "mergeRevisionId": "839cd10",
+    "mergedAt": "2026-07-02T15:43:00.000Z",
+    "occurredAt": "2026-07-02T15:43:00.000Z",
+    "repositoryKey": "shared-ui",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Priya Raman",
+        "kind": "email",
+        "value": "priya.raman@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-489-tokenization-cache-key-ignores",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8040",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-489 Tokenization cache key ignores the merchant scope under sustained load",
+    "updatedAt": "2026-07-02T15:43:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Oskar Lindqvist",
+      "kind": "email",
+      "value": "oskar.lindqvist@northwind.example"
+    },
+    "closedAt": null,
+    "createdAt": "2026-07-01T11:42:00.000Z",
+    "description": "Merchant dimension is missing a natural key for large merchants. Raised by Yusuf Demir during triage.",
+    "displayNumber": 8133,
+    "headRevisionId": "63a06a4",
+    "linkedWorkItemKeys": [
+      "INS-144"
+    ],
+    "mergeRevisionId": null,
+    "mergedAt": null,
+    "occurredAt": "2026-07-03T12:42:00.000Z",
+    "repositoryKey": "insights-etl",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Clara Mbeki",
+        "kind": "email",
+        "value": "clara.mbeki@northwind.example"
+      }
+    ],
+    "sourceBranch": "work/INS-144-merchant-dimension-is-missing",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8133",
+    "state": "open",
+    "targetBranch": "main",
+    "title": "INS-144 Merchant dimension is missing a natural key for large merchants",
+    "updatedAt": "2026-07-03T12:42:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "closedAt": "2026-07-04T15:04:00.000Z",
+    "createdAt": "2026-06-30T01:04:00.000Z",
+    "description": "Migration lock blocks the deploy for four minutes under sustained load. Raised by Tom Whitfield during triage.",
+    "displayNumber": 8038,
+    "headRevisionId": "d68bee0",
+    "linkedWorkItemKeys": [
+      "PLAT-485"
+    ],
+    "mergeRevisionId": "f9b0925",
+    "mergedAt": "2026-07-04T15:04:00.000Z",
+    "occurredAt": "2026-07-04T15:04:00.000Z",
+    "repositoryKey": "shared-ui",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Elena Sokolova",
+        "kind": "email",
+        "value": "elena.sokolova@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-485-migration-lock-blocks-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8038",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-485 Migration lock blocks the deploy for four minutes under sustained load",
+    "updatedAt": "2026-07-04T15:04:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "elena.sokolova@northwind.example"
+    },
+    "closedAt": "2026-07-04T15:11:00.000Z",
+    "createdAt": "2026-06-29T02:11:00.000Z",
+    "description": "Payment capture logs leak the card bin under sustained load. Raised by Elena Sokolova during triage.",
+    "displayNumber": 8037,
+    "headRevisionId": "7973248",
+    "linkedWorkItemKeys": [
+      "PLAT-483"
+    ],
+    "mergeRevisionId": "82d2072",
+    "mergedAt": "2026-07-04T15:11:00.000Z",
+    "occurredAt": "2026-07-04T15:11:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Tom Whitfield",
+        "kind": "email",
+        "value": "tom.whitfield@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-483-payment-capture-logs-leak",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8037",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-483 Payment capture logs leak the card bin under sustained load",
+    "updatedAt": "2026-07-04T15:11:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "daniel.ortiz@northwind.example"
+    },
+    "closedAt": "2026-07-05T08:14:00.000Z",
+    "createdAt": "2026-06-25T13:14:00.000Z",
+    "description": "Payment sheet flashes before the token loads for large merchants. Raised by Rafael Lima during triage.",
+    "displayNumber": 8091,
+    "headRevisionId": "f435a61",
+    "linkedWorkItemKeys": [
+      "CHK-265"
+    ],
+    "mergeRevisionId": "fd9488a",
+    "mergedAt": "2026-07-05T08:14:00.000Z",
+    "occurredAt": "2026-07-05T08:14:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Naomi Chen",
+        "kind": "email",
+        "value": "naomi.chen@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-265-payment-sheet-flashes-before",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8091",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-265 Payment sheet flashes before the token loads for large merchants",
+    "updatedAt": "2026-07-05T08:14:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Yusuf Demir",
+      "kind": "email",
+      "value": "yusuf.demir@northwind.example"
+    },
+    "closedAt": "2026-07-05T09:30:00.000Z",
+    "createdAt": "2026-06-27T18:30:00.000Z",
+    "description": "Settlement export drops the final page for large merchants. Raised by Clara Mbeki during triage.",
+    "displayNumber": 8132,
+    "headRevisionId": "1f13c33",
+    "linkedWorkItemKeys": [
+      "INS-141"
+    ],
+    "mergeRevisionId": "1886145",
+    "mergedAt": "2026-07-05T09:30:00.000Z",
+    "occurredAt": "2026-07-05T09:30:00.000Z",
+    "repositoryKey": "insights-etl",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Clara Mbeki",
+        "kind": "email",
+        "value": "clara.mbeki@northwind.example"
+      }
+    ],
+    "sourceBranch": "work/INS-141-settlement-export-drops-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8132",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "INS-141 Settlement export drops the final page for large merchants",
+    "updatedAt": "2026-07-05T09:30:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "daniel.ortiz@northwind.example"
+    },
+    "closedAt": "2026-07-06T09:38:00.000Z",
+    "createdAt": "2026-07-05T13:38:00.000Z",
+    "description": "Apple wallet button renders on unsupported browsers under sustained load. Raised by Daniel Ortiz during triage.",
+    "displayNumber": 8098,
+    "headRevisionId": "382dc23",
+    "linkedWorkItemKeys": [
+      "CHK-282"
+    ],
+    "mergeRevisionId": "b9965c0",
+    "mergedAt": "2026-07-06T09:38:00.000Z",
+    "occurredAt": "2026-07-06T09:38:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Ingrid Falk",
+        "kind": "email",
+        "value": "ingrid.falk@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-282-apple-wallet-button-renders",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8098",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-282 Apple wallet button renders on unsupported browsers under sustained load",
+    "updatedAt": "2026-07-06T09:38:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "closedAt": "2026-07-06T10:23:00.000Z",
+    "createdAt": "2026-07-04T03:23:00.000Z",
+    "description": null,
+    "displayNumber": 8042,
+    "headRevisionId": "768f3f5",
+    "linkedWorkItemKeys": [
+      "PLAT-493"
+    ],
+    "mergeRevisionId": "322d342",
+    "mergedAt": "2026-07-06T10:23:00.000Z",
+    "occurredAt": "2026-07-06T10:23:00.000Z",
+    "repositoryKey": "shared-ui",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Marcus Hale",
+        "kind": "email",
+        "value": "marcus.hale@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-493-timeout-budget-is-duplicated",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8042",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-493 Timeout budget is duplicated in three modules under sustained load",
+    "updatedAt": "2026-07-06T10:23:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rafael.lima@northwind.example"
+    },
+    "closedAt": "2026-07-07T13:40:00.000Z",
+    "createdAt": "2026-07-03T05:40:00.000Z",
+    "description": null,
+    "displayNumber": 8097,
+    "headRevisionId": "9a165b6",
+    "linkedWorkItemKeys": [
+      "CHK-279"
+    ],
+    "mergeRevisionId": "353643c",
+    "mergedAt": "2026-07-07T13:40:00.000Z",
+    "occurredAt": "2026-07-07T13:40:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Naomi Chen",
+        "kind": "email",
+        "value": "naomi.chen@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-279-email-receipt-omits-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8097",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-279 Email receipt omits the merchant name under sustained load",
+    "updatedAt": "2026-07-07T13:40:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Clara Mbeki",
+      "kind": "email",
+      "value": "clara.mbeki@northwind.example"
+    },
+    "closedAt": null,
+    "createdAt": "2026-07-03T18:47:00.000Z",
+    "description": "Report job silently skips an empty partition for large merchants. Raised by Clara Mbeki during triage.",
+    "displayNumber": 8134,
+    "headRevisionId": "48c186e",
+    "linkedWorkItemKeys": [
+      "INS-146"
+    ],
+    "mergeRevisionId": null,
+    "mergedAt": null,
+    "occurredAt": "2026-07-07T23:47:00.000Z",
+    "repositoryKey": "insights-etl",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Yusuf Demir",
+        "kind": "email",
+        "value": "yusuf.demir@northwind.example"
+      }
+    ],
+    "sourceBranch": "work/INS-146-report-job-silently-skips",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8134",
+    "state": "draft",
+    "targetBranch": "main",
+    "title": "INS-146 Report job silently skips an empty partition for large merchants",
+    "updatedAt": "2026-07-07T23:47:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Clara Mbeki",
+      "kind": "email",
+      "value": "clara.mbeki@northwind.example"
+    },
+    "closedAt": null,
+    "createdAt": "2026-07-06T11:06:00.000Z",
+    "description": null,
+    "displayNumber": 8135,
+    "headRevisionId": "a6c0b16",
+    "linkedWorkItemKeys": [
+      "INS-149"
+    ],
+    "mergeRevisionId": null,
+    "mergedAt": null,
+    "occurredAt": "2026-07-08T11:06:00.000Z",
+    "repositoryKey": "insights-etl",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Yusuf Demir",
+        "kind": "email",
+        "value": "yusuf.demir@northwind.example"
+      }
+    ],
+    "sourceBranch": "work/INS-149-extract-runs-before-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8135",
+    "state": "open",
+    "targetBranch": "main",
+    "title": "INS-149 Extract runs before the upstream snapshot lands for large merchants",
+    "updatedAt": "2026-07-08T11:06:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ingrid.falk@northwind.example"
+    },
+    "closedAt": "2026-07-10T10:06:00.000Z",
+    "createdAt": "2026-07-01T15:06:00.000Z",
+    "description": null,
+    "displayNumber": 8095,
+    "headRevisionId": "0b43b50",
+    "linkedWorkItemKeys": [
+      "CHK-275"
+    ],
+    "mergeRevisionId": "14c9a70",
+    "mergedAt": "2026-07-10T10:06:00.000Z",
+    "occurredAt": "2026-07-10T10:06:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Daniel Ortiz",
+        "kind": "email",
+        "value": "daniel.ortiz@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-275-guest-session-expires-mid",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8095",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-275 Guest session expires mid-payment with no warning under sustained load",
+    "updatedAt": "2026-07-10T10:06:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "closedAt": "2026-07-10T11:28:00.000Z",
+    "createdAt": "2026-07-03T01:28:00.000Z",
+    "description": null,
+    "displayNumber": 8041,
+    "headRevisionId": "8ade1e5",
+    "linkedWorkItemKeys": [
+      "PLAT-491"
+    ],
+    "mergeRevisionId": "988f4b5",
+    "mergedAt": "2026-07-10T11:28:00.000Z",
+    "occurredAt": "2026-07-10T11:28:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Aisha Bello",
+        "kind": "email",
+        "value": "aisha.bello@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-491-alert-threshold-fires-on",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8041",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-491 Alert threshold fires on a healthy rolling restart under sustained load",
+    "updatedAt": "2026-07-10T11:28:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "closedAt": "2026-07-10T14:48:00.000Z",
+    "createdAt": "2026-07-06T19:48:00.000Z",
+    "description": null,
+    "displayNumber": 8100,
+    "headRevisionId": "6343563",
+    "linkedWorkItemKeys": [
+      "CHK-286"
+    ],
+    "mergeRevisionId": "e1dabc6",
+    "mergedAt": "2026-07-10T14:48:00.000Z",
+    "occurredAt": "2026-07-10T14:48:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Ingrid Falk",
+        "kind": "email",
+        "value": "ingrid.falk@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-286-currency-symbol-is-hard",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8100",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-286 Currency symbol is hard-coded to sterling under sustained load",
+    "updatedAt": "2026-07-10T14:48:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "daniel.ortiz@northwind.example"
+    },
+    "closedAt": "2026-07-10T15:37:00.000Z",
+    "createdAt": "2026-07-02T05:37:00.000Z",
+    "description": null,
+    "displayNumber": 8096,
+    "headRevisionId": "34f178b",
+    "linkedWorkItemKeys": [
+      "CHK-277"
+    ],
+    "mergeRevisionId": "f81585e",
+    "mergedAt": "2026-07-10T15:37:00.000Z",
+    "occurredAt": "2026-07-10T15:37:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Ingrid Falk",
+        "kind": "email",
+        "value": "ingrid.falk@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-277-mobile-keyboard-covers-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8096",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-277 Mobile keyboard covers the pay button under sustained load",
+    "updatedAt": "2026-07-10T15:37:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Aisha Bello",
+      "kind": "email",
+      "value": "aisha.bello@northwind.example"
+    },
+    "closedAt": "2026-07-10T16:41:00.000Z",
+    "createdAt": "2026-06-30T23:41:00.000Z",
+    "description": null,
+    "displayNumber": 8039,
+    "headRevisionId": "0bbab91",
+    "linkedWorkItemKeys": [
+      "PLAT-487"
+    ],
+    "mergeRevisionId": "03990af",
+    "mergedAt": "2026-07-10T16:41:00.000Z",
+    "occurredAt": "2026-07-10T16:41:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Marcus Hale",
+        "kind": "email",
+        "value": "marcus.hale@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-487-currency-rounding-disagrees-with",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8039",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-487 Currency rounding disagrees with the ledger under sustained load",
+    "updatedAt": "2026-07-10T16:41:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "tom.whitfield@northwind.example"
+    },
+    "closedAt": null,
+    "createdAt": "2026-07-07T01:03:00.000Z",
+    "description": null,
+    "displayNumber": 8045,
+    "headRevisionId": "6fd3887",
+    "linkedWorkItemKeys": [
+      "PLAT-500"
+    ],
+    "mergeRevisionId": null,
+    "mergedAt": null,
+    "occurredAt": "2026-07-11T01:03:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Priya Raman",
+        "kind": "email",
+        "value": "priya.raman@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-500-merchant-profile-cache-misses",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8045",
+    "state": "open",
+    "targetBranch": "main",
+    "title": "PLAT-500 Merchant profile cache misses on every retry after a redeploy",
+    "updatedAt": "2026-07-11T01:03:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "closedAt": "2026-07-11T12:23:00.000Z",
+    "createdAt": "2026-07-10T03:23:00.000Z",
+    "description": "Gateway metrics under-report queue time after a redeploy. Raised by Priya Raman during triage.",
+    "displayNumber": 8047,
+    "headRevisionId": "dfecd13",
+    "linkedWorkItemKeys": [
+      "PLAT-505"
+    ],
+    "mergeRevisionId": "c67a4dc",
+    "mergedAt": "2026-07-11T12:23:00.000Z",
+    "occurredAt": "2026-07-11T12:23:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Tom Whitfield",
+        "kind": "email",
+        "value": "tom.whitfield@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-505-gateway-metrics-under-report",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8047",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-505 Gateway metrics under-report queue time after a redeploy",
+    "updatedAt": "2026-07-11T12:23:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "closedAt": "2026-07-11T17:20:00.000Z",
+    "createdAt": "2026-07-05T13:20:00.000Z",
+    "description": null,
+    "displayNumber": 8043,
+    "headRevisionId": "5bdaf7d",
+    "linkedWorkItemKeys": [
+      "PLAT-496"
+    ],
+    "mergeRevisionId": "1eff050",
+    "mergedAt": "2026-07-11T17:20:00.000Z",
+    "occurredAt": "2026-07-11T17:20:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Priya Raman",
+        "kind": "email",
+        "value": "priya.raman@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-496-feature-flag-evaluation-blocks",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8043",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-496 Feature flag evaluation blocks on a network call under sustained load",
+    "updatedAt": "2026-07-11T17:20:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Oskar Lindqvist",
+      "kind": "email",
+      "value": "oskar.lindqvist@northwind.example"
+    },
+    "closedAt": null,
+    "createdAt": "2026-07-10T21:22:00.000Z",
+    "description": null,
+    "displayNumber": 8138,
+    "headRevisionId": "35f71c0",
+    "linkedWorkItemKeys": [
+      "INS-154"
+    ],
+    "mergeRevisionId": null,
+    "mergedAt": null,
+    "occurredAt": "2026-07-13T00:22:00.000Z",
+    "repositoryKey": "insights-etl",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Yusuf Demir",
+        "kind": "email",
+        "value": "yusuf.demir@northwind.example"
+      }
+    ],
+    "sourceBranch": "work/INS-154-ledger-join-fans-out",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8138",
+    "state": "open",
+    "targetBranch": "main",
+    "title": "INS-154 Ledger join fans out on duplicate keys for large merchants",
+    "updatedAt": "2026-07-13T00:22:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Yusuf Demir",
+      "kind": "email",
+      "value": "yusuf.demir@northwind.example"
+    },
+    "closedAt": null,
+    "createdAt": "2026-07-09T22:48:00.000Z",
+    "description": "Schedule drifts an hour after the clock change for large merchants. Raised by Yusuf Demir during triage.",
+    "displayNumber": 8137,
+    "headRevisionId": "5787c12",
+    "linkedWorkItemKeys": [
+      "INS-153"
+    ],
+    "mergeRevisionId": null,
+    "mergedAt": null,
+    "occurredAt": "2026-07-13T02:48:00.000Z",
+    "repositoryKey": "insights-etl",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Clara Mbeki",
+        "kind": "email",
+        "value": "clara.mbeki@northwind.example"
+      }
+    ],
+    "sourceBranch": "work/INS-153-schedule-drifts-an-hour",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8137",
+    "state": "open",
+    "targetBranch": "main",
+    "title": "INS-153 Schedule drifts an hour after the clock change for large merchants",
+    "updatedAt": "2026-07-13T02:48:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "closedAt": "2026-07-13T14:47:00.000Z",
+    "createdAt": "2026-07-12T12:47:00.000Z",
+    "description": "Migration lock blocks the deploy for four minutes after a redeploy. Raised by Marcus Hale during triage.",
+    "displayNumber": 8049,
+    "headRevisionId": "4e273bf",
+    "linkedWorkItemKeys": [
+      "PLAT-509"
+    ],
+    "mergeRevisionId": "8b032ec",
+    "mergedAt": "2026-07-13T14:47:00.000Z",
+    "occurredAt": "2026-07-13T14:47:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Tom Whitfield",
+        "kind": "email",
+        "value": "tom.whitfield@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-509-migration-lock-blocks-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8049",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-509 Migration lock blocks the deploy for four minutes after a redeploy",
+    "updatedAt": "2026-07-13T14:47:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Oskar Lindqvist",
+      "kind": "email",
+      "value": "oskar.lindqvist@northwind.example"
+    },
+    "closedAt": "2026-07-15T13:34:00.000Z",
+    "createdAt": "2026-07-08T15:34:00.000Z",
+    "description": "Null merchant identifier passes validation for large merchants. Raised by Clara Mbeki during triage.",
+    "displayNumber": 8136,
+    "headRevisionId": "20bd621",
+    "linkedWorkItemKeys": [
+      "INS-151"
+    ],
+    "mergeRevisionId": "9c14682",
+    "mergedAt": "2026-07-15T13:34:00.000Z",
+    "occurredAt": "2026-07-15T13:34:00.000Z",
+    "repositoryKey": "insights-etl",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Yusuf Demir",
+        "kind": "email",
+        "value": "yusuf.demir@northwind.example"
+      }
+    ],
+    "sourceBranch": "work/INS-151-null-merchant-identifier-passes",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8136",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "INS-151 Null merchant identifier passes validation for large merchants",
+    "updatedAt": "2026-07-15T13:34:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "closedAt": "2026-07-16T08:12:00.000Z",
+    "createdAt": "2026-07-11T23:12:00.000Z",
+    "description": null,
+    "displayNumber": 8104,
+    "headRevisionId": "00d0f25",
+    "linkedWorkItemKeys": [
+      "CHK-295"
+    ],
+    "mergeRevisionId": "0a2fd4f",
+    "mergedAt": "2026-07-16T08:12:00.000Z",
+    "occurredAt": "2026-07-16T08:12:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Daniel Ortiz",
+        "kind": "email",
+        "value": "daniel.ortiz@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-295-merchant-theme-overrides-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8104",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-295 Merchant theme overrides the error colour under sustained load",
+    "updatedAt": "2026-07-16T08:12:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Aisha Bello",
+      "kind": "email",
+      "value": "aisha.bello@northwind.example"
+    },
+    "closedAt": "2026-07-16T08:16:00.000Z",
+    "createdAt": "2026-07-06T08:16:00.000Z",
+    "description": null,
+    "displayNumber": 8044,
+    "headRevisionId": "174e50d",
+    "linkedWorkItemKeys": [
+      "PLAT-498"
+    ],
+    "mergeRevisionId": "ba722ba",
+    "mergedAt": "2026-07-16T08:16:00.000Z",
+    "occurredAt": "2026-07-16T08:16:00.000Z",
+    "repositoryKey": "shared-ui",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Marcus Hale",
+        "kind": "email",
+        "value": "marcus.hale@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-498-cold-start-on-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8044",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-498 Cold start on the payment gateway exceeds two seconds after a redeploy",
+    "updatedAt": "2026-07-16T08:16:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Oskar Lindqvist",
+      "kind": "email",
+      "value": "oskar.lindqvist@northwind.example"
+    },
+    "closedAt": null,
+    "createdAt": "2026-07-13T08:56:00.000Z",
+    "description": null,
+    "displayNumber": 8139,
+    "headRevisionId": "7f87567",
+    "linkedWorkItemKeys": [
+      "INS-156"
+    ],
+    "mergeRevisionId": null,
+    "mergedAt": null,
+    "occurredAt": "2026-07-16T09:56:00.000Z",
+    "repositoryKey": "insights-etl",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Yusuf Demir",
+        "kind": "email",
+        "value": "yusuf.demir@northwind.example"
+      }
+    ],
+    "sourceBranch": "work/INS-156-currency-conversion-uses-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8139",
+    "state": "draft",
+    "targetBranch": "main",
+    "title": "INS-156 Currency conversion uses the wrong rate date for large merchants",
+    "updatedAt": "2026-07-16T09:56:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rafael.lima@northwind.example"
+    },
+    "closedAt": "2026-07-16T13:38:00.000Z",
+    "createdAt": "2026-07-06T00:38:00.000Z",
+    "description": "Coupon field accepts an expired code under sustained load. Raised by Daniel Ortiz during triage.",
+    "displayNumber": 8099,
+    "headRevisionId": "54b6446",
+    "linkedWorkItemKeys": [
+      "CHK-284"
+    ],
+    "mergeRevisionId": "f508eb8",
+    "mergedAt": "2026-07-16T13:38:00.000Z",
+    "occurredAt": "2026-07-16T13:38:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Ingrid Falk",
+        "kind": "email",
+        "value": "ingrid.falk@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-284-coupon-field-accepts-an",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8099",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-284 Coupon field accepts an expired code under sustained load",
+    "updatedAt": "2026-07-16T13:38:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "daniel.ortiz@northwind.example"
+    },
+    "closedAt": "2026-07-16T16:38:00.000Z",
+    "createdAt": "2026-07-08T17:38:00.000Z",
+    "description": null,
+    "displayNumber": 8101,
+    "headRevisionId": "7505257",
+    "linkedWorkItemKeys": [
+      "CHK-288"
+    ],
+    "mergeRevisionId": "a4b9fe8",
+    "mergedAt": "2026-07-16T16:38:00.000Z",
+    "occurredAt": "2026-07-16T16:38:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Naomi Chen",
+        "kind": "email",
+        "value": "naomi.chen@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-288-checkout-bundle-ships-an",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8101",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-288 Checkout bundle ships an unused date library under sustained load",
+    "updatedAt": "2026-07-16T16:38:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "closedAt": "2026-07-17T10:21:00.000Z",
+    "createdAt": "2026-07-09T17:21:00.000Z",
+    "description": null,
+    "displayNumber": 8102,
+    "headRevisionId": "25640ac",
+    "linkedWorkItemKeys": [
+      "CHK-291"
+    ],
+    "mergeRevisionId": "c083f32",
+    "mergedAt": "2026-07-17T10:21:00.000Z",
+    "occurredAt": "2026-07-17T10:21:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Rafael Lima",
+        "kind": "email",
+        "value": "rafael.lima@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-291-guest-email-is-not",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8102",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-291 Guest email is not normalized before lookup under sustained load",
+    "updatedAt": "2026-07-17T10:21:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Aisha Bello",
+      "kind": "email",
+      "value": "aisha.bello@northwind.example"
+    },
+    "closedAt": "2026-07-17T15:52:00.000Z",
+    "createdAt": "2026-07-13T15:52:00.000Z",
+    "description": null,
+    "displayNumber": 8050,
+    "headRevisionId": "467687b",
+    "linkedWorkItemKeys": [
+      "PLAT-512"
+    ],
+    "mergeRevisionId": "4e9835d",
+    "mergedAt": "2026-07-17T15:52:00.000Z",
+    "occurredAt": "2026-07-17T15:52:00.000Z",
+    "repositoryKey": "shared-ui",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Priya Raman",
+        "kind": "email",
+        "value": "priya.raman@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-512-gateway-client-retries-on",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8050",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-512 Gateway client retries on a non-idempotent verb after a redeploy",
+    "updatedAt": "2026-07-17T15:52:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "tom.whitfield@northwind.example"
+    },
+    "closedAt": "2026-07-17T17:42:00.000Z",
+    "createdAt": "2026-07-09T21:42:00.000Z",
+    "description": "Connection pool starves under a burst of authorizations after a redeploy. Raised by Elena Sokolova during triage.",
+    "displayNumber": 8046,
+    "headRevisionId": "d4b3a01",
+    "linkedWorkItemKeys": [
+      "PLAT-503"
+    ],
+    "mergeRevisionId": "ee26239",
+    "mergedAt": "2026-07-17T17:42:00.000Z",
+    "occurredAt": "2026-07-17T17:42:00.000Z",
+    "repositoryKey": "shared-ui",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Aisha Bello",
+        "kind": "email",
+        "value": "aisha.bello@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-503-connection-pool-starves-under",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8046",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-503 Connection pool starves under a burst of authorizations after a redeploy",
+    "updatedAt": "2026-07-17T17:42:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "elena.sokolova@northwind.example"
+    },
+    "closedAt": "2026-07-18T15:40:00.000Z",
+    "createdAt": "2026-07-14T23:40:00.000Z",
+    "description": "Alert threshold fires on a healthy rolling restart after a redeploy. Raised by Marcus Hale during triage.",
+    "displayNumber": 8051,
+    "headRevisionId": "2186895",
+    "linkedWorkItemKeys": [
+      "PLAT-515"
+    ],
+    "mergeRevisionId": "9828704",
+    "mergedAt": "2026-07-18T15:40:00.000Z",
+    "occurredAt": "2026-07-18T15:40:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Tom Whitfield",
+        "kind": "email",
+        "value": "tom.whitfield@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-515-alert-threshold-fires-on",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8051",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-515 Alert threshold fires on a healthy rolling restart after a redeploy",
+    "updatedAt": "2026-07-18T15:40:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Clara Mbeki",
+      "kind": "email",
+      "value": "clara.mbeki@northwind.example"
+    },
+    "closedAt": "2026-07-18T17:55:00.000Z",
+    "createdAt": "2026-07-17T18:55:00.000Z",
+    "description": "Data contract has no owner recorded for large merchants. Raised by Clara Mbeki during triage.",
+    "displayNumber": 8141,
+    "headRevisionId": "5645fd1",
+    "linkedWorkItemKeys": [
+      "INS-160"
+    ],
+    "mergeRevisionId": "778a48f",
+    "mergedAt": "2026-07-18T17:55:00.000Z",
+    "occurredAt": "2026-07-18T17:55:00.000Z",
+    "repositoryKey": "insights-etl",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Oskar Lindqvist",
+        "kind": "email",
+        "value": "oskar.lindqvist@northwind.example"
+      }
+    ],
+    "sourceBranch": "work/INS-160-data-contract-has-no",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8141",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "INS-160 Data contract has no owner recorded for large merchants",
+    "updatedAt": "2026-07-18T17:55:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Yusuf Demir",
+      "kind": "email",
+      "value": "yusuf.demir@northwind.example"
+    },
+    "closedAt": null,
+    "createdAt": "2026-07-15T05:25:00.000Z",
+    "description": null,
+    "displayNumber": 8140,
+    "headRevisionId": "0738d42",
+    "linkedWorkItemKeys": [
+      "INS-158"
+    ],
+    "mergeRevisionId": null,
+    "mergedAt": null,
+    "occurredAt": "2026-07-19T07:25:00.000Z",
+    "repositoryKey": "insights-etl",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Oskar Lindqvist",
+        "kind": "email",
+        "value": "oskar.lindqvist@northwind.example"
+      }
+    ],
+    "sourceBranch": "work/INS-158-loader-holds-the-warehouse",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8140",
+    "state": "open",
+    "targetBranch": "main",
+    "title": "INS-158 Loader holds the warehouse lock for an hour for large merchants",
+    "updatedAt": "2026-07-19T07:25:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ingrid.falk@northwind.example"
+    },
+    "closedAt": "2026-07-19T12:17:00.000Z",
+    "createdAt": "2026-07-11T01:17:00.000Z",
+    "description": "Form autofill overwrites the entered postcode under sustained load. Raised by Daniel Ortiz during triage.",
+    "displayNumber": 8103,
+    "headRevisionId": "60d69a4",
+    "linkedWorkItemKeys": [
+      "CHK-293"
+    ],
+    "mergeRevisionId": "ad3c97e",
+    "mergedAt": "2026-07-19T12:17:00.000Z",
+    "occurredAt": "2026-07-19T12:17:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Daniel Ortiz",
+        "kind": "email",
+        "value": "daniel.ortiz@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-293-form-autofill-overwrites-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8103",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-293 Form autofill overwrites the entered postcode under sustained load",
+    "updatedAt": "2026-07-19T12:17:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "daniel.ortiz@northwind.example"
+    },
+    "closedAt": null,
+    "createdAt": "2026-07-15T18:46:00.000Z",
+    "description": null,
+    "displayNumber": 8107,
+    "headRevisionId": "cda4a51",
+    "linkedWorkItemKeys": [
+      "CHK-302"
+    ],
+    "mergeRevisionId": null,
+    "mergedAt": null,
+    "occurredAt": "2026-07-19T22:46:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Rafael Lima",
+        "kind": "email",
+        "value": "rafael.lima@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-302-order-summary-rounds-tax",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8107",
+    "state": "draft",
+    "targetBranch": "main",
+    "title": "CHK-302 Order summary rounds tax the wrong way after a redeploy",
+    "updatedAt": "2026-07-19T22:46:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "closedAt": null,
+    "createdAt": "2026-07-20T10:05:00.000Z",
+    "description": "Waiting on Marcus Hale.",
+    "displayNumber": 9101,
+    "headRevisionId": "b1fbf91",
+    "linkedWorkItemKeys": [
+      "PLAT-746"
+    ],
+    "mergeRevisionId": null,
+    "mergedAt": null,
+    "occurredAt": "2026-07-20T10:05:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Marcus Hale",
+        "kind": "email",
+        "value": "marcus.hale@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-746-bound-the-gateway",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-9101",
+    "state": "open",
+    "targetBranch": "main",
+    "title": "PLAT-746 bound the gateway retry budget",
+    "updatedAt": "2026-07-20T10:05:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ingrid.falk@northwind.example"
+    },
+    "closedAt": "2026-07-20T10:24:00.000Z",
+    "createdAt": "2026-07-15T10:24:00.000Z",
+    "description": "Guest session expires mid-payment with no warning after a redeploy. Raised by Naomi Chen during triage.",
+    "displayNumber": 8106,
+    "headRevisionId": "bbe2d5d",
+    "linkedWorkItemKeys": [
+      "CHK-299"
+    ],
+    "mergeRevisionId": "3284bcc",
+    "mergedAt": "2026-07-20T10:24:00.000Z",
+    "occurredAt": "2026-07-20T10:24:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Rafael Lima",
+        "kind": "email",
+        "value": "rafael.lima@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-299-guest-session-expires-mid",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8106",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-299 Guest session expires mid-payment with no warning after a redeploy",
+    "updatedAt": "2026-07-20T10:24:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "closedAt": "2026-07-20T13:14:00.000Z",
+    "createdAt": "2026-07-11T01:14:00.000Z",
+    "description": null,
+    "displayNumber": 8048,
+    "headRevisionId": "8b07be4",
+    "linkedWorkItemKeys": [
+      "PLAT-507"
+    ],
+    "mergeRevisionId": "099f247",
+    "mergedAt": "2026-07-20T13:14:00.000Z",
+    "occurredAt": "2026-07-20T13:14:00.000Z",
+    "repositoryKey": "shared-ui",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Aisha Bello",
+        "kind": "email",
+        "value": "aisha.bello@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-507-payment-capture-logs-leak",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8048",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-507 Payment capture logs leak the card bin after a redeploy",
+    "updatedAt": "2026-07-20T13:14:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "closedAt": "2026-07-20T16:53:00.000Z",
+    "createdAt": "2026-07-18T09:53:00.000Z",
+    "description": "Postcode lookup times out without a fallback after a redeploy. Raised by Rafael Lima during triage.",
+    "displayNumber": 8108,
+    "headRevisionId": "b3c5b74",
+    "linkedWorkItemKeys": [
+      "CHK-304"
+    ],
+    "mergeRevisionId": "abfad3e",
+    "mergedAt": "2026-07-20T16:53:00.000Z",
+    "occurredAt": "2026-07-20T16:53:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Daniel Ortiz",
+        "kind": "email",
+        "value": "daniel.ortiz@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-304-postcode-lookup-times-out",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8108",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-304 Postcode lookup times out without a fallback after a redeploy",
+    "updatedAt": "2026-07-20T16:53:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "daniel.ortiz@northwind.example"
+    },
+    "closedAt": "2026-07-20T17:41:00.000Z",
+    "createdAt": "2026-07-14T20:41:00.000Z",
+    "description": null,
+    "displayNumber": 8105,
+    "headRevisionId": "eee4874",
+    "linkedWorkItemKeys": [
+      "CHK-297"
+    ],
+    "mergeRevisionId": "53c49ee",
+    "mergedAt": "2026-07-20T17:41:00.000Z",
+    "occurredAt": "2026-07-20T17:41:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Ingrid Falk",
+        "kind": "email",
+        "value": "ingrid.falk@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-297-address-form-loses-state",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8105",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-297 Address form loses state on a validation error after a redeploy",
+    "updatedAt": "2026-07-20T17:41:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "elena.sokolova@northwind.example"
+    },
+    "closedAt": null,
+    "createdAt": "2026-07-21T09:40:00.000Z",
+    "description": "Waiting on Marcus Hale.",
+    "displayNumber": 9102,
+    "headRevisionId": "088f3a6",
+    "linkedWorkItemKeys": [
+      "PLAT-747"
+    ],
+    "mergeRevisionId": null,
+    "mergedAt": null,
+    "occurredAt": "2026-07-21T09:40:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Marcus Hale",
+        "kind": "email",
+        "value": "marcus.hale@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-747-warm-the-profile",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-9102",
+    "state": "open",
+    "targetBranch": "main",
+    "title": "PLAT-747 warm the profile cache on boot",
+    "updatedAt": "2026-07-21T09:40:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Aisha Bello",
+      "kind": "email",
+      "value": "aisha.bello@northwind.example"
+    },
+    "closedAt": null,
+    "createdAt": "2026-07-22T14:15:00.000Z",
+    "description": "Waiting on Marcus Hale.",
+    "displayNumber": 9103,
+    "headRevisionId": "ef1cb6f",
+    "linkedWorkItemKeys": [
+      "PLAT-748"
+    ],
+    "mergeRevisionId": null,
+    "mergedAt": null,
+    "occurredAt": "2026-07-22T14:15:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Marcus Hale",
+        "kind": "email",
+        "value": "marcus.hale@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-748-drop-the-synchronous",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-9103",
+    "state": "open",
+    "targetBranch": "main",
+    "title": "PLAT-748 drop the synchronous fraud call",
+    "updatedAt": "2026-07-22T14:15:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "closedAt": "2026-07-22T17:34:00.000Z",
+    "createdAt": "2026-07-20T14:34:00.000Z",
+    "description": "Fraud check blocks the payment path synchronously in the sandbox environment. Raised by Priya Raman during triage.",
+    "displayNumber": 8056,
+    "headRevisionId": "1b4e2cf",
+    "linkedWorkItemKeys": [
+      "PLAT-525"
+    ],
+    "mergeRevisionId": "a1db125",
+    "mergedAt": "2026-07-22T17:34:00.000Z",
+    "occurredAt": "2026-07-22T17:34:00.000Z",
+    "repositoryKey": "shared-ui",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Tom Whitfield",
+        "kind": "email",
+        "value": "tom.whitfield@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-525-fraud-check-blocks-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8056",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-525 Fraud check blocks the payment path synchronously in the sandbox environment",
+    "updatedAt": "2026-07-22T17:34:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "elena.sokolova@northwind.example"
+    },
+    "closedAt": null,
+    "createdAt": "2026-07-19T18:27:00.000Z",
+    "description": null,
+    "displayNumber": 8055,
+    "headRevisionId": "7fdb065",
+    "linkedWorkItemKeys": [
+      "PLAT-523"
+    ],
+    "mergeRevisionId": null,
+    "mergedAt": null,
+    "occurredAt": "2026-07-23T00:27:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Priya Raman",
+        "kind": "email",
+        "value": "priya.raman@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-523-tokenization-path-allocates-on",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8055",
+    "state": "draft",
+    "targetBranch": "main",
+    "title": "PLAT-523 Tokenization path allocates on every request in the sandbox environment",
+    "updatedAt": "2026-07-23T00:27:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rafael.lima@northwind.example"
+    },
+    "closedAt": "2026-07-23T09:14:00.000Z",
+    "createdAt": "2026-07-19T02:14:00.000Z",
+    "description": "Apple wallet button renders on unsupported browsers after a redeploy. Raised by Rafael Lima during triage.",
+    "displayNumber": 8109,
+    "headRevisionId": "1087ad4",
+    "linkedWorkItemKeys": [
+      "CHK-306"
+    ],
+    "mergeRevisionId": "e0d2d43",
+    "mergedAt": "2026-07-23T09:14:00.000Z",
+    "occurredAt": "2026-07-23T09:14:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Naomi Chen",
+        "kind": "email",
+        "value": "naomi.chen@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-306-apple-wallet-button-renders",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8109",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-306 Apple wallet button renders on unsupported browsers after a redeploy",
+    "updatedAt": "2026-07-23T09:14:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "daniel.ortiz@northwind.example"
+    },
+    "closedAt": "2026-07-23T09:45:00.000Z",
+    "createdAt": "2026-07-22T01:45:00.000Z",
+    "description": "Focus ring is invisible on the dark theme after a redeploy. Raised by Naomi Chen during triage.",
+    "displayNumber": 8111,
+    "headRevisionId": "600354d",
+    "linkedWorkItemKeys": [
+      "CHK-311"
+    ],
+    "mergeRevisionId": "4a70b13",
+    "mergedAt": "2026-07-23T09:45:00.000Z",
+    "occurredAt": "2026-07-23T09:45:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Naomi Chen",
+        "kind": "email",
+        "value": "naomi.chen@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-311-focus-ring-is-invisible",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8111",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-311 Focus ring is invisible on the dark theme after a redeploy",
+    "updatedAt": "2026-07-23T09:45:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "closedAt": null,
+    "createdAt": "2026-07-23T11:30:00.000Z",
+    "description": "Waiting on Marcus Hale.",
+    "displayNumber": 9104,
+    "headRevisionId": "c3d0ce5",
+    "linkedWorkItemKeys": [
+      "PLAT-749"
+    ],
+    "mergeRevisionId": null,
+    "mergedAt": null,
+    "occurredAt": "2026-07-23T11:30:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Marcus Hale",
+        "kind": "email",
+        "value": "marcus.hale@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-749-add-span-coverage",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-9104",
+    "state": "open",
+    "targetBranch": "main",
+    "title": "PLAT-749 add span coverage past the gateway",
+    "updatedAt": "2026-07-23T11:30:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "tom.whitfield@northwind.example"
+    },
+    "closedAt": "2026-07-24T08:13:00.000Z",
+    "createdAt": "2026-07-20T19:13:00.000Z",
+    "description": "Idempotency keys expire before the retry window closes in the sandbox environment. Raised by Tom Whitfield during triage.",
+    "displayNumber": 8057,
+    "headRevisionId": "3d27298",
+    "linkedWorkItemKeys": [
+      "PLAT-528"
+    ],
+    "mergeRevisionId": "30ec0ad",
+    "mergedAt": "2026-07-24T08:13:00.000Z",
+    "occurredAt": "2026-07-24T08:13:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Marcus Hale",
+        "kind": "email",
+        "value": "marcus.hale@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-528-idempotency-keys-expire-before",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8057",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-528 Idempotency keys expire before the retry window closes in the sandbox environment",
+    "updatedAt": "2026-07-24T08:13:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "closedAt": "2026-07-24T12:33:00.000Z",
+    "createdAt": "2026-07-22T18:33:00.000Z",
+    "description": null,
+    "displayNumber": 8058,
+    "headRevisionId": "8dae00d",
+    "linkedWorkItemKeys": [
+      "PLAT-530"
+    ],
+    "mergeRevisionId": "ca89f3a",
+    "mergedAt": "2026-07-24T12:33:00.000Z",
+    "occurredAt": "2026-07-24T12:33:00.000Z",
+    "repositoryKey": "shared-ui",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Elena Sokolova",
+        "kind": "email",
+        "value": "elena.sokolova@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-530-settlement-webhook-retries-duplicate",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8058",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-530 Settlement webhook retries duplicate ledger rows in the sandbox environment",
+    "updatedAt": "2026-07-24T12:33:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Yusuf Demir",
+      "kind": "email",
+      "value": "yusuf.demir@northwind.example"
+    },
+    "closedAt": null,
+    "createdAt": "2026-07-22T10:38:00.000Z",
+    "description": null,
+    "displayNumber": 8143,
+    "headRevisionId": "6fd994b",
+    "linkedWorkItemKeys": [
+      "INS-165"
+    ],
+    "mergeRevisionId": null,
+    "mergedAt": null,
+    "occurredAt": "2026-07-24T14:38:00.000Z",
+    "repositoryKey": "insights-etl",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Oskar Lindqvist",
+        "kind": "email",
+        "value": "oskar.lindqvist@northwind.example"
+      }
+    ],
+    "sourceBranch": "work/INS-165-timezone-conversion-shifts-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8143",
+    "state": "draft",
+    "targetBranch": "main",
+    "title": "INS-165 Timezone conversion shifts the settlement date under sustained load",
+    "updatedAt": "2026-07-24T14:38:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "tom.whitfield@northwind.example"
+    },
+    "closedAt": null,
+    "createdAt": "2026-07-24T16:20:00.000Z",
+    "description": "Waiting on Marcus Hale.",
+    "displayNumber": 9105,
+    "headRevisionId": "3a72b54",
+    "linkedWorkItemKeys": [
+      "PLAT-750"
+    ],
+    "mergeRevisionId": null,
+    "mergedAt": null,
+    "occurredAt": "2026-07-24T16:20:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Marcus Hale",
+        "kind": "email",
+        "value": "marcus.hale@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-750-pin-the-ledger",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-9105",
+    "state": "open",
+    "targetBranch": "main",
+    "title": "PLAT-750 pin the ledger rounding mode",
+    "updatedAt": "2026-07-24T16:20:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "tom.whitfield@northwind.example"
+    },
+    "closedAt": "2026-07-25T09:26:00.000Z",
+    "createdAt": "2026-07-16T16:26:00.000Z",
+    "description": "Trace spans stop at the gateway boundary after a redeploy. Raised by Priya Raman during triage.",
+    "displayNumber": 8053,
+    "headRevisionId": "0662daf",
+    "linkedWorkItemKeys": [
+      "PLAT-519"
+    ],
+    "mergeRevisionId": "0eab987",
+    "mergedAt": "2026-07-25T09:26:00.000Z",
+    "occurredAt": "2026-07-25T09:26:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Aisha Bello",
+        "kind": "email",
+        "value": "aisha.bello@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-519-trace-spans-stop-at",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8053",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-519 Trace spans stop at the gateway boundary after a redeploy",
+    "updatedAt": "2026-07-25T09:26:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Clara Mbeki",
+      "kind": "email",
+      "value": "clara.mbeki@northwind.example"
+    },
+    "closedAt": "2026-07-25T15:20:00.000Z",
+    "createdAt": "2026-07-19T01:20:00.000Z",
+    "description": "Daily rollup double counts refunded orders under sustained load. Raised by Yusuf Demir during triage.",
+    "displayNumber": 8142,
+    "headRevisionId": "b4663bc",
+    "linkedWorkItemKeys": [
+      "INS-162"
+    ],
+    "mergeRevisionId": "32fda1e",
+    "mergedAt": "2026-07-25T15:20:00.000Z",
+    "occurredAt": "2026-07-25T15:20:00.000Z",
+    "repositoryKey": "insights-etl",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Oskar Lindqvist",
+        "kind": "email",
+        "value": "oskar.lindqvist@northwind.example"
+      }
+    ],
+    "sourceBranch": "work/INS-162-daily-rollup-double-counts",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8142",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "INS-162 Daily rollup double counts refunded orders under sustained load",
+    "updatedAt": "2026-07-25T15:20:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "closedAt": "2026-07-25T15:22:00.000Z",
+    "createdAt": "2026-07-22T19:22:00.000Z",
+    "description": null,
+    "displayNumber": 8059,
+    "headRevisionId": "526280c",
+    "linkedWorkItemKeys": [
+      "PLAT-532"
+    ],
+    "mergeRevisionId": "a92701b",
+    "mergedAt": "2026-07-25T15:22:00.000Z",
+    "occurredAt": "2026-07-25T15:22:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Aisha Bello",
+        "kind": "email",
+        "value": "aisha.bello@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-532-structured-logs-drop-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8059",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-532 Structured logs drop the correlation identifier in the sandbox environment",
+    "updatedAt": "2026-07-25T15:22:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rafael.lima@northwind.example"
+    },
+    "closedAt": "2026-07-26T09:29:00.000Z",
+    "createdAt": "2026-07-20T12:29:00.000Z",
+    "description": "Coupon field accepts an expired code after a redeploy. Raised by Naomi Chen during triage.",
+    "displayNumber": 8110,
+    "headRevisionId": "e1b0b9b",
+    "linkedWorkItemKeys": [
+      "CHK-308"
+    ],
+    "mergeRevisionId": "a4d4c6e",
+    "mergedAt": "2026-07-26T09:29:00.000Z",
+    "occurredAt": "2026-07-26T09:29:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Daniel Ortiz",
+        "kind": "email",
+        "value": "daniel.ortiz@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-308-coupon-field-accepts-an",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8110",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-308 Coupon field accepts an expired code after a redeploy",
+    "updatedAt": "2026-07-26T09:29:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "closedAt": "2026-07-26T13:56:00.000Z",
+    "createdAt": "2026-07-25T12:56:00.000Z",
+    "description": null,
+    "displayNumber": 8061,
+    "headRevisionId": "66022b0",
+    "linkedWorkItemKeys": [
+      "PLAT-536"
+    ],
+    "mergeRevisionId": "b26828a",
+    "mergedAt": "2026-07-26T13:56:00.000Z",
+    "occurredAt": "2026-07-26T13:56:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Elena Sokolova",
+        "kind": "email",
+        "value": "elena.sokolova@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-536-gateway-client-retries-on",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8061",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-536 Gateway client retries on a non-idempotent verb in the sandbox environment",
+    "updatedAt": "2026-07-26T13:56:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "elena.sokolova@northwind.example"
+    },
+    "closedAt": "2026-07-26T15:30:00.000Z",
+    "createdAt": "2026-07-16T06:30:00.000Z",
+    "description": "Timeout budget is duplicated in three modules after a redeploy. Raised by Aisha Bello during triage.",
+    "displayNumber": 8052,
+    "headRevisionId": "dcb5174",
+    "linkedWorkItemKeys": [
+      "PLAT-517"
+    ],
+    "mergeRevisionId": "9fd9247",
+    "mergedAt": "2026-07-26T15:30:00.000Z",
+    "occurredAt": "2026-07-26T15:30:00.000Z",
+    "repositoryKey": "shared-ui",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Priya Raman",
+        "kind": "email",
+        "value": "priya.raman@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-517-timeout-budget-is-duplicated",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8052",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-517 Timeout budget is duplicated in three modules after a redeploy",
+    "updatedAt": "2026-07-26T15:30:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "closedAt": null,
+    "createdAt": "2026-07-24T12:46:00.000Z",
+    "description": null,
+    "displayNumber": 8060,
+    "headRevisionId": "2a8f9b8",
+    "linkedWorkItemKeys": [
+      "PLAT-534"
+    ],
+    "mergeRevisionId": null,
+    "mergedAt": null,
+    "occurredAt": "2026-07-26T19:46:00.000Z",
+    "repositoryKey": "shared-ui",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Marcus Hale",
+        "kind": "email",
+        "value": "marcus.hale@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-534-health-probe-reports-ready",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8060",
+    "state": "open",
+    "targetBranch": "main",
+    "title": "PLAT-534 Health probe reports ready before the pool warms in the sandbox environment",
+    "updatedAt": "2026-07-26T19:46:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Yusuf Demir",
+      "kind": "email",
+      "value": "yusuf.demir@northwind.example"
+    },
+    "closedAt": null,
+    "createdAt": "2026-07-24T14:45:00.000Z",
+    "description": "Late-arriving events never update the rollup under sustained load. Raised by Clara Mbeki during triage.",
+    "displayNumber": 8144,
+    "headRevisionId": "8ab8781",
+    "linkedWorkItemKeys": [
+      "INS-167"
+    ],
+    "mergeRevisionId": null,
+    "mergedAt": null,
+    "occurredAt": "2026-07-26T20:45:00.000Z",
+    "repositoryKey": "insights-etl",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Clara Mbeki",
+        "kind": "email",
+        "value": "clara.mbeki@northwind.example"
+      }
+    ],
+    "sourceBranch": "work/INS-167-late-arriving-events-never",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8144",
+    "state": "open",
+    "targetBranch": "main",
+    "title": "INS-167 Late-arriving events never update the rollup under sustained load",
+    "updatedAt": "2026-07-26T20:45:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "elena.sokolova@northwind.example"
+    },
+    "closedAt": null,
+    "createdAt": "2026-07-27T09:55:00.000Z",
+    "description": "Waiting on Marcus Hale.",
+    "displayNumber": 9106,
+    "headRevisionId": "dd96901",
+    "linkedWorkItemKeys": [
+      "PLAT-751"
+    ],
+    "mergeRevisionId": null,
+    "mergedAt": null,
+    "occurredAt": "2026-07-27T09:55:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Marcus Hale",
+        "kind": "email",
+        "value": "marcus.hale@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-751-batch-the-merchant",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-9106",
+    "state": "open",
+    "targetBranch": "main",
+    "title": "PLAT-751 batch the merchant profile lookups",
+    "updatedAt": "2026-07-27T09:55:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Aisha Bello",
+      "kind": "email",
+      "value": "aisha.bello@northwind.example"
+    },
+    "closedAt": "2026-07-27T10:19:00.000Z",
+    "createdAt": "2026-07-17T23:19:00.000Z",
+    "description": "Batch writer keeps the ingest loop busy in the sandbox environment. Raised by Elena Sokolova during triage.",
+    "displayNumber": 8054,
+    "headRevisionId": "4b344d0",
+    "linkedWorkItemKeys": [
+      "PLAT-521"
+    ],
+    "mergeRevisionId": "6b87bda",
+    "mergedAt": "2026-07-27T10:19:00.000Z",
+    "occurredAt": "2026-07-27T10:19:00.000Z",
+    "repositoryKey": "shared-ui",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Marcus Hale",
+        "kind": "email",
+        "value": "marcus.hale@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-521-batch-writer-keeps-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8054",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-521 Batch writer keeps the ingest loop busy in the sandbox environment",
+    "updatedAt": "2026-07-27T10:19:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Aisha Bello",
+      "kind": "email",
+      "value": "aisha.bello@northwind.example"
+    },
+    "closedAt": null,
+    "createdAt": "2026-07-28T13:10:00.000Z",
+    "description": "Waiting on Marcus Hale.",
+    "displayNumber": 9107,
+    "headRevisionId": "e4243ef",
+    "linkedWorkItemKeys": [
+      "PLAT-752"
+    ],
+    "mergeRevisionId": null,
+    "mergedAt": null,
+    "occurredAt": "2026-07-28T13:10:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Marcus Hale",
+        "kind": "email",
+        "value": "marcus.hale@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-752-drain-the-dead",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-9107",
+    "state": "open",
+    "targetBranch": "main",
+    "title": "PLAT-752 drain the dead-letter queue on a schedule",
+    "updatedAt": "2026-07-28T13:10:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "closedAt": "2026-07-28T15:43:00.000Z",
+    "createdAt": "2026-07-25T22:43:00.000Z",
+    "description": "Background reconciler holds a transaction open in the sandbox environment. Raised by Marcus Hale during triage.",
+    "displayNumber": 8062,
+    "headRevisionId": "33058e3",
+    "linkedWorkItemKeys": [
+      "PLAT-538"
+    ],
+    "mergeRevisionId": "9175b29",
+    "mergedAt": "2026-07-28T15:43:00.000Z",
+    "occurredAt": "2026-07-28T15:43:00.000Z",
+    "repositoryKey": "shared-ui",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Elena Sokolova",
+        "kind": "email",
+        "value": "elena.sokolova@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-538-background-reconciler-holds-a",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8062",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-538 Background reconciler holds a transaction open in the sandbox environment",
+    "updatedAt": "2026-07-28T15:43:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "closedAt": "2026-07-29T18:05:00.000Z",
+    "createdAt": "2026-07-27T18:05:00.000Z",
+    "description": null,
+    "displayNumber": 9301,
+    "headRevisionId": "88854e4",
+    "linkedWorkItemKeys": [
+      "PLAT-753"
+    ],
+    "mergeRevisionId": "8b9c0d1",
+    "mergedAt": "2026-07-29T18:05:00.000Z",
+    "occurredAt": "2026-07-29T18:05:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Marcus Hale",
+        "kind": "email",
+        "value": "marcus.hale@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-753-fold-the-duplicate",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-9301",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-753 fold the duplicate timeout constants into one",
+    "updatedAt": "2026-07-29T18:05:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "elena.sokolova@northwind.example"
+    },
+    "closedAt": "2026-07-30T10:47:00.000Z",
+    "createdAt": "2026-07-28T10:47:00.000Z",
+    "description": null,
+    "displayNumber": 9302,
+    "headRevisionId": "7eff5c4",
+    "linkedWorkItemKeys": [
+      "PLAT-754"
+    ],
+    "mergeRevisionId": "9c0d1e2",
+    "mergedAt": "2026-07-30T10:47:00.000Z",
+    "occurredAt": "2026-07-30T10:47:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Marcus Hale",
+        "kind": "email",
+        "value": "marcus.hale@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-754-record-the-correlation",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-9302",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-754 record the correlation identifier on every span",
+    "updatedAt": "2026-07-30T10:47:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Aisha Bello",
+      "kind": "email",
+      "value": "aisha.bello@northwind.example"
+    },
+    "closedAt": "2026-07-30T16:12:00.000Z",
+    "createdAt": "2026-07-28T16:12:00.000Z",
+    "description": null,
+    "displayNumber": 9303,
+    "headRevisionId": "4223697",
+    "linkedWorkItemKeys": [
+      "PLAT-755"
+    ],
+    "mergeRevisionId": "0d1e2f3",
+    "mergedAt": "2026-07-30T16:12:00.000Z",
+    "occurredAt": "2026-07-30T16:12:00.000Z",
+    "repositoryKey": "platform-api",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Marcus Hale",
+        "kind": "email",
+        "value": "marcus.hale@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/PLAT-755-stop-logging-the",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-9303",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "PLAT-755 stop logging the card bin in capture",
+    "updatedAt": "2026-07-30T16:12:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "closedAt": "2026-07-30T18:40:00.000Z",
+    "createdAt": "2026-07-29T18:40:00.000Z",
+    "description": null,
+    "displayNumber": 9201,
+    "headRevisionId": "6a7b8c9",
+    "linkedWorkItemKeys": [
+      "CHK-701"
+    ],
+    "mergeRevisionId": "7a8b9c0",
+    "mergedAt": "2026-07-30T18:40:00.000Z",
+    "occurredAt": "2026-07-30T18:40:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Rafael Lima",
+        "kind": "email",
+        "value": "rafael.lima@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-701-declined-card-retry",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-9201",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-701 Guest checkout retries a declined card twice on slow networks",
+    "updatedAt": "2026-07-30T18:40:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "daniel.ortiz@northwind.example"
+    },
+    "closedAt": "2026-07-30T23:59:00.000Z",
+    "createdAt": "2026-07-22T21:49:00.000Z",
+    "description": "Payment sheet flashes before the token loads after a redeploy. Raised by Naomi Chen during triage.",
+    "displayNumber": 8112,
+    "headRevisionId": "05e40a2",
+    "linkedWorkItemKeys": [
+      "CHK-313"
+    ],
+    "mergeRevisionId": "ff565b4",
+    "mergedAt": "2026-07-30T23:59:00.000Z",
+    "occurredAt": "2026-07-30T23:59:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Rafael Lima",
+        "kind": "email",
+        "value": "rafael.lima@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-313-payment-sheet-flashes-before",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8112",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-313 Payment sheet flashes before the token loads after a redeploy",
+    "updatedAt": "2026-07-30T23:59:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rafael.lima@northwind.example"
+    },
+    "closedAt": "2026-07-30T23:59:00.000Z",
+    "createdAt": "2026-07-25T10:42:00.000Z",
+    "description": null,
+    "displayNumber": 8113,
+    "headRevisionId": "3aa1db5",
+    "linkedWorkItemKeys": [
+      "CHK-316"
+    ],
+    "mergeRevisionId": "91ce371",
+    "mergedAt": "2026-07-30T23:59:00.000Z",
+    "occurredAt": "2026-07-30T23:59:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Ingrid Falk",
+        "kind": "email",
+        "value": "ingrid.falk@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-316-retry-after-a-decline",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8113",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-316 Retry after a decline charges twice on slow networks after a redeploy",
+    "updatedAt": "2026-07-30T23:59:00.000Z"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "daniel.ortiz@northwind.example"
+    },
+    "closedAt": "2026-07-30T23:59:00.000Z",
+    "createdAt": "2026-07-26T07:43:00.000Z",
+    "description": "Terms checkbox is not announced as required after a redeploy. Raised by Naomi Chen during triage.",
+    "displayNumber": 8114,
+    "headRevisionId": "350c411",
+    "linkedWorkItemKeys": [
+      "CHK-318"
+    ],
+    "mergeRevisionId": "137b9bf",
+    "mergedAt": "2026-07-30T23:59:00.000Z",
+    "occurredAt": "2026-07-30T23:59:00.000Z",
+    "repositoryKey": "checkout-web",
+    "requestedReviewerIdentities": [
+      {
+        "displayName": "Rafael Lima",
+        "kind": "email",
+        "value": "rafael.lima@northwind.example"
+      }
+    ],
+    "sourceBranch": "feature/CHK-318-terms-checkbox-is-not",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "pull-request-8114",
+    "state": "merged",
+    "targetBranch": "main",
+    "title": "CHK-318 Terms checkbox is not announced as required after a redeploy",
+    "updatedAt": "2026-07-30T23:59:00.000Z"
+  }
+]

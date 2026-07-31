@@ -1,0 +1,513 @@
+{
+  "companyName": "Northwind Systems",
+  "datasetId": "northwind-v1",
+  "fixtureFiles": [
+    "seed/fixtures/organization.json",
+    "seed/fixtures/people.json",
+    "seed/fixtures/projects.json",
+    "seed/fixtures/narrative.json",
+    "seed/fixtures/pathologies.json"
+  ],
+  "generatedFiles": [
+    "seed/generated/commits.json",
+    "seed/generated/pull_requests.json",
+    "seed/generated/reviews.json",
+    "seed/generated/branch_refs.json",
+    "seed/generated/release_tags.json",
+    "seed/generated/issues.json",
+    "seed/generated/issue_transitions.json",
+    "seed/generated/sprints.json",
+    "seed/generated/sprint_scope_changes.json",
+    "seed/generated/messages.json",
+    "seed/generated/dataset.json",
+    "seed/generated/manifest.json",
+    "seed/MANIFEST.md"
+  ],
+  "identities": [
+    {
+      "chatHandle": "user-priya-raman",
+      "developer": "Priya Raman",
+      "gitEmails": [
+        "priya.raman@northwind.example",
+        "praman@platform.northwind.example",
+        "priya@laptop.local"
+      ],
+      "trackerAccount": "acct-priya-raman"
+    },
+    {
+      "chatHandle": "user-marcus-hale",
+      "developer": "Marcus Hale",
+      "gitEmails": [
+        "marcus.hale@northwind.example",
+        "mhale@platform.northwind.example"
+      ],
+      "trackerAccount": "acct-marcus-hale"
+    },
+    {
+      "chatHandle": "user-elena-sokolova",
+      "developer": "Elena Sokolova",
+      "gitEmails": [
+        "elena.sokolova@northwind.example",
+        "esokolova@platform.northwind.example",
+        "elena@devbox.local"
+      ],
+      "trackerAccount": "acct-elena-sokolova"
+    },
+    {
+      "chatHandle": "user-tom-whitfield",
+      "developer": "Tom Whitfield",
+      "gitEmails": [
+        "tom.whitfield@northwind.example",
+        "twhitfield@platform.northwind.example"
+      ],
+      "trackerAccount": "acct-tom-whitfield"
+    },
+    {
+      "chatHandle": "user-aisha-bello",
+      "developer": "Aisha Bello",
+      "gitEmails": [
+        "aisha.bello@northwind.example",
+        "abello@platform.northwind.example"
+      ],
+      "trackerAccount": "acct-aisha-bello"
+    },
+    {
+      "chatHandle": "user-daniel-ortiz",
+      "developer": "Daniel Ortiz",
+      "gitEmails": [
+        "daniel.ortiz@northwind.example",
+        "dortiz@checkout.northwind.example",
+        "danielo@mac.local"
+      ],
+      "trackerAccount": "acct-daniel-ortiz"
+    },
+    {
+      "chatHandle": "user-naomi-chen",
+      "developer": "Naomi Chen",
+      "gitEmails": [
+        "naomi.chen@northwind.example",
+        "nchen@checkout.northwind.example"
+      ],
+      "trackerAccount": "acct-naomi-chen"
+    },
+    {
+      "chatHandle": "user-rafael-lima",
+      "developer": "Rafael Lima",
+      "gitEmails": [
+        "rafael.lima@northwind.example",
+        "rlima@checkout.northwind.example"
+      ],
+      "trackerAccount": "acct-rafael-lima"
+    },
+    {
+      "chatHandle": "user-ingrid-falk",
+      "developer": "Ingrid Falk",
+      "gitEmails": [
+        "ingrid.falk@northwind.example",
+        "ifalk@checkout.northwind.example",
+        "ingrid@thinkpad.local"
+      ],
+      "trackerAccount": "acct-ingrid-falk"
+    },
+    {
+      "chatHandle": "user-yusuf-demir",
+      "developer": "Yusuf Demir",
+      "gitEmails": [
+        "yusuf.demir@northwind.example",
+        "ydemir@insights.northwind.example"
+      ],
+      "trackerAccount": "acct-yusuf-demir"
+    },
+    {
+      "chatHandle": "user-clara-mbeki",
+      "developer": "Clara Mbeki",
+      "gitEmails": [
+        "clara.mbeki@northwind.example",
+        "cmbeki@insights.northwind.example"
+      ],
+      "trackerAccount": "acct-clara-mbeki"
+    },
+    {
+      "chatHandle": "user-oskar-lindqvist",
+      "developer": "Oskar Lindqvist",
+      "gitEmails": [
+        "oskar.lindqvist@northwind.example",
+        "olindqvist@insights.northwind.example"
+      ],
+      "trackerAccount": "acct-oskar-lindqvist"
+    }
+  ],
+  "kanbanTeam": {
+    "issueCount": 71,
+    "issuesCarryingPoints": 0,
+    "projectKey": "INS",
+    "sprintRows": 0,
+    "teamKey": "insights"
+  },
+  "now": "2026-07-31T09:00:00.000Z",
+  "objectives": [
+    {
+      "current": true,
+      "effectiveFrom": "2026-01-01T00:00:00Z",
+      "effectiveUntil": "2026-12-31T00:00:00Z",
+      "key": "OBJ-CO-1",
+      "title": "Make Northwind the fastest way to take a payment on the web"
+    },
+    {
+      "current": true,
+      "effectiveFrom": "2026-07-01T00:00:00Z",
+      "effectiveUntil": "2026-09-30T00:00:00Z",
+      "key": "OBJ-Q3-PLAT",
+      "title": "Cut p95 payment gateway latency below 400 ms"
+    },
+    {
+      "current": true,
+      "effectiveFrom": "2026-07-01T00:00:00Z",
+      "effectiveUntil": "2026-09-30T00:00:00Z",
+      "key": "OBJ-Q3-CHK",
+      "title": "Ship guest checkout to every merchant"
+    },
+    {
+      "current": true,
+      "effectiveFrom": "2026-07-01T00:00:00Z",
+      "effectiveUntil": "2026-09-30T00:00:00Z",
+      "key": "OBJ-Q3-INS",
+      "title": "Give merchants same-day settlement insight"
+    },
+    {
+      "current": false,
+      "effectiveFrom": "2026-04-01T00:00:00Z",
+      "effectiveUntil": "2026-06-30T00:00:00Z",
+      "key": "OBJ-Q2-BILL",
+      "title": "Migrate every merchant off the legacy billing client"
+    }
+  ],
+  "organizationId": "00000000-0000-4000-8000-000000000001",
+  "pathologies": [
+    {
+      "detail": "3 tickets and 6 commits inside `Sprint 46` serve `OBJ-Q2-BILL`, an objective that stopped being current on 2026-06-30T00:00:00Z. The current objective for that team is `OBJ-Q3-PLAT`. Window 2026-07-27T00:00:00Z to 2026-07-31T00:00:00Z.",
+      "id": "off-goal-billing-migration",
+      "identifiers": [
+        "PLAT-742",
+        "PLAT-743",
+        "PLAT-744",
+        "0f1a2b3",
+        "1f2a3b4",
+        "2f3a4b5",
+        "3f4a5b6",
+        "4f5a6b7",
+        "5f6a7b8",
+        "OBJ-Q2-BILL",
+        "OBJ-Q3-PLAT",
+        "Sprint 46"
+      ],
+      "title": "A billing-client migration stream running inside the current sprint"
+    },
+    {
+      "detail": "7 open pull requests on `platform-api` all name `Marcus Hale` as the requested reviewer, the oldest opened 2026-07-20T10:05:00Z. Window 2026-07-20T00:00:00Z to 2026-07-31T00:00:00Z.",
+      "id": "review-bottleneck-marcus-hale",
+      "identifiers": [
+        "Marcus Hale",
+        "#9101",
+        "#9102",
+        "#9103",
+        "#9104",
+        "#9105",
+        "#9106",
+        "#9107",
+        "PLAT-746",
+        "PLAT-747",
+        "PLAT-748",
+        "PLAT-749",
+        "PLAT-750",
+        "PLAT-751",
+        "PLAT-752"
+      ],
+      "title": "Every open platform review is queued behind one person"
+    },
+    {
+      "detail": "`v4.2.0` was planned for 2026-07-24T16:00:00Z and cut at 2026-07-29T17:20:00Z; `v4.2.0-rc.1` is the candidate that preceded it. The slip is tracked by `PLAT-745` and narrated day by day in the release conversation. Window 2026-07-24T00:00:00Z to 2026-07-30T00:00:00Z.",
+      "id": "release-slip-v4-2-0",
+      "identifiers": [
+        "v4.2.0",
+        "v4.2.0-rc.1",
+        "PLAT-745"
+      ],
+      "title": "Release 2 slipped five days across a multi-day window"
+    },
+    {
+      "detail": "`CHK-701` carries the tracker's blocked flag from 2026-07-30T08:15:00Z and its pull request `#9201` merged at 2026-07-30T18:40:00Z — the same day. The merge commit is `7a8b9c0`; the claim of being blocked is in the checkout conversation at 2026-07-30T08:20:00Z.",
+      "id": "blocked-then-merged-CHK-701",
+      "identifiers": [
+        "CHK-701",
+        "#9201",
+        "7a8b9c0",
+        "6a7b8c9",
+        "Sprint 17"
+      ],
+      "title": "Reported blocked in the morning, merged the same evening"
+    },
+    {
+      "detail": "14 completed tickets carry a story-point estimate and a measured elapsed duration whose Pearson correlation sits below the documented threshold of 0.3 at n ≥ 10, which is what a `points_uninformative` verdict is computed from.",
+      "id": "estimation-noise-plat",
+      "identifiers": [
+        "PLAT-760",
+        "PLAT-761",
+        "PLAT-762",
+        "PLAT-763",
+        "PLAT-764",
+        "PLAT-765",
+        "PLAT-766",
+        "PLAT-767",
+        "PLAT-768",
+        "PLAT-769",
+        "PLAT-770",
+        "PLAT-771",
+        "PLAT-772",
+        "PLAT-773"
+      ],
+      "title": "Story points that have not tracked elapsed days for five sprints"
+    },
+    {
+      "detail": "`INS-204` transitions to Done at 2026-07-30T11:05:00Z with no pull request, no branch and no commit referencing it anywhere in the dataset.",
+      "id": "done-with-no-pull-request-INS-204",
+      "identifiers": [
+        "INS-204"
+      ],
+      "title": "Marked Done with nothing in version control to show for it"
+    },
+    {
+      "detail": "3 pull requests merged into `platform-api` after `v4.2.0` was cut at 2026-07-29T17:20:00Z. The oldest unreleased item is `#9301`.",
+      "id": "merged-not-released-platform-api",
+      "identifiers": [
+        "v4.2.0",
+        "#9301",
+        "#9302",
+        "#9303",
+        "PLAT-753",
+        "PLAT-754",
+        "PLAT-755",
+        "8b9c0d1",
+        "9c0d1e2",
+        "0d1e2f3"
+      ],
+      "title": "Merged work sitting ahead of the newest release tag"
+    },
+    {
+      "detail": "Tickets labelled `tech-debt` opened per sprint: Sprint 43 → 2, Sprint 44 → 3, Sprint 45 → 4, Sprint 46 → 7. The count rises every sprint, which is the growth signal.",
+      "id": "tech-debt-growth-plat",
+      "identifiers": [
+        "Sprint 43",
+        "PLAT-781",
+        "PLAT-782",
+        "Sprint 44",
+        "PLAT-783",
+        "PLAT-784",
+        "PLAT-785",
+        "Sprint 45",
+        "PLAT-786",
+        "PLAT-787",
+        "PLAT-788",
+        "PLAT-789",
+        "Sprint 46",
+        "PLAT-790",
+        "PLAT-791",
+        "PLAT-792",
+        "PLAT-793",
+        "PLAT-794",
+        "PLAT-795",
+        "PLAT-796"
+      ],
+      "title": "Tech-debt tickets opened per sprint, rising for four sprints"
+    }
+  ],
+  "recordCounts": {
+    "branch_refs": 160,
+    "commits": 926,
+    "issue_transitions": 885,
+    "issues": 376,
+    "messages": 867,
+    "pull_requests": 155,
+    "release_tags": 8,
+    "reviews": 290,
+    "sprint_scope_changes": 24,
+    "sprints": 12
+  },
+  "reportWindow": {
+    "end": "2026-07-31T00:00:00.000Z",
+    "start": "2026-07-30T00:00:00.000Z"
+  },
+  "requirements": [
+    {
+      "label": "Projects",
+      "observed": 3,
+      "required": 3,
+      "satisfied": true
+    },
+    {
+      "label": "Developers",
+      "observed": 12,
+      "required": 12,
+      "satisfied": true
+    },
+    {
+      "label": "Completed sprints",
+      "observed": 10,
+      "required": 4,
+      "satisfied": true
+    },
+    {
+      "label": "In-flight sprints",
+      "observed": 2,
+      "required": 1,
+      "satisfied": true
+    },
+    {
+      "label": "Commits",
+      "observed": 926,
+      "required": 600,
+      "satisfied": true
+    },
+    {
+      "label": "Pull requests",
+      "observed": 155,
+      "required": 120,
+      "satisfied": true
+    },
+    {
+      "label": "Issues",
+      "observed": 376,
+      "required": 300,
+      "satisfied": true
+    },
+    {
+      "label": "Messages",
+      "observed": 867,
+      "required": 800,
+      "satisfied": true
+    },
+    {
+      "label": "Conversations carrying messages",
+      "observed": 4,
+      "required": 3,
+      "satisfied": true
+    },
+    {
+      "label": "Commits from unmapped git addresses",
+      "observed": 9,
+      "required": 5,
+      "satisfied": true
+    }
+  ],
+  "totalRecords": 3703,
+  "traceability": {
+    "dataset": [
+      {
+        "count": 499,
+        "percentage": 53.9,
+        "traceabilityClass": "structural"
+      },
+      {
+        "count": 235,
+        "percentage": 25.4,
+        "traceabilityClass": "inferred"
+      },
+      {
+        "count": 109,
+        "percentage": 11.8,
+        "traceabilityClass": "semantic"
+      },
+      {
+        "count": 83,
+        "percentage": 9,
+        "traceabilityClass": "unattributed"
+      }
+    ],
+    "designTargets": [
+      {
+        "percentage": 55,
+        "traceabilityClass": "structural"
+      },
+      {
+        "percentage": 25,
+        "traceabilityClass": "inferred"
+      },
+      {
+        "percentage": 12,
+        "traceabilityClass": "semantic"
+      },
+      {
+        "percentage": 8,
+        "traceabilityClass": "unattributed"
+      }
+    ],
+    "reportWindow": [
+      {
+        "count": 15,
+        "percentage": 57.7,
+        "traceabilityClass": "structural"
+      },
+      {
+        "count": 3,
+        "percentage": 11.5,
+        "traceabilityClass": "inferred"
+      },
+      {
+        "count": 3,
+        "percentage": 11.5,
+        "traceabilityClass": "semantic"
+      },
+      {
+        "count": 5,
+        "percentage": 19.2,
+        "traceabilityClass": "unattributed"
+      }
+    ],
+    "threshold": 0.3
+  },
+  "unmappedGitEmails": [
+    {
+      "address": "ci-bot@build.northwind.example",
+      "commitCount": 2,
+      "note": "The build robot's merge commits. Belongs to no person and never should."
+    },
+    {
+      "address": "root@ip-10-0-4-27.internal",
+      "commitCount": 1,
+      "note": "A hotfix committed from a bastion host with an unconfigured git identity."
+    },
+    {
+      "address": "contractor.jm@vendorlabs.example",
+      "commitCount": 2,
+      "note": "A contractor with no seat in the tracker or the chat workspace."
+    },
+    {
+      "address": "p.raman@personal.example",
+      "commitCount": 1,
+      "note": "Looks like Priya Raman and is NOT linked to her. Attribution by name similarity is forbidden; this address exists to prove it."
+    },
+    {
+      "address": "noreply@dependency-updater.example",
+      "commitCount": 2,
+      "note": "Automated dependency bumps."
+    },
+    {
+      "address": "dev@localhost.localdomain",
+      "commitCount": 1,
+      "note": "A commit made before anyone ran `git config user.email`."
+    }
+  ],
+  "volumes": {
+    "conversations": 4,
+    "developers": 12,
+    "projects": 3,
+    "repositories": 4,
+    "sprintsCompleted": 10,
+    "sprintsInFlight": 2,
+    "teams": 3
+  },
+  "window": {
+    "end": "2026-07-31T00:00:00.000Z",
+    "start": "2026-05-18T00:00:00.000Z"
+  }
+}

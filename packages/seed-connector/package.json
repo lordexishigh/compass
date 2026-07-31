@@ -18,13 +18,16 @@
   "scripts": {
     "build": "tsc -b",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "generate": "tsx --tsconfig ../../tsconfig.tests.json src/cli/generate-seed.ts"
   },
   "dependencies": {
     "@compass/clock": "workspace:*",
     "@compass/connector-port": "workspace:*"
   },
   "devDependencies": {
+    "@types/node": "24.13.3",
+    "tsx": "4.23.1",
     "typescript": "5.9.3",
     "vitest": "4.1.10"
   }

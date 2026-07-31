@@ -36,13 +36,24 @@ describe('readiness', () => {
 
     const connector = report.checks.find((check) => check.name === 'connector');
     expect(connector?.detail).toContain('primary-code: complete');
-    expect(connector?.detail).toContain('legacy-code: unavailable');
+    // The seed declares its archived code host as rate-limited on purpose, so a
+    // degraded source is always exercisable without credentials.
+    expect(connector?.detail).toContain('archive-code: unavailable');
     expect(connector?.status).toBe('degraded');
+  });
+
+  it('names the seeded dataset it is serving and the span it covers', async () => {
+    const report = await readiness();
+
+    const dataset = report.checks.find((check) => check.name === 'seed-dataset');
+    expect(dataset?.status).toBe('ready');
+    expect(dataset?.detail).toContain('northwind-v1');
+    expect(dataset?.detail).toContain('2026-05-18T00:00:00.000Z');
   });
 
   it('names every capability it checked', async () => {
     const report = await readiness();
 
-    expect(report.checks.map((check) => check.name)).toEqual(['clock', 'connector', 'database']);
+    expect(report.checks.map((check) => check.name)).toEqual(['clock', 'connector', 'seed-dataset', 'database']);
   });
 });

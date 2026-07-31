@@ -1,0 +1,143 @@
+{
+  "$comment": [
+    "Twelve developers, each deliberately fragmented across sources: two or three",
+    "git author emails, exactly one tracker account and exactly one chat handle.",
+    "Identity resolution is a real problem in every org Compass will meet, so the",
+    "seed refuses to pretend one email equals one person.",
+    "",
+    "`unmappedGitEmails` are addresses that appear as commit authors and belong to",
+    "no developer. They must land in the unmatched-identity queue rather than being",
+    "guessed at — `p.raman@personal.example` is there on purpose: it looks like",
+    "Priya Raman and must still never be attributed to her by name similarity."
+  ],
+  "developers": [
+    {
+      "key": "priya-raman",
+      "displayName": "Priya Raman",
+      "teamKey": "platform",
+      "gitEmails": ["priya.raman@northwind.example", "praman@platform.northwind.example", "priya@laptop.local"],
+      "trackerAccount": "acct-priya-raman",
+      "chatHandle": "user-priya-raman"
+    },
+    {
+      "key": "marcus-hale",
+      "displayName": "Marcus Hale",
+      "teamKey": "platform",
+      "gitEmails": ["marcus.hale@northwind.example", "mhale@platform.northwind.example"],
+      "trackerAccount": "acct-marcus-hale",
+      "chatHandle": "user-marcus-hale"
+    },
+    {
+      "key": "elena-sokolova",
+      "displayName": "Elena Sokolova",
+      "teamKey": "platform",
+      "gitEmails": ["elena.sokolova@northwind.example", "esokolova@platform.northwind.example", "elena@devbox.local"],
+      "trackerAccount": "acct-elena-sokolova",
+      "chatHandle": "user-elena-sokolova"
+    },
+    {
+      "key": "tom-whitfield",
+      "displayName": "Tom Whitfield",
+      "teamKey": "platform",
+      "gitEmails": ["tom.whitfield@northwind.example", "twhitfield@platform.northwind.example"],
+      "trackerAccount": "acct-tom-whitfield",
+      "chatHandle": "user-tom-whitfield"
+    },
+    {
+      "key": "aisha-bello",
+      "displayName": "Aisha Bello",
+      "teamKey": "platform",
+      "gitEmails": ["aisha.bello@northwind.example", "abello@platform.northwind.example"],
+      "trackerAccount": "acct-aisha-bello",
+      "chatHandle": "user-aisha-bello"
+    },
+    {
+      "key": "daniel-ortiz",
+      "displayName": "Daniel Ortiz",
+      "teamKey": "checkout",
+      "gitEmails": ["daniel.ortiz@northwind.example", "dortiz@checkout.northwind.example", "danielo@mac.local"],
+      "trackerAccount": "acct-daniel-ortiz",
+      "chatHandle": "user-daniel-ortiz"
+    },
+    {
+      "key": "naomi-chen",
+      "displayName": "Naomi Chen",
+      "teamKey": "checkout",
+      "gitEmails": ["naomi.chen@northwind.example", "nchen@checkout.northwind.example"],
+      "trackerAccount": "acct-naomi-chen",
+      "chatHandle": "user-naomi-chen"
+    },
+    {
+      "key": "rafael-lima",
+      "displayName": "Rafael Lima",
+      "teamKey": "checkout",
+      "gitEmails": ["rafael.lima@northwind.example", "rlima@checkout.northwind.example"],
+      "trackerAccount": "acct-rafael-lima",
+      "chatHandle": "user-rafael-lima"
+    },
+    {
+      "key": "ingrid-falk",
+      "displayName": "Ingrid Falk",
+      "teamKey": "checkout",
+      "gitEmails": ["ingrid.falk@northwind.example", "ifalk@checkout.northwind.example", "ingrid@thinkpad.local"],
+      "trackerAccount": "acct-ingrid-falk",
+      "chatHandle": "user-ingrid-falk"
+    },
+    {
+      "key": "yusuf-demir",
+      "displayName": "Yusuf Demir",
+      "teamKey": "insights",
+      "gitEmails": ["yusuf.demir@northwind.example", "ydemir@insights.northwind.example"],
+      "trackerAccount": "acct-yusuf-demir",
+      "chatHandle": "user-yusuf-demir"
+    },
+    {
+      "key": "clara-mbeki",
+      "displayName": "Clara Mbeki",
+      "teamKey": "insights",
+      "gitEmails": ["clara.mbeki@northwind.example", "cmbeki@insights.northwind.example"],
+      "trackerAccount": "acct-clara-mbeki",
+      "chatHandle": "user-clara-mbeki"
+    },
+    {
+      "key": "oskar-lindqvist",
+      "displayName": "Oskar Lindqvist",
+      "teamKey": "insights",
+      "gitEmails": ["oskar.lindqvist@northwind.example", "olindqvist@insights.northwind.example"],
+      "trackerAccount": "acct-oskar-lindqvist",
+      "chatHandle": "user-oskar-lindqvist"
+    }
+  ],
+  "unmappedGitEmails": [
+    {
+      "address": "ci-bot@build.northwind.example",
+      "displayName": "northwind-ci",
+      "note": "The build robot's merge commits. Belongs to no person and never should."
+    },
+    {
+      "address": "root@ip-10-0-4-27.internal",
+      "displayName": null,
+      "note": "A hotfix committed from a bastion host with an unconfigured git identity."
+    },
+    {
+      "address": "contractor.jm@vendorlabs.example",
+      "displayName": "J. Mensah",
+      "note": "A contractor with no seat in the tracker or the chat workspace."
+    },
+    {
+      "address": "p.raman@personal.example",
+      "displayName": "P. Raman",
+      "note": "Looks like Priya Raman and is NOT linked to her. Attribution by name similarity is forbidden; this address exists to prove it."
+    },
+    {
+      "address": "noreply@dependency-updater.example",
+      "displayName": "dependency-updater",
+      "note": "Automated dependency bumps."
+    },
+    {
+      "address": "dev@localhost.localdomain",
+      "displayName": null,
+      "note": "A commit made before anyone ran `git config user.email`."
+    }
+  ]
+}

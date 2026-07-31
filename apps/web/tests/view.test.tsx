@@ -5,8 +5,15 @@ import { describe, expect, it } from 'vitest';
 
 import { FreshnessLine } from '../components/freshness-line';
 import { ReportSectionBlock } from '../components/report-section';
+import { SeededHistoryNote } from '../components/seeded-history-note';
 import { SixSpine } from '../components/six-spine';
-import { describeWindow, resolveTimezone } from '../lib/foundation-report';
+import {
+  datasetCoversWindow,
+  describeWindow,
+  loadFoundationView,
+  resolveProvider,
+  resolveTimezone,
+} from '../lib/foundation-report';
 
 const timezone = 'Europe/London';
 const now = instantFromIso('2026-07-31T08:12:00Z');
@@ -135,6 +142,87 @@ describe('the reading column', () => {
     for (const forbidden of ['<canvas', '<svg', 'chart', 'sparkline', 'gauge']) {
       expect(markup.toLowerCase()).not.toContain(forbidden);
     }
+  });
+});
+
+describe('the request edge resolves the seeded substrate', () => {
+  it('serves the generated seed, not the small foundation fixture', () => {
+    const provider = resolveProvider();
+
+    expect(provider.degradation, provider.degradation ?? '').toBeNull();
+    expect(provider.dataset.datasetId).toBe('northwind-v1');
+    expect(provider.datasetWindow).not.toBeNull();
+    expect(provider.dataset.records.commits.length).toBeGreaterThan(600);
+  });
+
+  it('renders a view whose coverage names every configured source, degraded ones included', async () => {
+    const view = await loadFoundationView();
+
+    expect(view.report.sections).toHaveLength(6);
+    expect(view.recordCount).toBeGreaterThan(3000);
+    expect(view.report.coverage.map((note) => note.sourceKey)).toEqual([
+      'primary-code',
+      'primary-tracker',
+      'team-chat',
+      'archive-code',
+    ]);
+    // The rate-limited archive must be stated, never folded into a clean total.
+    expect(view.report.coverage.find((note) => note.sourceKey === 'archive-code')?.status).toBe('unavailable');
+  });
+
+  it('names the rate-limited archive in the freshness line rather than folding it in', async () => {
+    const view = await loadFoundationView();
+    const markup = renderToStaticMarkup(
+      <FreshnessLine
+        notes={view.report.coverage}
+        observedAt={view.observedAt}
+        windowLabel={describeWindow(view.window, view.timezone)}
+      />,
+    );
+
+    expect(markup).toContain('archive-code');
+    expect(markup).toContain('exhausting its hourly quota');
+  });
+});
+
+describe('a day outside the seeded history', () => {
+  const seeded = resolveProvider().datasetWindow;
+
+  it('is what the coverage predicate reports for a window past the end of the seed', () => {
+    expect(seeded, 'seed/generated is missing; run `pnpm seed:generate`').not.toBeNull();
+    expect(datasetCoversWindow(seeded, timeWindow(instantFromIso('2030-01-01T00:00:00Z'), instantFromIso('2030-01-02T00:00:00Z')))).toBe(
+      false,
+    );
+    expect(datasetCoversWindow(seeded, timeWindow(instantFromIso('2020-01-01T00:00:00Z'), instantFromIso('2020-01-02T00:00:00Z')))).toBe(
+      false,
+    );
+    expect(datasetCoversWindow(null, window)).toBe(false);
+  });
+
+  it('overlaps for a window inside the seeded span', () => {
+    expect(datasetCoversWindow(seeded, timeWindow(instantFromIso('2026-07-29T00:00:00Z'), instantFromIso('2026-07-30T00:00:00Z')))).toBe(
+      true,
+    );
+  });
+
+  it('is stated in the product voice, not left as an empty day', () => {
+    const markup = renderToStaticMarkup(
+      <SeededHistoryNote datasetWindow={seeded} coversWindow={false} timezone={timezone} />,
+    );
+
+    expect(markup).toContain('stated-absence');
+    expect(markup).toContain('sits outside that history');
+    expect(markup).toContain('rather than presenting an empty day as a quiet one');
+    expect(markup).toContain('The seeded history runs');
+  });
+
+  it('says nothing about an absence when the day is inside the seeded span', () => {
+    const markup = renderToStaticMarkup(
+      <SeededHistoryNote datasetWindow={seeded} coversWindow={true} timezone={timezone} />,
+    );
+
+    expect(markup).toContain('The seeded history runs');
+    expect(markup).not.toContain('sits outside that history');
   });
 });
 

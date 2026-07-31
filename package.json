@@ -19,7 +19,8 @@
     "dev": "pnpm run build:packages && pnpm --filter @compass/web run dev",
     "worker": "pnpm --filter @compass/worker run start",
     "db:generate": "pnpm --filter @compass/db run generate",
-    "db:migrate": "pnpm --filter @compass/db run migrate"
+    "db:migrate": "pnpm --filter @compass/db run migrate",
+    "seed:generate": "pnpm --filter @compass/seed-connector run generate"
   },
   "devDependencies": {
     "@compass/eslint-plugin": "workspace:*",

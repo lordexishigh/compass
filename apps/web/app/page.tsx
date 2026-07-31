@@ -2,6 +2,7 @@ import { SECTIONS, sectionCounts } from '@compass/analysis';
 
 import { FreshnessLine } from '../components/freshness-line';
 import { ReportSectionBlock } from '../components/report-section';
+import { SeededHistoryNote } from '../components/seeded-history-note';
 import { SixSpine } from '../components/six-spine';
 import { describeWindow, loadFoundationView } from '../lib/foundation-report';
 
@@ -49,11 +50,17 @@ export default async function ReportPage() {
 
         <div className="mt-10 hairline pt-8">
           <p className="prose-narration">
-            Compass has no report for you yet. The foundations are in place — the{' '}
-            <strong>Clock port</strong>, the time-windowed <strong>connector port</strong> with its seeded provider,
-            and the organization-scoped schema — and the sources above answered the window below through the real
-            port, not a fixture read at render time.
+            Compass has no report for you yet. What it does have is the substrate: the <strong>Clock port</strong>, the
+            time-windowed <strong>connector port</strong>, and behind it a seeded organization of{' '}
+            <span className="font-mono tabular-nums">{view.recordCount.toLocaleString('en-GB')}</span> artifacts —
+            commits, pull requests, reviews, tickets, sprints and conversation. The sources above answered through that
+            port, not from a fixture read at render time.
           </p>
+          <SeededHistoryNote
+            datasetWindow={view.datasetWindow}
+            coversWindow={view.datasetCoversWindow}
+            timezone={view.timezone}
+          />
           <p className="prose-narration mt-4">
             The six sections below are the ones you will read every morning, in this order, forever. They are empty
             because the analysis core that fills them is the next piece of work, and Compass would rather say so than

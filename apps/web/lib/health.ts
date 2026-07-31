@@ -2,7 +2,7 @@ import { SystemClock, previousCivilDayWindow, toIso } from '@compass/clock';
 import { MissingDatabaseUrlError, createDatabase, resolveDatabaseUrl } from '@compass/db';
 import { SeedConnector } from '@compass/seed-connector';
 
-import { DEMO_ORGANIZATION_ID, resolveTimezone } from './foundation-report';
+import { resolveProvider, resolveTimezone } from './foundation-report';
 
 /**
  * System readiness, stated honestly.
@@ -65,9 +65,10 @@ export async function readiness(): Promise<ReadinessReport> {
     detail: `now resolved once at the edge: ${toIso(now)} (${timezone})`,
   };
 
-  const connector = new SeedConnector();
+  const provider = resolveProvider();
+  const connector = new SeedConnector(provider.dataset);
   const health = await connector.reportSourceHealth({
-    organizationId: DEMO_ORGANIZATION_ID,
+    organizationId: provider.organizationId,
     window,
     now,
   });
@@ -80,7 +81,17 @@ export async function readiness(): Promise<ReadinessReport> {
       .join(', '),
   };
 
-  const checks = [clockCheck, connectorCheck, await checkDatabase()];
+  const datasetCheck: ReadinessCheck = {
+    name: 'seed-dataset',
+    status: provider.degradation === null ? 'ready' : 'not_configured',
+    detail:
+      provider.degradation ??
+      `${provider.dataset.datasetId} loaded from seed/generated, covering ${
+        provider.datasetWindow === null ? 'an unknown window' : `${toIso(provider.datasetWindow.start)} → ${toIso(provider.datasetWindow.end)}`
+      }`,
+  };
+
+  const checks = [clockCheck, connectorCheck, datasetCheck, await checkDatabase()];
   const status: CheckStatus = checks.some((check) => check.status === 'not_configured')
     ? 'not_configured'
     : checks.some((check) => check.status === 'degraded')

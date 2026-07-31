@@ -1,0 +1,201 @@
+{
+  "$comment": [
+    "Eight planted pathologies. Every identifier below is written out in full and",
+    "is reproduced verbatim in seed/MANIFEST.md; a test parses the manifest and",
+    "resolves each identifier against the generated dataset, so a pathology cannot",
+    "be documented and then quietly dropped, or planted and left undocumented.",
+    "",
+    "Planted identifiers sit deliberately outside the generated numbering ranges",
+    "(PLAT-401..540, CHK-201..320, INS-101..170, pull requests 8001..) so that a",
+    "volume change can never collide with a planted one."
+  ],
+  "offGoalWorkStream": {
+    "id": "off-goal-billing-migration",
+    "title": "A billing-client migration stream running inside the current sprint",
+    "servesObjectiveKey": "OBJ-Q2-BILL",
+    "currentObjectiveKey": "OBJ-Q3-PLAT",
+    "projectKey": "PLAT",
+    "repositoryKey": "platform-api",
+    "developerKey": "tom-whitfield",
+    "sprintName": "Sprint 46",
+    "branchName": "feature/PLAT-742-legacy-billing-migration",
+    "windowStart": "2026-07-27T00:00:00Z",
+    "windowEnd": "2026-07-31T00:00:00Z",
+    "issues": [
+      { "itemKey": "PLAT-742", "title": "Migrate the legacy billing client onto the new SDK", "points": 8, "createdAt": "2026-07-27T09:10:00Z", "status": "In Progress" },
+      { "itemKey": "PLAT-743", "title": "Backfill legacy billing client subscription rows", "points": 5, "createdAt": "2026-07-27T09:20:00Z", "status": "In Progress" },
+      { "itemKey": "PLAT-744", "title": "Retire the legacy billing client shim", "points": 3, "createdAt": "2026-07-28T10:00:00Z", "status": "To Do" }
+    ],
+    "commits": [
+      { "revisionId": "0f1a2b3", "itemKey": "PLAT-742", "subject": "port the legacy billing client onto the new SDK surface", "occurredAt": "2026-07-27T11:12:00Z" },
+      { "revisionId": "1f2a3b4", "itemKey": "PLAT-742", "subject": "map legacy billing plans onto SDK products", "occurredAt": "2026-07-28T09:41:00Z" },
+      { "revisionId": "2f3a4b5", "itemKey": "PLAT-743", "subject": "backfill legacy billing subscription rows in batches", "occurredAt": "2026-07-29T10:22:00Z" },
+      { "revisionId": "3f4a5b6", "itemKey": "PLAT-743", "subject": "make the legacy billing backfill resumable", "occurredAt": "2026-07-29T15:03:00Z" },
+      { "revisionId": "4f5a6b7", "itemKey": "PLAT-742", "subject": "delete the legacy billing client retry wrapper", "occurredAt": "2026-07-30T09:35:00Z" },
+      { "revisionId": "5f6a7b8", "itemKey": "PLAT-744", "subject": "remove the legacy billing client shim from bootstrap", "occurredAt": "2026-07-30T14:18:00Z" }
+    ]
+  },
+  "reviewBottleneck": {
+    "id": "review-bottleneck-marcus-hale",
+    "title": "Every open platform review is queued behind one person",
+    "reviewerDeveloperKey": "marcus-hale",
+    "reviewerName": "Marcus Hale",
+    "repositoryKey": "platform-api",
+    "windowStart": "2026-07-20T00:00:00Z",
+    "windowEnd": "2026-07-31T00:00:00Z",
+    "pullRequests": [
+      { "displayNumber": 9101, "authorDeveloperKey": "priya-raman", "itemKey": "PLAT-746", "title": "PLAT-746 bound the gateway retry budget", "createdAt": "2026-07-20T10:05:00Z" },
+      { "displayNumber": 9102, "authorDeveloperKey": "elena-sokolova", "itemKey": "PLAT-747", "title": "PLAT-747 warm the profile cache on boot", "createdAt": "2026-07-21T09:40:00Z" },
+      { "displayNumber": 9103, "authorDeveloperKey": "aisha-bello", "itemKey": "PLAT-748", "title": "PLAT-748 drop the synchronous fraud call", "createdAt": "2026-07-22T14:15:00Z" },
+      { "displayNumber": 9104, "authorDeveloperKey": "priya-raman", "itemKey": "PLAT-749", "title": "PLAT-749 add span coverage past the gateway", "createdAt": "2026-07-23T11:30:00Z" },
+      { "displayNumber": 9105, "authorDeveloperKey": "tom-whitfield", "itemKey": "PLAT-750", "title": "PLAT-750 pin the ledger rounding mode", "createdAt": "2026-07-24T16:20:00Z" },
+      { "displayNumber": 9106, "authorDeveloperKey": "elena-sokolova", "itemKey": "PLAT-751", "title": "PLAT-751 batch the merchant profile lookups", "createdAt": "2026-07-27T09:55:00Z" },
+      { "displayNumber": 9107, "authorDeveloperKey": "aisha-bello", "itemKey": "PLAT-752", "title": "PLAT-752 drain the dead-letter queue on a schedule", "createdAt": "2026-07-28T13:10:00Z" }
+    ]
+  },
+  "slippingRelease": {
+    "id": "release-slip-v4-2-0",
+    "title": "Release 2 slipped five days across a multi-day window",
+    "repositoryKey": "platform-api",
+    "releaseTagName": "v4.2.0",
+    "candidateTagName": "v4.2.0-rc.1",
+    "plannedAt": "2026-07-24T16:00:00Z",
+    "actualAt": "2026-07-29T17:20:00Z",
+    "windowStart": "2026-07-24T00:00:00Z",
+    "windowEnd": "2026-07-30T00:00:00Z",
+    "trackingItemKey": "PLAT-745",
+    "trackingTitle": "Release 2 cut and rollout checklist",
+    "conversationKey": "conversation-release"
+  },
+  "blockedThenMerged": {
+    "id": "blocked-then-merged-CHK-701",
+    "title": "Reported blocked in the morning, merged the same evening",
+    "itemKey": "CHK-701",
+    "issueTitle": "Guest checkout retries a declined card twice on slow networks",
+    "projectKey": "CHK",
+    "repositoryKey": "checkout-web",
+    "developerKey": "naomi-chen",
+    "sprintName": "Sprint 17",
+    "points": 5,
+    "createdAt": "2026-07-28T09:00:00Z",
+    "blockedFlaggedAt": "2026-07-30T08:15:00Z",
+    "mergedAt": "2026-07-30T18:40:00Z",
+    "pullRequestNumber": 9201,
+    "branchName": "feature/CHK-701-declined-card-retry",
+    "mergeRevisionId": "7a8b9c0",
+    "headRevisionId": "6a7b8c9",
+    "chatClaimAt": "2026-07-30T08:20:00Z"
+  },
+  "estimationNoise": {
+    "id": "estimation-noise-plat",
+    "title": "Story points that have not tracked elapsed days for five sprints",
+    "projectKey": "PLAT",
+    "expectedVerdict": "points_uninformative",
+    "correlationThreshold": 0.3,
+    "minimumSampleSize": 10,
+    "samples": [
+      { "itemKey": "PLAT-760", "points": 1, "elapsedWorkingDays": 9, "sprintName": "Sprint 42" },
+      { "itemKey": "PLAT-761", "points": 2, "elapsedWorkingDays": 3, "sprintName": "Sprint 42" },
+      { "itemKey": "PLAT-762", "points": 3, "elapsedWorkingDays": 11, "sprintName": "Sprint 42" },
+      { "itemKey": "PLAT-763", "points": 5, "elapsedWorkingDays": 4, "sprintName": "Sprint 43" },
+      { "itemKey": "PLAT-764", "points": 8, "elapsedWorkingDays": 12, "sprintName": "Sprint 43" },
+      { "itemKey": "PLAT-765", "points": 13, "elapsedWorkingDays": 2, "sprintName": "Sprint 43" },
+      { "itemKey": "PLAT-766", "points": 1, "elapsedWorkingDays": 8, "sprintName": "Sprint 44" },
+      { "itemKey": "PLAT-767", "points": 2, "elapsedWorkingDays": 13, "sprintName": "Sprint 44" },
+      { "itemKey": "PLAT-768", "points": 3, "elapsedWorkingDays": 5, "sprintName": "Sprint 44" },
+      { "itemKey": "PLAT-769", "points": 5, "elapsedWorkingDays": 10, "sprintName": "Sprint 45" },
+      { "itemKey": "PLAT-770", "points": 8, "elapsedWorkingDays": 3, "sprintName": "Sprint 45" },
+      { "itemKey": "PLAT-771", "points": 13, "elapsedWorkingDays": 11, "sprintName": "Sprint 45" },
+      { "itemKey": "PLAT-772", "points": 3, "elapsedWorkingDays": 6, "sprintName": "Sprint 45" },
+      { "itemKey": "PLAT-773", "points": 5, "elapsedWorkingDays": 7, "sprintName": "Sprint 45" }
+    ]
+  },
+  "doneWithNoPullRequest": {
+    "id": "done-with-no-pull-request-INS-204",
+    "title": "Marked Done with nothing in version control to show for it",
+    "itemKey": "INS-204",
+    "issueTitle": "Settlement export drops the final page for large merchants",
+    "projectKey": "INS",
+    "developerKey": "clara-mbeki",
+    "createdAt": "2026-07-24T10:00:00Z",
+    "doneAt": "2026-07-30T11:05:00Z"
+  },
+  "mergedNotReleased": {
+    "id": "merged-not-released-platform-api",
+    "title": "Merged work sitting ahead of the newest release tag",
+    "repositoryKey": "platform-api",
+    "latestReleaseTagName": "v4.2.0",
+    "latestReleaseAt": "2026-07-29T17:20:00Z",
+    "oldestUnreleasedPullRequestNumber": 9301,
+    "pullRequests": [
+      { "displayNumber": 9301, "itemKey": "PLAT-753", "title": "PLAT-753 fold the duplicate timeout constants into one", "authorDeveloperKey": "priya-raman", "mergedAt": "2026-07-29T18:05:00Z", "mergeRevisionId": "8b9c0d1" },
+      { "displayNumber": 9302, "itemKey": "PLAT-754", "title": "PLAT-754 record the correlation identifier on every span", "authorDeveloperKey": "elena-sokolova", "mergedAt": "2026-07-30T10:47:00Z", "mergeRevisionId": "9c0d1e2" },
+      { "displayNumber": 9303, "itemKey": "PLAT-755", "title": "PLAT-755 stop logging the card bin in capture", "authorDeveloperKey": "aisha-bello", "mergedAt": "2026-07-30T16:12:00Z", "mergeRevisionId": "0d1e2f3" }
+    ]
+  },
+  "technicalDebtGrowth": {
+    "id": "tech-debt-growth-plat",
+    "title": "Tech-debt tickets opened per sprint, rising for four sprints",
+    "projectKey": "PLAT",
+    "label": "tech-debt",
+    "cohorts": [
+      {
+        "sprintName": "Sprint 43",
+        "openedAt": "2026-06-16T10:00:00Z",
+        "issues": [
+          { "itemKey": "PLAT-781", "title": "Timeout budget is duplicated in three modules" },
+          { "itemKey": "PLAT-782", "title": "Gateway client retries on a non-idempotent verb" }
+        ]
+      },
+      {
+        "sprintName": "Sprint 44",
+        "openedAt": "2026-06-30T10:00:00Z",
+        "issues": [
+          { "itemKey": "PLAT-783", "title": "Tokenization cache key ignores the merchant scope" },
+          { "itemKey": "PLAT-784", "title": "Background reconciler holds a transaction open" },
+          { "itemKey": "PLAT-785", "title": "Structured logs drop the correlation identifier" }
+        ]
+      },
+      {
+        "sprintName": "Sprint 45",
+        "openedAt": "2026-07-14T10:00:00Z",
+        "issues": [
+          { "itemKey": "PLAT-786", "title": "Dead-letter queue has no drain procedure" },
+          { "itemKey": "PLAT-787", "title": "Profile lookup issues one query per merchant" },
+          { "itemKey": "PLAT-788", "title": "Trace spans stop at the gateway boundary" },
+          { "itemKey": "PLAT-789", "title": "Migration lock blocks the deploy for four minutes" }
+        ]
+      },
+      {
+        "sprintName": "Sprint 46",
+        "openedAt": "2026-07-28T10:00:00Z",
+        "issues": [
+          { "itemKey": "PLAT-790", "title": "Feature flag evaluation blocks on a network call" },
+          { "itemKey": "PLAT-791", "title": "Alert threshold fires on a healthy rolling restart" },
+          { "itemKey": "PLAT-792", "title": "Health probe reports ready before the pool warms" },
+          { "itemKey": "PLAT-793", "title": "Currency rounding disagrees with the ledger" },
+          { "itemKey": "PLAT-794", "title": "Connection pool starves under a burst of authorizations" },
+          { "itemKey": "PLAT-795", "title": "Idempotency keys expire before the retry window closes" },
+          { "itemKey": "PLAT-796", "title": "Settlement webhook retries duplicate ledger rows" }
+        ]
+      }
+    ]
+  },
+  "unmatchedIdentityCommits": {
+    "id": "unmatched-identity-commits",
+    "title": "Commits authored by addresses that belong to no developer",
+    "repositoryKey": "platform-api",
+    "branchName": "main",
+    "commits": [
+      { "revisionId": "a1b2c30", "address": "ci-bot@build.northwind.example", "subject": "merge release branch into main", "occurredAt": "2026-07-21T08:05:00Z" },
+      { "revisionId": "a1b2c31", "address": "ci-bot@build.northwind.example", "subject": "merge release branch into main", "occurredAt": "2026-07-28T08:05:00Z" },
+      { "revisionId": "a1b2c32", "address": "root@ip-10-0-4-27.internal", "subject": "hotfix the gateway timeout from the bastion", "occurredAt": "2026-07-23T22:41:00Z" },
+      { "revisionId": "a1b2c33", "address": "contractor.jm@vendorlabs.example", "subject": "add the merchant onboarding export script", "occurredAt": "2026-07-27T16:30:00Z" },
+      { "revisionId": "a1b2c34", "address": "contractor.jm@vendorlabs.example", "subject": "tidy up the export script arguments", "occurredAt": "2026-07-29T12:14:00Z" },
+      { "revisionId": "a1b2c35", "address": "p.raman@personal.example", "subject": "weekend spike on the settlement reconciler", "occurredAt": "2026-07-26T19:22:00Z" },
+      { "revisionId": "a1b2c36", "address": "noreply@dependency-updater.example", "subject": "bump the lockfile after the audit", "occurredAt": "2026-07-30T04:00:00Z" },
+      { "revisionId": "a1b2c37", "address": "noreply@dependency-updater.example", "subject": "bump the lockfile after the audit", "occurredAt": "2026-07-23T04:00:00Z" },
+      { "revisionId": "a1b2c38", "address": "dev@localhost.localdomain", "subject": "wip", "occurredAt": "2026-07-30T13:47:00Z" }
+    ]
+  }
+}

@@ -1,0 +1,127 @@
+{
+  "$comment": [
+    "The seeded organization. Hand-authored; edit this file, then run `pnpm seed:generate`.",
+    "Every instant is an ISO-8601 string in UTC. The generator derives every other",
+    "timestamp by offset from `timeline`, so nothing here ever reads a host clock."
+  ],
+  "datasetId": "northwind-v1",
+  "organizationId": "00000000-0000-4000-8000-000000000001",
+  "companyName": "Northwind Systems",
+  "randomSeed": "northwind-v1/2026-07-31",
+  "timeline": {
+    "datasetStart": "2026-05-18T00:00:00Z",
+    "datasetEnd": "2026-07-31T00:00:00Z",
+    "now": "2026-07-31T09:00:00Z",
+    "reportWindowStart": "2026-07-30T00:00:00Z",
+    "reportWindowEnd": "2026-07-31T00:00:00Z",
+    "firstSprintStart": "2026-05-18T09:00:00Z",
+    "sprintLengthDays": 14,
+    "workdayStartHour": 8,
+    "workdayEndHour": 18
+  },
+  "sources": [
+    {
+      "sourceKey": "primary-code",
+      "sourceKind": "code",
+      "availability": { "status": "available" }
+    },
+    {
+      "sourceKey": "primary-tracker",
+      "sourceKind": "tracker",
+      "availability": { "status": "available" }
+    },
+    {
+      "sourceKey": "team-chat",
+      "sourceKind": "chat",
+      "availability": { "status": "available" }
+    },
+    {
+      "sourceKey": "archive-code",
+      "sourceKind": "code",
+      "availability": {
+        "status": "unavailable",
+        "reason": "rate_limited",
+        "detail": "archive-code refused every request in this window after exhausting its hourly quota; nothing from the archived repositories could be read."
+      }
+    }
+  ],
+  "objectives": [
+    {
+      "key": "OBJ-CO-1",
+      "kind": "company",
+      "parentKey": null,
+      "current": true,
+      "effectiveFrom": "2026-01-01T00:00:00Z",
+      "effectiveUntil": "2026-12-31T00:00:00Z",
+      "title": "Make Northwind the fastest way to take a payment on the web"
+    },
+    {
+      "key": "OBJ-Q3-PLAT",
+      "kind": "quarter",
+      "parentKey": "OBJ-CO-1",
+      "current": true,
+      "effectiveFrom": "2026-07-01T00:00:00Z",
+      "effectiveUntil": "2026-09-30T00:00:00Z",
+      "title": "Cut p95 payment gateway latency below 400 ms"
+    },
+    {
+      "key": "OBJ-Q3-CHK",
+      "kind": "quarter",
+      "parentKey": "OBJ-CO-1",
+      "current": true,
+      "effectiveFrom": "2026-07-01T00:00:00Z",
+      "effectiveUntil": "2026-09-30T00:00:00Z",
+      "title": "Ship guest checkout to every merchant"
+    },
+    {
+      "key": "OBJ-Q3-INS",
+      "kind": "quarter",
+      "parentKey": "OBJ-CO-1",
+      "current": true,
+      "effectiveFrom": "2026-07-01T00:00:00Z",
+      "effectiveUntil": "2026-09-30T00:00:00Z",
+      "title": "Give merchants same-day settlement insight"
+    },
+    {
+      "key": "OBJ-Q2-BILL",
+      "kind": "quarter",
+      "parentKey": "OBJ-CO-1",
+      "current": false,
+      "effectiveFrom": "2026-04-01T00:00:00Z",
+      "effectiveUntil": "2026-06-30T00:00:00Z",
+      "title": "Migrate every merchant off the legacy billing client"
+    }
+  ],
+  "teams": [
+    {
+      "key": "platform",
+      "name": "Platform",
+      "methodology": "scrum",
+      "projectKey": "PLAT",
+      "objectiveKey": "OBJ-Q3-PLAT",
+      "conversationKey": "conversation-platform"
+    },
+    {
+      "key": "checkout",
+      "name": "Checkout",
+      "methodology": "scrum",
+      "projectKey": "CHK",
+      "objectiveKey": "OBJ-Q3-CHK",
+      "conversationKey": "conversation-checkout"
+    },
+    {
+      "key": "insights",
+      "name": "Insights",
+      "methodology": "kanban",
+      "projectKey": "INS",
+      "objectiveKey": "OBJ-Q3-INS",
+      "conversationKey": "conversation-insights"
+    }
+  ],
+  "conversations": [
+    { "key": "conversation-platform", "name": "platform-standup", "teamKey": "platform", "messageCount": 240 },
+    { "key": "conversation-checkout", "name": "checkout-standup", "teamKey": "checkout", "messageCount": 230 },
+    { "key": "conversation-insights", "name": "insights-flow", "teamKey": "insights", "messageCount": 200 },
+    { "key": "conversation-release", "name": "release-room", "teamKey": null, "messageCount": 190 }
+  ]
+}

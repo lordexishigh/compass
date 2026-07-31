@@ -1,0 +1,95 @@
+{
+  "companyName": "Northwind Systems",
+  "datasetId": "northwind-v1",
+  "deploySignal": false,
+  "now": "2026-07-31T09:00:00.000Z",
+  "objectives": [
+    {
+      "current": true,
+      "effectiveFrom": "2026-01-01T00:00:00Z",
+      "effectiveUntil": "2026-12-31T00:00:00Z",
+      "key": "OBJ-CO-1",
+      "kind": "company",
+      "parentKey": null,
+      "title": "Make Northwind the fastest way to take a payment on the web"
+    },
+    {
+      "current": true,
+      "effectiveFrom": "2026-07-01T00:00:00Z",
+      "effectiveUntil": "2026-09-30T00:00:00Z",
+      "key": "OBJ-Q3-PLAT",
+      "kind": "quarter",
+      "parentKey": "OBJ-CO-1",
+      "title": "Cut p95 payment gateway latency below 400 ms"
+    },
+    {
+      "current": true,
+      "effectiveFrom": "2026-07-01T00:00:00Z",
+      "effectiveUntil": "2026-09-30T00:00:00Z",
+      "key": "OBJ-Q3-CHK",
+      "kind": "quarter",
+      "parentKey": "OBJ-CO-1",
+      "title": "Ship guest checkout to every merchant"
+    },
+    {
+      "current": true,
+      "effectiveFrom": "2026-07-01T00:00:00Z",
+      "effectiveUntil": "2026-09-30T00:00:00Z",
+      "key": "OBJ-Q3-INS",
+      "kind": "quarter",
+      "parentKey": "OBJ-CO-1",
+      "title": "Give merchants same-day settlement insight"
+    },
+    {
+      "current": false,
+      "effectiveFrom": "2026-04-01T00:00:00Z",
+      "effectiveUntil": "2026-06-30T00:00:00Z",
+      "key": "OBJ-Q2-BILL",
+      "kind": "quarter",
+      "parentKey": "OBJ-CO-1",
+      "title": "Migrate every merchant off the legacy billing client"
+    }
+  ],
+  "organizationId": "00000000-0000-4000-8000-000000000001",
+  "reportWindow": {
+    "end": "2026-07-31T00:00:00.000Z",
+    "start": "2026-07-30T00:00:00.000Z"
+  },
+  "sources": [
+    {
+      "availability": {
+        "status": "available"
+      },
+      "sourceKey": "primary-code",
+      "sourceKind": "code"
+    },
+    {
+      "availability": {
+        "status": "available"
+      },
+      "sourceKey": "primary-tracker",
+      "sourceKind": "tracker"
+    },
+    {
+      "availability": {
+        "status": "available"
+      },
+      "sourceKey": "team-chat",
+      "sourceKind": "chat"
+    },
+    {
+      "availability": {
+        "detail": "archive-code refused every request in this window after exhausting its hourly quota; nothing from the archived repositories could be read.",
+        "reason": "rate_limited",
+        "status": "unavailable"
+      },
+      "sourceKey": "archive-code",
+      "sourceKind": "code"
+    }
+  ],
+  "unavailableSourceKey": "archive-code",
+  "window": {
+    "end": "2026-07-31T00:00:00.000Z",
+    "start": "2026-05-18T00:00:00.000Z"
+  }
+}

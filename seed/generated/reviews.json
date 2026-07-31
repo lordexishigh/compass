@@ -1,0 +1,4642 @@
+[
+  {
+    "commentCount": 2,
+    "occurredAt": "2026-05-20T05:39:00.000Z",
+    "pullRequestRef": "pull-request-8002",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8002-1",
+    "submittedAt": "2026-05-20T05:39:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 5,
+    "occurredAt": "2026-05-20T15:32:00.000Z",
+    "pullRequestRef": "pull-request-8001",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Aisha Bello",
+      "kind": "email",
+      "value": "aisha.bello@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8001-1",
+    "submittedAt": "2026-05-20T15:32:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-05-20T16:12:00.000Z",
+    "pullRequestRef": "pull-request-8064",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rafael.lima@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8064-1",
+    "submittedAt": "2026-05-20T16:12:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-05-20T18:06:00.000Z",
+    "pullRequestRef": "pull-request-8116",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Oskar Lindqvist",
+      "kind": "email",
+      "value": "oskar.lindqvist@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8116-3",
+    "submittedAt": "2026-05-20T18:06:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-05-21T00:39:00.000Z",
+    "pullRequestRef": "pull-request-8003",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "tom.whitfield@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8003-1",
+    "submittedAt": "2026-05-21T00:39:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 1,
+    "occurredAt": "2026-05-21T09:06:00.000Z",
+    "pullRequestRef": "pull-request-8116",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Oskar Lindqvist",
+      "kind": "email",
+      "value": "oskar.lindqvist@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8116-1",
+    "submittedAt": "2026-05-21T09:06:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-05-21T10:57:00.000Z",
+    "pullRequestRef": "pull-request-8115",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Yusuf Demir",
+      "kind": "email",
+      "value": "yusuf.demir@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8115-1",
+    "submittedAt": "2026-05-21T10:57:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-05-21T13:55:00.000Z",
+    "pullRequestRef": "pull-request-8065",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ingrid.falk@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8065-1",
+    "submittedAt": "2026-05-21T13:55:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 1,
+    "occurredAt": "2026-05-21T22:39:00.000Z",
+    "pullRequestRef": "pull-request-8002",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "mhale@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8002-2",
+    "submittedAt": "2026-05-21T22:39:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 3,
+    "occurredAt": "2026-05-22T03:47:00.000Z",
+    "pullRequestRef": "pull-request-8063",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "daniel.ortiz@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8063-1",
+    "submittedAt": "2026-05-22T03:47:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 5,
+    "occurredAt": "2026-05-22T09:06:00.000Z",
+    "pullRequestRef": "pull-request-8116",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Oskar Lindqvist",
+      "kind": "email",
+      "value": "olindqvist@insights.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8116-2",
+    "submittedAt": "2026-05-22T09:06:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 4,
+    "occurredAt": "2026-05-22T15:32:00.000Z",
+    "pullRequestRef": "pull-request-8001",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Aisha Bello",
+      "kind": "email",
+      "value": "abello@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8001-2",
+    "submittedAt": "2026-05-22T15:32:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 4,
+    "occurredAt": "2026-05-22T16:15:00.000Z",
+    "pullRequestRef": "pull-request-8004",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8004-1",
+    "submittedAt": "2026-05-22T16:15:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-05-23T02:47:00.000Z",
+    "pullRequestRef": "pull-request-8063",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "dortiz@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8063-2",
+    "submittedAt": "2026-05-23T02:47:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-05-23T03:32:00.000Z",
+    "pullRequestRef": "pull-request-8001",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Aisha Bello",
+      "kind": "email",
+      "value": "aisha.bello@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8001-3",
+    "submittedAt": "2026-05-23T03:32:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-05-23T13:16:00.000Z",
+    "pullRequestRef": "pull-request-8005",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "elena.sokolova@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8005-1",
+    "submittedAt": "2026-05-23T13:16:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-05-24T19:09:00.000Z",
+    "pullRequestRef": "pull-request-8066",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rafael.lima@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8066-1",
+    "submittedAt": "2026-05-24T19:09:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-05-24T22:39:00.000Z",
+    "pullRequestRef": "pull-request-8002",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8002-3",
+    "submittedAt": "2026-05-24T22:39:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-05-25T03:15:00.000Z",
+    "pullRequestRef": "pull-request-8004",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "mhale@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8004-2",
+    "submittedAt": "2026-05-25T03:15:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 2,
+    "occurredAt": "2026-05-25T12:46:00.000Z",
+    "pullRequestRef": "pull-request-8117",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Clara Mbeki",
+      "kind": "email",
+      "value": "clara.mbeki@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8117-1",
+    "submittedAt": "2026-05-25T12:46:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 4,
+    "occurredAt": "2026-05-25T15:22:00.000Z",
+    "pullRequestRef": "pull-request-8067",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8067-1",
+    "submittedAt": "2026-05-25T15:22:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-05-26T07:41:00.000Z",
+    "pullRequestRef": "pull-request-8006",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "elena.sokolova@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8006-1",
+    "submittedAt": "2026-05-26T07:41:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 3,
+    "occurredAt": "2026-05-26T13:57:00.000Z",
+    "pullRequestRef": "pull-request-8068",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8068-1",
+    "submittedAt": "2026-05-26T13:57:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 1,
+    "occurredAt": "2026-05-27T11:59:00.000Z",
+    "pullRequestRef": "pull-request-8118",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Yusuf Demir",
+      "kind": "email",
+      "value": "yusuf.demir@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8118-1",
+    "submittedAt": "2026-05-27T11:59:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 2,
+    "occurredAt": "2026-05-27T20:34:00.000Z",
+    "pullRequestRef": "pull-request-8007",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "tom.whitfield@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8007-1",
+    "submittedAt": "2026-05-27T20:34:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 4,
+    "occurredAt": "2026-05-28T07:01:00.000Z",
+    "pullRequestRef": "pull-request-8009",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Aisha Bello",
+      "kind": "email",
+      "value": "aisha.bello@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8009-1",
+    "submittedAt": "2026-05-28T07:01:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 6,
+    "occurredAt": "2026-05-28T10:16:00.000Z",
+    "pullRequestRef": "pull-request-8008",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "tom.whitfield@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8008-1",
+    "submittedAt": "2026-05-28T10:16:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-05-28T19:57:00.000Z",
+    "pullRequestRef": "pull-request-8068",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8068-3",
+    "submittedAt": "2026-05-28T19:57:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 1,
+    "occurredAt": "2026-05-28T21:59:00.000Z",
+    "pullRequestRef": "pull-request-8118",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Yusuf Demir",
+      "kind": "email",
+      "value": "ydemir@insights.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8118-2",
+    "submittedAt": "2026-05-28T21:59:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-05-29T04:34:00.000Z",
+    "pullRequestRef": "pull-request-8007",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "twhitfield@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8007-2",
+    "submittedAt": "2026-05-29T04:34:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-05-29T05:03:00.000Z",
+    "pullRequestRef": "pull-request-8069",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ingrid.falk@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8069-1",
+    "submittedAt": "2026-05-29T05:03:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-05-29T06:59:00.000Z",
+    "pullRequestRef": "pull-request-8118",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Yusuf Demir",
+      "kind": "email",
+      "value": "yusuf.demir@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8118-3",
+    "submittedAt": "2026-05-29T06:59:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 6,
+    "occurredAt": "2026-05-29T12:16:00.000Z",
+    "pullRequestRef": "pull-request-8008",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "twhitfield@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8008-2",
+    "submittedAt": "2026-05-29T12:16:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 5,
+    "occurredAt": "2026-05-30T07:13:00.000Z",
+    "pullRequestRef": "pull-request-8070",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rafael.lima@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8070-1",
+    "submittedAt": "2026-05-30T07:13:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 6,
+    "occurredAt": "2026-05-30T10:46:00.000Z",
+    "pullRequestRef": "pull-request-8071",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rafael.lima@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8071-1",
+    "submittedAt": "2026-05-30T10:46:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 4,
+    "occurredAt": "2026-05-30T11:57:00.000Z",
+    "pullRequestRef": "pull-request-8068",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "nchen@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8068-2",
+    "submittedAt": "2026-05-30T11:57:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 2,
+    "occurredAt": "2026-05-30T15:13:00.000Z",
+    "pullRequestRef": "pull-request-8070",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rlima@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8070-2",
+    "submittedAt": "2026-05-30T15:13:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-05-30T15:45:00.000Z",
+    "pullRequestRef": "pull-request-8011",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "elena.sokolova@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8011-1",
+    "submittedAt": "2026-05-30T15:45:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-05-30T17:59:00.000Z",
+    "pullRequestRef": "pull-request-8010",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "tom.whitfield@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8010-1",
+    "submittedAt": "2026-05-30T17:59:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 3,
+    "occurredAt": "2026-05-30T21:35:00.000Z",
+    "pullRequestRef": "pull-request-8012",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "elena.sokolova@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8012-1",
+    "submittedAt": "2026-05-30T21:35:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 4,
+    "occurredAt": "2026-05-30T23:55:00.000Z",
+    "pullRequestRef": "pull-request-8119",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Oskar Lindqvist",
+      "kind": "email",
+      "value": "oskar.lindqvist@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8119-1",
+    "submittedAt": "2026-05-30T23:55:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-05-31T17:01:00.000Z",
+    "pullRequestRef": "pull-request-8009",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Aisha Bello",
+      "kind": "email",
+      "value": "abello@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8009-2",
+    "submittedAt": "2026-05-31T17:01:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-05-31T21:46:00.000Z",
+    "pullRequestRef": "pull-request-8071",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rlima@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8071-2",
+    "submittedAt": "2026-05-31T21:46:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-01T01:55:00.000Z",
+    "pullRequestRef": "pull-request-8119",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Oskar Lindqvist",
+      "kind": "email",
+      "value": "olindqvist@insights.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8119-2",
+    "submittedAt": "2026-06-01T01:55:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-01T08:16:00.000Z",
+    "pullRequestRef": "pull-request-8008",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "tom.whitfield@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8008-3",
+    "submittedAt": "2026-06-01T08:16:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-01T12:04:00.000Z",
+    "pullRequestRef": "pull-request-8120",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Oskar Lindqvist",
+      "kind": "email",
+      "value": "oskar.lindqvist@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8120-3",
+    "submittedAt": "2026-06-01T12:04:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 2,
+    "occurredAt": "2026-06-01T20:04:00.000Z",
+    "pullRequestRef": "pull-request-8120",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Oskar Lindqvist",
+      "kind": "email",
+      "value": "oskar.lindqvist@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8120-1",
+    "submittedAt": "2026-06-01T20:04:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 3,
+    "occurredAt": "2026-06-01T23:50:00.000Z",
+    "pullRequestRef": "pull-request-8013",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "praman@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8013-2",
+    "submittedAt": "2026-06-01T23:50:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-02T02:35:00.000Z",
+    "pullRequestRef": "pull-request-8012",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "esokolova@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8012-2",
+    "submittedAt": "2026-06-02T02:35:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 3,
+    "occurredAt": "2026-06-02T08:04:00.000Z",
+    "pullRequestRef": "pull-request-8120",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Oskar Lindqvist",
+      "kind": "email",
+      "value": "olindqvist@insights.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8120-2",
+    "submittedAt": "2026-06-02T08:04:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-02T17:45:00.000Z",
+    "pullRequestRef": "pull-request-8014",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Aisha Bello",
+      "kind": "email",
+      "value": "aisha.bello@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8014-1",
+    "submittedAt": "2026-06-02T17:45:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-02T21:43:00.000Z",
+    "pullRequestRef": "pull-request-8073",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8073-3",
+    "submittedAt": "2026-06-02T21:43:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 2,
+    "occurredAt": "2026-06-02T23:50:00.000Z",
+    "pullRequestRef": "pull-request-8013",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8013-1",
+    "submittedAt": "2026-06-02T23:50:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-03T04:47:00.000Z",
+    "pullRequestRef": "pull-request-8072",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8072-1",
+    "submittedAt": "2026-06-03T04:47:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 4,
+    "occurredAt": "2026-06-03T09:43:00.000Z",
+    "pullRequestRef": "pull-request-8073",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8073-1",
+    "submittedAt": "2026-06-03T09:43:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 5,
+    "occurredAt": "2026-06-03T10:49:00.000Z",
+    "pullRequestRef": "pull-request-8074",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "nchen@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8074-2",
+    "submittedAt": "2026-06-03T10:49:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-04T00:32:00.000Z",
+    "pullRequestRef": "pull-request-8015",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "praman@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8015-2",
+    "submittedAt": "2026-06-04T00:32:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 3,
+    "occurredAt": "2026-06-04T04:49:00.000Z",
+    "pullRequestRef": "pull-request-8074",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8074-1",
+    "submittedAt": "2026-06-04T04:49:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-04T18:13:00.000Z",
+    "pullRequestRef": "pull-request-8070",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rafael.lima@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8070-3",
+    "submittedAt": "2026-06-04T18:13:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 5,
+    "occurredAt": "2026-06-05T01:01:00.000Z",
+    "pullRequestRef": "pull-request-8016",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Aisha Bello",
+      "kind": "email",
+      "value": "aisha.bello@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8016-1",
+    "submittedAt": "2026-06-05T01:01:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 2,
+    "occurredAt": "2026-06-05T02:32:00.000Z",
+    "pullRequestRef": "pull-request-8015",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8015-1",
+    "submittedAt": "2026-06-05T02:32:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 1,
+    "occurredAt": "2026-06-05T09:50:00.000Z",
+    "pullRequestRef": "pull-request-8075",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ingrid.falk@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8075-1",
+    "submittedAt": "2026-06-05T09:50:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 6,
+    "occurredAt": "2026-06-05T12:43:00.000Z",
+    "pullRequestRef": "pull-request-8073",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "nchen@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8073-2",
+    "submittedAt": "2026-06-05T12:43:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 6,
+    "occurredAt": "2026-06-05T21:01:00.000Z",
+    "pullRequestRef": "pull-request-8016",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Aisha Bello",
+      "kind": "email",
+      "value": "abello@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8016-2",
+    "submittedAt": "2026-06-05T21:01:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 3,
+    "occurredAt": "2026-06-06T19:55:00.000Z",
+    "pullRequestRef": "pull-request-8077",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "dortiz@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8077-2",
+    "submittedAt": "2026-06-06T19:55:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 5,
+    "occurredAt": "2026-06-07T02:52:00.000Z",
+    "pullRequestRef": "pull-request-8017",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "elena.sokolova@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8017-1",
+    "submittedAt": "2026-06-07T02:52:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 2,
+    "occurredAt": "2026-06-07T06:15:00.000Z",
+    "pullRequestRef": "pull-request-8121",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Yusuf Demir",
+      "kind": "email",
+      "value": "yusuf.demir@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8121-1",
+    "submittedAt": "2026-06-07T06:15:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 2,
+    "occurredAt": "2026-06-07T09:33:00.000Z",
+    "pullRequestRef": "pull-request-8076",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8076-1",
+    "submittedAt": "2026-06-07T09:33:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-07T20:27:00.000Z",
+    "pullRequestRef": "pull-request-8019",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8019-1",
+    "submittedAt": "2026-06-07T20:27:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 6,
+    "occurredAt": "2026-06-07T21:55:00.000Z",
+    "pullRequestRef": "pull-request-8077",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "daniel.ortiz@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8077-1",
+    "submittedAt": "2026-06-07T21:55:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-07T22:50:00.000Z",
+    "pullRequestRef": "pull-request-8075",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ingrid@thinkpad.local"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8075-3",
+    "submittedAt": "2026-06-07T22:50:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-08T00:55:00.000Z",
+    "pullRequestRef": "pull-request-8077",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "danielo@mac.local"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8077-3",
+    "submittedAt": "2026-06-08T00:55:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-08T05:50:00.000Z",
+    "pullRequestRef": "pull-request-8013",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya@laptop.local"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8013-3",
+    "submittedAt": "2026-06-08T05:50:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-08T08:49:00.000Z",
+    "pullRequestRef": "pull-request-8074",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8074-3",
+    "submittedAt": "2026-06-08T08:49:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 4,
+    "occurredAt": "2026-06-08T08:50:00.000Z",
+    "pullRequestRef": "pull-request-8075",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ifalk@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8075-2",
+    "submittedAt": "2026-06-08T08:50:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 6,
+    "occurredAt": "2026-06-08T13:42:00.000Z",
+    "pullRequestRef": "pull-request-8078",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ifalk@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8078-2",
+    "submittedAt": "2026-06-08T13:42:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 2,
+    "occurredAt": "2026-06-08T15:09:00.000Z",
+    "pullRequestRef": "pull-request-8018",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8018-1",
+    "submittedAt": "2026-06-08T15:09:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 3,
+    "occurredAt": "2026-06-08T19:42:00.000Z",
+    "pullRequestRef": "pull-request-8078",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ingrid.falk@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8078-1",
+    "submittedAt": "2026-06-08T19:42:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 6,
+    "occurredAt": "2026-06-08T23:57:00.000Z",
+    "pullRequestRef": "pull-request-8122",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Oskar Lindqvist",
+      "kind": "email",
+      "value": "oskar.lindqvist@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8122-1",
+    "submittedAt": "2026-06-08T23:57:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-09T01:08:00.000Z",
+    "pullRequestRef": "pull-request-8020",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8020-1",
+    "submittedAt": "2026-06-09T01:08:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-09T03:33:00.000Z",
+    "pullRequestRef": "pull-request-8076",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8076-3",
+    "submittedAt": "2026-06-09T03:33:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 1,
+    "occurredAt": "2026-06-09T05:33:00.000Z",
+    "pullRequestRef": "pull-request-8076",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "nchen@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8076-2",
+    "submittedAt": "2026-06-09T05:33:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 4,
+    "occurredAt": "2026-06-09T10:32:00.000Z",
+    "pullRequestRef": "pull-request-8021",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "elena.sokolova@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8021-1",
+    "submittedAt": "2026-06-09T10:32:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 6,
+    "occurredAt": "2026-06-09T10:52:00.000Z",
+    "pullRequestRef": "pull-request-8017",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "esokolova@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8017-2",
+    "submittedAt": "2026-06-09T10:52:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-09T12:42:00.000Z",
+    "pullRequestRef": "pull-request-8078",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ingrid@thinkpad.local"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8078-3",
+    "submittedAt": "2026-06-09T12:42:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-09T17:09:00.000Z",
+    "pullRequestRef": "pull-request-8018",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8018-3",
+    "submittedAt": "2026-06-09T17:09:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 3,
+    "occurredAt": "2026-06-10T08:24:00.000Z",
+    "pullRequestRef": "pull-request-8022",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8022-1",
+    "submittedAt": "2026-06-10T08:24:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-10T17:01:00.000Z",
+    "pullRequestRef": "pull-request-8016",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Aisha Bello",
+      "kind": "email",
+      "value": "aisha.bello@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8016-3",
+    "submittedAt": "2026-06-10T17:01:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 1,
+    "occurredAt": "2026-06-10T18:15:00.000Z",
+    "pullRequestRef": "pull-request-8121",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Yusuf Demir",
+      "kind": "email",
+      "value": "ydemir@insights.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8121-2",
+    "submittedAt": "2026-06-10T18:15:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 4,
+    "occurredAt": "2026-06-10T22:01:00.000Z",
+    "pullRequestRef": "pull-request-8123",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Oskar Lindqvist",
+      "kind": "email",
+      "value": "oskar.lindqvist@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8123-1",
+    "submittedAt": "2026-06-10T22:01:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 5,
+    "occurredAt": "2026-06-10T22:09:00.000Z",
+    "pullRequestRef": "pull-request-8018",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "mhale@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8018-2",
+    "submittedAt": "2026-06-10T22:09:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 1,
+    "occurredAt": "2026-06-11T00:18:00.000Z",
+    "pullRequestRef": "pull-request-8079",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rafael.lima@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8079-1",
+    "submittedAt": "2026-06-11T00:18:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 2,
+    "occurredAt": "2026-06-11T02:24:00.000Z",
+    "pullRequestRef": "pull-request-8022",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "mhale@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8022-2",
+    "submittedAt": "2026-06-11T02:24:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 4,
+    "occurredAt": "2026-06-11T14:25:00.000Z",
+    "pullRequestRef": "pull-request-8081",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ingrid.falk@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8081-1",
+    "submittedAt": "2026-06-11T14:25:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-11T15:52:00.000Z",
+    "pullRequestRef": "pull-request-8017",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "elena@devbox.local"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8017-3",
+    "submittedAt": "2026-06-11T15:52:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 3,
+    "occurredAt": "2026-06-11T18:32:00.000Z",
+    "pullRequestRef": "pull-request-8021",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "esokolova@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8021-2",
+    "submittedAt": "2026-06-11T18:32:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 1,
+    "occurredAt": "2026-06-11T22:24:00.000Z",
+    "pullRequestRef": "pull-request-8022",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8022-3",
+    "submittedAt": "2026-06-11T22:24:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 5,
+    "occurredAt": "2026-06-11T23:15:00.000Z",
+    "pullRequestRef": "pull-request-8080",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rafael.lima@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8080-1",
+    "submittedAt": "2026-06-11T23:15:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 2,
+    "occurredAt": "2026-06-12T05:22:00.000Z",
+    "pullRequestRef": "pull-request-8023",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "elena.sokolova@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8023-1",
+    "submittedAt": "2026-06-12T05:22:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-12T08:01:00.000Z",
+    "pullRequestRef": "pull-request-8123",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Oskar Lindqvist",
+      "kind": "email",
+      "value": "olindqvist@insights.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8123-2",
+    "submittedAt": "2026-06-12T08:01:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-12T19:22:00.000Z",
+    "pullRequestRef": "pull-request-8023",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "elena@devbox.local"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8023-3",
+    "submittedAt": "2026-06-12T19:22:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 3,
+    "occurredAt": "2026-06-13T01:38:00.000Z",
+    "pullRequestRef": "pull-request-8025",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8025-1",
+    "submittedAt": "2026-06-13T01:38:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-13T08:15:00.000Z",
+    "pullRequestRef": "pull-request-8080",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rlima@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8080-2",
+    "submittedAt": "2026-06-13T08:15:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 6,
+    "occurredAt": "2026-06-13T09:18:00.000Z",
+    "pullRequestRef": "pull-request-8079",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rlima@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8079-2",
+    "submittedAt": "2026-06-13T09:18:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 1,
+    "occurredAt": "2026-06-13T21:42:00.000Z",
+    "pullRequestRef": "pull-request-8082",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8082-1",
+    "submittedAt": "2026-06-13T21:42:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 5,
+    "occurredAt": "2026-06-13T22:24:00.000Z",
+    "pullRequestRef": "pull-request-8124",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Clara Mbeki",
+      "kind": "email",
+      "value": "clara.mbeki@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8124-1",
+    "submittedAt": "2026-06-13T22:24:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-13T23:24:00.000Z",
+    "pullRequestRef": "pull-request-8124",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Clara Mbeki",
+      "kind": "email",
+      "value": "cmbeki@insights.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8124-2",
+    "submittedAt": "2026-06-13T23:24:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-14T05:25:00.000Z",
+    "pullRequestRef": "pull-request-8081",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ifalk@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8081-2",
+    "submittedAt": "2026-06-14T05:25:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 4,
+    "occurredAt": "2026-06-14T10:22:00.000Z",
+    "pullRequestRef": "pull-request-8023",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "esokolova@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8023-2",
+    "submittedAt": "2026-06-14T10:22:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 6,
+    "occurredAt": "2026-06-14T13:42:00.000Z",
+    "pullRequestRef": "pull-request-8083",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8083-1",
+    "submittedAt": "2026-06-14T13:42:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-14T15:20:00.000Z",
+    "pullRequestRef": "pull-request-8024",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "mhale@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8024-2",
+    "submittedAt": "2026-06-14T15:20:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 6,
+    "occurredAt": "2026-06-14T22:20:00.000Z",
+    "pullRequestRef": "pull-request-8024",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8024-1",
+    "submittedAt": "2026-06-14T22:20:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-14T23:19:00.000Z",
+    "pullRequestRef": "pull-request-8026",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "elena.sokolova@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8026-1",
+    "submittedAt": "2026-06-14T23:19:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 1,
+    "occurredAt": "2026-06-15T18:42:00.000Z",
+    "pullRequestRef": "pull-request-8082",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "nchen@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8082-2",
+    "submittedAt": "2026-06-15T18:42:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-16T10:49:00.000Z",
+    "pullRequestRef": "pull-request-8125",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Yusuf Demir",
+      "kind": "email",
+      "value": "yusuf.demir@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8125-1",
+    "submittedAt": "2026-06-16T10:49:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-16T14:18:00.000Z",
+    "pullRequestRef": "pull-request-8079",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rafael.lima@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8079-3",
+    "submittedAt": "2026-06-16T14:18:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-16T22:42:00.000Z",
+    "pullRequestRef": "pull-request-8083",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "nchen@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8083-2",
+    "submittedAt": "2026-06-16T22:42:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 6,
+    "occurredAt": "2026-06-17T04:46:00.000Z",
+    "pullRequestRef": "pull-request-8084",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "daniel.ortiz@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8084-1",
+    "submittedAt": "2026-06-17T04:46:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 2,
+    "occurredAt": "2026-06-17T08:26:00.000Z",
+    "pullRequestRef": "pull-request-8027",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "elena.sokolova@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8027-1",
+    "submittedAt": "2026-06-17T08:26:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 6,
+    "occurredAt": "2026-06-17T12:36:00.000Z",
+    "pullRequestRef": "pull-request-8028",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "tom.whitfield@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8028-1",
+    "submittedAt": "2026-06-17T12:36:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 3,
+    "occurredAt": "2026-06-17T17:38:00.000Z",
+    "pullRequestRef": "pull-request-8025",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "mhale@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8025-2",
+    "submittedAt": "2026-06-17T17:38:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-17T18:42:00.000Z",
+    "pullRequestRef": "pull-request-8082",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8082-3",
+    "submittedAt": "2026-06-17T18:42:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-17T20:46:00.000Z",
+    "pullRequestRef": "pull-request-8084",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "dortiz@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8084-2",
+    "submittedAt": "2026-06-17T20:46:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 1,
+    "occurredAt": "2026-06-17T21:19:00.000Z",
+    "pullRequestRef": "pull-request-8085",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "nchen@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8085-2",
+    "submittedAt": "2026-06-17T21:19:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 1,
+    "occurredAt": "2026-06-18T03:06:00.000Z",
+    "pullRequestRef": "pull-request-8127",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Clara Mbeki",
+      "kind": "email",
+      "value": "clara.mbeki@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8127-1",
+    "submittedAt": "2026-06-18T03:06:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 4,
+    "occurredAt": "2026-06-18T07:00:00.000Z",
+    "pullRequestRef": "pull-request-8126",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Yusuf Demir",
+      "kind": "email",
+      "value": "yusuf.demir@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8126-1",
+    "submittedAt": "2026-06-18T07:00:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 2,
+    "occurredAt": "2026-06-18T14:59:00.000Z",
+    "pullRequestRef": "pull-request-8086",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ingrid.falk@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8086-1",
+    "submittedAt": "2026-06-18T14:59:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-18T15:38:00.000Z",
+    "pullRequestRef": "pull-request-8025",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8025-3",
+    "submittedAt": "2026-06-18T15:38:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 5,
+    "occurredAt": "2026-06-18T22:19:00.000Z",
+    "pullRequestRef": "pull-request-8085",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8085-1",
+    "submittedAt": "2026-06-18T22:19:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 3,
+    "occurredAt": "2026-06-19T03:36:00.000Z",
+    "pullRequestRef": "pull-request-8028",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "twhitfield@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8028-2",
+    "submittedAt": "2026-06-19T03:36:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 2,
+    "occurredAt": "2026-06-19T14:57:00.000Z",
+    "pullRequestRef": "pull-request-8029",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "elena.sokolova@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8029-1",
+    "submittedAt": "2026-06-19T14:57:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-19T22:00:00.000Z",
+    "pullRequestRef": "pull-request-8126",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Yusuf Demir",
+      "kind": "email",
+      "value": "ydemir@insights.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8126-2",
+    "submittedAt": "2026-06-19T22:00:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 1,
+    "occurredAt": "2026-06-20T06:40:00.000Z",
+    "pullRequestRef": "pull-request-8087",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "dortiz@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8087-2",
+    "submittedAt": "2026-06-20T06:40:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-20T22:19:00.000Z",
+    "pullRequestRef": "pull-request-8085",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8085-3",
+    "submittedAt": "2026-06-20T22:19:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-21T09:26:00.000Z",
+    "pullRequestRef": "pull-request-8027",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "esokolova@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8027-2",
+    "submittedAt": "2026-06-21T09:26:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 6,
+    "occurredAt": "2026-06-21T11:40:00.000Z",
+    "pullRequestRef": "pull-request-8087",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "daniel.ortiz@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8087-1",
+    "submittedAt": "2026-06-21T11:40:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-21T12:36:00.000Z",
+    "pullRequestRef": "pull-request-8028",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "tom.whitfield@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8028-3",
+    "submittedAt": "2026-06-21T12:36:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 1,
+    "occurredAt": "2026-06-21T17:10:00.000Z",
+    "pullRequestRef": "pull-request-8088",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ingrid.falk@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8088-1",
+    "submittedAt": "2026-06-21T17:10:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-21T23:57:00.000Z",
+    "pullRequestRef": "pull-request-8029",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "esokolova@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8029-2",
+    "submittedAt": "2026-06-21T23:57:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 2,
+    "occurredAt": "2026-06-22T00:59:00.000Z",
+    "pullRequestRef": "pull-request-8086",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ifalk@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8086-2",
+    "submittedAt": "2026-06-22T00:59:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-22T03:06:00.000Z",
+    "pullRequestRef": "pull-request-8127",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Clara Mbeki",
+      "kind": "email",
+      "value": "cmbeki@insights.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8127-2",
+    "submittedAt": "2026-06-22T03:06:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 4,
+    "occurredAt": "2026-06-22T11:22:00.000Z",
+    "pullRequestRef": "pull-request-8030",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "tom.whitfield@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8030-1",
+    "submittedAt": "2026-06-22T11:22:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-22T23:01:00.000Z",
+    "pullRequestRef": "pull-request-8128",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Oskar Lindqvist",
+      "kind": "email",
+      "value": "oskar.lindqvist@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8128-1",
+    "submittedAt": "2026-06-22T23:01:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-23T01:10:00.000Z",
+    "pullRequestRef": "pull-request-8088",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ifalk@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8088-2",
+    "submittedAt": "2026-06-23T01:10:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-23T08:53:00.000Z",
+    "pullRequestRef": "pull-request-8031",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Aisha Bello",
+      "kind": "email",
+      "value": "aisha.bello@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8031-1",
+    "submittedAt": "2026-06-23T08:53:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 3,
+    "occurredAt": "2026-06-23T14:54:00.000Z",
+    "pullRequestRef": "pull-request-8129",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Clara Mbeki",
+      "kind": "email",
+      "value": "clara.mbeki@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8129-1",
+    "submittedAt": "2026-06-23T14:54:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 6,
+    "occurredAt": "2026-06-24T00:18:00.000Z",
+    "pullRequestRef": "pull-request-8089",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ifalk@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8089-2",
+    "submittedAt": "2026-06-24T00:18:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 1,
+    "occurredAt": "2026-06-24T06:18:00.000Z",
+    "pullRequestRef": "pull-request-8089",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ingrid.falk@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8089-1",
+    "submittedAt": "2026-06-24T06:18:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-24T18:40:00.000Z",
+    "pullRequestRef": "pull-request-8032",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "elena.sokolova@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8032-1",
+    "submittedAt": "2026-06-24T18:40:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-25T08:54:00.000Z",
+    "pullRequestRef": "pull-request-8034",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8034-1",
+    "submittedAt": "2026-06-25T08:54:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-25T09:41:00.000Z",
+    "pullRequestRef": "pull-request-8033",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8033-1",
+    "submittedAt": "2026-06-25T09:41:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 5,
+    "occurredAt": "2026-06-25T12:21:00.000Z",
+    "pullRequestRef": "pull-request-8090",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ingrid.falk@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8090-1",
+    "submittedAt": "2026-06-25T12:21:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 6,
+    "occurredAt": "2026-06-25T13:08:00.000Z",
+    "pullRequestRef": "pull-request-8130",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Yusuf Demir",
+      "kind": "email",
+      "value": "yusuf.demir@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8130-1",
+    "submittedAt": "2026-06-25T13:08:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-25T17:40:00.000Z",
+    "pullRequestRef": "pull-request-8087",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "danielo@mac.local"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8087-3",
+    "submittedAt": "2026-06-25T17:40:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 4,
+    "occurredAt": "2026-06-25T20:14:00.000Z",
+    "pullRequestRef": "pull-request-8091",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8091-1",
+    "submittedAt": "2026-06-25T20:14:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 3,
+    "occurredAt": "2026-06-26T01:54:00.000Z",
+    "pullRequestRef": "pull-request-8129",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Clara Mbeki",
+      "kind": "email",
+      "value": "cmbeki@insights.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8129-2",
+    "submittedAt": "2026-06-26T01:54:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-26T04:14:00.000Z",
+    "pullRequestRef": "pull-request-8091",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8091-3",
+    "submittedAt": "2026-06-26T04:14:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 2,
+    "occurredAt": "2026-06-26T07:56:00.000Z",
+    "pullRequestRef": "pull-request-8131",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Yusuf Demir",
+      "kind": "email",
+      "value": "yusuf.demir@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8131-1",
+    "submittedAt": "2026-06-26T07:56:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 6,
+    "occurredAt": "2026-06-26T10:21:00.000Z",
+    "pullRequestRef": "pull-request-8090",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ingrid@thinkpad.local"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8090-3",
+    "submittedAt": "2026-06-26T10:21:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-26T14:17:00.000Z",
+    "pullRequestRef": "pull-request-8092",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8092-1",
+    "submittedAt": "2026-06-26T14:17:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-27T17:29:00.000Z",
+    "pullRequestRef": "pull-request-8093",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "nchen@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8093-2",
+    "submittedAt": "2026-06-27T17:29:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 4,
+    "occurredAt": "2026-06-28T00:10:00.000Z",
+    "pullRequestRef": "pull-request-8035",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "elena.sokolova@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8035-1",
+    "submittedAt": "2026-06-28T00:10:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 3,
+    "occurredAt": "2026-06-28T03:30:00.000Z",
+    "pullRequestRef": "pull-request-8132",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Clara Mbeki",
+      "kind": "email",
+      "value": "clara.mbeki@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8132-1",
+    "submittedAt": "2026-06-28T03:30:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 3,
+    "occurredAt": "2026-06-28T13:14:00.000Z",
+    "pullRequestRef": "pull-request-8091",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "nchen@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8091-2",
+    "submittedAt": "2026-06-28T13:14:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-28T16:08:00.000Z",
+    "pullRequestRef": "pull-request-8130",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Yusuf Demir",
+      "kind": "email",
+      "value": "ydemir@insights.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8130-2",
+    "submittedAt": "2026-06-28T16:08:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 3,
+    "occurredAt": "2026-06-29T00:21:00.000Z",
+    "pullRequestRef": "pull-request-8090",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ifalk@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8090-2",
+    "submittedAt": "2026-06-29T00:21:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 3,
+    "occurredAt": "2026-06-29T00:29:00.000Z",
+    "pullRequestRef": "pull-request-8093",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8093-1",
+    "submittedAt": "2026-06-29T00:29:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 3,
+    "occurredAt": "2026-06-29T05:43:00.000Z",
+    "pullRequestRef": "pull-request-8036",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "tom.whitfield@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8036-1",
+    "submittedAt": "2026-06-29T05:43:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 5,
+    "occurredAt": "2026-06-29T14:11:00.000Z",
+    "pullRequestRef": "pull-request-8037",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "tom.whitfield@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8037-1",
+    "submittedAt": "2026-06-29T14:11:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 3,
+    "occurredAt": "2026-06-30T03:56:00.000Z",
+    "pullRequestRef": "pull-request-8131",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Yusuf Demir",
+      "kind": "email",
+      "value": "ydemir@insights.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8131-2",
+    "submittedAt": "2026-06-30T03:56:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-30T05:18:00.000Z",
+    "pullRequestRef": "pull-request-8089",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ingrid@thinkpad.local"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8089-3",
+    "submittedAt": "2026-06-30T05:18:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-30T08:30:00.000Z",
+    "pullRequestRef": "pull-request-8132",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Clara Mbeki",
+      "kind": "email",
+      "value": "cmbeki@insights.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8132-2",
+    "submittedAt": "2026-06-30T08:30:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 5,
+    "occurredAt": "2026-06-30T16:43:00.000Z",
+    "pullRequestRef": "pull-request-8036",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "twhitfield@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8036-2",
+    "submittedAt": "2026-06-30T16:43:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-06-30T16:43:00.000Z",
+    "pullRequestRef": "pull-request-8036",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "tom.whitfield@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8036-3",
+    "submittedAt": "2026-06-30T16:43:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 3,
+    "occurredAt": "2026-07-01T02:10:00.000Z",
+    "pullRequestRef": "pull-request-8035",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "esokolova@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8035-2",
+    "submittedAt": "2026-07-01T02:10:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-01T05:41:00.000Z",
+    "pullRequestRef": "pull-request-8039",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8039-1",
+    "submittedAt": "2026-07-01T05:41:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 2,
+    "occurredAt": "2026-07-01T07:04:00.000Z",
+    "pullRequestRef": "pull-request-8038",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "esokolova@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8038-2",
+    "submittedAt": "2026-07-01T07:04:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 4,
+    "occurredAt": "2026-07-01T08:04:00.000Z",
+    "pullRequestRef": "pull-request-8038",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "elena.sokolova@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8038-1",
+    "submittedAt": "2026-07-01T08:04:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-01T10:04:00.000Z",
+    "pullRequestRef": "pull-request-8038",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "elena@devbox.local"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8038-3",
+    "submittedAt": "2026-07-01T10:04:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 4,
+    "occurredAt": "2026-07-01T13:46:00.000Z",
+    "pullRequestRef": "pull-request-8094",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ingrid.falk@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8094-1",
+    "submittedAt": "2026-07-01T13:46:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 4,
+    "occurredAt": "2026-07-02T00:46:00.000Z",
+    "pullRequestRef": "pull-request-8094",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ifalk@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8094-2",
+    "submittedAt": "2026-07-02T00:46:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 6,
+    "occurredAt": "2026-07-02T14:42:00.000Z",
+    "pullRequestRef": "pull-request-8133",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Clara Mbeki",
+      "kind": "email",
+      "value": "clara.mbeki@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8133-1",
+    "submittedAt": "2026-07-02T14:42:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-02T15:06:00.000Z",
+    "pullRequestRef": "pull-request-8095",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "dortiz@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8095-2",
+    "submittedAt": "2026-07-02T15:06:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 6,
+    "occurredAt": "2026-07-03T05:06:00.000Z",
+    "pullRequestRef": "pull-request-8095",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "daniel.ortiz@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8095-1",
+    "submittedAt": "2026-07-03T05:06:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-03T16:46:00.000Z",
+    "pullRequestRef": "pull-request-8094",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ingrid@thinkpad.local"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8094-3",
+    "submittedAt": "2026-07-03T16:46:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-03T18:11:00.000Z",
+    "pullRequestRef": "pull-request-8037",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "twhitfield@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8037-2",
+    "submittedAt": "2026-07-03T18:11:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 4,
+    "occurredAt": "2026-07-04T03:43:00.000Z",
+    "pullRequestRef": "pull-request-8040",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8040-1",
+    "submittedAt": "2026-07-04T03:43:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 6,
+    "occurredAt": "2026-07-04T09:47:00.000Z",
+    "pullRequestRef": "pull-request-8134",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Yusuf Demir",
+      "kind": "email",
+      "value": "yusuf.demir@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8134-1",
+    "submittedAt": "2026-07-04T09:47:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-04T10:37:00.000Z",
+    "pullRequestRef": "pull-request-8096",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ingrid.falk@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8096-1",
+    "submittedAt": "2026-07-04T10:37:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-05T04:40:00.000Z",
+    "pullRequestRef": "pull-request-8097",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8097-1",
+    "submittedAt": "2026-07-05T04:40:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-05T05:28:00.000Z",
+    "pullRequestRef": "pull-request-8041",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Aisha Bello",
+      "kind": "email",
+      "value": "aisha.bello@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8041-1",
+    "submittedAt": "2026-07-05T05:28:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-05T06:23:00.000Z",
+    "pullRequestRef": "pull-request-8042",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8042-3",
+    "submittedAt": "2026-07-05T06:23:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 2,
+    "occurredAt": "2026-07-05T22:23:00.000Z",
+    "pullRequestRef": "pull-request-8042",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8042-1",
+    "submittedAt": "2026-07-05T22:23:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 4,
+    "occurredAt": "2026-07-06T17:43:00.000Z",
+    "pullRequestRef": "pull-request-8040",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "praman@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8040-2",
+    "submittedAt": "2026-07-06T17:43:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-06T20:43:00.000Z",
+    "pullRequestRef": "pull-request-8040",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya@laptop.local"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8040-3",
+    "submittedAt": "2026-07-06T20:43:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-06T22:38:00.000Z",
+    "pullRequestRef": "pull-request-8098",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ingrid@thinkpad.local"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8098-3",
+    "submittedAt": "2026-07-06T22:38:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 6,
+    "occurredAt": "2026-07-07T13:20:00.000Z",
+    "pullRequestRef": "pull-request-8043",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8043-1",
+    "submittedAt": "2026-07-07T13:20:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 5,
+    "occurredAt": "2026-07-07T15:06:00.000Z",
+    "pullRequestRef": "pull-request-8135",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Yusuf Demir",
+      "kind": "email",
+      "value": "yusuf.demir@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8135-1",
+    "submittedAt": "2026-07-07T15:06:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 2,
+    "occurredAt": "2026-07-07T20:38:00.000Z",
+    "pullRequestRef": "pull-request-8098",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ingrid.falk@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8098-1",
+    "submittedAt": "2026-07-07T20:38:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 1,
+    "occurredAt": "2026-07-08T04:38:00.000Z",
+    "pullRequestRef": "pull-request-8099",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ingrid.falk@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8099-1",
+    "submittedAt": "2026-07-08T04:38:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 6,
+    "occurredAt": "2026-07-08T07:48:00.000Z",
+    "pullRequestRef": "pull-request-8100",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ingrid.falk@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8100-1",
+    "submittedAt": "2026-07-08T07:48:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 3,
+    "occurredAt": "2026-07-08T11:23:00.000Z",
+    "pullRequestRef": "pull-request-8042",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "mhale@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8042-2",
+    "submittedAt": "2026-07-08T11:23:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 5,
+    "occurredAt": "2026-07-08T12:03:00.000Z",
+    "pullRequestRef": "pull-request-8045",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8045-1",
+    "submittedAt": "2026-07-08T12:03:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-08T17:16:00.000Z",
+    "pullRequestRef": "pull-request-8044",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8044-1",
+    "submittedAt": "2026-07-08T17:16:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 3,
+    "occurredAt": "2026-07-08T21:38:00.000Z",
+    "pullRequestRef": "pull-request-8098",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ifalk@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8098-2",
+    "submittedAt": "2026-07-08T21:38:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-09T00:38:00.000Z",
+    "pullRequestRef": "pull-request-8099",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ifalk@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8099-2",
+    "submittedAt": "2026-07-09T00:38:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-09T03:34:00.000Z",
+    "pullRequestRef": "pull-request-8136",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Yusuf Demir",
+      "kind": "email",
+      "value": "ydemir@insights.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8136-2",
+    "submittedAt": "2026-07-09T03:34:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 4,
+    "occurredAt": "2026-07-09T12:38:00.000Z",
+    "pullRequestRef": "pull-request-8101",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8101-1",
+    "submittedAt": "2026-07-09T12:38:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-09T21:21:00.000Z",
+    "pullRequestRef": "pull-request-8102",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rafael.lima@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8102-1",
+    "submittedAt": "2026-07-09T21:21:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 3,
+    "occurredAt": "2026-07-10T01:34:00.000Z",
+    "pullRequestRef": "pull-request-8136",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Yusuf Demir",
+      "kind": "email",
+      "value": "yusuf.demir@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8136-1",
+    "submittedAt": "2026-07-10T01:34:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 5,
+    "occurredAt": "2026-07-10T03:48:00.000Z",
+    "pullRequestRef": "pull-request-8100",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ifalk@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8100-2",
+    "submittedAt": "2026-07-10T03:48:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-10T05:20:00.000Z",
+    "pullRequestRef": "pull-request-8043",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "praman@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8043-2",
+    "submittedAt": "2026-07-10T05:20:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 6,
+    "occurredAt": "2026-07-10T07:42:00.000Z",
+    "pullRequestRef": "pull-request-8046",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Aisha Bello",
+      "kind": "email",
+      "value": "aisha.bello@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8046-1",
+    "submittedAt": "2026-07-10T07:42:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-11T01:48:00.000Z",
+    "pullRequestRef": "pull-request-8100",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ingrid@thinkpad.local"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8100-3",
+    "submittedAt": "2026-07-11T01:48:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 3,
+    "occurredAt": "2026-07-11T01:48:00.000Z",
+    "pullRequestRef": "pull-request-8137",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Clara Mbeki",
+      "kind": "email",
+      "value": "clara.mbeki@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8137-1",
+    "submittedAt": "2026-07-11T01:48:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-11T06:23:00.000Z",
+    "pullRequestRef": "pull-request-8047",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "tom.whitfield@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8047-1",
+    "submittedAt": "2026-07-11T06:23:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 3,
+    "occurredAt": "2026-07-11T11:38:00.000Z",
+    "pullRequestRef": "pull-request-8101",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "nchen@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8101-2",
+    "submittedAt": "2026-07-11T11:38:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-11T22:17:00.000Z",
+    "pullRequestRef": "pull-request-8103",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "daniel.ortiz@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8103-1",
+    "submittedAt": "2026-07-11T22:17:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 4,
+    "occurredAt": "2026-07-11T23:22:00.000Z",
+    "pullRequestRef": "pull-request-8138",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Yusuf Demir",
+      "kind": "email",
+      "value": "yusuf.demir@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8138-1",
+    "submittedAt": "2026-07-11T23:22:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 4,
+    "occurredAt": "2026-07-12T08:14:00.000Z",
+    "pullRequestRef": "pull-request-8048",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Aisha Bello",
+      "kind": "email",
+      "value": "aisha.bello@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8048-1",
+    "submittedAt": "2026-07-12T08:14:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-12T11:38:00.000Z",
+    "pullRequestRef": "pull-request-8101",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8101-3",
+    "submittedAt": "2026-07-12T11:38:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-12T13:42:00.000Z",
+    "pullRequestRef": "pull-request-8046",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Aisha Bello",
+      "kind": "email",
+      "value": "abello@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8046-2",
+    "submittedAt": "2026-07-12T13:42:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 3,
+    "occurredAt": "2026-07-13T04:48:00.000Z",
+    "pullRequestRef": "pull-request-8137",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Clara Mbeki",
+      "kind": "email",
+      "value": "cmbeki@insights.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8137-2",
+    "submittedAt": "2026-07-13T04:48:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-13T15:12:00.000Z",
+    "pullRequestRef": "pull-request-8104",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "daniel.ortiz@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8104-1",
+    "submittedAt": "2026-07-13T15:12:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 5,
+    "occurredAt": "2026-07-13T16:47:00.000Z",
+    "pullRequestRef": "pull-request-8049",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "tom.whitfield@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8049-1",
+    "submittedAt": "2026-07-13T16:47:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 6,
+    "occurredAt": "2026-07-14T09:56:00.000Z",
+    "pullRequestRef": "pull-request-8139",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Yusuf Demir",
+      "kind": "email",
+      "value": "yusuf.demir@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8139-1",
+    "submittedAt": "2026-07-14T09:56:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 6,
+    "occurredAt": "2026-07-14T14:56:00.000Z",
+    "pullRequestRef": "pull-request-8139",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Yusuf Demir",
+      "kind": "email",
+      "value": "ydemir@insights.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8139-2",
+    "submittedAt": "2026-07-14T14:56:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-14T18:47:00.000Z",
+    "pullRequestRef": "pull-request-8049",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "tom.whitfield@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8049-3",
+    "submittedAt": "2026-07-14T18:47:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-15T03:14:00.000Z",
+    "pullRequestRef": "pull-request-8048",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Aisha Bello",
+      "kind": "email",
+      "value": "abello@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8048-2",
+    "submittedAt": "2026-07-15T03:14:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-15T07:52:00.000Z",
+    "pullRequestRef": "pull-request-8050",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8050-1",
+    "submittedAt": "2026-07-15T07:52:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 5,
+    "occurredAt": "2026-07-15T13:40:00.000Z",
+    "pullRequestRef": "pull-request-8051",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "tom.whitfield@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8051-1",
+    "submittedAt": "2026-07-15T13:40:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 2,
+    "occurredAt": "2026-07-15T14:41:00.000Z",
+    "pullRequestRef": "pull-request-8105",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ifalk@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8105-2",
+    "submittedAt": "2026-07-15T14:41:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 4,
+    "occurredAt": "2026-07-15T15:41:00.000Z",
+    "pullRequestRef": "pull-request-8105",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ingrid.falk@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8105-1",
+    "submittedAt": "2026-07-15T15:41:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 6,
+    "occurredAt": "2026-07-16T01:25:00.000Z",
+    "pullRequestRef": "pull-request-8140",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Oskar Lindqvist",
+      "kind": "email",
+      "value": "oskar.lindqvist@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8140-1",
+    "submittedAt": "2026-07-16T01:25:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 2,
+    "occurredAt": "2026-07-16T10:30:00.000Z",
+    "pullRequestRef": "pull-request-8052",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8052-1",
+    "submittedAt": "2026-07-16T10:30:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-16T17:40:00.000Z",
+    "pullRequestRef": "pull-request-8051",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "tom.whitfield@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8051-3",
+    "submittedAt": "2026-07-16T17:40:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 2,
+    "occurredAt": "2026-07-16T17:56:00.000Z",
+    "pullRequestRef": "pull-request-8139",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Yusuf Demir",
+      "kind": "email",
+      "value": "yusuf.demir@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8139-3",
+    "submittedAt": "2026-07-16T17:56:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 5,
+    "occurredAt": "2026-07-16T19:40:00.000Z",
+    "pullRequestRef": "pull-request-8051",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "twhitfield@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8051-2",
+    "submittedAt": "2026-07-16T19:40:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 2,
+    "occurredAt": "2026-07-16T20:47:00.000Z",
+    "pullRequestRef": "pull-request-8049",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "twhitfield@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8049-2",
+    "submittedAt": "2026-07-16T20:47:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 3,
+    "occurredAt": "2026-07-17T01:46:00.000Z",
+    "pullRequestRef": "pull-request-8107",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rafael.lima@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8107-1",
+    "submittedAt": "2026-07-17T01:46:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 3,
+    "occurredAt": "2026-07-17T04:46:00.000Z",
+    "pullRequestRef": "pull-request-8107",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rlima@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8107-2",
+    "submittedAt": "2026-07-17T04:46:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-17T22:24:00.000Z",
+    "pullRequestRef": "pull-request-8106",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rafael.lima@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8106-1",
+    "submittedAt": "2026-07-17T22:24:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-18T04:55:00.000Z",
+    "pullRequestRef": "pull-request-8141",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Oskar Lindqvist",
+      "kind": "email",
+      "value": "oskar.lindqvist@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8141-1",
+    "submittedAt": "2026-07-18T04:55:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-18T06:26:00.000Z",
+    "pullRequestRef": "pull-request-8053",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Aisha Bello",
+      "kind": "email",
+      "value": "abello@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8053-2",
+    "submittedAt": "2026-07-18T06:26:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-18T17:41:00.000Z",
+    "pullRequestRef": "pull-request-8105",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ingrid@thinkpad.local"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8105-3",
+    "submittedAt": "2026-07-18T17:41:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 2,
+    "occurredAt": "2026-07-18T22:26:00.000Z",
+    "pullRequestRef": "pull-request-8053",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Aisha Bello",
+      "kind": "email",
+      "value": "aisha.bello@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8053-1",
+    "submittedAt": "2026-07-18T22:26:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-18T22:53:00.000Z",
+    "pullRequestRef": "pull-request-8108",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "daniel.ortiz@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8108-1",
+    "submittedAt": "2026-07-18T22:53:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-20T01:20:00.000Z",
+    "pullRequestRef": "pull-request-8142",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Oskar Lindqvist",
+      "kind": "email",
+      "value": "olindqvist@insights.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8142-2",
+    "submittedAt": "2026-07-20T01:20:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-20T02:14:00.000Z",
+    "pullRequestRef": "pull-request-8109",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8109-1",
+    "submittedAt": "2026-07-20T02:14:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 4,
+    "occurredAt": "2026-07-20T07:19:00.000Z",
+    "pullRequestRef": "pull-request-8054",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8054-1",
+    "submittedAt": "2026-07-20T07:19:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 5,
+    "occurredAt": "2026-07-20T19:20:00.000Z",
+    "pullRequestRef": "pull-request-8142",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Oskar Lindqvist",
+      "kind": "email",
+      "value": "oskar.lindqvist@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8142-1",
+    "submittedAt": "2026-07-20T19:20:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-20T22:30:00.000Z",
+    "pullRequestRef": "pull-request-8052",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "praman@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8052-2",
+    "submittedAt": "2026-07-20T22:30:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 2,
+    "occurredAt": "2026-07-21T12:27:00.000Z",
+    "pullRequestRef": "pull-request-8055",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "priya.raman@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8055-1",
+    "submittedAt": "2026-07-21T12:27:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 5,
+    "occurredAt": "2026-07-21T21:29:00.000Z",
+    "pullRequestRef": "pull-request-8110",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "daniel.ortiz@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8110-1",
+    "submittedAt": "2026-07-21T21:29:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 4,
+    "occurredAt": "2026-07-22T05:45:00.000Z",
+    "pullRequestRef": "pull-request-8111",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8111-1",
+    "submittedAt": "2026-07-22T05:45:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 4,
+    "occurredAt": "2026-07-22T11:45:00.000Z",
+    "pullRequestRef": "pull-request-8111",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "nchen@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8111-2",
+    "submittedAt": "2026-07-22T11:45:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-22T17:34:00.000Z",
+    "pullRequestRef": "pull-request-8056",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "tom.whitfield@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8056-3",
+    "submittedAt": "2026-07-22T17:34:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 5,
+    "occurredAt": "2026-07-22T19:34:00.000Z",
+    "pullRequestRef": "pull-request-8056",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "tom.whitfield@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8056-1",
+    "submittedAt": "2026-07-22T19:34:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 5,
+    "occurredAt": "2026-07-22T21:13:00.000Z",
+    "pullRequestRef": "pull-request-8057",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8057-1",
+    "submittedAt": "2026-07-22T21:13:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-22T23:19:00.000Z",
+    "pullRequestRef": "pull-request-8054",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "mhale@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8054-2",
+    "submittedAt": "2026-07-22T23:19:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-23T01:13:00.000Z",
+    "pullRequestRef": "pull-request-8057",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "mhale@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8057-2",
+    "submittedAt": "2026-07-23T01:13:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 1,
+    "occurredAt": "2026-07-23T10:38:00.000Z",
+    "pullRequestRef": "pull-request-8143",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Oskar Lindqvist",
+      "kind": "email",
+      "value": "oskar.lindqvist@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8143-1",
+    "submittedAt": "2026-07-23T10:38:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 3,
+    "occurredAt": "2026-07-23T20:27:00.000Z",
+    "pullRequestRef": "pull-request-8055",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "email",
+      "value": "praman@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8055-2",
+    "submittedAt": "2026-07-23T20:27:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-24T10:29:00.000Z",
+    "pullRequestRef": "pull-request-8110",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Daniel Ortiz",
+      "kind": "email",
+      "value": "dortiz@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8110-2",
+    "submittedAt": "2026-07-24T10:29:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-24T14:33:00.000Z",
+    "pullRequestRef": "pull-request-8058",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "esokolova@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8058-2",
+    "submittedAt": "2026-07-24T14:33:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 3,
+    "occurredAt": "2026-07-24T14:34:00.000Z",
+    "pullRequestRef": "pull-request-8056",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "twhitfield@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8056-2",
+    "submittedAt": "2026-07-24T14:34:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 2,
+    "occurredAt": "2026-07-24T15:22:00.000Z",
+    "pullRequestRef": "pull-request-8059",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Aisha Bello",
+      "kind": "email",
+      "value": "aisha.bello@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8059-1",
+    "submittedAt": "2026-07-24T15:22:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 6,
+    "occurredAt": "2026-07-24T18:46:00.000Z",
+    "pullRequestRef": "pull-request-8060",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8060-1",
+    "submittedAt": "2026-07-24T18:46:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 5,
+    "occurredAt": "2026-07-24T21:33:00.000Z",
+    "pullRequestRef": "pull-request-8058",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "elena.sokolova@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8058-1",
+    "submittedAt": "2026-07-24T21:33:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-24T21:49:00.000Z",
+    "pullRequestRef": "pull-request-8112",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rafael.lima@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8112-3",
+    "submittedAt": "2026-07-24T21:49:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 6,
+    "occurredAt": "2026-07-25T00:49:00.000Z",
+    "pullRequestRef": "pull-request-8112",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rafael.lima@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8112-1",
+    "submittedAt": "2026-07-25T00:49:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-25T13:45:00.000Z",
+    "pullRequestRef": "pull-request-8111",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "email",
+      "value": "naomi.chen@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8111-3",
+    "submittedAt": "2026-07-25T13:45:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-25T14:42:00.000Z",
+    "pullRequestRef": "pull-request-8113",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Ingrid Falk",
+      "kind": "email",
+      "value": "ingrid.falk@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8113-1",
+    "submittedAt": "2026-07-25T14:42:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-25T15:22:00.000Z",
+    "pullRequestRef": "pull-request-8059",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Aisha Bello",
+      "kind": "email",
+      "value": "abello@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8059-2",
+    "submittedAt": "2026-07-25T15:22:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 2,
+    "occurredAt": "2026-07-25T18:56:00.000Z",
+    "pullRequestRef": "pull-request-8061",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "elena.sokolova@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8061-1",
+    "submittedAt": "2026-07-25T18:56:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 3,
+    "occurredAt": "2026-07-26T06:45:00.000Z",
+    "pullRequestRef": "pull-request-8144",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Clara Mbeki",
+      "kind": "email",
+      "value": "clara.mbeki@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8144-1",
+    "submittedAt": "2026-07-26T06:45:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 2,
+    "occurredAt": "2026-07-26T14:43:00.000Z",
+    "pullRequestRef": "pull-request-8062",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "elena.sokolova@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8062-1",
+    "submittedAt": "2026-07-26T14:43:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 6,
+    "occurredAt": "2026-07-27T11:49:00.000Z",
+    "pullRequestRef": "pull-request-8112",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rlima@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8112-2",
+    "submittedAt": "2026-07-27T11:49:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 5,
+    "occurredAt": "2026-07-27T20:43:00.000Z",
+    "pullRequestRef": "pull-request-8114",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rafael.lima@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8114-1",
+    "submittedAt": "2026-07-27T20:43:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 4,
+    "occurredAt": "2026-07-28T10:45:00.000Z",
+    "pullRequestRef": "pull-request-8144",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Clara Mbeki",
+      "kind": "email",
+      "value": "cmbeki@insights.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8144-2",
+    "submittedAt": "2026-07-28T10:45:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-28T13:43:00.000Z",
+    "pullRequestRef": "pull-request-8114",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rlima@checkout.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8114-2",
+    "submittedAt": "2026-07-28T13:43:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-29T16:05:00.000Z",
+    "pullRequestRef": "pull-request-9301",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-9301-1",
+    "submittedAt": "2026-07-29T16:05:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 2,
+    "occurredAt": "2026-07-29T22:56:00.000Z",
+    "pullRequestRef": "pull-request-8061",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "esokolova@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8061-2",
+    "submittedAt": "2026-07-29T22:56:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 4,
+    "occurredAt": "2026-07-30T04:43:00.000Z",
+    "pullRequestRef": "pull-request-8062",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "esokolova@platform.northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8062-2",
+    "submittedAt": "2026-07-30T04:43:00.000Z",
+    "verdict": "changes_requested"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-30T08:47:00.000Z",
+    "pullRequestRef": "pull-request-9302",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-9302-1",
+    "submittedAt": "2026-07-30T08:47:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-30T14:12:00.000Z",
+    "pullRequestRef": "pull-request-9303",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Marcus Hale",
+      "kind": "email",
+      "value": "marcus.hale@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-9303-1",
+    "submittedAt": "2026-07-30T14:12:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 6,
+    "occurredAt": "2026-07-30T14:45:00.000Z",
+    "pullRequestRef": "pull-request-8144",
+    "repositoryKey": "insights-etl",
+    "reviewerIdentity": {
+      "displayName": "Clara Mbeki",
+      "kind": "email",
+      "value": "clara.mbeki@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8144-3",
+    "submittedAt": "2026-07-30T14:45:00.000Z",
+    "verdict": "commented"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-30T17:40:00.000Z",
+    "pullRequestRef": "pull-request-9201",
+    "repositoryKey": "checkout-web",
+    "reviewerIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "email",
+      "value": "rafael.lima@northwind.example"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-9201-1",
+    "submittedAt": "2026-07-30T17:40:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-30T23:59:00.000Z",
+    "pullRequestRef": "pull-request-8061",
+    "repositoryKey": "platform-api",
+    "reviewerIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "elena@devbox.local"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8061-3",
+    "submittedAt": "2026-07-30T23:59:00.000Z",
+    "verdict": "approved"
+  },
+  {
+    "commentCount": 0,
+    "occurredAt": "2026-07-30T23:59:00.000Z",
+    "pullRequestRef": "pull-request-8062",
+    "repositoryKey": "shared-ui",
+    "reviewerIdentity": {
+      "displayName": "Elena Sokolova",
+      "kind": "email",
+      "value": "elena@devbox.local"
+    },
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "review-8062-3",
+    "submittedAt": "2026-07-30T23:59:00.000Z",
+    "verdict": "approved"
+  }
+]

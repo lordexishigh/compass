@@ -21,6 +21,7 @@ pnpm test             # every package's own suite, reported per package
 pnpm lint             # ESLint, including the clock build gates
 pnpm typecheck        # packages, tests, and the web app
 pnpm verify           # lint + typecheck + test — what CI runs
+pnpm seed:generate    # expand seed/fixtures into seed/generated + seed/MANIFEST.md
 ```
 
 `pnpm build` type-checks through `tsconfig.build.json`, which **excludes tests**:
@@ -103,6 +104,52 @@ green while the scan stays red.
 A new test file outside the include globs of (2) is silently unchecked, so add
 tests under an existing `<package>/tests/` path.
 
+## The seed dataset
+
+`seed/` is the MVP's runtime substrate: a fictional engineering org of ~3,700
+artifacts across three teams, four repositories and four conversations, with
+every pathology the report has to detect planted in it deliberately.
+
+```
+seed/fixtures/     hand-edited declarative input — five JSON files
+seed/generated/    expanded output, checked in — never hand-edit
+seed/MANIFEST.md   generated: volumes, identities, pathologies by ID, class proportions
+```
+
+Edit a fixture, run `pnpm seed:generate`, commit the diff. The generator is
+deterministic — a seeded PRNG, no clock read, no locale-sensitive comparison, and
+keys written in code-unit order — so `pnpm seed:generate && git diff --exit-code
+seed/` is a determinism check you can run by hand. `.gitattributes` pins
+`seed/**` to LF, without which a Windows checkout would rewrite the bytes and
+that check would disagree with itself across platforms.
+
+Four things the fixtures deliberately make hard, all documented in the manifest
+and asserted by tests:
+
+- **Fragmented identity.** Every developer holds two or more git emails plus one
+  tracker account and one chat handle, and nine commits are authored by addresses
+  that belong to nobody — including one that *looks* like a real person and must
+  never be matched to them by name similarity.
+- **A Kanban team.** `insights` has zero Sprint rows, no story points and no
+  sprint goal. Anything that assumes a sprint has to say so instead of inventing
+  one.
+- **Eight planted pathologies**, each named in `seed/MANIFEST.md` by exact entity
+  IDs: an off-goal stream serving last quarter's objective, a review bottleneck on
+  one named reviewer, a release that slipped five days, a ticket reported blocked
+  the same morning it merged, estimation noise that yields `points_uninformative`,
+  a Done-with-no-PR case, merged-not-released work, and a growing tech-debt count.
+- **Messy traceability in documented proportions.** Commits are spread across the
+  four resolution classes — structural, inferred, semantic, unattributed — and one
+  report window exercises all four, so the alignment engine can never be measured
+  against data that quietly avoids its hardest case.
+
+`packages/seed-connector` owns all of it and stays at the edge: nothing in
+`ingest`, `knowledge-model`, `analysis`, `pipeline`, `renderers` or `db` may
+import it. That is enforced twice, by `.dependency-cruiser.cjs` and by
+`tools/quality-gates/tests/seed-isolation.test.ts`, which also checks
+`package.json` dependencies and TypeScript project references — two routes a
+module-graph tool does not see.
+
 ## Database
 
 Migrations are drizzle-generated into `packages/db/drizzle`. Generate with
@@ -124,4 +171,5 @@ Two conventions are enforced by tests rather than by review:
 ## Project layout
 
 - `docs/` — project brief, architecture, and the build plan
+- `seed/` — the declarative seed dataset and its generated manifest
 - `.nous/` — pipeline session state (safe to ignore / not part of the product)

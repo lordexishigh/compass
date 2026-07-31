@@ -1,0 +1,15 @@
+# The seed dataset is regenerated and compared byte for byte.
+#
+# `pnpm seed:generate` writes every file under seed/ with explicit `\n` line
+# endings and no byte-order mark. Without the rules below, git on Windows would
+# check the same bytes back out as CRLF and the determinism test would fail on
+# one platform and pass on the other — the single most confusing way for this
+# gate to break.
+seed/** text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.js text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
