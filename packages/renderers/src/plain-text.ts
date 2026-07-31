@@ -1,16 +1,16 @@
-import { SECTIONS, assertSixSectionsInOrder, type StructuredReport } from '@compass/analysis';
-import { formatCivilDate } from '@compass/clock';
+import type { StructuredReport } from '@compass/analysis';
+
+import { renderFreshness, renderReport } from './prose.js';
 
 /**
- * The deterministic renderer.
+ * The plain-text channel.
  *
- * It is the cold-start narrator and the fail-closed fallback whenever the
- * Anthropic key is absent or grounding rejects a narration — so it renders the
- * complete report, not a placeholder. Given the same structured report it emits
- * byte-identical text, which is what makes it usable as a golden fixture.
- *
- * Prose only: no chart, no canvas, no table of metrics. Absence of signal is
- * stated as a sentence, never left as a blank.
+ * There is only one renderer in Compass and it lives in `prose.ts`; this file is
+ * the *channel* that renders its output into a terminal or an email body. It adds
+ * the masthead, the `01`–`06` numerals and the blank lines, and it adds nothing
+ * else — every sentence a reader sees was written by the prose renderer, so the
+ * plain-text form and the web form can never say different things about the same
+ * report.
  */
 export interface PlainTextOptions {
   /** Prefix each section with its fixed `01`–`06` numeral. */
@@ -18,49 +18,17 @@ export interface PlainTextOptions {
 }
 
 export function renderPlainTextReport(report: StructuredReport, options: PlainTextOptions = {}): string {
-  assertSixSectionsInOrder(report);
-  const withNumerals = options.withNumerals ?? true;
+  const rendered = renderReport(report);
+  if (options.withNumerals ?? true) return rendered.text;
 
-  const scopeLabel = report.scope.kind === 'team' ? report.scope.teamKey : 'all teams';
-  const lines: string[] = [
-    `Compass — ${scopeLabel} — ${formatCivilDate(report.instant, report.timezone)}`,
-    '',
-    renderCoverageLine(report),
-    '',
-  ];
-
-  report.sections.forEach((section, position) => {
-    const definition = SECTIONS[position];
-    const heading = withNumerals && definition ? `${definition.numeral} ${section.title}` : section.title;
-    lines.push(heading.toUpperCase());
-
-    if (section.items.length === 0) {
-      lines.push(section.emptyStatement);
-    } else {
-      for (const item of section.items) {
-        lines.push(`- ${item.headline}`);
-        if (item.detail.length > 0) lines.push(`  ${item.detail}`);
-        if (item.evidence.length > 0) {
-          lines.push(`  evidence: ${item.evidence.map((reference) => reference.label).join(', ')}`);
-        }
-      }
-    }
-    lines.push('');
-  });
-
+  const lines = [rendered.masthead, '', rendered.freshness, ''];
+  for (const section of rendered.sections) {
+    lines.push(section.title.toUpperCase(), '', section.prose, '');
+  }
   return `${lines.join('\n').trimEnd()}\n`;
 }
 
-/** The freshness line: what was ingested, and what was not. */
+/** The freshness line on its own — what a one-line digest header shows. */
 export function renderCoverageLine(report: StructuredReport): string {
-  if (report.coverage.length === 0) {
-    return 'No ingest has been recorded for this window — this report is not complete.';
-  }
-  const complete = report.coverage.filter((note) => note.status === 'complete').map((note) => note.sourceKey);
-  const degraded = report.coverage.filter((note) => note.status !== 'complete');
-
-  const parts: string[] = [];
-  if (complete.length > 0) parts.push(`Ingested: ${complete.join(', ')}`);
-  for (const note of degraded) parts.push(note.detail);
-  return parts.join(' · ');
+  return renderFreshness(report);
 }

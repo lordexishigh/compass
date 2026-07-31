@@ -1,4 +1,4 @@
-import { orderedEvidence, sprintEvidence, type EvidenceRef } from './evidence.js';
+import { orderedEvidence, sprintEvidence, ticketEvidence, type EvidenceRef } from './evidence.js';
 import {
   basisPoints,
   compareNumbers,
@@ -128,6 +128,14 @@ export interface VelocitySample {
   readonly points: number;
   readonly tickets: number;
   readonly ticketKeys: readonly string[];
+  /**
+   * The sprint this sample was measured over.
+   *
+   * Every computed claim in a report is openable, and a velocity is a claim: the
+   * reader has to be able to reach the sprint the figure came from rather than
+   * take the mean on trust.
+   */
+  readonly evidence: readonly EvidenceRef[];
 }
 
 export type VelocityTrend = 'rising' | 'flat' | 'falling';
@@ -188,6 +196,12 @@ export interface KanbanFlow {
         readonly statement: string;
       };
   readonly statement: string;
+  /**
+   * The tickets behind throughput and work in progress, so a flow figure is as
+   * openable as a sprint figure. A team without sprints must not end up with the
+   * one section of the report whose numbers cannot be checked.
+   */
+  readonly evidence: readonly EvidenceRef[];
 }
 
 /**
@@ -215,6 +229,22 @@ export type ProgressAssessment =
       readonly reason: 'no_work_items' | 'no_project_in_scope';
       readonly statement: string;
     };
+
+/**
+ * The stable ids of the Progress section's items.
+ *
+ * Declared here rather than spelled out at each use site because two layers need
+ * to agree about them: `generate.ts` writes them onto the items, and the
+ * deterministic renderer reads them back to decide which interpretation clause a
+ * figure gets — a completion percentage is read against the schedule, a velocity
+ * is not. A literal in both places would be a coupling nothing checked.
+ */
+export const PROGRESS_ITEM_IDS = Object.freeze({
+  sprint: (sprintKey: string): string => `progress:sprint:${sprintKey}`,
+  projection: 'progress:projection',
+  velocity: 'progress:velocity',
+  kanbanFlow: 'progress:kanban:flow',
+});
 
 const EMPTY_LINE: ScopeLine = { tickets: 0, points: 0, ticketKeys: [] };
 
@@ -443,6 +473,7 @@ export function assessVelocity(
       points: done.reduce((sum, ticket) => sum + (numberField(ticket, 'estimatePoints') ?? 0), 0),
       tickets: done.length,
       ticketKeys: done.map(ticketKeyOf).sort(compareStable),
+      evidence: orderedEvidence([sprintEvidence(sprint)]),
     };
   });
 
@@ -547,12 +578,19 @@ export function assessKanbanFlow(
         };
 
   const throughputKeys = [...new Set(completedInWindow)].filter((key) => inScope.has(key)).sort(compareStable);
+  const cited = new Set([...throughputKeys, ...inFlight.map(ticketKeyOf)]);
 
   return {
     windowDays: span,
     throughput: { completedItems: throughputKeys.length, ticketKeys: throughputKeys },
     workInProgress: { items: inFlight.length, ticketKeys: inFlight.map(ticketKeyOf).sort(compareStable) },
     cycleTime,
+    evidence: orderedEvidence(
+      [...tickets]
+        .filter((ticket) => cited.has(ticketKeyOf(ticket)))
+        .sort((left, right) => compareStable(ticketKeyOf(left), ticketKeyOf(right)))
+        .map(ticketEvidence),
+    ),
     statement:
       cycleTime.kind === 'measured'
         ? `${throughputKeys.length} item${throughputKeys.length === 1 ? '' : 's'} finished in this window, ${inFlight.length} are in flight, and the median item has been taking ${cycleTime.medianDays} days from start to finish.`

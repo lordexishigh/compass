@@ -97,5 +97,27 @@ export {
   type TraceabilityDistributionEntry,
 } from './traceability.js';
 
+export {
+  resolveSeededInstant,
+  type SeededInstant,
+  type SeededInstantInput,
+} from './report-instant.js';
+
+export {
+  DEFAULT_TEAM_KEY,
+  DEFAULT_TIMEZONE,
+  SEEDED_ORGANIZATION_ID,
+  TEAM_KEY_ENV_VAR,
+  TIMEZONE_ENV_VAR,
+  resolveSeededRun,
+  resolveSubstrate,
+  resolveTeamKey,
+  resolveTimezone,
+  seededRunWindow,
+  type ResolvedSubstrate,
+  type SeededRun,
+  type SeededRunInput,
+} from './seeded-run.js';
+
 export { EmptySelectionError, createRng, hashSeed, type Rng } from './rng.js';
 export { STOPWORDS, diceSimilarity, normalizeTokens, sharedTokens, slugify, tokenSet } from './text.js';

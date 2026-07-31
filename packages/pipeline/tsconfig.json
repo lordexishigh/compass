@@ -11,6 +11,8 @@
   "references": [
     { "path": "../analysis" },
     { "path": "../clock" },
+    { "path": "../connector-port" },
+    { "path": "../db" },
     { "path": "../ingest" },
     { "path": "../knowledge-model" },
     { "path": "../renderers" }

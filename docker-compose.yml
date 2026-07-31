@@ -1,3 +1,16 @@
+# The canonical zero-config cold start.
+#
+#   docker compose up
+#   open http://localhost:3000
+#
+# A clean checkout, one command, a fully generated six-section report. No login
+# wall, no connector wizard, no empty state, and no `.env` to write first: every
+# value below has a working default, because a demo that needs configuration is
+# not a zero-config demo.
+#
+# The web container migrates, provisions the roster and generates today's report
+# *before* it binds the port — see `tools/docker/entrypoint.sh`. That is what makes
+# the first request a read rather than a full ingest with a manager waiting on it.
 services:
   postgres:
     image: postgres:17-alpine
@@ -15,6 +28,53 @@ services:
       interval: 5s
       timeout: 5s
       retries: 20
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: compass-web
+    command: ['web']
+    environment:
+      # Both point at the same instance locally. In production the pooled URL is a
+      # transaction-mode pooler and the direct one is not: migrations, advisory
+      # locks and pg-boss maintenance cannot run through a pooler.
+      DATABASE_URL: postgresql://compass:compass@postgres:5432/compass
+      DATABASE_URL_DIRECT: postgresql://compass:compass@postgres:5432/compass
+      COMPASS_DEFAULT_TIMEZONE: ${COMPASS_DEFAULT_TIMEZONE:-Europe/London}
+      COMPASS_DEFAULT_TEAM: ${COMPASS_DEFAULT_TEAM:-platform}
+      # Narration is optional. Absent, the report renders through the
+      # deterministic template renderer and the page says which renderer wrote it.
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    ports:
+      - '${COMPASS_WEB_PORT:-3000}:3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # The scheduled side: ingest, generation and delivery on a cadence. Not needed
+  # to read a report — the web container's boot already generated today's — so it
+  # is in a profile and `docker compose up` does not wait on it.
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: compass-worker
+    command: ['worker']
+    profiles: ['worker']
+    environment:
+      DATABASE_URL: postgresql://compass:compass@postgres:5432/compass
+      DATABASE_URL_DIRECT: postgresql://compass:compass@postgres:5432/compass
+      COMPASS_DEFAULT_TIMEZONE: ${COMPASS_DEFAULT_TIMEZONE:-Europe/London}
+      COMPASS_DEFAULT_TEAM: ${COMPASS_DEFAULT_TEAM:-platform}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      web:
+        condition: service_started
+    restart: unless-stopped
 
 volumes:
   compass-pgdata:

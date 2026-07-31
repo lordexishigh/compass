@@ -15,6 +15,13 @@ import { fetchArtifact, type ConnectorPort, type ConnectorRequest } from '../por
 import { ARTIFACT_KINDS, ARTIFACT_SCHEMAS, type ArtifactKind, type ConnectorRecordEnvelope } from '../records.js';
 import { findProviderVocabularyViolations } from '../vocabulary.js';
 
+export {
+  FixtureConnector,
+  type FixtureDataset,
+  type FixtureRecords,
+  type FixtureSource,
+} from './fixture-connector.js';
+
 /**
  * The provider conformance kit.
  *

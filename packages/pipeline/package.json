@@ -23,6 +23,8 @@
   "dependencies": {
     "@compass/analysis": "workspace:*",
     "@compass/clock": "workspace:*",
+    "@compass/connector-port": "workspace:*",
+    "@compass/db": "workspace:*",
     "@compass/ingest": "workspace:*",
     "@compass/knowledge-model": "workspace:*",
     "@compass/renderers": "workspace:*"

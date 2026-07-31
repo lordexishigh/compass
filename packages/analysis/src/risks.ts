@@ -121,7 +121,7 @@ export function detectRisks(
     reviewBottleneckRisk(snapshot, instant, scope, inputs.reviewQueue),
     unreleasedWorkRisk(snapshot, instant, scope),
     workConcentrationRisk(snapshot, instant, scope, inputs.workload),
-    estimationNoiseRisk(instant, inputs.calibration),
+    estimationNoiseRisk(snapshot, scope, inputs.calibration),
     technicalDebtRisk(snapshot, instant, scope, inputs.technicalDebt),
   ];
 
@@ -400,11 +400,27 @@ function workConcentrationRisk(
  * fell. There is no prior for a statistic computed over all history at once, so
  * the trend is `new` with the basis stated — a rolling-window correlation would
  * give a real trend and is a deliberate later refinement, not an omission.
+ *
+ * The evidence is the sample: the completed items whose points were compared
+ * against their measured duration. A statistical verdict is exactly the kind of
+ * claim a manager is entitled to disbelieve, so it has to be the kind they can
+ * open — "your points don't predict duration" with nothing to click is an
+ * assertion, and this product does not make assertions.
  */
-function estimationNoiseRisk(instant: Instant, calibration: CalibrationVerdict): DetectedRisk | null {
+function estimationNoiseRisk(
+  snapshot: AnalysisSnapshot,
+  scope: ResolvedScope,
+  calibration: CalibrationVerdict,
+): DetectedRisk | null {
   if (calibration.verdict !== 'points_uninformative') return null;
 
   const value = calibration.correlationBasisPoints ?? 0;
+  const sampled = new Set(calibration.ticketKeys);
+  const tickets = scopedTickets(snapshot, scope).filter((ticket) => {
+    const itemKey = textField(ticket, 'itemKey');
+    return itemKey !== null && sampled.has(itemKey);
+  });
+
   return {
     stableId: 'risk:team:estimation_noise',
     cause: 'estimation_noise',
@@ -419,9 +435,16 @@ function estimationNoiseRisk(instant: Instant, calibration: CalibrationVerdict):
     ageDays: 0,
     headline: 'Story points are not predicting how long work takes',
     detail: `${calibration.statement} Compass compares points against measured start-to-finish duration for ${calibration.sampleSize} completed items; T12 needs a correlation of ${(THRESHOLDS.T12.value / 10_000).toFixed(2)}. Every projected date in this report is therefore a cycle-time guess, and it is set in a lighter weight for that reason.`,
-    evidence: [],
+    // The sample, capped: the point of the markers is that a reader can check the
+    // claim, and forty superscripts on one sentence is not a check, it is a wall.
+    // `sampleSize` in the detail above states the true count, so the cap hides
+    // nothing — it only stops the evidence chain from swallowing the paragraph.
+    evidence: orderedEvidence(tickets.map(ticketEvidence)).slice(0, MAX_SAMPLE_EVIDENCE),
   };
 }
+
+/** Evidence markers on one statistical claim. Enough to check, few enough to read. */
+const MAX_SAMPLE_EVIDENCE = 5;
 
 /**
  * Debt growth, promoted from the debt signal set to a risk with a trend.
@@ -471,7 +494,16 @@ function technicalDebtRisk(
     priorAt: observedPrior ? earlierWindow.end : null,
     priorBasis: observedPrior ? 'measured_at_window_start' : 'no_prior_observation',
     threshold: thresholdRef('T9'),
-    ageDays: debt.signals.meanOpenAgeDays.value,
+    // Zero, not `meanOpenAgeDays`. `ageDays` is the elapsed fact behind the "day
+    // 6" sigil — how long *this item* has been continuously present — and the mean
+    // open age of a set of debt tickets is a different measurement that merely
+    // shares a unit. It is also a mean, so it is fractional, and the elapsed
+    // interpretation template only recognises whole days: writing it here made the
+    // renderer emit "day 17.6" and then reject its own sentence, which took the
+    // whole page down. The measurement itself is not lost — `debt.reasons` carries
+    // it into `detail` — and this is a computed team-level condition with no
+    // first-sighting in the pure layer, exactly like the other team risks above.
+    ageDays: 0,
     headline: `Tech debt is growing: ${value >= 0 ? '+' : ''}${value} open items over ${netChange.trailingDays} days`,
     detail: `${debt.reasons.join(' ')} The ${netChange.trailingDays} days before that ran ${
       prior === null ? 'with no observed tech-debt activity' : `${prior >= 0 ? '+' : ''}${prior}`

@@ -30,7 +30,8 @@
       "@compass/ingest": ["packages/ingest/src/index.ts"],
       "@compass/analysis": ["packages/analysis/src/index.ts"],
       "@compass/renderers": ["packages/renderers/src/index.ts"],
-      "@compass/pipeline": ["packages/pipeline/src/index.ts"]
+      "@compass/pipeline": ["packages/pipeline/src/index.ts"],
+      "@compass/smoke": ["tools/smoke/src/index.ts"]
     }
   },
   "include": [
@@ -40,7 +41,9 @@
     "apps/*/vitest.config.ts",
     "apps/worker/tests/**/*.ts",
     "tools/quality-gates/vitest.config.ts",
-    "tools/quality-gates/tests/**/*.ts"
+    "tools/quality-gates/tests/**/*.ts",
+    "tools/smoke/vitest.config.ts",
+    "tools/smoke/tests/**/*.ts"
   ],
   "exclude": ["tools/quality-gates/fixtures/**"]
 }

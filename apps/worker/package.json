@@ -8,6 +8,8 @@
   "scripts": {
     "build": "tsc -b",
     "start": "node dist/index.js",
+    "bootstrap": "tsx src/bootstrap.ts",
+    "cold-start": "tsx src/cold-start.ts",
     "dev": "tsx watch src/index.ts",
     "test": "vitest run",
     "test:watch": "vitest"
@@ -17,12 +19,15 @@
     "@compass/connector-port": "workspace:*",
     "@compass/db": "workspace:*",
     "@compass/ingest": "workspace:*",
+    "@compass/knowledge-model": "workspace:*",
     "@compass/pipeline": "workspace:*",
     "@compass/seed-connector": "workspace:*",
     "pg-boss": "12.26.3",
     "zod": "4.4.3"
   },
   "devDependencies": {
+    "@compass/analysis": "workspace:*",
+    "@compass/renderers": "workspace:*",
     "@types/node": "24.13.3",
     "tsx": "4.23.1",
     "typescript": "5.9.3",

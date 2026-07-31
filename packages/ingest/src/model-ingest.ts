@@ -573,7 +573,9 @@ export async function ingestWindowIntoModel(
     },
     summary.coverage.map((coverage) => ({
       // Derived from the run and the source, so a replay with the same run id
-      // collides rather than duplicating, and the journal stays comparable.
+      // lands on the same row rather than duplicating it, and the journal stays
+      // comparable. `insertIngestRun` upserts on that id: a re-ingest of the same
+      // window records the later observation instead of failing the run.
       id: historyRowId(
         store.organizationId,
         'ingest_source_coverage',

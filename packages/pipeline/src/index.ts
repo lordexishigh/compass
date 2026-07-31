@@ -1,9 +1,9 @@
 /**
  * @compass/pipeline — the only place the layers are wired together.
  *
- * Layer position: the top of the backend stack. It resolves the instant from a
- * Clock at the edge, then threads that single instant through every stage;
- * nothing below it may construct a clock.
+ * Layer position: the top of the backend stack. It resolves nothing for itself:
+ * the instant comes from a Clock at the process edge, the connector is handed in,
+ * and the database handle is a parameter. Everything below it is told the time.
  */
 export {
   MissingInstantError,
@@ -22,3 +22,34 @@ export {
   isSameReport,
   reportHash,
 } from './canonical-json.js';
+
+export {
+  SCOPE_KEY_FOR_MERGED,
+  coverageStatusOf,
+  evidenceColumns,
+  persistReport,
+  reportRows,
+  scopeColumns,
+  type PersistReportInput,
+} from './persist.js';
+
+export {
+  coverageNotesFrom,
+  runReportPipeline,
+  type ReportPipelineRequest,
+  type ReportPipelineResult,
+} from './report-pipeline.js';
+
+export {
+  ReportUnavailableError,
+  defaultReportWindow,
+  ensureDailyReport,
+  loadFreshnessFor,
+  loadLatestReport,
+  scopeColumnsFor,
+  type EnsuredReport,
+  type EnsureReportRequest,
+  type ScopeColumns,
+} from './ensure-report.js';
+
+export { ARTIFACT_ROUTE_KINDS, artifactHref, isArtifactRouteKind, type ArtifactRouteKind } from './artifact-route.js';

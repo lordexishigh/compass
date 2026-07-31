@@ -338,4 +338,86 @@ describe('two organizations sharing one database', () => {
       'primary-code',
     ]);
   });
+
+  /**
+   * One run, one row, always.
+   *
+   * `ingestRunRowId` derives the id from `(organization, connector, window,
+   * attempt)`, so re-ingesting the same window produces the same id by design. A
+   * plain insert made that a duplicate-key error, which meant the container's
+   * cold start — which re-ingests whenever there is no report for the day yet —
+   * failed on its second boot and served `/` as a stack trace. The journal
+   * therefore records the later observation over the same row.
+   */
+  it('replays an ingest run into the same row, recording the later observation', async () => {
+    const window = timeWindow(at('2026-07-29T00:00:00Z'), at('2026-07-30T00:00:00Z'));
+    const runId = '55555555-5555-4555-8555-555555555555';
+    const coverageId = '77777777-7777-4777-8777-777777777777';
+    const laterAt = at('2026-07-30T09:30:00Z');
+
+    const before = await listRecentIngestRuns(scopeFor(ORG_A));
+    expect(before).toHaveLength(1);
+    expect(before[0]?.totalRecords).toBe(3);
+
+    await insertIngestRun(
+      scopeFor(ORG_A),
+      {
+        id: runId,
+        connectorId: 'seed:foundation-v1',
+        window,
+        startedAt: laterAt,
+        completedAt: laterAt,
+        // The source came back up between the two runs, and the journal has to say
+        // so rather than keep reporting the older, worse status.
+        status: 'complete',
+        totalRecords: 9,
+        artifactCounts: {
+          commits: 6,
+          pull_requests: 3,
+          reviews: 0,
+          branch_refs: 0,
+          release_tags: 0,
+          issues: 0,
+          issue_transitions: 0,
+          sprints: 0,
+          sprint_scope_changes: 0,
+          messages: 0,
+        },
+      },
+      [
+        {
+          id: coverageId,
+          coverage: completeCoverage({
+            sourceKey: 'legacy-code',
+            sourceKind: 'code',
+            artifact: 'commits',
+            requestedWindow: window,
+            observedAt: laterAt,
+            recordCount: 4,
+          }),
+        },
+      ],
+    );
+
+    const after = await listRecentIngestRuns(scopeFor(ORG_A));
+    expect(after, 'a replay must update, not accumulate').toHaveLength(1);
+    expect(after[0]?.id).toBe(runId);
+    expect(after[0]?.status).toBe('complete');
+    expect(after[0]?.totalRecords).toBe(9);
+    expect(after[0]?.startedAt).toBe(laterAt);
+
+    // The coverage row is updated in place too, and the other source's row is
+    // untouched: a replay that named one source must not erase the other.
+    const coverage = await database.client.query<{
+      source_key: string;
+      status: string;
+      record_count: number;
+    }>('select source_key, status, record_count from ingest_source_coverage order by source_key');
+
+    expect(coverage.rows).toHaveLength(2);
+    expect(coverage.rows[0]?.source_key).toBe('legacy-code');
+    expect(coverage.rows[0]?.status).toBe('complete');
+    expect(Number(coverage.rows[0]?.record_count)).toBe(4);
+    expect(coverage.rows[1]?.source_key).toBe('primary-code');
+  });
 });

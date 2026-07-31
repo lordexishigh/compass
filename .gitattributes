@@ -13,3 +13,10 @@ seed/** text eol=lf
 *.js text eol=lf
 *.yaml text eol=lf
 *.yml text eol=lf
+
+# The container entrypoint is read by `/usr/bin/env bash` inside Linux. A CRLF
+# here makes the shebang name a program called `bash\r`, and the container fails
+# to start with a message that names neither the file nor the reason.
+*.sh text eol=lf
+Dockerfile text eol=lf
+

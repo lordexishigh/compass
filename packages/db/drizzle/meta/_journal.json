@@ -15,6 +15,20 @@
       "when": 1785467763647,
       "tag": "0001_knowledge_model",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1785478135544,
+      "tag": "0002_report_persistence",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1785480760721,
+      "tag": "0003_report_item_prose",
+      "breakpoints": true
     }
   ]
 }

@@ -55,7 +55,16 @@ describe('the pnpm workspace holds every layer as its own package', () => {
       allPackages
         .filter((workspacePackage) => workspacePackage.group !== 'packages')
         .map((workspacePackage) => workspacePackage.relativeDirectory),
-    ).toEqual(['apps/web', 'apps/worker', 'tools/eslint-plugin-compass', 'tools/quality-gates']);
+    ).toEqual([
+      'apps/web',
+      'apps/worker',
+      'tools/eslint-plugin-compass',
+      'tools/quality-gates',
+      // The cold-start smoke test. A package rather than a shell step in a
+      // workflow file, so that its assertions are unit-tested and so that
+      // `apps/web`'s cold-start test can run the very checks CI runs.
+      'tools/smoke',
+    ]);
   });
 
   it.each(asCases(layerPackages))('%s has its own package.json, tsconfig and vitest config', (_label, pkg) => {
@@ -89,6 +98,13 @@ describe('pnpm test reports per-package results', () => {
   it('runs every package recursively rather than a hand-maintained list', () => {
     expect(rootManifest.scripts?.['test']).toContain('pnpm -r');
     expect(rootManifest.scripts?.['test']).toContain('run test');
+  });
+
+  it('runs the dependency-cruiser layer rules as part of `verify`', () => {
+    // The architecture rules were declared and never invoked, so the layer order
+    // was documented rather than enforced. A gate nothing runs is a comment.
+    expect(rootManifest.scripts?.['arch']).toContain('depcruise');
+    expect(rootManifest.scripts?.['verify'], '`verify` must run the architecture gate').toContain('run arch');
   });
 
   it.each(asCases(allPackages.filter((pkg) => existsSync(join(pkg.absoluteDirectory, 'vitest.config.ts')))))(

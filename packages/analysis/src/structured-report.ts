@@ -257,6 +257,79 @@ export class SectionOrderError extends Error {
   }
 }
 
+export class ItemAgeError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ItemAgeError';
+  }
+}
+
+/**
+ * `ageDays` is a whole number of days, on every item, always.
+ *
+ * This is a contract rather than a preference. `ageDays` is the elapsed fact the
+ * "day 6" sigil states, the renderer's `elapsed` interpretation template writes it
+ * into a clause, and that template's pattern recognises whole days only. So a
+ * fractional age does not produce a slightly odd sentence — the renderer emits
+ * "day 17.6 of it", fails to recognise its own clause, and throws
+ * `UngroundedNumberError` for the *entire report*, taking the page down.
+ *
+ * That happened: a risk was built from a mean, which is fractional by nature. The
+ * fix belongs at the source, and this exists so the next one fails here — in the
+ * pure layer, naming the item — instead of three packages away as an
+ * ungrounded-number error nobody can trace back.
+ */
+export function assertWholeDayAges(report: StructuredReport): void {
+  for (const section of report.sections) {
+    for (const item of section.items) {
+      if (!Number.isInteger(item.ageDays) || item.ageDays < 0) {
+        throw new ItemAgeError(
+          `\`${section.key}/${item.stableId}\` has ageDays ${item.ageDays}. ` +
+            'An item age is a whole non-negative number of days: it is the elapsed fact the day sigil states, ' +
+            'and the renderer can only interpret whole days. A measurement that happens to be in days — a mean, ' +
+            'an average duration — is not this field.',
+        );
+      }
+    }
+  }
+}
+
+export class UnevidencedClaimError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'UnevidencedClaimError';
+  }
+}
+
+/**
+ * Every claim carries at least one artifact a reader can open.
+ *
+ * This is the product's central promise, not a nicety: the web view turns each
+ * reference into a superscript marker resolving to the commit SHA, pull request
+ * number or tracker key behind the claim, and a claim with no references renders
+ * as a confident sentence with nothing to check. That is precisely the "trust the
+ * dashboard" posture Compass exists to replace.
+ *
+ * It is asserted here rather than only in the view because the view can only show
+ * what the analysis core put in the payload. An `estimation_noise` risk once
+ * shipped with `evidence: []` — a statistical verdict about the team's own
+ * estimates, unfalsifiable on the page — and nothing failed, because no test ran
+ * the core over a dataset that produced that risk.
+ */
+export function assertEveryClaimHasEvidence(report: StructuredReport): void {
+  for (const section of report.sections) {
+    for (const item of section.items) {
+      if (item.evidence.length === 0) {
+        throw new UnevidencedClaimError(
+          `\`${section.key}/${item.stableId}\` carries no evidence: "${item.headline}". ` +
+            'Every claim in a Compass report resolves to an artifact a reader can open — a commit SHA, a pull ' +
+            'request number or a tracker key. A claim that cannot be checked must not be made.',
+        );
+      }
+    }
+  }
+}
+
 /** Fails loudly if a report ever grows, loses or reorders a section. */
 export function assertSixSectionsInOrder(report: StructuredReport): void {
   if (report.sections.length !== SECTIONS.length) {

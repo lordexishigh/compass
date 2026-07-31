@@ -1,0 +1,254 @@
+/**
+ * The interpretation-template set.
+ *
+ * Compass never prints a number on its own. A manager reading "62%" learns
+ * nothing they could act on; a manager reading "62%, which is behind the pace
+ * the elapsed schedule implies" has been told something. So the deterministic
+ * renderer has one hard rule, and this file is that rule made checkable:
+ *
+ * > **Every sentence that states a quantity also contains a clause instantiated
+ * > from one of the templates below.**
+ *
+ * The rule is enforced twice over, deliberately:
+ *
+ *  1. **At render time.** `plainSentence` in `prose.ts` throws
+ *     `UngroundedNumberError` if a sentence it was asked to emit carries a
+ *     quantity with no clause. The renderer fails closed rather than shipping an
+ *     uninterpreted metric.
+ *  2. **At test time.** `tests/prose.test.ts` renders a real report, tokenises it
+ *     with `extractNumericTokens` — the *same* extractor the grounding validator
+ *     uses, imported from `@compass/analysis`, never re-implemented — and asserts
+ *     that every sentence carrying a token matches one of the `pattern`s here.
+ *
+ * A template is a triple: a `render` function the renderer calls, a `pattern`
+ * that recognises what `render` produced, and an `example` that documents it.
+ * `tests/interpretation-templates.test.ts` asserts every `example` matches its
+ * own `pattern`, so the documentation cannot drift away from the code that reads
+ * it — the same arrangement `DETERMINISM.md` uses for the non-semantic field list.
+ *
+ * Adding a template is a deliberate act: it is a new way Compass is allowed to
+ * explain a number, and it belongs in code review rather than in a prompt.
+ */
+
+export const INTERPRETATION_TEMPLATE_IDS = [
+  'pace',
+  'rate',
+  'ladder',
+  'threshold',
+  'held',
+  'severity',
+  'step',
+  'elapsed',
+  'evidence',
+  'change',
+  'sectionCount',
+  'coverage',
+  'collar',
+] as const;
+
+export type InterpretationTemplateId = (typeof INTERPRETATION_TEMPLATE_IDS)[number];
+
+export interface InterpretationTemplateDefinition {
+  readonly id: InterpretationTemplateId;
+  /** What kind of number this clause is allowed to explain. */
+  readonly purpose: string;
+  /** One instantiation, in full. Asserted to match `pattern`. */
+  readonly example: string;
+  /** Recognises a clause this template produced. */
+  readonly pattern: RegExp;
+}
+
+export interface InterpretationClause {
+  readonly templateId: InterpretationTemplateId;
+  readonly text: string;
+}
+
+const clause = (templateId: InterpretationTemplateId, text: string): InterpretationClause => ({ templateId, text });
+
+const plural = (count: number, singular: string, pluralForm = `${singular}s`): string =>
+  count === 1 ? singular : pluralForm;
+
+// ---------------------------------------------------------------------------
+// The templates
+// ---------------------------------------------------------------------------
+
+export const INTERPRETATION_TEMPLATES: readonly InterpretationTemplateDefinition[] = Object.freeze([
+  {
+    id: 'pace',
+    purpose:
+      'A sprint completion percentage. Read against the share of the sprint schedule already spent, which is the only comparison that makes a percentage actionable.',
+    example: 'which is behind the pace the elapsed schedule implies',
+    pattern: /\bwhich is (?:ahead of|behind|level with) the pace the elapsed schedule implies\b/,
+  },
+  {
+    id: 'rate',
+    purpose:
+      'A flow figure with no schedule to compare against — throughput, cycle time, velocity. Named as a measurement rather than dressed up as a target the team missed.',
+    example: 'and that is the measured rate rather than a target',
+    pattern: /\band that is the measured rate rather than a target\b/,
+  },
+  {
+    id: 'ladder',
+    purpose:
+      'A completion. Says which rung of the Completion Ladder was actually reached, and whether anything below it was skipped, so "done" is never a single bit.',
+    example: 'so it reached R2 merged and nothing above that',
+    pattern:
+      /\bso (?:it reached R[1-5] (?:committed|merged|accepted|released|deployed) (?:and nothing above that|with a rung skipped below it)|nothing it did crossed a completion rung)\b/,
+  },
+  {
+    id: 'threshold',
+    purpose:
+      'A measurement that was compared against a documented threshold. Names the rule by its identifier so a manager can look up what Compass decided and argue with it.',
+    // `T8a` and `T8b` are real threshold ids — the two limbs of the win rule — so
+    // the identifier is `T`, digits, and an optional limb letter.
+    example: 'because it crossed the threshold T8a sets',
+    pattern: /\bbecause it (?:crossed|stayed inside) the threshold T\d+[a-z]? sets\b/,
+  },
+  {
+    id: 'held',
+    purpose:
+      'A blocker duration. States how long the condition has held and, in the same breath, why that makes it a blocker rather than merely slow work.',
+    example: 'so it has held for 6 days and is stated as a blocker rather than as slow progress',
+    pattern:
+      /\bso it (?:has held for \d+ days?|appeared today) and is stated as a blocker rather than as slow progress\b/,
+  },
+  {
+    id: 'severity',
+    purpose: 'A risk measurement. Carries the severity Compass assigned and the direction it is moving.',
+    example: 'which Compass rates high severity and worsened',
+    pattern: /\bwhich Compass rates (?:high|medium|low) severity and (?:new|worsened|unchanged|improving)\b/,
+  },
+  {
+    id: 'step',
+    purpose: 'A recommendation. Says it is one step and when it is finishable, so it cannot read as a project.',
+    example: 'and it is one step, finishable today',
+    pattern: /\band it is one step, finishable (?:today|this week)\b/,
+  },
+  {
+    id: 'elapsed',
+    purpose: 'A day counter on a recurring item. Turns a bare age into the elapsed fact the sigil states.',
+    example: 'which makes today day 6 of it',
+    pattern: /\bwhich makes today day \d+ of it\b/,
+  },
+  {
+    id: 'evidence',
+    purpose:
+      'A claim whose only quantity is how much evidence stands behind it. Says the artifacts are openable, which is what makes the claim checkable.',
+    example: 'traced to 3 artifacts you can open',
+    pattern: /\btraced to \d+ artifacts? you can open\b/,
+  },
+  {
+    id: 'change',
+    purpose:
+      'The terminal fallback: a claim with nothing quantitative to interpret. States how Compass classified it against yesterday.',
+    example: 'and Compass records it as unchanged',
+    pattern: /\band Compass records it as (?:new|unchanged|worsened|improved|resolved)\b/,
+  },
+  {
+    id: 'sectionCount',
+    purpose: "A section's own item count, in its lead sentence.",
+    example: 'so this section carries 4 items',
+    pattern: /\bso this section carries \d+ items?\b/,
+  },
+  {
+    id: 'coverage',
+    purpose:
+      'The freshness line. Turns a source count into the only thing that matters about it: whether the report in front of the reader is complete.',
+    example: 'so 1 of 4 configured sources did not answer and this report is not complete',
+    pattern:
+      /\bso (?:every configured source answered and this report is complete|\d+ of \d+ configured sources did not answer and this report is not complete|no source answered and this report is not a complete picture)\b/,
+  },
+  {
+    id: 'collar',
+    purpose:
+      'The projected completion date. The confidence collar: the band, the method behind it, and how well the team calibrates — so the date is never read as a promise.',
+    example: 'and the collar on that date is low confidence from cycle time',
+    pattern: /\band the collar on that date is (?:low|medium|high) confidence from (?:trailing velocity|cycle time)\b/,
+  },
+]);
+
+const BY_ID: ReadonlyMap<InterpretationTemplateId, InterpretationTemplateDefinition> = new Map(
+  INTERPRETATION_TEMPLATES.map((template) => [template.id, template]),
+);
+
+export function interpretationTemplate(id: InterpretationTemplateId): InterpretationTemplateDefinition {
+  const template = BY_ID.get(id);
+  if (!template) throw new Error(`\`${id}\` is not a documented interpretation template.`);
+  return template;
+}
+
+/** The first documented template a sentence instantiates, or null. */
+export function interpretationClauseIn(sentence: string): InterpretationTemplateDefinition | null {
+  return INTERPRETATION_TEMPLATES.find((template) => template.pattern.test(sentence)) ?? null;
+}
+
+// ---------------------------------------------------------------------------
+// Instantiation — the only way the renderer is allowed to produce a clause
+// ---------------------------------------------------------------------------
+
+export type PaceVerdict = 'ahead of' | 'behind' | 'level with';
+
+export const interpretation = {
+  pace: (verdict: PaceVerdict): InterpretationClause =>
+    clause('pace', `which is ${verdict} the pace the elapsed schedule implies`),
+
+  rate: (): InterpretationClause => clause('rate', 'and that is the measured rate rather than a target'),
+
+  ladder: (rung: string, label: string | null, contiguous: boolean): InterpretationClause => {
+    if (rung === 'R0' || label === null) {
+      return clause('ladder', 'so nothing it did crossed a completion rung');
+    }
+    return clause(
+      'ladder',
+      `so it reached ${rung} ${label} ${contiguous ? 'and nothing above that' : 'with a rung skipped below it'}`,
+    );
+  },
+
+  threshold: (thresholdId: string, crossed: boolean): InterpretationClause =>
+    clause('threshold', `because it ${crossed ? 'crossed' : 'stayed inside'} the threshold ${thresholdId} sets`),
+
+  held: (ageDays: number): InterpretationClause =>
+    clause(
+      'held',
+      ageDays <= 0
+        ? 'so it appeared today and is stated as a blocker rather than as slow progress'
+        : `so it has held for ${ageDays} ${plural(ageDays, 'day')} and is stated as a blocker rather than as slow progress`,
+    ),
+
+  severity: (severity: string, trend: string): InterpretationClause =>
+    clause('severity', `which Compass rates ${severity} severity and ${trend}`),
+
+  step: (urgency: 'today' | 'this week'): InterpretationClause =>
+    clause('step', `and it is one step, finishable ${urgency}`),
+
+  elapsed: (ageDays: number): InterpretationClause => clause('elapsed', `which makes today day ${ageDays} of it`),
+
+  evidence: (count: number): InterpretationClause =>
+    clause('evidence', `traced to ${count} ${plural(count, 'artifact')} you can open`),
+
+  change: (changeTag: string): InterpretationClause => clause('change', `and Compass records it as ${changeTag}`),
+
+  sectionCount: (count: number): InterpretationClause =>
+    clause('sectionCount', `so this section carries ${count} ${plural(count, 'item')}`),
+
+  coverage: (answered: number, total: number): InterpretationClause => {
+    if (total === 0 || answered === 0) {
+      return clause('coverage', 'so no source answered and this report is not a complete picture');
+    }
+    if (answered >= total) {
+      return clause('coverage', 'so every configured source answered and this report is complete');
+    }
+    return clause(
+      'coverage',
+      `so ${total - answered} of ${total} configured sources did not answer and this report is not complete`,
+    );
+  },
+
+  collar: (confidence: 'low' | 'medium' | 'high', method: 'trailing_velocity' | 'cycle_time'): InterpretationClause =>
+    clause(
+      'collar',
+      `and the collar on that date is ${confidence} confidence from ${
+        method === 'trailing_velocity' ? 'trailing velocity' : 'cycle time'
+      }`,
+    ),
+} as const;

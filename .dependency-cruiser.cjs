@@ -65,7 +65,22 @@ module.exports = {
       severity: 'error',
       comment: 'Layer boundaries are package boundaries: import @compass/<pkg>, never ../../<pkg>/src.',
       from: { path: '^packages/([^/]+)/src' },
-      to: { path: '^packages/([^/]+)/src', pathNot: '^packages/$1/src' },
+      to: {
+        path: '^packages/([^/]+)/src',
+        pathNot: '^packages/$1/src',
+        // Without this the rule matched every legitimate `@compass/clock` import
+        // too: the `tsConfig` resolution below maps the package specifier onto
+        // `packages/clock/src/index.ts`, so the *resolved path* is identical to what
+        // `../../clock/src/index.ts` would produce — and the rule could never pass,
+        // which is why nothing ever ran it.
+        //
+        // The discriminator is how the import was written, not where it landed. A
+        // package specifier resolved through tsconfig `paths` is tagged
+        // `aliased-tsconfig-paths`; a genuine relative import is only `local`. Both
+        // carry `local`, so this has to exclude the alias rather than require
+        // `local`.
+        dependencyTypesNot: ['aliased-tsconfig-paths'],
+      },
     },
   ],
   options: {

@@ -1,7 +1,8 @@
 import { detectBlockers, type DetectedBlocker } from './blockers.js';
 import { computeElapsedFacts, type ElapsedFactStatement } from './elapsed.js';
+import { orderedEvidence } from './evidence.js';
 import { compareStable, wholeDaysBetween, windowContains, type Instant } from './instant.js';
-import { assessProgress, type ProgressAssessment } from './progress.js';
+import { PROGRESS_ITEM_IDS, assessProgress, type ProgressAssessment } from './progress.js';
 import { assessCalibration, projectCompletion } from './projection.js';
 import { assertNoIndividualRanking } from './ranking-guard.js';
 import { generateRecommendations, type Recommendation } from './recommendations.js';
@@ -11,7 +12,9 @@ import { SECTIONS, type SectionKey } from './sections.js';
 import { resolveScope, type AnalysisSnapshot, type ResolvedScope } from './snapshot.js';
 import {
   REPORT_SCHEMA_VERSION,
+  assertEveryClaimHasEvidence,
   assertSixSectionsInOrder,
+  assertWholeDayAges,
   type AnalysisFindings,
   type ReportCoverageNote,
   type ReportItem,
@@ -125,6 +128,8 @@ export function generateStructuredReport(
   };
 
   assertSixSectionsInOrder(report);
+  assertWholeDayAges(report);
+  assertEveryClaimHasEvidence(report);
   assertNoIndividualRanking(report);
   return report;
 }
@@ -224,12 +229,12 @@ function progressItems(findings: AnalysisFindings): readonly ReportItem[] {
     const flow = progress.flow;
     return [
       {
-        stableId: 'progress:kanban:flow',
+        stableId: PROGRESS_ITEM_IDS.kanbanFlow,
         headline: flow.statement,
         detail: progress.statement,
         changeTag: 'unchanged',
         ageDays: 0,
-        evidence: [],
+        evidence: flow.evidence,
       },
     ];
   }
@@ -241,7 +246,7 @@ function progressItems(findings: AnalysisFindings): readonly ReportItem[] {
 
   const items: ReportItem[] = [
     {
-      stableId: `progress:sprint:${sprint.sprintKey}`,
+      stableId: PROGRESS_ITEM_IDS.sprint(sprint.sprintKey),
       headline: `${sprint.sprintName} is ${sprint.completionPercent}% complete — ${done} of ${total} ${unit}${sprint.goal === null ? '' : `, against "${sprint.goal}"`}`,
       detail: `${sprint.committed.tickets} items were committed at the start and ${sprint.addedMidSprint.tickets} were added since, so the denominator is ${sprint.currentScope.tickets}. Measured in ${unit} because ${
         sprint.basis === 'story_points'
@@ -254,36 +259,42 @@ function progressItems(findings: AnalysisFindings): readonly ReportItem[] {
     },
   ];
 
+  // The projection is computed from this sprint's remaining scope, so the sprint
+  // is what a reader following the marker should land on. A date with no way back
+  // to the board behind it is exactly the kind of unfalsifiable claim the
+  // evidence rule exists to forbid.
   if (findings.projection.kind === 'projected') {
     items.push({
-      stableId: 'progress:projection',
+      stableId: PROGRESS_ITEM_IDS.projection,
       headline: `Projected completion ${findings.projection.utcDate}`,
       detail: `${findings.projection.statement} ${findings.projection.calibration.statement}`,
       changeTag: 'unchanged',
       ageDays: 0,
-      evidence: [],
+      evidence: sprint.evidence,
     });
   } else {
     items.push({
-      stableId: 'progress:projection',
+      stableId: PROGRESS_ITEM_IDS.projection,
       headline: 'No completion date',
       detail: findings.projection.statement,
       changeTag: 'unchanged',
       ageDays: 0,
-      evidence: [],
+      evidence: sprint.evidence,
     });
   }
 
   if (progress.velocity.kind === 'measured') {
     items.push({
-      stableId: 'progress:velocity',
+      stableId: PROGRESS_ITEM_IDS.velocity,
       headline: progress.velocity.statement,
       detail: progress.velocity.samples
         .map((sample) => `${sample.sprintName}: ${sample.points} points across ${sample.tickets} items`)
         .join('; '),
       changeTag: progress.velocity.trend === 'falling' ? 'worsened' : progress.velocity.trend === 'rising' ? 'improved' : 'unchanged',
       ageDays: 0,
-      evidence: [],
+      // The sprints the mean was taken over, not the one in flight: a reader
+      // checking a pace claim needs the sprints that produced it.
+      evidence: orderedEvidence(progress.velocity.samples.flatMap((sample) => sample.evidence)),
     });
   }
 

@@ -89,6 +89,27 @@ export function correctionRowId(
   );
 }
 
+/**
+ * The id of a Report row, derived from (tenant, scope, instant).
+ *
+ * Deterministic for the same reason entity ids are: re-running the pipeline for
+ * the same `(organization, team, instant)` must land on the *same row* rather
+ * than accumulating near-duplicates a manager would then have to choose between.
+ */
+export function reportRowId(
+  organizationId: string,
+  scopeKind: string,
+  scopeKey: string,
+  instantMillis: number,
+): string {
+  return deterministicUuid(`report:${organizationId}:${scopeKind}:${scopeKey}:${instantMillis}`);
+}
+
+/** The id of a child row of a report — a section, an item, an evidence reference. */
+export function reportChildRowId(reportId: string, kind: string, ...parts: readonly string[]): string {
+  return deterministicUuid(`report-child:${reportId}:${kind}:${parts.join(':')}`);
+}
+
 /** The id of an IngestRun. Derived from the window and connector, so a replay is one row. */
 export function ingestRunRowId(
   organizationId: string,

@@ -68,11 +68,11 @@ describe('the deterministic renderer', () => {
     }
   });
 
-  it('renders an item with its evidence', () => {
+  it('renders an item with its evidence, as prose rather than as a bullet list', () => {
     const output = renderPlainTextReport(withItem());
 
-    expect(output).toContain('- DEV-501 merged as #883');
-    expect(output).toContain('evidence: DEV-501, #883');
+    expect(output).toContain('DEV-501 merged as #883');
+    expect(output).toContain('Evidence: DEV-501, #883 — traced to 2 artifacts you can open.');
   });
 
   it('dates the masthead in the team timezone', () => {
@@ -91,7 +91,14 @@ describe('the deterministic renderer', () => {
 
   it('states degraded coverage instead of implying the report is complete', () => {
     expect(renderCoverageLine(base())).toContain('team-chat disconnected 6h ago');
-    expect(renderCoverageLine({ ...base(), coverage: [] })).toContain('not complete');
+    expect(renderCoverageLine(base())).toContain('this report is not complete');
+  });
+
+  it('does not invent a freshness figure when the journal is silent', () => {
+    const line = renderCoverageLine({ ...base(), coverage: [] });
+
+    expect(line).toContain('no ingest record');
+    expect(line).toContain('not a complete picture');
   });
 
   it('refuses to render a report whose sections were tampered with', () => {

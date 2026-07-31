@@ -61,6 +61,14 @@ export {
 } from './schema/entities.js';
 
 export {
+  REPORT_SECTION_COUNT,
+  reportItemEvidence,
+  reportItems,
+  reportSections,
+  reports,
+} from './schema/reports.js';
+
+export {
   APPEND_ONLY_TABLE_NAMES,
   corrections,
   entityVersions,
@@ -91,6 +99,8 @@ export {
   entityVersionRowId,
   historyRowId,
   ingestRunRowId,
+  reportChildRowId,
+  reportRowId,
 } from './entity-id.js';
 
 export {
@@ -131,6 +141,43 @@ export {
   type IngestRunInput,
   type StoredIngestRun,
 } from './repositories/ingest-runs.js';
+
+export {
+  ReportSectionCountError,
+  ReportSectionOrdinalError,
+  findClaimsCitingArtifact,
+  findEvidenceForArtifact,
+  findLatestReport,
+  findLatestReportForDate,
+  findReportById,
+  findReportForInstant,
+  loadReportBundle,
+  reportIdFor,
+  saveReport,
+  type CitingClaim,
+  type ReportEvidenceInput,
+  type ReportInput,
+  type ReportItemInput,
+  type ReportSectionInput,
+  type StoredReport,
+  type StoredReportBundle,
+  type StoredReportEvidence,
+  type StoredReportItem,
+  type StoredReportSection,
+} from './repositories/reports.js';
+
+export {
+  EMPTY_FRESHNESS,
+  loadFreshness,
+  type FreshnessReport,
+  type SourceFreshness,
+} from './repositories/freshness.js';
+
+export {
+  ensureOrganization,
+  type EnsuredOrganization,
+  type OrganizationInput,
+} from './repositories/organizations.js';
 
 export {
   appendEntityVersion,

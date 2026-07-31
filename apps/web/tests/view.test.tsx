@@ -1,236 +1,197 @@
-import { SECTIONS, createEmptyStructuredReport } from '@compass/analysis';
-import { instantFromIso, timeWindow } from '@compass/clock';
+import { existsSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { SECTIONS } from '@compass/analysis';
+import { artifactHref } from '@compass/pipeline';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
-import { FreshnessLine } from '../components/freshness-line';
-import { ReportSectionBlock } from '../components/report-section';
-import { SeededHistoryNote } from '../components/seeded-history-note';
-import { SixSpine } from '../components/six-spine';
+import { ReportDocument } from '../components/report-document';
+import { buildReportView } from '../lib/view-model';
+
 import {
-  datasetCoversWindow,
-  describeWindow,
-  loadFoundationView,
-  resolveProvider,
-  resolveTimezone,
-} from '../lib/foundation-report';
+  emptyBundle,
+  freshnessAbsent,
+  freshnessComplete,
+  freshnessWithMissingSource,
+  storedBundle,
+} from './helpers/report-fixture';
 
-const timezone = 'Europe/London';
-const now = instantFromIso('2026-07-31T08:12:00Z');
-const window = timeWindow(instantFromIso('2026-07-29T23:00:00Z'), instantFromIso('2026-07-30T23:00:00Z'));
+const WEB_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-const report = createEmptyStructuredReport({
-  organizationId: '00000000-0000-4000-8000-000000000001',
-  scope: { kind: 'team', teamKey: 'platform' },
-  instant: now,
-  timezone,
-  window,
-  coverage: [
-    { sourceKey: 'primary-code', status: 'complete', detail: 'primary-code is reachable and answering.' },
-    { sourceKey: 'legacy-code', status: 'unavailable', detail: 'legacy-code rejected the stored credential.' },
-  ],
-});
+const view = buildReportView({ bundle: storedBundle(), freshness: freshnessWithMissingSource() });
+const markup = renderToStaticMarkup(<ReportDocument view={view} />);
 
-const entries = SECTIONS.map((section) => ({
-  key: section.key,
-  numeral: section.numeral,
-  title: section.title,
-  count: 0,
-}));
-
-describe('the Six Spine', () => {
-  const markup = renderToStaticMarkup(<SixSpine entries={entries} initialActiveKey="yesterday" />);
-
-  it('lists the six sections in the fixed order, twice: phone strip and desktop rail', () => {
+describe('the report view renders six sections in the fixed order', () => {
+  it('renders every section heading, once each', () => {
     for (const section of SECTIONS) {
-      expect(markup).toContain(`#section-${section.key}`);
+      expect(markup, `${section.title} is missing`).toContain(`>${section.title}<`);
+      expect(markup).toContain(`id="section-${section.key}"`);
     }
-    const positions = SECTIONS.map((section) => markup.indexOf(`href="#section-${section.key}"`));
+    expect(markup.match(/id="section-[a-z]+"/g)).toHaveLength(SECTIONS.length);
+  });
+
+  it('renders them in the Six Spine order, never in row order', () => {
+    const positions = SECTIONS.map((section) => markup.indexOf(`id="section-${section.key}"`));
+    expect(positions.every((position) => position >= 0)).toBe(true);
     expect(positions).toEqual([...positions].sort((left, right) => left - right));
-    expect(markup.match(/href="#section-yesterday"/g)).toHaveLength(2);
   });
 
-  it('shows a mono count for every section', () => {
-    expect(markup).toContain('tabular-nums');
-    expect(markup).toContain('font-mono');
+  it('numbers them 01..06 from the section definition', () => {
+    for (const section of SECTIONS) {
+      expect(markup).toContain(`>${section.numeral}<`);
+    }
   });
 
-  it('marks the active section for assistive technology as well as the eye', () => {
-    expect(markup).toContain('aria-current="true"');
-    expect(markup).toContain('border-verified');
-  });
-
-  it('is navigable and labelled', () => {
-    expect(markup).toContain('aria-label="Report sections"');
+  it('shows the renderer prose, so no quantity arrives without its clause', () => {
+    expect(markup).toContain('which is behind the pace the elapsed schedule implies');
+    expect(markup).toContain('and it is one step, finishable today');
+    expect(markup).toContain('so it has held for 6 days');
   });
 });
 
-describe('a report section', () => {
-  it('states its absence rather than rendering a blank', () => {
-    const section = report.sections[0];
-    if (!section) throw new Error('the report has no sections');
-
-    const markup = renderToStaticMarkup(<ReportSectionBlock section={section} numeral="01" />);
-
-    expect(markup).toContain(section.emptyStatement);
-    expect(markup).toContain('stated-absence');
-    expect(markup).toContain('id="section-yesterday"');
+describe('every claim carries a resolvable evidence link', () => {
+  it('links each claim to an artifact page for its commit, pull request or tracker key', () => {
+    for (const section of view.sections) {
+      for (const claim of section.items) {
+        expect(claim.evidence.length, `${section.key}/${claim.stableId} has no evidence`).toBeGreaterThan(0);
+        for (const reference of claim.evidence) {
+          expect(reference.href).toMatch(/^\/artifact\/[^/]+\/[^/]+$/);
+          expect(markup, `${reference.href} is not in the rendered page`).toContain(`href="${reference.href}"`);
+        }
+      }
+    }
   });
 
-  it('renders an item with its evidence tokens in mono', () => {
-    const section = report.sections[0];
-    if (!section) throw new Error('the report has no sections');
+  it('builds those links with the pipeline helper rather than a hand-written path', () => {
+    expect(markup).toContain(`href="${artifactHref('pull_request', 'pr-883')}"`);
+    expect(markup).toContain(`href="${artifactHref('issue', 'issue-DEV-522')}"`);
+    expect(markup).toContain(`href="${artifactHref('commit', 'checkout-web:7a8b9c0d1e2f')}"`);
+  });
 
-    const markup = renderToStaticMarkup(
-      <ReportSectionBlock
-        numeral="01"
-        section={{
-          ...section,
-          items: [
-            {
-              stableId: 'yesterday:DEV-501:merged',
-              headline: 'DEV-501 merged as #883',
-              detail: 'Merged at 11:41.',
-              changeTag: 'new',
-              ageDays: 6,
-              evidence: [{ kind: 'issue', label: 'DEV-501', sourceKey: 'primary-tracker', sourceRecordId: 'i-1' }],
-            },
-          ],
-        }}
-      />,
+  it('has a route segment that actually serves the paths it emits', () => {
+    // The href is `/artifact/<kind>/<id>`; a dead link satisfies "a link is
+    // present" and fails the criterion, so the file has to exist.
+    const [, root, ...rest] = artifactHref('commit', 'x').split('/');
+    expect(root).toBe('artifact');
+    expect(rest).toHaveLength(2);
+    expect(existsSync(join(WEB_ROOT, 'app', 'artifact', '[kind]', '[artifactId]', 'page.tsx'))).toBe(true);
+  });
+
+  it('states each artifact in words as well as in a superscript', () => {
+    expect(markup).toContain('tracker item DEV-501');
+    expect(markup).toContain('pull request #883');
+    expect(markup).toContain('¹');
+  });
+});
+
+describe('the page is prose, not a dashboard', () => {
+  it('contains no canvas, no chart svg and no charting bundle', () => {
+    const lowered = markup.toLowerCase();
+    for (const forbidden of [
+      '<canvas',
+      '<svg',
+      'chart.js',
+      'recharts',
+      'highcharts',
+      'echarts',
+      'd3.',
+      'sparkline',
+      'gauge',
+      'plotly',
+    ]) {
+      expect(lowered, `the rendered view contains \`${forbidden}\``).not.toContain(forbidden);
+    }
+  });
+
+  it('renders no table of metrics in the reading column', () => {
+    expect(markup.toLowerCase()).not.toContain('<table');
+  });
+
+  it('is a Server Component tree: no client directive above the report', () => {
+    // `six-spine.tsx` is the one client island, and it is a navigation control
+    // rather than content, so the report itself renders without JavaScript.
+    expect(markup).toContain('id="report"');
+    expect(markup).toContain('Sprint 43 is 62% complete');
+  });
+});
+
+describe('the completion ladder', () => {
+  it('draws five notches and names the highest rung crossed', () => {
+    expect(markup).toContain('R3 accepted');
+    expect(markup.match(/h-\[10px\] w-\[3px\]/g)?.length).toBeGreaterThanOrEqual(5);
+  });
+
+  it('prints the literal words for an unreachable R5 rather than inferring a deploy', () => {
+    expect(markup).toContain('no deploy signal available');
+  });
+});
+
+describe('the freshness indicator', () => {
+  it('states the last ingest time and the window covered, per source', () => {
+    expect(markup).toContain('primary-code');
+    expect(markup).toContain('primary-tracker');
+    expect(markup).toContain('last ingest 2026-07-31 08:02');
+    expect(markup).toContain('12 records');
+  });
+
+  it('names a source that produced nothing and refuses to call the report complete', () => {
+    expect(markup).toContain('legacy-code');
+    expect(markup).toContain('no data');
+    expect(markup).toContain('never answered');
+    expect(markup).toContain('data-complete="false"');
+    expect(markup).toContain('did not answer, so this report is not complete');
+  });
+
+  it('calls the report complete only when every source answered', () => {
+    const complete = renderToStaticMarkup(
+      <ReportDocument view={buildReportView({ bundle: storedBundle(), freshness: freshnessComplete() })} />,
     );
 
-    expect(markup).toContain('DEV-501 merged as #883');
-    expect(markup).toContain('day 6');
-    expect(markup).toContain('data-token');
+    expect(complete).toContain('data-complete="true"');
+    expect(complete).toContain('so this report is a complete picture');
+    expect(complete).not.toContain('legacy-code');
+  });
+
+  it('fabricates nothing when the ingest journal is empty', () => {
+    const unknown = renderToStaticMarkup(
+      <ReportDocument view={buildReportView({ bundle: storedBundle(), freshness: freshnessAbsent() })} />,
+    );
+
+    expect(unknown).toContain('no record of an ingest');
+    expect(unknown).toContain('data-complete="false"');
+    // The report instant is 2026-07-31 08:30 local; it must not be reused as a
+    // freshness value just because a real one is missing.
+    expect(unknown).not.toContain('last ingest');
   });
 });
 
-describe('the freshness line', () => {
-  const markup = renderToStaticMarkup(
-    <FreshnessLine
-      notes={report.coverage}
-      observedAt="2026-07-31 09:12"
-      windowLabel={describeWindow(window, timezone)}
-    />,
-  );
+describe('an empty day', () => {
+  it('states the absence in the product voice rather than rendering a blank', () => {
+    const empty = renderToStaticMarkup(
+      <ReportDocument view={buildReportView({ bundle: emptyBundle(), freshness: freshnessComplete() })} />,
+    );
 
-  it('names the sources that answered', () => {
-    expect(markup).toContain('primary-code');
-  });
-
-  it('names a degraded source instead of implying the report is complete', () => {
-    expect(markup).toContain('legacy-code');
-    expect(markup).toContain('rejected the stored credential');
-  });
-
-  it('states the window in the team timezone', () => {
-    expect(markup).toContain('2026-07-30 00:00');
-  });
-});
-
-describe('the reading column', () => {
-  it('contains no chart, canvas or svg primitive anywhere in the rendered view', () => {
-    const markup = [
-      renderToStaticMarkup(<SixSpine entries={entries} />),
-      renderToStaticMarkup(
-        <FreshnessLine notes={report.coverage} observedAt="2026-07-31 09:12" windowLabel="x" />,
-      ),
-      ...report.sections.map((section) => renderToStaticMarkup(<ReportSectionBlock section={section} numeral="01" />)),
-    ].join('');
-
-    for (const forbidden of ['<canvas', '<svg', 'chart', 'sparkline', 'gauge']) {
-      expect(markup.toLowerCase()).not.toContain(forbidden);
+    expect(empty).toContain('stated-absence');
+    for (const section of SECTIONS) {
+      expect(empty).toContain(`Nothing crossed a threshold for ${section.title}.`);
     }
   });
 });
 
-describe('the request edge resolves the seeded substrate', () => {
-  it('serves the generated seed, not the small foundation fixture', () => {
-    const provider = resolveProvider();
-
-    expect(provider.degradation, provider.degradation ?? '').toBeNull();
-    expect(provider.dataset.datasetId).toBe('northwind-v1');
-    expect(provider.datasetWindow).not.toBeNull();
-    expect(provider.dataset.records.commits.length).toBeGreaterThan(600);
-  });
-
-  it('renders a view whose coverage names every configured source, degraded ones included', async () => {
-    const view = await loadFoundationView();
-
-    expect(view.report.sections).toHaveLength(6);
-    expect(view.recordCount).toBeGreaterThan(3000);
-    expect(view.report.coverage.map((note) => note.sourceKey)).toEqual([
-      'primary-code',
-      'primary-tracker',
-      'team-chat',
-      'archive-code',
-    ]);
-    // The rate-limited archive must be stated, never folded into a clean total.
-    expect(view.report.coverage.find((note) => note.sourceKey === 'archive-code')?.status).toBe('unavailable');
-  });
-
-  it('names the rate-limited archive in the freshness line rather than folding it in', async () => {
-    const view = await loadFoundationView();
-    const markup = renderToStaticMarkup(
-      <FreshnessLine
-        notes={view.report.coverage}
-        observedAt={view.observedAt}
-        windowLabel={describeWindow(view.window, view.timezone)}
+describe('a report shown for a day other than today', () => {
+  it('says which day it is showing and why, rather than looking like today', () => {
+    const shifted = renderToStaticMarkup(
+      <ReportDocument
+        view={buildReportView({
+          bundle: storedBundle(),
+          freshness: freshnessComplete(),
+          timeShiftNote: 'The seeded history ends on 2026-07-31, so this is its last full day.',
+        })}
       />,
     );
 
-    expect(markup).toContain('archive-code');
-    expect(markup).toContain('exhausting its hourly quota');
-  });
-});
-
-describe('a day outside the seeded history', () => {
-  const seeded = resolveProvider().datasetWindow;
-
-  it('is what the coverage predicate reports for a window past the end of the seed', () => {
-    expect(seeded, 'seed/generated is missing; run `pnpm seed:generate`').not.toBeNull();
-    expect(datasetCoversWindow(seeded, timeWindow(instantFromIso('2030-01-01T00:00:00Z'), instantFromIso('2030-01-02T00:00:00Z')))).toBe(
-      false,
-    );
-    expect(datasetCoversWindow(seeded, timeWindow(instantFromIso('2020-01-01T00:00:00Z'), instantFromIso('2020-01-02T00:00:00Z')))).toBe(
-      false,
-    );
-    expect(datasetCoversWindow(null, window)).toBe(false);
-  });
-
-  it('overlaps for a window inside the seeded span', () => {
-    expect(datasetCoversWindow(seeded, timeWindow(instantFromIso('2026-07-29T00:00:00Z'), instantFromIso('2026-07-30T00:00:00Z')))).toBe(
-      true,
-    );
-  });
-
-  it('is stated in the product voice, not left as an empty day', () => {
-    const markup = renderToStaticMarkup(
-      <SeededHistoryNote datasetWindow={seeded} coversWindow={false} timezone={timezone} />,
-    );
-
-    expect(markup).toContain('stated-absence');
-    expect(markup).toContain('sits outside that history');
-    expect(markup).toContain('rather than presenting an empty day as a quiet one');
-    expect(markup).toContain('The seeded history runs');
-  });
-
-  it('says nothing about an absence when the day is inside the seeded span', () => {
-    const markup = renderToStaticMarkup(
-      <SeededHistoryNote datasetWindow={seeded} coversWindow={true} timezone={timezone} />,
-    );
-
-    expect(markup).toContain('The seeded history runs');
-    expect(markup).not.toContain('sits outside that history');
-  });
-});
-
-describe('timezone resolution', () => {
-  it('falls back to a documented default rather than the host zone', () => {
-    expect(resolveTimezone({} as NodeJS.ProcessEnv)).toBe('Europe/London');
-    expect(
-      resolveTimezone({ COMPASS_DEFAULT_TIMEZONE: 'Asia/Kolkata' } as unknown as NodeJS.ProcessEnv),
-    ).toBe('Asia/Kolkata');
+    expect(shifted).toContain('so this is its last full day');
   });
 });

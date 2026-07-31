@@ -131,6 +131,7 @@ export {
 
 export {
   CYCLE_TIME_TRAILING_DAYS,
+  PROGRESS_ITEM_IDS,
   VELOCITY_TRAILING_SPRINTS,
   assessKanbanFlow,
   assessProgress,
@@ -275,6 +276,19 @@ export {
 } from './ranking-guard.js';
 
 export {
+  DATE_TOKEN_PATTERN,
+  NUMERIC_TOKEN_PATTERN,
+  extractDateTokens,
+  extractNumericTokens,
+  numericTokensBySentence,
+  sentencesWithNumbers,
+  splitSentences,
+  type NumericToken,
+  type Sentence,
+  type SentenceNumbers,
+} from './numeric-tokens.js';
+
+export {
   NON_SEMANTIC_REPORT_FIELDS,
   NonSerializableReportValueError,
   canonicalReportJson,
@@ -284,9 +298,13 @@ export {
 } from './determinism.js';
 
 export {
+  ItemAgeError,
   REPORT_SCHEMA_VERSION,
   SectionOrderError,
+  UnevidencedClaimError,
+  assertEveryClaimHasEvidence,
   assertSixSectionsInOrder,
+  assertWholeDayAges,
   createEmptyStructuredReport,
   emptyFindings,
   sectionCounts,

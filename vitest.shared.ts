@@ -11,7 +11,11 @@ import type { ViteUserConfig } from 'vitest/config';
 const resolveSource = (relative: string): string =>
   fileURLToPath(new URL(`./packages/${relative}`, import.meta.url));
 
+const resolveToolSource = (relative: string): string =>
+  fileURLToPath(new URL(`./tools/${relative}`, import.meta.url));
+
 export const compassAliases: ReadonlyArray<{ find: string; replacement: string }> = [
+  { find: '@compass/smoke', replacement: resolveToolSource('smoke/src/index.ts') },
   { find: '@compass/connector-port/testkit', replacement: resolveSource('connector-port/src/testkit/index.ts') },
   { find: '@compass/connector-port', replacement: resolveSource('connector-port/src/index.ts') },
   { find: '@compass/clock', replacement: resolveSource('clock/src/index.ts') },

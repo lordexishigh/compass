@@ -15,12 +15,17 @@
     "typecheck": "tsc -b tsconfig.build.json && tsc -p tsconfig.tests.json && pnpm --filter @compass/web run typecheck",
     "test": "pnpm -r --workspace-concurrency=1 --reporter=append-only run test",
     "lint": "eslint .",
-    "verify": "pnpm run lint && pnpm run typecheck && pnpm run test",
+    "arch": "depcruise --config .dependency-cruiser.cjs packages apps tools",
+    "verify": "pnpm run lint && pnpm run arch && pnpm run typecheck && pnpm run test",
     "dev": "pnpm run build:packages && pnpm --filter @compass/web run dev",
     "worker": "pnpm --filter @compass/worker run start",
     "db:generate": "pnpm --filter @compass/db run generate",
     "db:migrate": "pnpm --filter @compass/db run migrate",
-    "seed:generate": "pnpm --filter @compass/seed-connector run generate"
+    "seed:generate": "pnpm --filter @compass/seed-connector run generate",
+    "seed": "pnpm run seed:generate && pnpm run build:packages && pnpm --filter @compass/worker run cold-start",
+    "cold-start": "pnpm --filter @compass/worker run cold-start",
+    "smoke": "pnpm --filter @compass/smoke run smoke",
+    "smoke:docker": "docker compose up -d --build && pnpm run smoke"
   },
   "devDependencies": {
     "@compass/eslint-plugin": "workspace:*",

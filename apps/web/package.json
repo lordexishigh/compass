@@ -17,6 +17,7 @@
     "@compass/clock": "workspace:*",
     "@compass/connector-port": "workspace:*",
     "@compass/db": "workspace:*",
+    "@compass/pipeline": "workspace:*",
     "@compass/renderers": "workspace:*",
     "@compass/seed-connector": "workspace:*",
     "next": "15.5.22",
@@ -24,6 +25,7 @@
     "react-dom": "19.2.8"
   },
   "devDependencies": {
+    "@compass/smoke": "workspace:*",
     "@tailwindcss/postcss": "4.3.3",
     "@types/node": "24.13.3",
     "@types/react": "19.2.18",
