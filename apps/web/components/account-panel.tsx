@@ -23,6 +23,18 @@ export interface AccountSessionView {
   readonly endsAtLabel: string;
   readonly revokedReason: string | null;
   readonly rotatedFrom: boolean;
+  /**
+   * Whether this session would still be honoured.
+   *
+   * Computed on the server, because it is a comparison against the request's own instant
+   * and against `sessionDeadline` — the one place the 30-day and 14-day rules meet. A
+   * client deriving it from `revokedReason === null` would count a session that has simply
+   * *expired* as live, and "sign out everywhere (4 live)" would then offer to end sessions
+   * that ended themselves days ago.
+   */
+  readonly live: boolean;
+  /** Why it is no longer usable, when nothing revoked it. `null` for a live session. */
+  readonly endedBecause: string | null;
 }
 
 export interface AccountPanelProps {
@@ -63,7 +75,7 @@ export function AccountPanel(props: AccountPanelProps) {
     }
   }
 
-  const live = props.sessions.filter((session) => session.revokedReason === null);
+  const live = props.sessions.filter((session) => session.live);
 
   return (
     <div className="mt-10">
@@ -123,7 +135,7 @@ export function AccountPanel(props: AccountPanelProps) {
           {props.sessions.map((session) => (
             <li
               key={session.id}
-              className={`grid gap-1 text-[13px] leading-relaxed ${session.revokedReason === null ? 'text-ink' : 'text-ink-faint'}`}
+              className={`grid gap-1 text-[13px] leading-relaxed ${session.live ? 'text-ink' : 'text-ink-faint'}`}
             >
               <span className="flex flex-wrap items-baseline gap-x-2">
                 <span className="font-mono tabular-nums">{session.issuedAtLabel}</span>
@@ -137,14 +149,19 @@ export function AccountPanel(props: AccountPanelProps) {
                 )}
               </span>
               <span className="text-ink-muted">
-                {session.revokedReason === null ? (
+                {session.live ? (
                   <>
                     last used <span className="font-mono tabular-nums">{session.lastUsedAtLabel}</span>, ends{' '}
                     <span className="font-mono tabular-nums">{session.endsAtLabel}</span>
                   </>
-                ) : (
+                ) : session.revokedReason !== null ? (
                   <>
                     ended — <span className="font-mono">{session.revokedReason.replace(/_/g, ' ')}</span>
+                  </>
+                ) : (
+                  <>
+                    ended <span className="font-mono tabular-nums">{session.endsAtLabel}</span>
+                    {session.endedBecause !== null && <> — {session.endedBecause}</>}
                   </>
                 )}
               </span>

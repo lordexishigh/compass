@@ -18,7 +18,8 @@ import { NextResponse } from 'next/server';
 
 import { database } from '../report-source';
 
-import { clearSessionCookie, readSessionCookie } from './cookies';
+import { clearSessionCookie, hasSessionCookie, readSessionCookie } from './cookies';
+import { LinkOriginUnavailableError, UNAVAILABLE_SENTENCE, jsonError } from './http';
 
 /**
  * The one place a request is admitted or refused.
@@ -339,7 +340,9 @@ export async function guard(input: GuardInput): Promise<GuardResult> {
  * one matrix, which is the point: a screen that rendered data its API refuses would be
  * the leak the matrix exists to prevent.
  */
-export interface PageAccess {
+/** A decision was reached: the matrix either allowed the read or refused it. */
+export interface PageAccessResolved {
+  readonly kind: 'resolved';
   readonly allowed: boolean;
   readonly principal: Principal;
   readonly identity: Identity | null;
@@ -349,17 +352,48 @@ export interface PageAccess {
   readonly reason: string | null;
 }
 
+/** No decision could be reached, because the substrate could not be read. */
+export interface PageAccessUnavailable {
+  readonly kind: 'unavailable';
+  /** Stated to the reader. Compass's own words, never a driver's. */
+  readonly detail: string;
+}
+
+export type PageAccess = PageAccessResolved | PageAccessUnavailable;
+
+/**
+ * Like `guard()`, this never throws — and the return type says so.
+ *
+ * A discriminated union rather than a nullable field, so a page physically cannot read
+ * `scoped` off an outcome where there is no connection to read it from. Both callers
+ * (`/account`, `/seats`) render `StatedFailure` on the `unavailable` arm: `/account` in
+ * particular is where somebody goes *because* something is wrong, so it is the last
+ * screen that may itself become an error page.
+ */
 export async function pageAccess(input: {
   readonly route: string;
   readonly cookieHeader: string | null;
   readonly teamKey?: string | null;
 }): Promise<PageAccess> {
   const now = nowAtEdge();
-  const organizationId = requestOrganizationId();
-  const scoped = scopedFor(organizationId);
 
-  const secret = input.cookieHeader === null ? null : cookieValue(input.cookieHeader);
-  const resolution = await resolveIdentity({ scoped, secret, now });
+  let organizationId: string;
+  let scoped: ScopedDb;
+  let resolution: Awaited<ReturnType<typeof resolveIdentity>>;
+
+  try {
+    organizationId = requestOrganizationId();
+    scoped = scopedFor(organizationId);
+    const secret = input.cookieHeader === null ? null : cookieValue(input.cookieHeader);
+    resolution = await resolveIdentity({ scoped, secret, now });
+  } catch (error) {
+    console.error(
+      `[compass] pageAccess could not establish identity for ${input.route}: ` +
+        `${error instanceof Error ? (error.stack ?? error.message) : String(error)}`,
+    );
+    return { kind: 'unavailable', detail: UNAVAILABLE_SENTENCE };
+  }
+
   const identity = resolution.kind === 'identified' ? resolution.identity : null;
   const principal: Principal = identity === null ? 'public' : identity.principal;
 
@@ -374,6 +408,7 @@ export async function pageAccess(input: {
   });
 
   return {
+    kind: 'resolved',
     allowed: decision.allowed,
     principal,
     identity,

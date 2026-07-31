@@ -1,4 +1,4 @@
-import { endAllSessions, sessionDeadline } from '@compass/auth';
+import { endAllSessions, sessionDeadline, sessionRejection } from '@compass/auth';
 import { listSessionsForUser } from '@compass/db';
 import { NextResponse } from 'next/server';
 
@@ -41,8 +41,11 @@ export async function GET(request: Request): Promise<NextResponse> {
         revokedAt: session.revokedAt === null ? null : new Date(session.revokedAt).toISOString(),
         revokedReason: session.revokedReason,
         rotatedFromSessionId: session.rotatedFromSessionId,
+        // Whether it would still be honoured, which is not the same as "nothing revoked
+        // it": a session past either deadline is finished and was never revoked by anyone.
+        live: sessionRejection(session, admitted.now) === null,
       })),
-      live: sessions.filter((session) => session.revokedAt === null).length,
+      live: sessions.filter((session) => sessionRejection(session, admitted.now) === null).length,
     });
   } catch (error) {
     return failure(error);

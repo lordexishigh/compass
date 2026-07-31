@@ -1,9 +1,17 @@
 import { OWNER_EMAIL_ENV_VAR, OWNER_PASSWORD_ENV_VAR, ownerCredentialsAreDefault, seatReadiness } from '@compass/auth';
 import { SystemClock, previousCivilDayWindow, toIso } from '@compass/clock';
-import { MissingDatabaseUrlError, ScopedDb, createDatabase, orgScope, resolveDatabaseUrl } from '@compass/db';
+import {
+  MissingDatabaseUrlError,
+  ScopedDb,
+  findOrganization,
+  orgScope,
+  resolveDatabaseUrl,
+  type CompassDatabase,
+} from '@compass/db';
 import { SeedConnector } from '@compass/seed-connector';
 
 import { resolveProvider, resolveTimezone } from './foundation-report';
+import { database } from './report-source';
 
 /**
  * System readiness, stated honestly.
@@ -25,33 +33,52 @@ export interface ReadinessReport {
   readonly checks: readonly ReadinessCheck[];
 }
 
-async function checkDatabase(): Promise<ReadinessCheck> {
-  let url: string;
+/**
+ * The connection both checks below share.
+ *
+ * The process-wide pool from `report-source`, not a fresh one. The container's
+ * `HEALTHCHECK` runs every ten seconds, and opening and tearing down a pool per check —
+ * two per interval, as this file used to — is real connection churn against Postgres for
+ * no information a reused pool does not also give. A missing `DATABASE_URL` is still a
+ * *stated* condition rather than a throw, which is the whole point of this file, so the
+ * resolution is attempted separately and reported.
+ */
+function pooledConnection():
+  | { readonly ok: true; readonly db: CompassDatabase }
+  | { readonly ok: false; readonly detail: string } {
   try {
-    url = resolveDatabaseUrl('pooled');
+    // Resolved first so a missing URL is reported as configuration rather than as a fault.
+    resolveDatabaseUrl('pooled');
+    return { ok: true, db: database() };
   } catch (error) {
     return {
-      name: 'database',
-      status: 'not_configured',
+      ok: false,
       detail:
         error instanceof MissingDatabaseUrlError
           ? error.message
           : 'No database connection string is configured.',
     };
   }
+}
 
-  const handle = createDatabase(url);
+async function checkDatabase(): Promise<ReadinessCheck> {
+  const connection = pooledConnection();
+  if (!connection.ok) {
+    return { name: 'database', status: 'not_configured', detail: connection.detail };
+  }
+
   try {
-    await handle.pool.query('select 1');
-    return { name: 'database', status: 'ready', detail: 'PostgreSQL answered a round trip.' };
+    // A real scoped SELECT rather than `select 1`, through the same repository the product
+    // uses. It proves the round trip *and* that the schema is migrated; `select 1` would
+    // pass against an empty database the app cannot actually read.
+    await findOrganization(new ScopedDb(connection.db, orgScope(resolveProvider().organizationId)));
+    return { name: 'database', status: 'ready', detail: 'PostgreSQL answered a scoped round trip.' };
   } catch (error) {
     return {
       name: 'database',
       status: 'degraded',
       detail: `PostgreSQL did not answer: ${error instanceof Error ? error.message : String(error)}`,
     };
-  } finally {
-    await handle.close().catch(() => undefined);
   }
 }
 
@@ -64,10 +91,8 @@ async function checkDatabase(): Promise<ReadinessCheck> {
  * one place they look when something seems wrong.
  */
 async function checkSeats(): Promise<ReadinessCheck> {
-  let url: string;
-  try {
-    url = resolveDatabaseUrl('pooled');
-  } catch {
+  const connection = pooledConnection();
+  if (!connection.ok) {
     return {
       name: 'seats',
       status: 'not_configured',
@@ -75,10 +100,9 @@ async function checkSeats(): Promise<ReadinessCheck> {
     };
   }
 
-  const handle = createDatabase(url);
   try {
     const organizationId = resolveProvider().organizationId;
-    const seats = await seatReadiness(new ScopedDb(handle.db, orgScope(organizationId)));
+    const seats = await seatReadiness(new ScopedDb(connection.db, orgScope(organizationId)));
 
     if (seats.owners === 0) {
       return {
@@ -108,9 +132,9 @@ async function checkSeats(): Promise<ReadinessCheck> {
       status: 'degraded',
       detail: `Seats could not be read: ${error instanceof Error ? error.message : String(error)}`,
     };
-  } finally {
-    await handle.close().catch(() => undefined);
   }
+  // No `finally` closing a pool: the connection is the process-wide one, and closing it
+  // here would tear down the pool the report path is using.
 }
 
 /**
@@ -121,12 +145,23 @@ async function checkSeats(): Promise<ReadinessCheck> {
  * real transport arrives with `alpha-delivery-email-and-slack`.
  */
 function mailCheck(): ReadinessCheck {
+  const baseUrl = process.env['COMPASS_BASE_URL'];
+  const originConfigured = baseUrl !== undefined && baseUrl.length > 0;
+
   return {
     name: 'mail',
     status: 'not_configured',
     detail:
       'No mail transport is configured, so sign-in links, password resets and invitations are written to the process ' +
-      'log and returned in the invite response instead of being delivered. Nothing is silently dropped.',
+      'log and returned in the invite response instead of being delivered. Nothing is silently dropped.' +
+      // Reported here because it is the other half of the same capability: a deployment
+      // that gains a transport but has no configured origin will refuse to send rather
+      // than mail a link built from a request header, and this is where an operator looks
+      // to find out why.
+      (originConfigured
+        ? ` Links will point at ${baseUrl}.`
+        : ' COMPASS_BASE_URL is not set, so links can only be built for a request that arrived over loopback; any ' +
+          'other origin is refused rather than taken from a request header.'),
   };
 }
 

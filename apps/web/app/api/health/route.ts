@@ -18,10 +18,25 @@ export const runtime = 'nodejs';
  * no organizational data — capability names and conditions only. It still goes through
  * `guard`, because the route-coverage test requires every route to have a matrix entry
  * and an unguarded route would be one the matrix could not describe.
+ *
+ * ## The one route that survives its own guard failing
+ *
+ * `guard()` reaches the database to work out who is asking. On this route that is a
+ * problem, because the conditions it exists to *report* — no `DATABASE_URL`, Postgres
+ * unreachable — are exactly the conditions that stop the guard establishing anything. A
+ * health endpoint that goes down with the thing it monitors is not one: the container
+ * `HEALTHCHECK` in `docker-compose.yml` would see a hard failure and restart-loop a
+ * container whose only problem was a misconfigured connection string, instead of reading
+ * `database: not_configured` and staying up long enough for somebody to fix it.
+ *
+ * So an *unavailable* guard falls through to `readiness()`, which turns both conditions
+ * into a stated 200 body. A guard refusal that is a real access decision is still
+ * honoured — there is no such refusal today, since the matrix admits every principal
+ * here, but the distinction is enforced rather than assumed.
  */
 export async function GET(request: Request): Promise<NextResponse> {
   const admitted = await guard({ request, route: '/api/health', action: 'GET' });
-  if (!admitted.allowed) return admitted.response;
+  if (!admitted.allowed && !admitted.unavailable) return admitted.response;
 
   try {
     const report = await readiness();

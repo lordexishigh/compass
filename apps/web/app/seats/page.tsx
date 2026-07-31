@@ -52,21 +52,15 @@ function SeatsFrame({
 export default async function SeatsPage() {
   const cookieHeader = (await headers()).get('cookie');
 
-  // Reading the seat list needs the database, and so does deciding whether you may. Both
-  // are caught and stated: an owner arriving here during an outage needs a sentence, not
-  // the framework's error page.
-  let access: Awaited<ReturnType<typeof pageAccess>> | null = null;
-  let unavailable: string | null = null;
-  try {
-    access = await pageAccess({ route: '/seats', cookieHeader });
-  } catch (error) {
-    unavailable = error instanceof Error ? error.message : 'The seat store could not be reached.';
-  }
+  // Deciding whether you may read this needs the database. `pageAccess` returns an
+  // `unavailable` arm rather than throwing, so an owner arriving during an outage gets a
+  // sentence instead of the framework's error page.
+  const access = await pageAccess({ route: '/seats', cookieHeader });
 
-  if (access === null) {
+  if (access.kind === 'unavailable') {
     return (
       <SeatsFrame heading="Compass cannot reach its own records">
-        <StatedFailure detail={`${unavailable} No seat has been changed.`}>
+        <StatedFailure detail={`${access.detail} No seat has been changed.`}>
           <a href="/api/health" className="tertiary-action">
             system readiness
           </a>

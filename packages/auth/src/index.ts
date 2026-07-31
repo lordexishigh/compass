@@ -157,4 +157,5 @@ export {
   seatReadiness,
   type BootstrapOwnerResult,
   type OwnerCredentials,
+  type OwnerEnvironment,
 } from './bootstrap.js';

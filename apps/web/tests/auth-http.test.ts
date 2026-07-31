@@ -4,17 +4,20 @@ import { fileURLToPath } from 'node:url';
 
 import { ACTIONS, SESSION_ABSOLUTE_TTL_MILLIS, findRouteRule, type Action } from '@compass/auth';
 import { NextResponse } from 'next/server';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import {
   SESSION_COOKIE_MAX_AGE_SECONDS,
   SESSION_COOKIE_NAME,
   clearSessionCookie,
+  hasSessionCookie,
   readSessionCookie,
   requestIsSecure,
   sessionCookieOptions,
   setSessionCookie,
 } from '../lib/auth/cookies';
+import { baseUrlFor } from '../lib/auth/guard';
+import { LinkOriginUnavailableError } from '../lib/auth/http';
 
 /**
  * The HTTP half: the session cookie's attributes, and the guard on every route.
@@ -152,6 +155,40 @@ describe('reading the cookie back off a request', () => {
     ).toBeNull();
   });
 
+  it('answers null for a value that is not valid percent-encoding, rather than throwing', () => {
+    // `decodeURIComponent('%zz')` raises URIError. This function is called from inside
+    // `guard()`, before any handler's try/catch, so an unguarded decode turned one
+    // malformed cookie into a 500 on every route at once — and it threw *before* the
+    // branch that clears a cookie which has stopped working, so the browser kept
+    // presenting the bad value with no way for the person holding it to recover.
+    for (const bad of ['%zz', '%', '%E0%A4%A', 'ok%', '%C0%80%']) {
+      const request = new Request('https://compass.example.com/', {
+        headers: { cookie: `${SESSION_COOKIE_NAME}=${bad}` },
+      });
+
+      expect(() => readSessionCookie(request), `\`${bad}\` threw`).not.toThrow();
+      expect(readSessionCookie(request), `\`${bad}\` was treated as a session`).toBeNull();
+    }
+  });
+
+  it('still reports that a malformed cookie is present, so the guard can clear it', () => {
+    // The two questions are different, and both matter: the value is not a session, and
+    // there is nevertheless a cookie on the browser that needs overwriting.
+    const request = new Request('https://compass.example.com/', {
+      headers: { cookie: `${SESSION_COOKIE_NAME}=%zz` },
+    });
+
+    expect(readSessionCookie(request)).toBeNull();
+    expect(hasSessionCookie(request)).toBe(true);
+  });
+
+  it('reports no cookie when there genuinely is none', () => {
+    expect(hasSessionCookie(new Request('https://compass.example.com/'))).toBe(false);
+    expect(
+      hasSessionCookie(new Request('https://compass.example.com/', { headers: { cookie: 'theme=dark' } })),
+    ).toBe(false);
+  });
+
   it('round-trips a value the cookie encoder would have escaped', () => {
     // Session secrets are base64url and need no escaping, but the reader must not corrupt a
     // value that did — a half-decoded secret would be an unexplained sign-out.
@@ -161,6 +198,105 @@ describe('reading the cookie back off a request', () => {
 
     expect(readSessionCookie(new Request('https://x.test/', { headers: { cookie: `${SESSION_COOKIE_NAME}=${value}` } }))).toBe(
       'a+b/c=d',
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Where a mailed link may point
+// ---------------------------------------------------------------------------
+
+/**
+ * `POST /api/auth/password-reset` is public and answers identically for an address that
+ * has a seat and one that does not — deliberately, so the form is not a membership
+ * oracle. Which means an unauthenticated caller can make Compass mail a **valid
+ * single-use token** to somebody else.
+ *
+ * If the origin of that link came from a request header, that same caller would also
+ * choose where the victim's token pointed. These tests pin the rule that it cannot.
+ */
+describe('the origin of a mailed link', () => {
+  const ORIGINAL = process.env['COMPASS_BASE_URL'];
+
+  afterEach(() => {
+    if (ORIGINAL === undefined) delete process.env['COMPASS_BASE_URL'];
+    else process.env['COMPASS_BASE_URL'] = ORIGINAL;
+  });
+
+  const requestFrom = (url: string, headers: Record<string, string> = {}) =>
+    new Request(url, { method: 'POST', headers });
+
+  it('ignores x-forwarded-host entirely', () => {
+    delete process.env['COMPASS_BASE_URL'];
+
+    // The attack: a public reset request carrying a host the caller chose.
+    expect(() =>
+      baseUrlFor(requestFrom('https://compass.example.com/api/auth/password-reset', {
+        'x-forwarded-host': 'evil.example',
+      })),
+    ).toThrow(LinkOriginUnavailableError);
+  });
+
+  it('ignores a Host header that is not this machine', () => {
+    delete process.env['COMPASS_BASE_URL'];
+
+    // `request.url` in a route handler is built from the Host header, so it is attacker
+    // controlled in the same way and gets the same treatment.
+    expect(() => baseUrlFor(requestFrom('https://evil.example/api/auth/password-reset'))).toThrow(
+      LinkOriginUnavailableError,
+    );
+  });
+
+  it('names the variable to set when it refuses', () => {
+    delete process.env['COMPASS_BASE_URL'];
+
+    try {
+      baseUrlFor(requestFrom('https://evil.example/api/auth/password-reset'));
+      throw new Error('baseUrlFor accepted an unverified host.');
+    } catch (error) {
+      expect(error).toBeInstanceOf(LinkOriginUnavailableError);
+      expect((error as Error).message).toContain('COMPASS_BASE_URL');
+      // And it says *why*, because a bare "not configured" reads as a bug rather than a
+      // deliberate refusal somebody has to make a decision about.
+      expect((error as Error).message).toContain('called by anyone');
+    }
+  });
+
+  it('uses the configured origin, whatever the request claims', () => {
+    process.env['COMPASS_BASE_URL'] = 'https://compass.acme.example/';
+
+    const origin = baseUrlFor(
+      requestFrom('https://evil.example/api/auth/password-reset', { 'x-forwarded-host': 'also-evil.example' }),
+    );
+
+    expect(origin).toBe('https://compass.acme.example');
+  });
+
+  it('accepts a loopback Host with nothing configured, which is the zero-config path', () => {
+    delete process.env['COMPASS_BASE_URL'];
+
+    // `docker compose up` then a browser on localhost. A link to the reader's own machine
+    // is harmless whoever asked for it, so this is the one host that needs no allowlist.
+    expect(baseUrlFor(requestFrom('http://localhost:3000/api/auth/magic-link'))).toBe('http://localhost:3000');
+    expect(baseUrlFor(requestFrom('http://127.0.0.1:3000/api/auth/magic-link'))).toBe('http://127.0.0.1:3000');
+  });
+
+  it('refuses a configured value that is not an absolute http(s) URL', () => {
+    // Better to refuse than to mail a link nobody can open.
+    for (const bad of ['compass.acme.example', 'ftp://compass.acme.example', 'not a url']) {
+      process.env['COMPASS_BASE_URL'] = bad;
+      expect(
+        () => baseUrlFor(requestFrom('http://localhost:3000/api/auth/magic-link')),
+        `\`${bad}\` was accepted`,
+      ).toThrow(LinkOriginUnavailableError);
+    }
+  });
+
+  it('drops a path and a trailing slash, so the link is not built with a double one', () => {
+    process.env['COMPASS_BASE_URL'] = 'https://compass.acme.example/compass/';
+
+    expect(baseUrlFor(requestFrom('http://localhost:3000/api/auth/magic-link'))).toBe(
+      'https://compass.acme.example',
     );
   });
 });

@@ -51,7 +51,18 @@ export interface OwnerCredentials {
   readonly isDefault: boolean;
 }
 
-export function resolveOwnerCredentials(env: NodeJS.ProcessEnv = process.env): OwnerCredentials {
+/**
+ * The three keys this reads, and nothing more.
+ *
+ * Narrower than `NodeJS.ProcessEnv` on purpose. That type is augmented by whatever is in
+ * scope — Next.js declares `NODE_ENV` as *required* on it — so a caller wanting to ask
+ * "what would this resolve to with nothing set" could not pass `{}`, which is precisely
+ * the question a test needs to ask. A function that reads three optional strings should
+ * demand three optional strings.
+ */
+export type OwnerEnvironment = Readonly<Record<string, string | undefined>>;
+
+export function resolveOwnerCredentials(env: OwnerEnvironment = process.env): OwnerCredentials {
   const email = env[OWNER_EMAIL_ENV_VAR];
   const password = env[OWNER_PASSWORD_ENV_VAR];
   const displayName = env[OWNER_NAME_ENV_VAR];
@@ -67,7 +78,7 @@ export function resolveOwnerCredentials(env: NodeJS.ProcessEnv = process.env): O
   };
 }
 
-export const ownerCredentialsAreDefault = (env: NodeJS.ProcessEnv = process.env): boolean =>
+export const ownerCredentialsAreDefault = (env: OwnerEnvironment = process.env): boolean =>
   resolveOwnerCredentials(env).isDefault;
 
 export interface BootstrapOwnerResult {
@@ -95,7 +106,7 @@ export async function bootstrapOwner(input: {
   readonly scoped: ScopedDb;
   readonly now: Instant;
   readonly teamKeys?: readonly string[];
-  readonly env?: NodeJS.ProcessEnv;
+  readonly env?: OwnerEnvironment;
 }): Promise<BootstrapOwnerResult> {
   const credentials = resolveOwnerCredentials(input.env ?? process.env);
   const alreadyOwned = await hasOwner(input.scoped);

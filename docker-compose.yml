@@ -51,7 +51,11 @@ services:
       COMPASS_OWNER_EMAIL: ${COMPASS_OWNER_EMAIL:-}
       COMPASS_OWNER_PASSWORD: ${COMPASS_OWNER_PASSWORD:-}
       COMPASS_OWNER_NAME: ${COMPASS_OWNER_NAME:-}
-      # Mailed links point at the origin the request arrived on unless this is set.
+      # Where a mailed sign-in, reset or invitation link points. Unset is fine while you
+      # open this on localhost — links use that origin. Reaching the container by LAN
+      # address or through a proxy needs this set: the origin is never taken from a request
+      # header, because the reset endpoint is public and a caller who chose the host would
+      # choose where somebody else's single-use token pointed. See `.env.example`.
       COMPASS_BASE_URL: ${COMPASS_BASE_URL:-}
       # Narration is optional. Absent, the report renders through the
       # deterministic template renderer and the page says which renderer wrote it.

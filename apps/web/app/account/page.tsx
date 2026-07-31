@@ -6,6 +6,7 @@ import {
   SESSION_IDLE_TTL_DAYS,
   ownerCredentialsAreDefault,
   sessionDeadline,
+  sessionRejection,
 } from '@compass/auth';
 import { listSessionsForUser } from '@compass/db';
 import { headers } from 'next/headers';
@@ -13,7 +14,7 @@ import { headers } from 'next/headers';
 import { AccountPanel, type AccountSessionView } from '../../components/account-panel';
 import { SignInPanel } from '../../components/sign-in-panel';
 import { StatedFailure } from '../../components/stated-failure';
-import { pageAccess } from '../../lib/auth/guard';
+import { pageAccess, type PageAccessResolved } from '../../lib/auth/guard';
 
 /**
  * `/account` — sign in, or see the seat you already have.
@@ -47,18 +48,14 @@ export default async function AccountPage({
 
   /**
    * Resolving who you are needs the database, and this screen has to answer even when it
-   * cannot be reached — it is where somebody goes *because* something is wrong. So the
-   * failure is caught and stated, rather than becoming the framework's error page.
+   * cannot be reached — it is where somebody goes *because* something is wrong.
+   *
+   * `pageAccess` never throws; it returns an `unavailable` arm instead, so the failure is
+   * a value this page has to handle rather than an exception it might forget to catch.
    */
-  let access: Awaited<ReturnType<typeof pageAccess>> | null = null;
-  let unavailable: string | null = null;
-  try {
-    access = await pageAccess({ route: '/account', cookieHeader });
-  } catch (error) {
-    unavailable = error instanceof Error ? error.message : 'The account store could not be reached.';
-  }
+  const access = await pageAccess({ route: '/account', cookieHeader });
 
-  if (access === null) {
+  if (access.kind === 'unavailable') {
     return (
       <div className="mx-auto w-full max-w-[46rem] px-5 pb-24 pt-8 lg:px-8 lg:pt-16">
         <header>
@@ -68,7 +65,7 @@ export default async function AccountPage({
           </h1>
         </header>
         <StatedFailure
-          detail={`${unavailable} Nobody has been signed in or out, and nothing has been changed. Sign-in reads the same database the report does, so this is the same condition the report would report.`}
+          detail={`${access.detail} Nobody has been signed in or out. Sign-in reads the same database the report does, so this is the same condition the report would report.`}
         >
           <a href="/api/health" className="tertiary-action">
             system readiness
@@ -134,12 +131,19 @@ export default async function AccountPage({
 /**
  * The session list, formatted on the server.
  *
- * Dates are rendered here rather than in the client island for the reason the report
- * does the same: a component that formats a date needs a locale and a zone, and doing
- * it on the client makes the first paint disagree with the second.
+ * Dates are rendered here rather than in the client island for the reason the report does
+ * the same: a component that formats a date needs a locale and a zone, and doing it on
+ * the client makes the first paint disagree with the second.
+ *
+ * `live` is decided here too, and for a sharper reason. Whether a session would still be
+ * honoured is a comparison against *this request's* instant and against `sessionDeadline`,
+ * which is where the 30-day and 14-day rules meet. The client cannot make that comparison
+ * — it has no injected clock and no business holding one — and a client that guessed from
+ * "nothing revoked it" would count an expired session as live, so "sign out everywhere
+ * (N live)" would name a number that included sessions which ended themselves days ago.
  */
 async function sessionViews(
-  access: Awaited<ReturnType<typeof pageAccess>>,
+  access: PageAccessResolved,
   userId: string,
   currentSessionId: string,
 ): Promise<readonly AccountSessionView[]> {
@@ -147,13 +151,27 @@ async function sessionViews(
   const label = (millis: number): string =>
     new Date(millis).toISOString().replace('T', ' ').slice(0, 16) + 'Z';
 
-  return sessions.map((session) => ({
-    id: session.id,
-    current: session.id === currentSessionId,
-    issuedAtLabel: label(session.issuedAt),
-    lastUsedAtLabel: label(session.lastUsedAt),
-    endsAtLabel: label(sessionDeadline(session)),
-    revokedReason: session.revokedReason,
-    rotatedFrom: session.rotatedFromSessionId !== null,
-  }));
+  return sessions.map((session) => {
+    const rejection = sessionRejection(session, access.now);
+
+    return {
+      id: session.id,
+      current: session.id === currentSessionId,
+      issuedAtLabel: label(session.issuedAt),
+      lastUsedAtLabel: label(session.lastUsedAt),
+      endsAtLabel: label(sessionDeadline(session)),
+      revokedReason: session.revokedReason,
+      rotatedFrom: session.rotatedFromSessionId !== null,
+      live: rejection === null,
+      // The two deadlines are told apart on purpose: "you have not used Compass in two
+      // weeks" and "this session was opened a month ago" are different facts about the
+      // world, and a person auditing their own devices is entitled to which one it was.
+      endedBecause:
+        rejection === 'expired'
+          ? `${SESSION_ABSOLUTE_TTL_DAYS} days after it began`
+          : rejection === 'idle'
+            ? `${SESSION_IDLE_TTL_DAYS} days without use`
+            : null,
+    };
+  });
 }
