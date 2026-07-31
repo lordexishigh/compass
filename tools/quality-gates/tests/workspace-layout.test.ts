@@ -43,8 +43,14 @@ describe('the pnpm workspace holds every layer as its own package', () => {
       'clock',
       'connector-port',
       'db',
+      'delivery',
       'ingest',
       'knowledge-model',
+      // Manager Memos: the one write path into the org model. Above `knowledge-model`
+      // because it writes through the roster service — the single Absence writer — rather
+      // than reaching for the table, and nowhere near `analysis`, which honours a memo by
+      // reading it out of the snapshot it already receives.
+      'memos',
       // Between `renderers` and `pipeline`: narration's fail-closed fallback is the
       // deterministic template renderer, so it sits above the renderers and calls
       // them, and it writes no rows, so it sits below the pipeline.

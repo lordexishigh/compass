@@ -182,6 +182,64 @@ export function startOfCivilDate(civilDate: string, zone: TimeZone): Instant {
   return resolveCivilAsUtc(Date.UTC(year, month - 1, day), zone);
 }
 
+/** `HH:MM` in 24-hour form — how a subscription stores its send time. */
+export const LOCAL_TIME_PATTERN = /^([01]\d|2[0-3]):([0-5]\d)$/;
+
+export class InvalidLocalTimeError extends Error {
+  constructor(value: string) {
+    super(`\`${value}\` is not an \`HH:MM\` local time in 24-hour form, e.g. 07:30.`);
+    this.name = 'InvalidLocalTimeError';
+  }
+}
+
+/**
+ * A wall-clock time on a civil date in a zone, as the real instant it happens.
+ *
+ * This is what makes a subscription's "07:30 in Europe/London" survive DST without anybody
+ * writing DST code. Delivery scheduling asks, for each civil date, *when does 07:30 actually
+ * occur* — and because the answer is computed from the zone's offset on that date, the
+ * March transition makes the gap between two consecutive sends 23 hours and the October one
+ * makes it 25, with no branch anywhere that mentions daylight saving.
+ *
+ * The alternative — start of day plus `7.5 * MILLIS_PER_HOUR` — is wrong exactly twice a
+ * year: on a spring-forward date it lands at 08:30 local and a manager's 07:30 daily arrives
+ * an hour late. Adding an offset to an instant adds *elapsed* time; a send time is a civil
+ * fact about a clock on a wall.
+ *
+ * The two awkward cases resolve through `resolveCivilAsUtc`, and both are asserted in
+ * `tests/zone.test.ts` against measured values rather than assumed ones:
+ *
+ *  - **Skipped.** London jumps 01:00 → 02:00 on 29 March 2026, so 01:30 local never happens.
+ *    It resolves one offset-step later, to 02:30 local, so the send still fires. A send time
+ *    that silently never occurred would be a daily that vanished for one day a year.
+ *  - **Repeated.** 01:30 local happens twice on 25 October 2026; it resolves to the
+ *    post-transition occurrence. *Which* one is arbitrary and not worth depending on; that it
+ *    is exactly **one** instant is the property that matters, because the day's idempotency
+ *    key is derived from it and two answers would mean two sends for one scheduled day.
+ */
+export function instantAtLocalTime(civilDate: string, localTime: string, zone: TimeZone): Instant {
+  const date = /^(\d{4})-(\d{2})-(\d{2})$/.exec(civilDate);
+  if (!date) {
+    throw new InvalidCivilDateError(civilDate);
+  }
+  const time = LOCAL_TIME_PATTERN.exec(localTime);
+  if (!time) {
+    throw new InvalidLocalTimeError(localTime);
+  }
+
+  const year = Number.parseInt(date[1], 10);
+  const month = Number.parseInt(date[2], 10);
+  const day = Number.parseInt(date[3], 10);
+  if (month < 1 || month > 12 || day < 1 || day > 31) {
+    throw new InvalidCivilDateError(civilDate);
+  }
+
+  return resolveCivilAsUtc(
+    Date.UTC(year, month - 1, day, Number.parseInt(time[1], 10), Number.parseInt(time[2], 10)),
+    zone,
+  );
+}
+
 /** Monday–Friday. Team holidays live on the WorkingCalendar and are applied above this. */
 export function isWeekend(instant: Instant, zone: TimeZone): boolean {
   return zonedParts(instant, zone).weekday >= 6;

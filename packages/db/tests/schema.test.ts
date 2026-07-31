@@ -49,6 +49,7 @@ describe('base schema convention', () => {
       'commits',
       'companies',
       'corrections',
+      'delivery_log',
       'developers',
       'entity_versions',
       'features',
@@ -77,9 +78,12 @@ describe('base schema convention', () => {
       'reviews',
       'risks',
       'sessions',
+      'share_link_access',
+      'share_links',
       'source_configs',
       'sprint_scope_changes',
       'sprints',
+      'subscriptions',
       'team_memberships',
       'teams',
       'ticket_status_transitions',
@@ -246,10 +250,18 @@ describe('the append-only register', () => {
     expect([...APPEND_ONLY_TABLE_NAMES]).toEqual([
       'audit_log_entries',
       'corrections',
+      // Delivery attempts and share-link accesses are event logs rather than state: "did the
+      // manager get Tuesday's report, and if not what did the provider say" and "who opened
+      // this shared link" are not answerable from a table whose rows can be edited afterwards.
+      // Retries append, which is also why the exactly-once guarantee on `delivery_log` is a
+      // partial unique index over `status = 'sent'` and not a constraint that would reject the
+      // second attempt.
+      'delivery_log',
       'entity_versions',
       'objective_links',
       'objective_scope_links',
       'objective_versions',
+      'share_link_access',
       'sprint_scope_changes',
       'ticket_status_transitions',
     ]);

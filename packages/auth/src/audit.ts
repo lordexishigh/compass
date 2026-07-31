@@ -44,6 +44,12 @@ export const AUDIT_ACTIONS = [
   'identity.unmerged',
   'absence.recorded',
   'absence.ended',
+  // Manager Memos. A memo is the one thing a manager writes *into* the model — it changes
+  // what the report asserts — so its creation and its expiry are both on the record, and so is
+  // the disambiguation when Compass had to ask which person was meant.
+  'memo.created',
+  'memo.expired',
+  'memo.disambiguated',
   'share_link.revoked',
   'report.exported',
   'data.deleted',
@@ -77,6 +83,9 @@ export const AUDIT_ACTION_LABEL: Readonly<Record<AuditAction, string>> = {
   'identity.unmerged': 'undid a merge and restored the prior attribution',
   'absence.recorded': 'recorded an absence',
   'absence.ended': 'ended an absence early',
+  'memo.created': 'told Compass something it could not have known',
+  'memo.expired': 'a memo stopped applying',
+  'memo.disambiguated': 'chose which person a memo was about',
   'share_link.revoked': 'revoked a share link',
   'report.exported': 'exported a report',
   'data.deleted': 'deleted data',
@@ -102,7 +111,8 @@ export interface AuditRecordInput {
     | 'project'
     | 'developer'
     | 'identity'
-    | 'absence';
+    | 'absence'
+    | 'manager_memo';
   readonly targetId: string;
   readonly before: Record<string, unknown> | null;
   readonly after: Record<string, unknown> | null;

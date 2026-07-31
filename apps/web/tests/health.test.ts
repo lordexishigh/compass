@@ -61,6 +61,10 @@ describe('readiness', () => {
       'database',
       'seats',
       'mail',
+      // Its own capability, not a clause on the mail one: a deployment can legitimately have
+      // one channel and not the other, and "why is my Slack daily not arriving" should be
+      // answerable without reading a sentence about email.
+      'slack',
     ]);
   });
 

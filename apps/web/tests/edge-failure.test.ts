@@ -70,6 +70,7 @@ describe('GET /api/health with no DATABASE_URL', () => {
       'database',
       'seats',
       'mail',
+      'slack',
     ]);
   });
 

@@ -159,6 +159,18 @@ export {
 export { narrationTraces } from './schema/narration.js';
 
 export {
+  deliveryChannel,
+  deliveryLog,
+  deliveryScope,
+  deliveryStatus,
+  shareAudience,
+  shareLinkAccess,
+  shareLinkAccessOutcome,
+  shareLinks,
+  subscriptions,
+} from './schema/delivery.js';
+
+export {
   listNarrationTraces,
   narrationTraceRowId,
   recordNarrationTraces,

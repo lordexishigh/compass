@@ -572,10 +572,47 @@ export const wins = pgTable(
 // ---------------------------------------------------------------------------
 
 /**
- * A Manager Memo as submitted. The closed five-kind extraction schema and its
- * grounding validator arrive with `mvp-manager-memos`; this table holds the raw
- * submission and the kind it was classified into, so the record of what a manager
- * said is never lost to a later parser change.
+ * A Manager Memo: the one place the manager writes *into* the org model.
+ *
+ * Every other declared entity is configuration. This one is an assertion about the
+ * world that contradicts what Compass inferred — "Marcus is out", "we dropped that
+ * from the sprint", "the vendor is blocking us" — and the report has to honour it.
+ *
+ * ## Why the kind is a closed five and the database says so too
+ *
+ * `memo_kind` carries a CHECK against exactly `unavailable`, `descoped`,
+ * `reprioritized`, `external_blocker`, `context_note`. The application validates the
+ * same five before it ever reaches here, and that duplication is the point: the
+ * validator is what produces a *refusal* a manager can read, and the constraint is
+ * what makes "a sixth kind was quietly written by a script" impossible rather than
+ * merely unlikely. An open vocabulary here would turn every downstream `switch` into
+ * a silent no-op branch — the effect would just not happen, with nothing to see.
+ *
+ * `memo_kind` is NOT NULL, unlike the placeholder this replaces. A memo only exists
+ * once extraction has classified it: an unclassifiable line is refused and never
+ * persisted, and a memo whose *subject* is ambiguous waits for the manager to pick a
+ * candidate rather than landing here half-formed. So there is no state in which a row
+ * exists without a kind, and allowing one would have meant every reader carrying a
+ * branch for a case the write path cannot produce.
+ *
+ * ## Effective dating, and the exactly-one rule
+ *
+ * `effective_from` is always set. Either `effective_until` names the end or
+ * `open_ended` is true, never both and never neither — a CHECK enforces the
+ * biconditional. "Out until Thursday" and "out indefinitely" are different
+ * assertions, and a memo that was silently open-ended because a date failed to parse
+ * would suppress findings forever.
+ *
+ * ## The subject, and its confidence
+ *
+ * `subject_kind` + `subject_key` bind the memo to one entity. `subject_confidence`
+ * records how sure resolution was, and `subject_candidates` + `disambiguated_by_user_id`
+ * record the case where it was not sure enough and a human chose — so "why is this
+ * memo about Marcus Hale rather than Marcus Webb" is answerable a month later.
+ *
+ * `raw_text` is verbatim, always, and is never re-parsed into anything: it is the
+ * record of what the manager actually said, which has to survive every later change
+ * to the extractor.
  */
 export const managerMemos = pgTable(
   'manager_memos',
@@ -583,13 +620,38 @@ export const managerMemos = pgTable(
     ...entityBase(),
     authorUserId: uuid('author_user_id'),
     submittedAt: instantColumn('submitted_at').notNull(),
+    /** Verbatim. Never normalised, never re-parsed — the record of what was said. */
     rawText: text('raw_text').notNull(),
-    /** Null until extraction has run. Never guessed at ingest time. */
-    memoKind: text('memo_kind'),
+    /** One of the closed five. CHECK-constrained in the migration. */
+    memoKind: text('memo_kind').notNull(),
+    /** `active` while it applies, `expired` once the clock passed `effective_until`. */
     status: text('status').notNull(),
+    /** The validated typed assertion, as the closed schema produced it. */
     extracted: jsonb('extracted'),
+
+    /** The entity this memo asserts something about. */
+    subjectKind: text('subject_kind').notNull(),
+    subjectKey: text('subject_key').notNull(),
+    /** 0–1. Below the threshold, a human chose from `subject_candidates`. */
+    subjectConfidence: doublePrecision('subject_confidence').notNull(),
+    /** The 2–3 candidates offered, when resolution had to ask. Null when it did not. */
+    subjectCandidates: jsonb('subject_candidates'),
+    /** Who resolved the ambiguity. Null when there was none to resolve. */
+    disambiguatedByUserId: uuid('disambiguated_by_user_id'),
+
+    effectiveFrom: instantColumn('effective_from').notNull(),
+    /** Null exactly when `open_ended` is true; a CHECK enforces the pairing. */
+    effectiveUntil: instantColumn('effective_until'),
+    openEnded: boolean('open_ended').notNull(),
+
+    /** `email` | `slack` | `web` — which of the three intakes carried it. */
+    sourceChannel: text('source_channel').notNull(),
   },
-  (table) => entityConstraints('manager_memos', table),
+  (table) => [
+    ...entityConstraints('manager_memos', table),
+    index('manager_memos_org_subject_idx').on(table.organizationId, table.subjectKind, table.subjectKey),
+    index('manager_memos_org_effective_idx').on(table.organizationId, table.effectiveFrom),
+  ],
 );
 
 /**

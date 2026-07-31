@@ -8,6 +8,11 @@ import {
   resolveDatabaseUrl,
   type CompassDatabase,
 } from '@compass/db';
+import {
+  RESEND_API_KEY_ENV_VAR,
+  RESEND_FROM_ENV_VAR,
+  SLACK_BOT_TOKEN_ENV_VAR,
+} from '@compass/delivery';
 import { SeedConnector } from '@compass/seed-connector';
 
 import { database } from './database';
@@ -138,31 +143,80 @@ async function checkSeats(): Promise<ReadinessCheck> {
 }
 
 /**
- * Where a sign-in link actually goes.
+ * Where a sign-in link and a daily report actually go.
  *
- * Stated rather than implied, because "mail is configured" is the difference between an
- * invitation that reaches a colleague and one an operator has to copy out of a log. A
- * real transport arrives with `alpha-delivery-email-and-slack`.
+ * Stated rather than implied, because "mail is configured" is the difference between a daily
+ * that lands in an inbox at 07:30 and one an operator has to copy out of a log. A missing key
+ * is `not_configured` rather than `degraded`: nothing is broken, the report is still generated
+ * and readable at `/`, and the honest description of the deployment is that it has no mail
+ * transport — which is exactly what an operator needs to read here.
  */
 function mailCheck(): ReadinessCheck {
   const baseUrl = process.env['COMPASS_BASE_URL'];
   const originConfigured = baseUrl !== undefined && baseUrl.length > 0;
+  const apiKey = process.env[RESEND_API_KEY_ENV_VAR] ?? '';
+  const from = process.env[RESEND_FROM_ENV_VAR] ?? '';
+
+  const originDetail = originConfigured
+    ? ` Links will point at ${baseUrl}.`
+    : ` ${'COMPASS_BASE_URL'} is not set, so links can only be built for a request that arrived over loopback; any ` +
+      'other origin is refused rather than taken from a request header.';
+
+  if (apiKey.length === 0) {
+    return {
+      name: 'mail',
+      status: 'not_configured',
+      detail:
+        `No ${RESEND_API_KEY_ENV_VAR} is set, so no email is delivered: scheduled reports are recorded as skipped ` +
+        'with the reason, and sign-in links, password resets and invitations are written to the process log instead. ' +
+        'Nothing is silently dropped, and the report is still readable in Compass.' +
+        originDetail,
+    };
+  }
+
+  if (from.length === 0) {
+    return {
+      name: 'mail',
+      status: 'not_configured',
+      detail:
+        `${RESEND_API_KEY_ENV_VAR} is set but ${RESEND_FROM_ENV_VAR} is not, so Compass has no verified address to ` +
+        'send from and Resend would refuse the message. Set it to an address on the domain whose SPF, DKIM and DMARC ' +
+        'records you configured.' +
+        originDetail,
+    };
+  }
 
   return {
     name: 'mail',
-    status: 'not_configured',
-    detail:
-      'No mail transport is configured, so sign-in links, password resets and invitations are written to the process ' +
-      'log and returned in the invite response instead of being delivered. Nothing is silently dropped.' +
-      // Reported here because it is the other half of the same capability: a deployment
-      // that gains a transport but has no configured origin will refuse to send rather
-      // than mail a link built from a request header, and this is where an operator looks
-      // to find out why.
-      (originConfigured
-        ? ` Links will point at ${baseUrl}.`
-        : ' COMPASS_BASE_URL is not set, so links can only be built for a request that arrived over loopback; any ' +
-          'other origin is refused rather than taken from a request header.'),
+    status: 'ready',
+    detail: `Email delivers through Resend from ${from}.${originDetail}`,
   };
+}
+
+/**
+ * Whether Slack delivery is available.
+ *
+ * Its own check rather than a clause on the mail one: a deployment can legitimately have one
+ * channel and not the other, and a manager asking "why is my Slack daily not arriving" should
+ * find the answer without having to read a sentence about email.
+ */
+function slackCheck(): ReadinessCheck {
+  const token = process.env[SLACK_BOT_TOKEN_ENV_VAR] ?? '';
+
+  return token.length === 0
+    ? {
+        name: 'slack',
+        status: 'not_configured',
+        detail:
+          `No ${SLACK_BOT_TOKEN_ENV_VAR} is set, so nothing is posted to Slack: a scheduled delivery is recorded as ` +
+          'skipped with the reason rather than failing. Add a bot token with `chat:write` to deliver to a DM or a ' +
+          'channel.',
+      }
+    : {
+        name: 'slack',
+        status: 'ready',
+        detail: 'Slack delivers through chat.postMessage to a DM or a named channel.',
+      };
 }
 
 export async function readiness(): Promise<ReadinessReport> {
@@ -202,7 +256,15 @@ export async function readiness(): Promise<ReadinessReport> {
       }`,
   };
 
-  const checks = [clockCheck, connectorCheck, datasetCheck, await checkDatabase(), await checkSeats(), mailCheck()];
+  const checks = [
+    clockCheck,
+    connectorCheck,
+    datasetCheck,
+    await checkDatabase(),
+    await checkSeats(),
+    mailCheck(),
+    slackCheck(),
+  ];
   const status: CheckStatus = checks.some((check) => check.status === 'not_configured')
     ? 'not_configured'
     : checks.some((check) => check.status === 'degraded')

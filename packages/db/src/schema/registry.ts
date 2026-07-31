@@ -305,12 +305,32 @@ export const NAMED_ENTITIES: readonly NamedEntityDefinition[] = [
   define('risk', risks, 'observed', [...JUDGEMENT_FIELDS, 'severity'], JUDGEMENT_INSTANTS),
   define('recommendation', recommendations, 'observed', [...JUDGEMENT_FIELDS, 'action'], JUDGEMENT_INSTANTS),
   define('win', wins, 'observed', JUDGEMENT_FIELDS, JUDGEMENT_INSTANTS),
+  // The manager's own assertion. Every field an effect depends on is tracked, so a
+  // memo edited or expired appends a version rather than rewriting one — which is what
+  // lets a report generated for a past instant honour the memo that was in force then
+  // and a later report stop honouring it, from the same row.
   define(
     'manager_memo',
     managerMemos,
     'declared',
-    ['authorUserId', 'submittedAt', 'rawText', 'memoKind', 'status', 'extracted'],
-    ['submittedAt'],
+    [
+      'authorUserId',
+      'submittedAt',
+      'rawText',
+      'memoKind',
+      'status',
+      'extracted',
+      'subjectKind',
+      'subjectKey',
+      'subjectConfidence',
+      'subjectCandidates',
+      'disambiguatedByUserId',
+      'effectiveFrom',
+      'effectiveUntil',
+      'openEnded',
+      'sourceChannel',
+    ],
+    ['submittedAt', 'effectiveFrom', 'effectiveUntil'],
   ),
   define(
     'feedback',

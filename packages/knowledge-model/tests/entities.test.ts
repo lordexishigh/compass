@@ -183,7 +183,12 @@ describe('every entity family', () => {
       // that came back reordered shows up as a changed field on the second pass.
       const fields = Object.fromEntries(
         definition.trackedFields.map((field) => {
-          if (definition.instantFields.includes(field)) return [field, at('2026-06-15T12:34:56Z')];
+          if (definition.instantFields.includes(field)) {
+            // One instant for every instant column, with one exception: a memo's effective
+            // window is CHECK-constrained to cover at least one instant, so its end cannot be
+            // the same instant as its start the way every other pair here can be.
+            return [field, field === 'effectiveUntil' ? at('2026-06-16T12:34:56Z') : at('2026-06-15T12:34:56Z')];
+          }
           return [field, sampleFor(kind, field)];
         }),
       );
@@ -353,5 +358,23 @@ function sampleFor(kind: string, field: string): string | number | boolean | nul
   }
   if (field === 'extracted') return { note: 'unparsed' };
   if (field === 'authorUserId') return null;
+
+  // ---- manager_memo: the columns the database constrains ----------------------
+  //
+  // A generic `kind.field` string satisfies every other column in the model, but a memo's
+  // kind, subject kind and source channel are CHECK-constrained to closed vocabularies —
+  // that is the point of them — so the probe has to carry real members. The pairing below
+  // matters too: `open_ended` is false because `effective_until` is an instant here, and the
+  // biconditional CHECK would reject the row if the probe claimed both.
+  if (field === 'memoKind') return 'context_note';
+  if (field === 'subjectKind') return 'developer';
+  if (field === 'sourceChannel') return 'web';
+  if (field === 'openEnded') return false;
+  if (field === 'subjectConfidence') return 0.5;
+  if (field === 'disambiguatedByUserId') return null;
+  if (field === 'subjectCandidates') {
+    return [{ subjectKind: 'developer', subjectKey: 'beta', label: 'Beta', reason: 'probe' }] as never;
+  }
+
   return `${kind}.${field}`;
 }

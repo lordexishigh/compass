@@ -192,6 +192,16 @@ export const corrections = pgTable(
 export const APPEND_ONLY_TABLE_NAMES = [
   'audit_log_entries',
   'corrections',
+  /**
+   * Delivery attempts and share-link accesses are event logs, not state.
+   *
+   * "Did the manager get Tuesday's report, and if not what did the provider say" and
+   * "who opened this shared link" are both questions a table whose rows can be edited
+   * cannot answer. Retries append rather than overwrite, which is also why the
+   * exactly-once guarantee on `delivery_log` is a partial unique index over
+   * `status = 'sent'` rather than a constraint that would reject the second attempt.
+   */
+  'delivery_log',
   'entity_versions',
   // The goal store. An objective is edited by appending a revision and archived by
   // appending one with `archived = true`; the belief window's end is derived from
@@ -200,6 +210,7 @@ export const APPEND_ONLY_TABLE_NAMES = [
   'objective_links',
   'objective_scope_links',
   'objective_versions',
+  'share_link_access',
   'sprint_scope_changes',
   'ticket_status_transitions',
 ] as const;

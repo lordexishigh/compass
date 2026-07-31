@@ -6,4 +6,5 @@ export * from './goals.js';
 export * from './history.js';
 export * from './reports.js';
 export * from './narration.js';
+export * from './delivery.js';
 export * from './registry.js';

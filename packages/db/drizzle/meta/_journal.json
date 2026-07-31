@@ -57,6 +57,20 @@
       "when": 1785500339342,
       "tag": "0007_configuration_and_roster",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1785505000000,
+      "tag": "0009_delivery_subscriptions_and_share_links",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1785512040000,
+      "tag": "0010_manager_memo_constraints",
+      "breakpoints": true
     }
   ]
 }
