@@ -31,7 +31,7 @@ is therefore a determinism check, and the test suite runs the equivalent in memo
 | Developers | 12 | 12 | yes |
 | Completed sprints | 4 | 10 | yes |
 | In-flight sprints | 1 | 2 | yes |
-| Commits | 600 | 926 | yes |
+| Commits | 600 | 912 | yes |
 | Pull requests | 120 | 155 | yes |
 | Issues | 300 | 376 | yes |
 | Messages | 800 | 867 | yes |
@@ -42,18 +42,18 @@ Record counts by artifact family, as the connector returns them:
 
 | Artifact | Rows | File |
 | --- | --- | --- |
-| commits | 926 | `seed/generated/commits.json` |
+| commits | 912 | `seed/generated/commits.json` |
 | pull_requests | 155 | `seed/generated/pull_requests.json` |
-| reviews | 290 | `seed/generated/reviews.json` |
+| reviews | 299 | `seed/generated/reviews.json` |
 | branch_refs | 160 | `seed/generated/branch_refs.json` |
 | release_tags | 8 | `seed/generated/release_tags.json` |
 | issues | 376 | `seed/generated/issues.json` |
 | issue_transitions | 885 | `seed/generated/issue_transitions.json` |
 | sprints | 12 | `seed/generated/sprints.json` |
-| sprint_scope_changes | 24 | `seed/generated/sprint_scope_changes.json` |
+| sprint_scope_changes | 18 | `seed/generated/sprint_scope_changes.json` |
 | messages | 867 | `seed/generated/messages.json` |
 
-Total: **3703** records across 3 projects, 3 teams, 4 repositories and 4 conversations.
+Total: **3692** records across 3 projects, 3 teams, 4 repositories and 4 conversations.
 
 ## Objectives
 
@@ -186,10 +186,10 @@ threshold of `0.3` against a goal or objective (`semantic`); nothing (`unattribu
 
 | Class | Commits | Share | Design target |
 | --- | --- | --- | --- |
-| `structural` | 499 | 53.9% | 55% |
-| `inferred` | 235 | 25.4% | 25% |
-| `semantic` | 109 | 11.8% | 12% |
-| `unattributed` | 83 | 9.0% | 8% |
+| `structural` | 497 | 54.5% | 55% |
+| `inferred` | 226 | 24.8% | 25% |
+| `semantic` | 107 | 11.7% | 12% |
+| `unattributed` | 82 | 9.0% | 8% |
 
 ### Inside the single report window
 
@@ -198,10 +198,10 @@ dataset that quietly avoids its hardest case.
 
 | Class | Commits | Share |
 | --- | --- | --- |
-| `structural` | 15 | 57.7% |
-| `inferred` | 3 | 11.5% |
-| `semantic` | 3 | 11.5% |
-| `unattributed` | 5 | 19.2% |
+| `structural` | 14 | 56.0% |
+| `inferred` | 3 | 12.0% |
+| `semantic` | 3 | 12.0% |
+| `unattributed` | 5 | 20.0% |
 
 ## Generated files
 

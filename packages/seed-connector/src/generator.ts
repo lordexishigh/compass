@@ -572,14 +572,44 @@ export function generateSeed(fixtures: SeedFixtures): GeneratedSeed {
       const keyInMessage = position % 10 < 8;
       const intended: TraceabilityClass = keyInMessage && issue.hasGoalChain ? 'structural' : 'inferred';
 
+      // The merge instant is the ticket's own resolution, so the branch schedule
+      // is laid out inside the interval the ticket was open rather than at a
+      // fixed day per commit. A four-commit branch on a one-day ticket would
+      // otherwise run past its own merge, and the merge commit would be dated
+      // before the head commit it declares as its only parent â€” a child that
+      // precedes its parent, which no code host could return. Same technique as
+      // the issue transitions above; `assertGeneratedSeedIsSound` checks it over
+      // the emitted dataset.
+      const isMerged = issue.record.statusCategory === 'done';
+      const plannedMergeAt = isMerged ? (issue.record.resolvedAt ?? null) : null;
+
       const commitCount = rng.between(3, 5);
-      const startedAt = addMillis(issue.record.createdAt, MILLIS_PER_HOUR * rng.between(4, 30));
+      const startOffsetMillis = MILLIS_PER_HOUR * rng.between(4, 30);
+      const startedAt = addMillis(
+        issue.record.createdAt,
+        plannedMergeAt === null
+          ? startOffsetMillis
+          : Math.min(
+              startOffsetMillis,
+              Math.floor((toEpochMillis(plannedMergeAt) - toEpochMillis(issue.record.createdAt)) / 4),
+            ),
+      );
+      const strideMillis =
+        plannedMergeAt === null
+          ? MILLIS_PER_DAY
+          : Math.max(
+              MILLIS_PER_HOUR,
+              Math.floor((toEpochMillis(plannedMergeAt) - toEpochMillis(startedAt)) / (commitCount + 1)),
+            );
       const revisions: string[] = [];
 
       for (let step = 0; step < commitCount; step += 1) {
         const subject = rng.pick(narrative.workSubjects);
+        const drawnAt = addMillis(startedAt, step * strideMillis + MILLIS_PER_MINUTE * rng.between(0, 59));
         const occurredAt = clampToWindow(
-          addMillis(startedAt, step * MILLIS_PER_DAY + MILLIS_PER_HOUR * rng.between(0, 7)),
+          plannedMergeAt !== null && toEpochMillis(drawnAt) >= toEpochMillis(plannedMergeAt)
+            ? addMillis(plannedMergeAt, -MILLIS_PER_MINUTE)
+            : drawnAt,
         );
         const revisionId = nextRevisionId();
         revisions.push(revisionId);
@@ -604,8 +634,7 @@ export function generateSeed(fixtures: SeedFixtures): GeneratedSeed {
 
       const headRevisionId = revisions[revisions.length - 1] ?? nextRevisionId();
       const lastCommitAt = accumulator.commits[accumulator.commits.length - 1]?.occurredAt ?? startedAt;
-      const isMerged = issue.record.statusCategory === 'done';
-      const mergedAt = isMerged ? (issue.record.resolvedAt ?? lastCommitAt) : null;
+      const mergedAt = isMerged ? (plannedMergeAt ?? lastCommitAt) : null;
       const displayNumber = pullRequestNumber;
       pullRequestNumber += 1;
 
@@ -662,9 +691,22 @@ export function generateSeed(fixtures: SeedFixtures): GeneratedSeed {
         linkedWorkItemKeys: [issue.record.itemKey],
       });
 
+      // A merged pull request's reviews are spread across the interval it was
+      // actually open, so the approval that gated a merge is never dated after
+      // it. An open pull request has no upper bound to respect, so it keeps the
+      // wider spread â€” that is what makes the review-latency tail readable.
       const reviewCount = rng.between(1, 3);
+      const reviewSpanMillis =
+        mergedAt === null ? null : toEpochMillis(clampToWindow(mergedAt)) - toEpochMillis(createdAt);
       for (let step = 0; step < reviewCount; step += 1) {
-        const submittedAt = clampToWindow(addMillis(createdAt, MILLIS_PER_HOUR * rng.between(4, 60) * (step + 1)));
+        const submittedAt = clampToWindow(
+          addMillis(
+            createdAt,
+            reviewSpanMillis === null
+              ? MILLIS_PER_HOUR * rng.between(4, 60) * (step + 1)
+              : Math.floor((Math.max(0, reviewSpanMillis) * (step + 1)) / (reviewCount + 1)),
+          ),
+        );
         const verdict: ReviewRecord['verdict'] =
           step === reviewCount - 1 && isMerged ? 'approved' : rng.pick(['changes_requested', 'commented']);
         accumulator.reviews.push({
@@ -1778,6 +1820,59 @@ function assertGeneratedSeedIsSound(
       if (toEpochMillis(current.transitionedAt) < toEpochMillis(previous.transitionedAt)) {
         problems.push(
           `issue_transitions: ${itemKey} reads ${previous.toStatus} at ${toIso(previous.transitionedAt)} then ${current.toStatus} at ${toIso(current.transitionedAt)} â€” the history runs backwards`,
+        );
+      }
+    }
+  }
+
+  // The pull-request analogues of the transition invariant above. A merge cannot
+  // land before the request was opened, a review cannot be submitted before it
+  // was opened or after the merge it gated, and a commit cannot precede a commit
+  // it declares as a parent. Each of these is produced by drawing an instant
+  // from one stream and comparing it against an instant drawn from another, so
+  // none of them is safe to merely believe.
+  const pullRequestsByRecordId = new Map(dataset.records.pull_requests.map((request) => [request.sourceRecordId, request]));
+  for (const request of dataset.records.pull_requests) {
+    if (request.mergedAt !== null && toEpochMillis(request.mergedAt) < toEpochMillis(request.createdAt)) {
+      problems.push(
+        `pull_requests: \`${request.sourceRecordId}\` merged at ${toIso(request.mergedAt)}, before it was opened at ${toIso(request.createdAt)}`,
+      );
+    }
+    if (toEpochMillis(request.updatedAt) < toEpochMillis(request.createdAt)) {
+      problems.push(
+        `pull_requests: \`${request.sourceRecordId}\` was last updated at ${toIso(request.updatedAt)}, before it was opened at ${toIso(request.createdAt)}`,
+      );
+    }
+  }
+
+  for (const review of dataset.records.reviews) {
+    const request = pullRequestsByRecordId.get(review.pullRequestRef);
+    if (request === undefined) {
+      problems.push(
+        `reviews: \`${review.sourceRecordId}\` names \`${review.pullRequestRef}\`, which has no pull request row`,
+      );
+      continue;
+    }
+    const submitted = toEpochMillis(review.submittedAt);
+    if (submitted < toEpochMillis(request.createdAt)) {
+      problems.push(
+        `reviews: \`${review.sourceRecordId}\` was submitted at ${toIso(review.submittedAt)}, before \`${request.sourceRecordId}\` was opened at ${toIso(request.createdAt)}`,
+      );
+    } else if (request.mergedAt !== null && submitted >= toEpochMillis(request.mergedAt)) {
+      problems.push(
+        `reviews: \`${review.sourceRecordId}\` was submitted at ${toIso(review.submittedAt)}, at or after the merge of \`${request.sourceRecordId}\` at ${toIso(request.mergedAt)}`,
+      );
+    }
+  }
+
+  const commitOccurredAt = new Map(dataset.records.commits.map((commit) => [commit.revisionId, commit.occurredAt]));
+  for (const commit of dataset.records.commits) {
+    for (const parentRevisionId of commit.parentRevisionIds) {
+      const parentAt = commitOccurredAt.get(parentRevisionId);
+      if (parentAt === undefined) continue;
+      if (toEpochMillis(commit.occurredAt) < toEpochMillis(parentAt)) {
+        problems.push(
+          `commits: \`${commit.sourceRecordId}\` occurs at ${toIso(commit.occurredAt)}, before its parent \`${parentRevisionId}\` at ${toIso(parentAt)}`,
         );
       }
     }

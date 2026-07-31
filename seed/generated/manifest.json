@@ -323,14 +323,14 @@
   ],
   "recordCounts": {
     "branch_refs": 160,
-    "commits": 926,
+    "commits": 912,
     "issue_transitions": 885,
     "issues": 376,
     "messages": 867,
     "pull_requests": 155,
     "release_tags": 8,
-    "reviews": 290,
-    "sprint_scope_changes": 24,
+    "reviews": 299,
+    "sprint_scope_changes": 18,
     "sprints": 12
   },
   "reportWindow": {
@@ -364,7 +364,7 @@
     },
     {
       "label": "Commits",
-      "observed": 926,
+      "observed": 912,
       "required": 600,
       "satisfied": true
     },
@@ -399,26 +399,26 @@
       "satisfied": true
     }
   ],
-  "totalRecords": 3703,
+  "totalRecords": 3692,
   "traceability": {
     "dataset": [
       {
-        "count": 499,
-        "percentage": 53.9,
+        "count": 497,
+        "percentage": 54.5,
         "traceabilityClass": "structural"
       },
       {
-        "count": 235,
-        "percentage": 25.4,
+        "count": 226,
+        "percentage": 24.8,
         "traceabilityClass": "inferred"
       },
       {
-        "count": 109,
-        "percentage": 11.8,
+        "count": 107,
+        "percentage": 11.7,
         "traceabilityClass": "semantic"
       },
       {
-        "count": 83,
+        "count": 82,
         "percentage": 9,
         "traceabilityClass": "unattributed"
       }
@@ -443,23 +443,23 @@
     ],
     "reportWindow": [
       {
-        "count": 15,
-        "percentage": 57.7,
+        "count": 14,
+        "percentage": 56,
         "traceabilityClass": "structural"
       },
       {
         "count": 3,
-        "percentage": 11.5,
+        "percentage": 12,
         "traceabilityClass": "inferred"
       },
       {
         "count": 3,
-        "percentage": 11.5,
+        "percentage": 12,
         "traceabilityClass": "semantic"
       },
       {
         "count": 5,
-        "percentage": 19.2,
+        "percentage": 20,
         "traceabilityClass": "unattributed"
       }
     ],

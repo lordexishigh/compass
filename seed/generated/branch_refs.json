@@ -16,7 +16,7 @@
     "observedAt": "2026-05-22T11:57:00.000Z",
     "occurredAt": "2026-05-22T11:57:00.000Z",
     "repositoryKey": "insights-etl",
-    "revisionId": "4feb246",
+    "revisionId": "a4fc663",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-insights-etl-work/INS-101-settlement-export-drops-the"
@@ -27,7 +27,7 @@
     "observedAt": "2026-05-23T09:55:00.000Z",
     "occurredAt": "2026-05-23T09:55:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "cde53b0",
+    "revisionId": "88e79a2",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-205-mobile-keyboard-covers-the"
@@ -49,7 +49,7 @@
     "observedAt": "2026-05-25T08:06:00.000Z",
     "occurredAt": "2026-05-25T08:06:00.000Z",
     "repositoryKey": "insights-etl",
-    "revisionId": "ce3dbf8",
+    "revisionId": "e9cdd84",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-insights-etl-work/INS-102-daily-rollup-double-counts"
@@ -67,11 +67,22 @@
   },
   {
     "isDefault": false,
+    "name": "work/INS-105-timezone-conversion-shifts-the",
+    "observedAt": "2026-05-25T18:28:00.000Z",
+    "occurredAt": "2026-05-25T18:28:00.000Z",
+    "repositoryKey": "insights-etl",
+    "revisionId": "d7c3b18",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "branch-insights-etl-work/INS-105-timezone-conversion-shifts-the"
+  },
+  {
+    "isDefault": false,
     "name": "feature/PLAT-405-fraud-check-blocks-the",
     "observedAt": "2026-05-27T09:39:00.000Z",
     "occurredAt": "2026-05-27T09:39:00.000Z",
     "repositoryKey": "platform-api",
-    "revisionId": "da39276",
+    "revisionId": "d0da44c",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-platform-api-feature/PLAT-405-fraud-check-blocks-the"
@@ -82,21 +93,21 @@
     "observedAt": "2026-05-27T15:09:00.000Z",
     "occurredAt": "2026-05-27T15:09:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "d1ec2a4",
+    "revisionId": "8b8a457",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-207-email-receipt-omits-the"
   },
   {
     "isDefault": false,
-    "name": "work/INS-105-timezone-conversion-shifts-the",
-    "observedAt": "2026-05-27T19:46:00.000Z",
-    "occurredAt": "2026-05-27T19:46:00.000Z",
-    "repositoryKey": "insights-etl",
-    "revisionId": "1b81a2a",
+    "name": "feature/CHK-210-apple-wallet-button-renders",
+    "observedAt": "2026-05-28T00:34:00.000Z",
+    "occurredAt": "2026-05-28T00:34:00.000Z",
+    "repositoryKey": "checkout-web",
+    "revisionId": "c8ab035",
     "sourceKey": "primary-code",
     "sourceKind": "code",
-    "sourceRecordId": "branch-insights-etl-work/INS-105-timezone-conversion-shifts-the"
+    "sourceRecordId": "branch-checkout-web-feature/CHK-210-apple-wallet-button-renders"
   },
   {
     "isDefault": false,
@@ -104,21 +115,10 @@
     "observedAt": "2026-05-28T09:57:00.000Z",
     "occurredAt": "2026-05-28T09:57:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "fd4fa86",
+    "revisionId": "5a2bcd9",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-213-back-navigation-resubmits-the"
-  },
-  {
-    "isDefault": false,
-    "name": "feature/CHK-210-apple-wallet-button-renders",
-    "observedAt": "2026-05-28T15:22:00.000Z",
-    "occurredAt": "2026-05-28T15:22:00.000Z",
-    "repositoryKey": "checkout-web",
-    "revisionId": "26fd6c1",
-    "sourceKey": "primary-code",
-    "sourceKind": "code",
-    "sourceRecordId": "branch-checkout-web-feature/CHK-210-apple-wallet-button-renders"
   },
   {
     "isDefault": false,
@@ -126,7 +126,7 @@
     "observedAt": "2026-05-28T15:47:00.000Z",
     "occurredAt": "2026-05-28T15:47:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "cde0ab8",
+    "revisionId": "547c042",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-201-address-form-loses-state"
@@ -159,7 +159,7 @@
     "observedAt": "2026-05-29T13:59:00.000Z",
     "occurredAt": "2026-05-29T13:59:00.000Z",
     "repositoryKey": "insights-etl",
-    "revisionId": "2eab424",
+    "revisionId": "019e255",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-insights-etl-work/INS-108-column-rename-breaks-the"
@@ -170,7 +170,7 @@
     "observedAt": "2026-05-30T09:16:00.000Z",
     "occurredAt": "2026-05-30T09:16:00.000Z",
     "repositoryKey": "platform-api",
-    "revisionId": "6718d45",
+    "revisionId": "c5b0082",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-platform-api-feature/PLAT-409-gateway-metrics-under-report"
@@ -181,7 +181,7 @@
     "observedAt": "2026-05-30T11:45:00.000Z",
     "occurredAt": "2026-05-30T11:45:00.000Z",
     "repositoryKey": "platform-api",
-    "revisionId": "14d8716",
+    "revisionId": "fb65edf",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-platform-api-feature/PLAT-422-profile-lookup-issues-one"
@@ -192,7 +192,7 @@
     "observedAt": "2026-05-30T15:55:00.000Z",
     "occurredAt": "2026-05-30T15:55:00.000Z",
     "repositoryKey": "insights-etl",
-    "revisionId": "7163ae9",
+    "revisionId": "bd117e4",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-insights-etl-work/INS-111-null-merchant-identifier-passes"
@@ -236,7 +236,7 @@
     "observedAt": "2026-06-01T10:16:00.000Z",
     "occurredAt": "2026-06-01T10:16:00.000Z",
     "repositoryKey": "shared-ui",
-    "revisionId": "90c6980",
+    "revisionId": "e759d95",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-shared-ui-feature/PLAT-416-gateway-client-retries-on"
@@ -247,7 +247,7 @@
     "observedAt": "2026-06-02T10:59:00.000Z",
     "occurredAt": "2026-06-02T10:59:00.000Z",
     "repositoryKey": "shared-ui",
-    "revisionId": "ff45cdc",
+    "revisionId": "3ae48c1",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-shared-ui-feature/PLAT-420-dead-letter-queue-has"
@@ -258,7 +258,7 @@
     "observedAt": "2026-06-02T14:04:00.000Z",
     "occurredAt": "2026-06-02T14:04:00.000Z",
     "repositoryKey": "insights-etl",
-    "revisionId": "5d14cf9",
+    "revisionId": "0cd6d53",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-insights-etl-work/INS-113-schedule-drifts-an-hour"
@@ -269,7 +269,7 @@
     "observedAt": "2026-06-02T17:01:00.000Z",
     "occurredAt": "2026-06-02T17:01:00.000Z",
     "repositoryKey": "platform-api",
-    "revisionId": "ba745bb",
+    "revisionId": "1f993e6",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-platform-api-feature/PLAT-418-background-reconciler-holds-a"
@@ -280,7 +280,7 @@
     "observedAt": "2026-06-03T12:41:00.000Z",
     "occurredAt": "2026-06-03T12:41:00.000Z",
     "repositoryKey": "shared-ui",
-    "revisionId": "02a9b69",
+    "revisionId": "2a3ce18",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-shared-ui-feature/PLAT-411-payment-capture-logs-leak"
@@ -291,7 +291,7 @@
     "observedAt": "2026-06-03T13:50:00.000Z",
     "occurredAt": "2026-06-03T13:50:00.000Z",
     "repositoryKey": "platform-api",
-    "revisionId": "e837bed",
+    "revisionId": "7a24f36",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-platform-api-feature/PLAT-426-cold-start-on-the"
@@ -302,7 +302,7 @@
     "observedAt": "2026-06-04T15:46:00.000Z",
     "occurredAt": "2026-06-04T15:46:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "6377949",
+    "revisionId": "432423f",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-219-guest-email-is-not"
@@ -313,7 +313,7 @@
     "observedAt": "2026-06-05T11:43:00.000Z",
     "occurredAt": "2026-06-05T11:43:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "5652531",
+    "revisionId": "5e2ba9b",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-224-session-cookie-is-set"
@@ -324,7 +324,7 @@
     "observedAt": "2026-06-06T13:45:00.000Z",
     "occurredAt": "2026-06-06T13:45:00.000Z",
     "repositoryKey": "shared-ui",
-    "revisionId": "2513b1a",
+    "revisionId": "e7f2f3c",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-shared-ui-feature/PLAT-428-merchant-profile-cache-misses"
@@ -335,7 +335,7 @@
     "observedAt": "2026-06-06T14:09:00.000Z",
     "occurredAt": "2026-06-06T14:09:00.000Z",
     "repositoryKey": "shared-ui",
-    "revisionId": "d03d932",
+    "revisionId": "9d4a18f",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-shared-ui-feature/PLAT-437-migration-lock-blocks-the"
@@ -346,10 +346,21 @@
     "observedAt": "2026-06-06T14:50:00.000Z",
     "occurredAt": "2026-06-06T14:50:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "a13ff8e",
+    "revisionId": "f2f1e17",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-228-card-entry-field-rejects"
+  },
+  {
+    "isDefault": false,
+    "name": "work/INS-118-loader-holds-the-warehouse",
+    "observedAt": "2026-06-07T04:01:00.000Z",
+    "occurredAt": "2026-06-07T04:01:00.000Z",
+    "repositoryKey": "insights-etl",
+    "revisionId": "7163ae9",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "branch-insights-etl-work/INS-118-loader-holds-the-warehouse"
   },
   {
     "isDefault": false,
@@ -368,7 +379,7 @@
     "observedAt": "2026-06-09T08:35:00.000Z",
     "occurredAt": "2026-06-09T08:35:00.000Z",
     "repositoryKey": "shared-ui",
-    "revisionId": "5965187",
+    "revisionId": "79b8891",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-shared-ui-feature/PLAT-424-feature-flag-evaluation-blocks"
@@ -379,7 +390,7 @@
     "observedAt": "2026-06-09T10:49:00.000Z",
     "occurredAt": "2026-06-09T10:49:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "5189153",
+    "revisionId": "84b2e73",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-226-declined-card-message-names"
@@ -390,7 +401,7 @@
     "observedAt": "2026-06-09T14:08:00.000Z",
     "occurredAt": "2026-06-09T14:08:00.000Z",
     "repositoryKey": "shared-ui",
-    "revisionId": "cefbcf2",
+    "revisionId": "d9fe62e",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-shared-ui-feature/PLAT-441-tokenization-cache-key-ignores"
@@ -401,32 +412,21 @@
     "observedAt": "2026-06-09T16:52:00.000Z",
     "occurredAt": "2026-06-09T16:52:00.000Z",
     "repositoryKey": "platform-api",
-    "revisionId": "268c097",
+    "revisionId": "71a65f6",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-platform-api-feature/PLAT-435-payment-capture-logs-leak"
   },
   {
     "isDefault": false,
-    "name": "work/INS-118-loader-holds-the-warehouse",
-    "observedAt": "2026-06-10T02:15:00.000Z",
-    "occurredAt": "2026-06-10T02:15:00.000Z",
-    "repositoryKey": "insights-etl",
-    "revisionId": "dd84fff",
+    "name": "feature/PLAT-443-alert-threshold-fires-on",
+    "observedAt": "2026-06-11T03:18:00.000Z",
+    "occurredAt": "2026-06-11T03:18:00.000Z",
+    "repositoryKey": "platform-api",
+    "revisionId": "bd75e0b",
     "sourceKey": "primary-code",
     "sourceKind": "code",
-    "sourceRecordId": "branch-insights-etl-work/INS-118-loader-holds-the-warehouse"
-  },
-  {
-    "isDefault": false,
-    "name": "work/INS-120-data-contract-has-no",
-    "observedAt": "2026-06-10T17:57:00.000Z",
-    "occurredAt": "2026-06-10T17:57:00.000Z",
-    "repositoryKey": "insights-etl",
-    "revisionId": "a34d3be",
-    "sourceKey": "primary-code",
-    "sourceKind": "code",
-    "sourceRecordId": "branch-insights-etl-work/INS-120-data-contract-has-no"
+    "sourceRecordId": "branch-platform-api-feature/PLAT-443-alert-threshold-fires-on"
   },
   {
     "isDefault": false,
@@ -434,7 +434,7 @@
     "observedAt": "2026-06-11T08:33:00.000Z",
     "occurredAt": "2026-06-11T08:33:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "5cb351e",
+    "revisionId": "1fd75f1",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-231-email-receipt-omits-the"
@@ -445,7 +445,7 @@
     "observedAt": "2026-06-11T14:27:00.000Z",
     "occurredAt": "2026-06-11T14:27:00.000Z",
     "repositoryKey": "platform-api",
-    "revisionId": "70649b5",
+    "revisionId": "2bd7f45",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-platform-api-feature/PLAT-439-currency-rounding-disagrees-with"
@@ -453,13 +453,24 @@
   {
     "isDefault": false,
     "name": "feature/PLAT-446-profile-lookup-issues-one",
-    "observedAt": "2026-06-11T18:24:00.000Z",
-    "occurredAt": "2026-06-11T18:24:00.000Z",
+    "observedAt": "2026-06-11T15:42:00.000Z",
+    "occurredAt": "2026-06-11T15:42:00.000Z",
     "repositoryKey": "shared-ui",
-    "revisionId": "152c275",
+    "revisionId": "3ede7a8",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-shared-ui-feature/PLAT-446-profile-lookup-issues-one"
+  },
+  {
+    "isDefault": false,
+    "name": "work/INS-120-data-contract-has-no",
+    "observedAt": "2026-06-11T21:17:00.000Z",
+    "occurredAt": "2026-06-11T21:17:00.000Z",
+    "repositoryKey": "insights-etl",
+    "revisionId": "43a24c2",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "branch-insights-etl-work/INS-120-data-contract-has-no"
   },
   {
     "isDefault": false,
@@ -467,21 +478,10 @@
     "observedAt": "2026-06-12T16:01:00.000Z",
     "occurredAt": "2026-06-12T16:01:00.000Z",
     "repositoryKey": "shared-ui",
-    "revisionId": "2d30d03",
+    "revisionId": "ad18eed",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-shared-ui-feature/PLAT-433-gateway-metrics-under-report"
-  },
-  {
-    "isDefault": false,
-    "name": "feature/PLAT-443-alert-threshold-fires-on",
-    "observedAt": "2026-06-13T01:32:00.000Z",
-    "occurredAt": "2026-06-13T01:32:00.000Z",
-    "repositoryKey": "platform-api",
-    "revisionId": "93c38d7",
-    "sourceKey": "primary-code",
-    "sourceKind": "code",
-    "sourceRecordId": "branch-platform-api-feature/PLAT-443-alert-threshold-fires-on"
   },
   {
     "isDefault": false,
@@ -489,7 +489,7 @@
     "observedAt": "2026-06-13T17:32:00.000Z",
     "occurredAt": "2026-06-13T17:32:00.000Z",
     "repositoryKey": "platform-api",
-    "revisionId": "11e5828",
+    "revisionId": "66f6c44",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-platform-api-feature/PLAT-431-connection-pool-starves-under"
@@ -500,7 +500,7 @@
     "observedAt": "2026-06-14T15:18:00.000Z",
     "occurredAt": "2026-06-14T15:18:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "3e1e41c",
+    "revisionId": "03ebe35",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-237-back-navigation-resubmits-the"
@@ -511,7 +511,7 @@
     "observedAt": "2026-06-15T09:15:00.000Z",
     "occurredAt": "2026-06-15T09:15:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "bf1a714",
+    "revisionId": "823e7e7",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-239-focus-ring-is-invisible"
@@ -522,7 +522,7 @@
     "observedAt": "2026-06-15T13:49:00.000Z",
     "occurredAt": "2026-06-15T13:49:00.000Z",
     "repositoryKey": "insights-etl",
-    "revisionId": "901f0cc",
+    "revisionId": "4e3bfa2",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-insights-etl-work/INS-127-late-arriving-events-never"
@@ -533,7 +533,7 @@
     "observedAt": "2026-06-15T16:24:00.000Z",
     "occurredAt": "2026-06-15T16:24:00.000Z",
     "repositoryKey": "insights-etl",
-    "revisionId": "3b0dcb0",
+    "revisionId": "33d3764",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-insights-etl-work/INS-125-timezone-conversion-shifts-the"
@@ -544,7 +544,7 @@
     "observedAt": "2026-06-15T16:42:00.000Z",
     "occurredAt": "2026-06-15T16:42:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "be4105c",
+    "revisionId": "1e156e0",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-246-terms-checkbox-is-not"
@@ -555,7 +555,7 @@
     "observedAt": "2026-06-16T14:25:00.000Z",
     "occurredAt": "2026-06-16T14:25:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "eae1b85",
+    "revisionId": "ae05c58",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-242-delivery-estimate-ignores-the"
@@ -566,7 +566,7 @@
     "observedAt": "2026-06-16T17:19:00.000Z",
     "occurredAt": "2026-06-16T17:19:00.000Z",
     "repositoryKey": "shared-ui",
-    "revisionId": "cdac916",
+    "revisionId": "e71f14d",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-shared-ui-feature/PLAT-454-retry-budget-is-unbounded"
@@ -577,7 +577,7 @@
     "observedAt": "2026-06-17T08:19:00.000Z",
     "occurredAt": "2026-06-17T08:19:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "0c8e04d",
+    "revisionId": "62dc7b2",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-251-guest-session-expires-mid"
@@ -588,7 +588,7 @@
     "observedAt": "2026-06-17T08:22:00.000Z",
     "occurredAt": "2026-06-17T08:22:00.000Z",
     "repositoryKey": "platform-api",
-    "revisionId": "e311018",
+    "revisionId": "fc8384f",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-platform-api-feature/PLAT-448-feature-flag-evaluation-blocks"
@@ -599,7 +599,7 @@
     "observedAt": "2026-06-17T12:01:00.000Z",
     "occurredAt": "2026-06-17T12:01:00.000Z",
     "repositoryKey": "insights-etl",
-    "revisionId": "e7d9e2f",
+    "revisionId": "7f14db9",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-insights-etl-work/INS-123-warehouse-loader-retries-without"
@@ -610,7 +610,7 @@
     "observedAt": "2026-06-17T13:42:00.000Z",
     "occurredAt": "2026-06-17T13:42:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "243ac47",
+    "revisionId": "9279beb",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-235-guest-order-cannot-be"
@@ -621,7 +621,7 @@
     "observedAt": "2026-06-18T12:46:00.000Z",
     "occurredAt": "2026-06-18T12:46:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "79b45eb",
+    "revisionId": "d002d50",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-248-session-cookie-is-set"
@@ -632,7 +632,7 @@
     "observedAt": "2026-06-18T14:26:00.000Z",
     "occurredAt": "2026-06-18T14:26:00.000Z",
     "repositoryKey": "platform-api",
-    "revisionId": "3a3d5d4",
+    "revisionId": "3ed9eb0",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-platform-api-feature/PLAT-457-gateway-metrics-under-report"
@@ -643,7 +643,7 @@
     "observedAt": "2026-06-19T08:06:00.000Z",
     "occurredAt": "2026-06-19T08:06:00.000Z",
     "repositoryKey": "insights-etl",
-    "revisionId": "034e544",
+    "revisionId": "bb39305",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-insights-etl-work/INS-131-null-merchant-identifier-passes"
@@ -654,7 +654,7 @@
     "observedAt": "2026-06-19T08:40:00.000Z",
     "occurredAt": "2026-06-19T08:40:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "4f41e1a",
+    "revisionId": "7de4822",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-255-email-receipt-omits-the"
@@ -665,21 +665,10 @@
     "observedAt": "2026-06-20T09:10:00.000Z",
     "occurredAt": "2026-06-20T09:10:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "4abab02",
+    "revisionId": "c133f4a",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-257-screen-reader-skips-the"
-  },
-  {
-    "isDefault": false,
-    "name": "feature/CHK-253-mobile-keyboard-covers-the",
-    "observedAt": "2026-06-21T01:59:00.000Z",
-    "occurredAt": "2026-06-21T01:59:00.000Z",
-    "repositoryKey": "checkout-web",
-    "revisionId": "e173e14",
-    "sourceKey": "primary-code",
-    "sourceKind": "code",
-    "sourceRecordId": "branch-checkout-web-feature/CHK-253-mobile-keyboard-covers-the"
   },
   {
     "isDefault": false,
@@ -687,10 +676,21 @@
     "observedAt": "2026-06-21T10:42:00.000Z",
     "occurredAt": "2026-06-21T10:42:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "afb3f3e",
+    "revisionId": "4978ec2",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-244-retry-after-a-decline"
+  },
+  {
+    "isDefault": false,
+    "name": "feature/CHK-253-mobile-keyboard-covers-the",
+    "observedAt": "2026-06-22T06:17:00.000Z",
+    "occurredAt": "2026-06-22T06:17:00.000Z",
+    "repositoryKey": "checkout-web",
+    "revisionId": "35cf5e3",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "branch-checkout-web-feature/CHK-253-mobile-keyboard-covers-the"
   },
   {
     "isDefault": false,
@@ -698,7 +698,7 @@
     "observedAt": "2026-06-22T12:20:00.000Z",
     "occurredAt": "2026-06-22T12:20:00.000Z",
     "repositoryKey": "shared-ui",
-    "revisionId": "f4d2d0c",
+    "revisionId": "97f6ab9",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-shared-ui-feature/PLAT-450-cold-start-on-the"
@@ -731,7 +731,7 @@
     "observedAt": "2026-06-23T11:18:00.000Z",
     "occurredAt": "2026-06-23T11:18:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "cc31813",
+    "revisionId": "d4532f5",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-261-back-navigation-resubmits-the"
@@ -742,21 +742,10 @@
     "observedAt": "2026-06-23T14:38:00.000Z",
     "occurredAt": "2026-06-23T14:38:00.000Z",
     "repositoryKey": "platform-api",
-    "revisionId": "1239386",
+    "revisionId": "d3422ba",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-platform-api-feature/PLAT-452-merchant-profile-cache-misses"
-  },
-  {
-    "isDefault": false,
-    "name": "feature/PLAT-465-tokenization-cache-key-ignores",
-    "observedAt": "2026-06-23T15:22:00.000Z",
-    "occurredAt": "2026-06-23T15:22:00.000Z",
-    "repositoryKey": "shared-ui",
-    "revisionId": "315e009",
-    "sourceKey": "primary-code",
-    "sourceKind": "code",
-    "sourceRecordId": "branch-shared-ui-feature/PLAT-465-tokenization-cache-key-ignores"
   },
   {
     "isDefault": false,
@@ -775,32 +764,21 @@
     "observedAt": "2026-06-24T10:08:00.000Z",
     "occurredAt": "2026-06-24T10:08:00.000Z",
     "repositoryKey": "insights-etl",
-    "revisionId": "2b61053",
+    "revisionId": "034e544",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-insights-etl-work/INS-137-payout-summary-omits-negative"
   },
   {
     "isDefault": false,
-    "name": "work/INS-135-freshness-check-reports-green",
-    "observedAt": "2026-06-25T18:54:00.000Z",
-    "occurredAt": "2026-06-25T18:54:00.000Z",
-    "repositoryKey": "insights-etl",
-    "revisionId": "e6d8edb",
+    "name": "feature/PLAT-465-tokenization-cache-key-ignores",
+    "observedAt": "2026-06-24T14:37:00.000Z",
+    "occurredAt": "2026-06-24T14:37:00.000Z",
+    "repositoryKey": "shared-ui",
+    "revisionId": "cc7de8f",
     "sourceKey": "primary-code",
     "sourceKind": "code",
-    "sourceRecordId": "branch-insights-etl-work/INS-135-freshness-check-reports-green"
-  },
-  {
-    "isDefault": false,
-    "name": "feature/CHK-263-focus-ring-is-invisible",
-    "observedAt": "2026-06-26T05:21:00.000Z",
-    "occurredAt": "2026-06-26T05:21:00.000Z",
-    "repositoryKey": "checkout-web",
-    "revisionId": "10be284",
-    "sourceKey": "primary-code",
-    "sourceKind": "code",
-    "sourceRecordId": "branch-checkout-web-feature/CHK-263-focus-ring-is-invisible"
+    "sourceRecordId": "branch-shared-ui-feature/PLAT-465-tokenization-cache-key-ignores"
   },
   {
     "isDefault": false,
@@ -819,10 +797,32 @@
     "observedAt": "2026-06-26T10:00:00.000Z",
     "occurredAt": "2026-06-26T10:00:00.000Z",
     "repositoryKey": "insights-etl",
-    "revisionId": "718d4e8",
+    "revisionId": "55ecae5",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-insights-etl-work/INS-129-extract-runs-before-the"
+  },
+  {
+    "isDefault": false,
+    "name": "work/INS-135-freshness-check-reports-green",
+    "observedAt": "2026-06-26T14:54:00.000Z",
+    "occurredAt": "2026-06-26T14:54:00.000Z",
+    "repositoryKey": "insights-etl",
+    "revisionId": "f024b4b",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "branch-insights-etl-work/INS-135-freshness-check-reports-green"
+  },
+  {
+    "isDefault": false,
+    "name": "feature/CHK-263-focus-ring-is-invisible",
+    "observedAt": "2026-06-27T02:56:00.000Z",
+    "occurredAt": "2026-06-27T02:56:00.000Z",
+    "repositoryKey": "checkout-web",
+    "revisionId": "ba6fb1f",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "branch-checkout-web-feature/CHK-263-focus-ring-is-invisible"
   },
   {
     "isDefault": false,
@@ -830,10 +830,21 @@
     "observedAt": "2026-06-27T17:01:00.000Z",
     "occurredAt": "2026-06-27T17:01:00.000Z",
     "repositoryKey": "insights-etl",
-    "revisionId": "bd269a7",
+    "revisionId": "77e9bdd",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-insights-etl-work/INS-133-schedule-drifts-an-hour"
+  },
+  {
+    "isDefault": false,
+    "name": "work/INS-138-loader-holds-the-warehouse",
+    "observedAt": "2026-06-27T20:11:00.000Z",
+    "occurredAt": "2026-06-27T20:11:00.000Z",
+    "repositoryKey": "insights-etl",
+    "revisionId": "fa028d4",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "branch-insights-etl-work/INS-138-loader-holds-the-warehouse"
   },
   {
     "isDefault": false,
@@ -841,21 +852,21 @@
     "observedAt": "2026-06-28T11:17:00.000Z",
     "occurredAt": "2026-06-28T11:17:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "f4a2106",
+    "revisionId": "392eb77",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-267-guest-email-is-not"
   },
   {
     "isDefault": false,
-    "name": "work/INS-138-loader-holds-the-warehouse",
-    "observedAt": "2026-06-29T01:56:00.000Z",
-    "occurredAt": "2026-06-29T01:56:00.000Z",
-    "repositoryKey": "insights-etl",
-    "revisionId": "cd61dab",
+    "name": "feature/PLAT-477-fraud-check-blocks-the",
+    "observedAt": "2026-06-29T13:27:00.000Z",
+    "occurredAt": "2026-06-29T13:27:00.000Z",
+    "repositoryKey": "platform-api",
+    "revisionId": "a2b47de",
     "sourceKey": "primary-code",
     "sourceKind": "code",
-    "sourceRecordId": "branch-insights-etl-work/INS-138-loader-holds-the-warehouse"
+    "sourceRecordId": "branch-platform-api-feature/PLAT-477-fraud-check-blocks-the"
   },
   {
     "isDefault": false,
@@ -863,21 +874,10 @@
     "observedAt": "2026-06-29T17:29:00.000Z",
     "occurredAt": "2026-06-29T17:29:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "392eb77",
+    "revisionId": "69dae8d",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-269-form-autofill-overwrites-the"
-  },
-  {
-    "isDefault": false,
-    "name": "feature/PLAT-477-fraud-check-blocks-the",
-    "observedAt": "2026-06-30T02:10:00.000Z",
-    "occurredAt": "2026-06-30T02:10:00.000Z",
-    "repositoryKey": "platform-api",
-    "revisionId": "aad62bf",
-    "sourceKey": "primary-code",
-    "sourceKind": "code",
-    "sourceRecordId": "branch-platform-api-feature/PLAT-477-fraud-check-blocks-the"
   },
   {
     "isDefault": false,
@@ -918,7 +918,7 @@
     "observedAt": "2026-07-02T13:46:00.000Z",
     "occurredAt": "2026-07-02T13:46:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "69dae8d",
+    "revisionId": "ce67c23",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-272-session-cookie-is-set"
@@ -929,21 +929,10 @@
     "observedAt": "2026-07-02T15:43:00.000Z",
     "occurredAt": "2026-07-02T15:43:00.000Z",
     "repositoryKey": "shared-ui",
-    "revisionId": "c6c1a7b",
+    "revisionId": "e34a29e",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-shared-ui-feature/PLAT-489-tokenization-cache-key-ignores"
-  },
-  {
-    "isDefault": false,
-    "name": "work/INS-144-merchant-dimension-is-missing",
-    "observedAt": "2026-07-03T12:42:00.000Z",
-    "occurredAt": "2026-07-03T12:42:00.000Z",
-    "repositoryKey": "insights-etl",
-    "revisionId": "63a06a4",
-    "sourceKey": "primary-code",
-    "sourceKind": "code",
-    "sourceRecordId": "branch-insights-etl-work/INS-144-merchant-dimension-is-missing"
   },
   {
     "isDefault": false,
@@ -951,7 +940,7 @@
     "observedAt": "2026-07-04T15:04:00.000Z",
     "occurredAt": "2026-07-04T15:04:00.000Z",
     "repositoryKey": "shared-ui",
-    "revisionId": "d68bee0",
+    "revisionId": "7029d6d",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-shared-ui-feature/PLAT-485-migration-lock-blocks-the"
@@ -962,7 +951,7 @@
     "observedAt": "2026-07-04T15:11:00.000Z",
     "occurredAt": "2026-07-04T15:11:00.000Z",
     "repositoryKey": "platform-api",
-    "revisionId": "7973248",
+    "revisionId": "34fc126",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-platform-api-feature/PLAT-483-payment-capture-logs-leak"
@@ -973,7 +962,7 @@
     "observedAt": "2026-07-05T08:14:00.000Z",
     "occurredAt": "2026-07-05T08:14:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "f435a61",
+    "revisionId": "9f90cea",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-265-payment-sheet-flashes-before"
@@ -984,10 +973,32 @@
     "observedAt": "2026-07-05T09:30:00.000Z",
     "occurredAt": "2026-07-05T09:30:00.000Z",
     "repositoryKey": "insights-etl",
-    "revisionId": "1f13c33",
+    "revisionId": "3e8f345",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-insights-etl-work/INS-141-settlement-export-drops-the"
+  },
+  {
+    "isDefault": false,
+    "name": "work/INS-144-merchant-dimension-is-missing",
+    "observedAt": "2026-07-05T12:46:00.000Z",
+    "occurredAt": "2026-07-05T12:46:00.000Z",
+    "repositoryKey": "insights-etl",
+    "revisionId": "2b61053",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "branch-insights-etl-work/INS-144-merchant-dimension-is-missing"
+  },
+  {
+    "isDefault": false,
+    "name": "work/INS-146-report-job-silently-skips",
+    "observedAt": "2026-07-05T21:24:00.000Z",
+    "occurredAt": "2026-07-05T21:24:00.000Z",
+    "repositoryKey": "insights-etl",
+    "revisionId": "e6d45e2",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "branch-insights-etl-work/INS-146-report-job-silently-skips"
   },
   {
     "isDefault": false,
@@ -995,7 +1006,7 @@
     "observedAt": "2026-07-06T09:38:00.000Z",
     "occurredAt": "2026-07-06T09:38:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "382dc23",
+    "revisionId": "54b6446",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-282-apple-wallet-button-renders"
@@ -1017,29 +1028,18 @@
     "observedAt": "2026-07-07T13:40:00.000Z",
     "occurredAt": "2026-07-07T13:40:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "9a165b6",
+    "revisionId": "0bb01f6",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-279-email-receipt-omits-the"
   },
   {
     "isDefault": false,
-    "name": "work/INS-146-report-job-silently-skips",
-    "observedAt": "2026-07-07T23:47:00.000Z",
-    "occurredAt": "2026-07-07T23:47:00.000Z",
-    "repositoryKey": "insights-etl",
-    "revisionId": "48c186e",
-    "sourceKey": "primary-code",
-    "sourceKind": "code",
-    "sourceRecordId": "branch-insights-etl-work/INS-146-report-job-silently-skips"
-  },
-  {
-    "isDefault": false,
     "name": "work/INS-149-extract-runs-before-the",
-    "observedAt": "2026-07-08T11:06:00.000Z",
-    "occurredAt": "2026-07-08T11:06:00.000Z",
+    "observedAt": "2026-07-09T12:44:00.000Z",
+    "occurredAt": "2026-07-09T12:44:00.000Z",
     "repositoryKey": "insights-etl",
-    "revisionId": "a6c0b16",
+    "revisionId": "7562398",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-insights-etl-work/INS-149-extract-runs-before-the"
@@ -1050,7 +1050,7 @@
     "observedAt": "2026-07-10T10:06:00.000Z",
     "occurredAt": "2026-07-10T10:06:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "0b43b50",
+    "revisionId": "3d3a363",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-275-guest-session-expires-mid"
@@ -1061,7 +1061,7 @@
     "observedAt": "2026-07-10T11:28:00.000Z",
     "occurredAt": "2026-07-10T11:28:00.000Z",
     "repositoryKey": "platform-api",
-    "revisionId": "8ade1e5",
+    "revisionId": "120265f",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-platform-api-feature/PLAT-491-alert-threshold-fires-on"
@@ -1072,7 +1072,7 @@
     "observedAt": "2026-07-10T14:48:00.000Z",
     "occurredAt": "2026-07-10T14:48:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "6343563",
+    "revisionId": "1eb6af3",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-286-currency-symbol-is-hard"
@@ -1083,7 +1083,7 @@
     "observedAt": "2026-07-10T15:37:00.000Z",
     "occurredAt": "2026-07-10T15:37:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "34f178b",
+    "revisionId": "7064083",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-277-mobile-keyboard-covers-the"
@@ -1094,7 +1094,7 @@
     "observedAt": "2026-07-10T16:41:00.000Z",
     "occurredAt": "2026-07-10T16:41:00.000Z",
     "repositoryKey": "platform-api",
-    "revisionId": "0bbab91",
+    "revisionId": "619cc50",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-platform-api-feature/PLAT-487-currency-rounding-disagrees-with"
@@ -1102,8 +1102,8 @@
   {
     "isDefault": false,
     "name": "feature/PLAT-500-merchant-profile-cache-misses",
-    "observedAt": "2026-07-11T01:03:00.000Z",
-    "occurredAt": "2026-07-11T01:03:00.000Z",
+    "observedAt": "2026-07-11T10:35:00.000Z",
+    "occurredAt": "2026-07-11T10:35:00.000Z",
     "repositoryKey": "platform-api",
     "revisionId": "6fd3887",
     "sourceKey": "primary-code",
@@ -1127,29 +1127,18 @@
     "observedAt": "2026-07-11T17:20:00.000Z",
     "occurredAt": "2026-07-11T17:20:00.000Z",
     "repositoryKey": "platform-api",
-    "revisionId": "5bdaf7d",
+    "revisionId": "88c0757",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-platform-api-feature/PLAT-496-feature-flag-evaluation-blocks"
   },
   {
     "isDefault": false,
-    "name": "work/INS-154-ledger-join-fans-out",
-    "observedAt": "2026-07-13T00:22:00.000Z",
-    "occurredAt": "2026-07-13T00:22:00.000Z",
-    "repositoryKey": "insights-etl",
-    "revisionId": "35f71c0",
-    "sourceKey": "primary-code",
-    "sourceKind": "code",
-    "sourceRecordId": "branch-insights-etl-work/INS-154-ledger-join-fans-out"
-  },
-  {
-    "isDefault": false,
     "name": "work/INS-153-schedule-drifts-an-hour",
-    "observedAt": "2026-07-13T02:48:00.000Z",
-    "occurredAt": "2026-07-13T02:48:00.000Z",
+    "observedAt": "2026-07-12T01:11:00.000Z",
+    "occurredAt": "2026-07-12T01:11:00.000Z",
     "repositoryKey": "insights-etl",
-    "revisionId": "5787c12",
+    "revisionId": "7d12edb",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-insights-etl-work/INS-153-schedule-drifts-an-hour"
@@ -1160,10 +1149,21 @@
     "observedAt": "2026-07-13T14:47:00.000Z",
     "occurredAt": "2026-07-13T14:47:00.000Z",
     "repositoryKey": "platform-api",
-    "revisionId": "4e273bf",
+    "revisionId": "34b4b87",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-platform-api-feature/PLAT-509-migration-lock-blocks-the"
+  },
+  {
+    "isDefault": false,
+    "name": "work/INS-154-ledger-join-fans-out",
+    "observedAt": "2026-07-14T02:16:00.000Z",
+    "occurredAt": "2026-07-14T02:16:00.000Z",
+    "repositoryKey": "insights-etl",
+    "revisionId": "48c186e",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "branch-insights-etl-work/INS-154-ledger-join-fans-out"
   },
   {
     "isDefault": false,
@@ -1171,7 +1171,7 @@
     "observedAt": "2026-07-15T13:34:00.000Z",
     "occurredAt": "2026-07-15T13:34:00.000Z",
     "repositoryKey": "insights-etl",
-    "revisionId": "20bd621",
+    "revisionId": "1886145",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-insights-etl-work/INS-151-null-merchant-identifier-passes"
@@ -1200,22 +1200,11 @@
   },
   {
     "isDefault": false,
-    "name": "work/INS-156-currency-conversion-uses-the",
-    "observedAt": "2026-07-16T09:56:00.000Z",
-    "occurredAt": "2026-07-16T09:56:00.000Z",
-    "repositoryKey": "insights-etl",
-    "revisionId": "7f87567",
-    "sourceKey": "primary-code",
-    "sourceKind": "code",
-    "sourceRecordId": "branch-insights-etl-work/INS-156-currency-conversion-uses-the"
-  },
-  {
-    "isDefault": false,
     "name": "feature/CHK-284-coupon-field-accepts-an",
     "observedAt": "2026-07-16T13:38:00.000Z",
     "occurredAt": "2026-07-16T13:38:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "54b6446",
+    "revisionId": "7cb5d9b",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-284-coupon-field-accepts-an"
@@ -1226,10 +1215,21 @@
     "observedAt": "2026-07-16T16:38:00.000Z",
     "occurredAt": "2026-07-16T16:38:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "7505257",
+    "revisionId": "8c84af9",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-288-checkout-bundle-ships-an"
+  },
+  {
+    "isDefault": false,
+    "name": "work/INS-156-currency-conversion-uses-the",
+    "observedAt": "2026-07-16T20:35:00.000Z",
+    "occurredAt": "2026-07-16T20:35:00.000Z",
+    "repositoryKey": "insights-etl",
+    "revisionId": "8d4e2df",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "branch-insights-etl-work/INS-156-currency-conversion-uses-the"
   },
   {
     "isDefault": false,
@@ -1248,7 +1248,7 @@
     "observedAt": "2026-07-17T15:52:00.000Z",
     "occurredAt": "2026-07-17T15:52:00.000Z",
     "repositoryKey": "shared-ui",
-    "revisionId": "467687b",
+    "revisionId": "f028117",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-shared-ui-feature/PLAT-512-gateway-client-retries-on"
@@ -1259,10 +1259,21 @@
     "observedAt": "2026-07-17T17:42:00.000Z",
     "occurredAt": "2026-07-17T17:42:00.000Z",
     "repositoryKey": "shared-ui",
-    "revisionId": "d4b3a01",
+    "revisionId": "2b02166",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-shared-ui-feature/PLAT-503-connection-pool-starves-under"
+  },
+  {
+    "isDefault": false,
+    "name": "feature/CHK-302-order-summary-rounds-tax",
+    "observedAt": "2026-07-17T23:58:00.000Z",
+    "occurredAt": "2026-07-17T23:58:00.000Z",
+    "repositoryKey": "checkout-web",
+    "revisionId": "771163c",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "branch-checkout-web-feature/CHK-302-order-summary-rounds-tax"
   },
   {
     "isDefault": false,
@@ -1281,7 +1292,7 @@
     "observedAt": "2026-07-18T17:55:00.000Z",
     "occurredAt": "2026-07-18T17:55:00.000Z",
     "repositoryKey": "insights-etl",
-    "revisionId": "5645fd1",
+    "revisionId": "5787c12",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-insights-etl-work/INS-160-data-contract-has-no"
@@ -1289,10 +1300,10 @@
   {
     "isDefault": false,
     "name": "work/INS-158-loader-holds-the-warehouse",
-    "observedAt": "2026-07-19T07:25:00.000Z",
-    "occurredAt": "2026-07-19T07:25:00.000Z",
+    "observedAt": "2026-07-19T04:13:00.000Z",
+    "occurredAt": "2026-07-19T04:13:00.000Z",
     "repositoryKey": "insights-etl",
-    "revisionId": "0738d42",
+    "revisionId": "9c14682",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-insights-etl-work/INS-158-loader-holds-the-warehouse"
@@ -1310,22 +1321,11 @@
   },
   {
     "isDefault": false,
-    "name": "feature/CHK-302-order-summary-rounds-tax",
-    "observedAt": "2026-07-19T22:46:00.000Z",
-    "occurredAt": "2026-07-19T22:46:00.000Z",
-    "repositoryKey": "checkout-web",
-    "revisionId": "cda4a51",
-    "sourceKey": "primary-code",
-    "sourceKind": "code",
-    "sourceRecordId": "branch-checkout-web-feature/CHK-302-order-summary-rounds-tax"
-  },
-  {
-    "isDefault": false,
     "name": "feature/PLAT-746-bound-the-gateway",
     "observedAt": "2026-07-20T10:05:00.000Z",
     "occurredAt": "2026-07-20T10:05:00.000Z",
     "repositoryKey": "platform-api",
-    "revisionId": "b1fbf91",
+    "revisionId": "6823673",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-platform-api-feature/PLAT-746-bound-the-gateway"
@@ -1336,7 +1336,7 @@
     "observedAt": "2026-07-20T10:24:00.000Z",
     "occurredAt": "2026-07-20T10:24:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "bbe2d5d",
+    "revisionId": "3284bcc",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-299-guest-session-expires-mid"
@@ -1369,7 +1369,7 @@
     "observedAt": "2026-07-20T17:41:00.000Z",
     "occurredAt": "2026-07-20T17:41:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "eee4874",
+    "revisionId": "53c49ee",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-297-address-form-loses-state"
@@ -1380,10 +1380,21 @@
     "observedAt": "2026-07-21T09:40:00.000Z",
     "occurredAt": "2026-07-21T09:40:00.000Z",
     "repositoryKey": "platform-api",
-    "revisionId": "088f3a6",
+    "revisionId": "884e356",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-platform-api-feature/PLAT-747-warm-the-profile"
+  },
+  {
+    "isDefault": false,
+    "name": "feature/PLAT-523-tokenization-path-allocates-on",
+    "observedAt": "2026-07-21T23:11:00.000Z",
+    "occurredAt": "2026-07-21T23:11:00.000Z",
+    "repositoryKey": "platform-api",
+    "revisionId": "666882e",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "branch-platform-api-feature/PLAT-523-tokenization-path-allocates-on"
   },
   {
     "isDefault": false,
@@ -1391,7 +1402,7 @@
     "observedAt": "2026-07-22T14:15:00.000Z",
     "occurredAt": "2026-07-22T14:15:00.000Z",
     "repositoryKey": "platform-api",
-    "revisionId": "ef1cb6f",
+    "revisionId": "11d4f0e",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-platform-api-feature/PLAT-748-drop-the-synchronous"
@@ -1402,21 +1413,10 @@
     "observedAt": "2026-07-22T17:34:00.000Z",
     "occurredAt": "2026-07-22T17:34:00.000Z",
     "repositoryKey": "shared-ui",
-    "revisionId": "1b4e2cf",
+    "revisionId": "004b36b",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-shared-ui-feature/PLAT-525-fraud-check-blocks-the"
-  },
-  {
-    "isDefault": false,
-    "name": "feature/PLAT-523-tokenization-path-allocates-on",
-    "observedAt": "2026-07-23T00:27:00.000Z",
-    "occurredAt": "2026-07-23T00:27:00.000Z",
-    "repositoryKey": "platform-api",
-    "revisionId": "7fdb065",
-    "sourceKey": "primary-code",
-    "sourceKind": "code",
-    "sourceRecordId": "branch-platform-api-feature/PLAT-523-tokenization-path-allocates-on"
   },
   {
     "isDefault": false,
@@ -1424,7 +1424,7 @@
     "observedAt": "2026-07-23T09:14:00.000Z",
     "occurredAt": "2026-07-23T09:14:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "1087ad4",
+    "revisionId": "e0d2d43",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-306-apple-wallet-button-renders"
@@ -1435,7 +1435,7 @@
     "observedAt": "2026-07-23T09:45:00.000Z",
     "occurredAt": "2026-07-23T09:45:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "600354d",
+    "revisionId": "6962376",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-311-focus-ring-is-invisible"
@@ -1446,7 +1446,7 @@
     "observedAt": "2026-07-23T11:30:00.000Z",
     "occurredAt": "2026-07-23T11:30:00.000Z",
     "repositoryKey": "platform-api",
-    "revisionId": "c3d0ce5",
+    "revisionId": "b33dbd2",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-platform-api-feature/PLAT-749-add-span-coverage"
@@ -1457,7 +1457,7 @@
     "observedAt": "2026-07-24T08:13:00.000Z",
     "occurredAt": "2026-07-24T08:13:00.000Z",
     "repositoryKey": "platform-api",
-    "revisionId": "3d27298",
+    "revisionId": "30ec0ad",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-platform-api-feature/PLAT-528-idempotency-keys-expire-before"
@@ -1468,21 +1468,10 @@
     "observedAt": "2026-07-24T12:33:00.000Z",
     "occurredAt": "2026-07-24T12:33:00.000Z",
     "repositoryKey": "shared-ui",
-    "revisionId": "8dae00d",
+    "revisionId": "743b7d5",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-shared-ui-feature/PLAT-530-settlement-webhook-retries-duplicate"
-  },
-  {
-    "isDefault": false,
-    "name": "work/INS-165-timezone-conversion-shifts-the",
-    "observedAt": "2026-07-24T14:38:00.000Z",
-    "occurredAt": "2026-07-24T14:38:00.000Z",
-    "repositoryKey": "insights-etl",
-    "revisionId": "6fd994b",
-    "sourceKey": "primary-code",
-    "sourceKind": "code",
-    "sourceRecordId": "branch-insights-etl-work/INS-165-timezone-conversion-shifts-the"
   },
   {
     "isDefault": false,
@@ -1490,10 +1479,21 @@
     "observedAt": "2026-07-24T16:20:00.000Z",
     "occurredAt": "2026-07-24T16:20:00.000Z",
     "repositoryKey": "platform-api",
-    "revisionId": "3a72b54",
+    "revisionId": "ccb0409",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-platform-api-feature/PLAT-750-pin-the-ledger"
+  },
+  {
+    "isDefault": false,
+    "name": "work/INS-165-timezone-conversion-shifts-the",
+    "observedAt": "2026-07-24T19:51:00.000Z",
+    "occurredAt": "2026-07-24T19:51:00.000Z",
+    "repositoryKey": "insights-etl",
+    "revisionId": "4c5d847",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "branch-insights-etl-work/INS-165-timezone-conversion-shifts-the"
   },
   {
     "isDefault": false,
@@ -1512,7 +1512,7 @@
     "observedAt": "2026-07-25T15:20:00.000Z",
     "occurredAt": "2026-07-25T15:20:00.000Z",
     "repositoryKey": "insights-etl",
-    "revisionId": "b4663bc",
+    "revisionId": "88e6390",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-insights-etl-work/INS-162-daily-rollup-double-counts"
@@ -1523,7 +1523,7 @@
     "observedAt": "2026-07-25T15:22:00.000Z",
     "occurredAt": "2026-07-25T15:22:00.000Z",
     "repositoryKey": "platform-api",
-    "revisionId": "526280c",
+    "revisionId": "58f02fa",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-platform-api-feature/PLAT-532-structured-logs-drop-the"
@@ -1556,7 +1556,7 @@
     "observedAt": "2026-07-26T15:30:00.000Z",
     "occurredAt": "2026-07-26T15:30:00.000Z",
     "repositoryKey": "shared-ui",
-    "revisionId": "dcb5174",
+    "revisionId": "e63b094",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-shared-ui-feature/PLAT-517-timeout-budget-is-duplicated"
@@ -1564,8 +1564,8 @@
   {
     "isDefault": false,
     "name": "feature/PLAT-534-health-probe-reports-ready",
-    "observedAt": "2026-07-26T19:46:00.000Z",
-    "occurredAt": "2026-07-26T19:46:00.000Z",
+    "observedAt": "2026-07-27T01:51:00.000Z",
+    "occurredAt": "2026-07-27T01:51:00.000Z",
     "repositoryKey": "shared-ui",
     "revisionId": "2a8f9b8",
     "sourceKey": "primary-code",
@@ -1574,22 +1574,11 @@
   },
   {
     "isDefault": false,
-    "name": "work/INS-167-late-arriving-events-never",
-    "observedAt": "2026-07-26T20:45:00.000Z",
-    "occurredAt": "2026-07-26T20:45:00.000Z",
-    "repositoryKey": "insights-etl",
-    "revisionId": "8ab8781",
-    "sourceKey": "primary-code",
-    "sourceKind": "code",
-    "sourceRecordId": "branch-insights-etl-work/INS-167-late-arriving-events-never"
-  },
-  {
-    "isDefault": false,
     "name": "feature/PLAT-751-batch-the-merchant",
     "observedAt": "2026-07-27T09:55:00.000Z",
     "occurredAt": "2026-07-27T09:55:00.000Z",
     "repositoryKey": "platform-api",
-    "revisionId": "dd96901",
+    "revisionId": "1bbd698",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-platform-api-feature/PLAT-751-batch-the-merchant"
@@ -1600,10 +1589,21 @@
     "observedAt": "2026-07-27T10:19:00.000Z",
     "occurredAt": "2026-07-27T10:19:00.000Z",
     "repositoryKey": "shared-ui",
-    "revisionId": "4b344d0",
+    "revisionId": "6b87bda",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-shared-ui-feature/PLAT-521-batch-writer-keeps-the"
+  },
+  {
+    "isDefault": false,
+    "name": "work/INS-167-late-arriving-events-never",
+    "observedAt": "2026-07-28T01:53:00.000Z",
+    "occurredAt": "2026-07-28T01:53:00.000Z",
+    "repositoryKey": "insights-etl",
+    "revisionId": "5645fd1",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "branch-insights-etl-work/INS-167-late-arriving-events-never"
   },
   {
     "isDefault": false,
@@ -1611,7 +1611,7 @@
     "observedAt": "2026-07-28T13:10:00.000Z",
     "occurredAt": "2026-07-28T13:10:00.000Z",
     "repositoryKey": "platform-api",
-    "revisionId": "e4243ef",
+    "revisionId": "251c4c2",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-platform-api-feature/PLAT-752-drain-the-dead"
@@ -1622,7 +1622,7 @@
     "observedAt": "2026-07-28T15:43:00.000Z",
     "occurredAt": "2026-07-28T15:43:00.000Z",
     "repositoryKey": "shared-ui",
-    "revisionId": "33058e3",
+    "revisionId": "9175b29",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-shared-ui-feature/PLAT-538-background-reconciler-holds-a"
@@ -1633,7 +1633,7 @@
     "observedAt": "2026-07-29T18:05:00.000Z",
     "occurredAt": "2026-07-29T18:05:00.000Z",
     "repositoryKey": "platform-api",
-    "revisionId": "88854e4",
+    "revisionId": "10932ce",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-platform-api-feature/PLAT-753-fold-the-duplicate"
@@ -1644,7 +1644,7 @@
     "observedAt": "2026-07-30T10:47:00.000Z",
     "occurredAt": "2026-07-30T10:47:00.000Z",
     "repositoryKey": "platform-api",
-    "revisionId": "7eff5c4",
+    "revisionId": "185e104",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-platform-api-feature/PLAT-754-record-the-correlation"
@@ -1655,7 +1655,7 @@
     "observedAt": "2026-07-30T16:12:00.000Z",
     "occurredAt": "2026-07-30T16:12:00.000Z",
     "repositoryKey": "platform-api",
-    "revisionId": "4223697",
+    "revisionId": "76ce34a",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-platform-api-feature/PLAT-755-stop-logging-the"
@@ -1677,7 +1677,7 @@
     "observedAt": "2026-07-30T21:00:00.000Z",
     "occurredAt": "2026-07-30T21:00:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "0a1cb95",
+    "revisionId": "137b9bf",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-main"
@@ -1688,7 +1688,7 @@
     "observedAt": "2026-07-30T21:00:00.000Z",
     "occurredAt": "2026-07-30T21:00:00.000Z",
     "repositoryKey": "insights-etl",
-    "revisionId": "3302317",
+    "revisionId": "778a48f",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-insights-etl-main"
@@ -1699,7 +1699,7 @@
     "observedAt": "2026-07-30T21:00:00.000Z",
     "occurredAt": "2026-07-30T21:00:00.000Z",
     "repositoryKey": "platform-api",
-    "revisionId": "8954047",
+    "revisionId": "9104b8b",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-platform-api-main"
@@ -1710,7 +1710,7 @@
     "observedAt": "2026-07-30T21:00:00.000Z",
     "occurredAt": "2026-07-30T21:00:00.000Z",
     "repositoryKey": "shared-ui",
-    "revisionId": "9104b8b",
+    "revisionId": "7792353",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-shared-ui-main"
@@ -1743,7 +1743,7 @@
     "observedAt": "2026-07-30T23:59:00.000Z",
     "occurredAt": "2026-07-30T23:59:00.000Z",
     "repositoryKey": "checkout-web",
-    "revisionId": "350c411",
+    "revisionId": "4d41900",
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "branch-checkout-web-feature/CHK-318-terms-checkbox-is-not"

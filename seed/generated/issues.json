@@ -2017,9 +2017,9 @@
   },
   {
     "assigneeIdentity": {
-      "displayName": "Aisha Bello",
+      "displayName": "Elena Sokolova",
       "kind": "account",
-      "value": "acct-aisha-bello"
+      "value": "acct-elena-sokolova"
     },
     "createdAt": "2026-06-02T09:00:00.000Z",
     "description": null,
@@ -2035,9 +2035,9 @@
     "priority": "Medium",
     "projectKey": "PLAT",
     "reporterIdentity": {
-      "displayName": "Aisha Bello",
+      "displayName": "Elena Sokolova",
       "kind": "account",
-      "value": "acct-aisha-bello"
+      "value": "acct-elena-sokolova"
     },
     "resolvedAt": "2026-06-05T09:00:00.000Z",
     "sourceKey": "primary-tracker",
@@ -3485,9 +3485,9 @@
   },
   {
     "assigneeIdentity": {
-      "displayName": "Aisha Bello",
+      "displayName": "Priya Raman",
       "kind": "account",
-      "value": "acct-aisha-bello"
+      "value": "acct-priya-raman"
     },
     "createdAt": "2026-06-02T09:00:00.000Z",
     "description": null,
@@ -3503,9 +3503,9 @@
     "priority": "Medium",
     "projectKey": "PLAT",
     "reporterIdentity": {
-      "displayName": "Aisha Bello",
+      "displayName": "Priya Raman",
       "kind": "account",
-      "value": "acct-aisha-bello"
+      "value": "acct-priya-raman"
     },
     "resolvedAt": "2026-06-13T09:00:00.000Z",
     "sourceKey": "primary-tracker",
@@ -4013,9 +4013,9 @@
   },
   {
     "assigneeIdentity": {
-      "displayName": "Aisha Bello",
+      "displayName": "Elena Sokolova",
       "kind": "account",
-      "value": "acct-aisha-bello"
+      "value": "acct-elena-sokolova"
     },
     "createdAt": "2026-06-16T10:00:00.000Z",
     "description": null,
@@ -4032,9 +4032,9 @@
     "priority": "Low",
     "projectKey": "PLAT",
     "reporterIdentity": {
-      "displayName": "Aisha Bello",
+      "displayName": "Elena Sokolova",
       "kind": "account",
-      "value": "acct-aisha-bello"
+      "value": "acct-elena-sokolova"
     },
     "resolvedAt": null,
     "sourceKey": "primary-tracker",
@@ -4050,9 +4050,9 @@
   },
   {
     "assigneeIdentity": {
-      "displayName": "Priya Raman",
+      "displayName": "Aisha Bello",
       "kind": "account",
-      "value": "acct-priya-raman"
+      "value": "acct-aisha-bello"
     },
     "createdAt": "2026-06-16T11:00:00.000Z",
     "description": null,
@@ -4069,9 +4069,9 @@
     "priority": "Low",
     "projectKey": "PLAT",
     "reporterIdentity": {
-      "displayName": "Priya Raman",
+      "displayName": "Aisha Bello",
       "kind": "account",
-      "value": "acct-priya-raman"
+      "value": "acct-aisha-bello"
     },
     "resolvedAt": null,
     "sourceKey": "primary-tracker",
@@ -4751,9 +4751,9 @@
   },
   {
     "assigneeIdentity": {
-      "displayName": "Tom Whitfield",
+      "displayName": "Priya Raman",
       "kind": "account",
-      "value": "acct-tom-whitfield"
+      "value": "acct-priya-raman"
     },
     "createdAt": "2026-06-16T09:00:00.000Z",
     "description": null,
@@ -4769,9 +4769,9 @@
     "priority": "Medium",
     "projectKey": "PLAT",
     "reporterIdentity": {
-      "displayName": "Tom Whitfield",
+      "displayName": "Priya Raman",
       "kind": "account",
-      "value": "acct-tom-whitfield"
+      "value": "acct-priya-raman"
     },
     "resolvedAt": "2026-06-20T09:00:00.000Z",
     "sourceKey": "primary-tracker",
@@ -6680,9 +6680,9 @@
   },
   {
     "assigneeIdentity": {
-      "displayName": "Elena Sokolova",
+      "displayName": "Aisha Bello",
       "kind": "account",
-      "value": "acct-elena-sokolova"
+      "value": "acct-aisha-bello"
     },
     "createdAt": "2026-06-30T12:00:00.000Z",
     "description": null,
@@ -6699,9 +6699,9 @@
     "priority": "Low",
     "projectKey": "PLAT",
     "reporterIdentity": {
-      "displayName": "Elena Sokolova",
+      "displayName": "Aisha Bello",
       "kind": "account",
-      "value": "acct-elena-sokolova"
+      "value": "acct-aisha-bello"
     },
     "resolvedAt": null,
     "sourceKey": "primary-tracker",
@@ -7909,9 +7909,9 @@
   },
   {
     "assigneeIdentity": {
-      "displayName": "Tom Whitfield",
+      "displayName": "Aisha Bello",
       "kind": "account",
-      "value": "acct-tom-whitfield"
+      "value": "acct-aisha-bello"
     },
     "createdAt": "2026-06-30T09:00:00.000Z",
     "description": null,
@@ -7927,9 +7927,9 @@
     "priority": "Medium",
     "projectKey": "PLAT",
     "reporterIdentity": {
-      "displayName": "Tom Whitfield",
+      "displayName": "Aisha Bello",
       "kind": "account",
-      "value": "acct-tom-whitfield"
+      "value": "acct-aisha-bello"
     },
     "resolvedAt": "2026-07-08T09:00:00.000Z",
     "sourceKey": "primary-tracker",
@@ -8745,9 +8745,9 @@
   },
   {
     "assigneeIdentity": {
-      "displayName": "Aisha Bello",
+      "displayName": "Priya Raman",
       "kind": "account",
-      "value": "acct-aisha-bello"
+      "value": "acct-priya-raman"
     },
     "createdAt": "2026-06-30T09:00:00.000Z",
     "description": null,
@@ -8763,9 +8763,9 @@
     "priority": "Medium",
     "projectKey": "PLAT",
     "reporterIdentity": {
-      "displayName": "Aisha Bello",
+      "displayName": "Priya Raman",
       "kind": "account",
-      "value": "acct-aisha-bello"
+      "value": "acct-priya-raman"
     },
     "resolvedAt": "2026-07-13T09:00:00.000Z",
     "sourceKey": "primary-tracker",
@@ -9070,9 +9070,9 @@
   },
   {
     "assigneeIdentity": {
-      "displayName": "Elena Sokolova",
+      "displayName": "Priya Raman",
       "kind": "account",
-      "value": "acct-elena-sokolova"
+      "value": "acct-priya-raman"
     },
     "createdAt": "2026-07-14T12:00:00.000Z",
     "description": null,
@@ -9089,9 +9089,9 @@
     "priority": "Low",
     "projectKey": "PLAT",
     "reporterIdentity": {
-      "displayName": "Elena Sokolova",
+      "displayName": "Priya Raman",
       "kind": "account",
-      "value": "acct-elena-sokolova"
+      "value": "acct-priya-raman"
     },
     "resolvedAt": null,
     "sourceKey": "primary-tracker",
@@ -9107,9 +9107,9 @@
   },
   {
     "assigneeIdentity": {
-      "displayName": "Tom Whitfield",
+      "displayName": "Priya Raman",
       "kind": "account",
-      "value": "acct-tom-whitfield"
+      "value": "acct-priya-raman"
     },
     "createdAt": "2026-07-14T13:00:00.000Z",
     "description": null,
@@ -9126,9 +9126,9 @@
     "priority": "Low",
     "projectKey": "PLAT",
     "reporterIdentity": {
-      "displayName": "Tom Whitfield",
+      "displayName": "Priya Raman",
       "kind": "account",
-      "value": "acct-tom-whitfield"
+      "value": "acct-priya-raman"
     },
     "resolvedAt": null,
     "sourceKey": "primary-tracker",
@@ -9667,9 +9667,9 @@
   },
   {
     "assigneeIdentity": {
-      "displayName": "Priya Raman",
+      "displayName": "Aisha Bello",
       "kind": "account",
-      "value": "acct-priya-raman"
+      "value": "acct-aisha-bello"
     },
     "createdAt": "2026-07-14T09:00:00.000Z",
     "description": null,
@@ -9685,9 +9685,9 @@
     "priority": "Medium",
     "projectKey": "PLAT",
     "reporterIdentity": {
-      "displayName": "Priya Raman",
+      "displayName": "Aisha Bello",
       "kind": "account",
-      "value": "acct-priya-raman"
+      "value": "acct-aisha-bello"
     },
     "resolvedAt": "2026-07-17T09:00:00.000Z",
     "sourceKey": "primary-tracker",
@@ -10225,9 +10225,9 @@
   },
   {
     "assigneeIdentity": {
-      "displayName": "Aisha Bello",
+      "displayName": "Elena Sokolova",
       "kind": "account",
-      "value": "acct-aisha-bello"
+      "value": "acct-elena-sokolova"
     },
     "createdAt": "2026-07-14T09:00:00.000Z",
     "description": null,
@@ -10243,9 +10243,9 @@
     "priority": "Medium",
     "projectKey": "PLAT",
     "reporterIdentity": {
-      "displayName": "Aisha Bello",
+      "displayName": "Elena Sokolova",
       "kind": "account",
-      "value": "acct-aisha-bello"
+      "value": "acct-elena-sokolova"
     },
     "resolvedAt": "2026-07-20T09:00:00.000Z",
     "sourceKey": "primary-tracker",
@@ -11065,9 +11065,9 @@
   },
   {
     "assigneeIdentity": {
-      "displayName": "Tom Whitfield",
+      "displayName": "Priya Raman",
       "kind": "account",
-      "value": "acct-tom-whitfield"
+      "value": "acct-priya-raman"
     },
     "createdAt": "2026-07-14T09:00:00.000Z",
     "description": null,
@@ -11083,9 +11083,9 @@
     "priority": "Medium",
     "projectKey": "PLAT",
     "reporterIdentity": {
-      "displayName": "Tom Whitfield",
+      "displayName": "Priya Raman",
       "kind": "account",
-      "value": "acct-tom-whitfield"
+      "value": "acct-priya-raman"
     },
     "resolvedAt": "2026-07-24T09:00:00.000Z",
     "sourceKey": "primary-tracker",
@@ -11985,9 +11985,9 @@
   },
   {
     "assigneeIdentity": {
-      "displayName": "Priya Raman",
+      "displayName": "Elena Sokolova",
       "kind": "account",
-      "value": "acct-priya-raman"
+      "value": "acct-elena-sokolova"
     },
     "createdAt": "2026-07-28T10:00:00.000Z",
     "description": null,
@@ -12004,9 +12004,9 @@
     "priority": "Low",
     "projectKey": "PLAT",
     "reporterIdentity": {
-      "displayName": "Priya Raman",
+      "displayName": "Elena Sokolova",
       "kind": "account",
-      "value": "acct-priya-raman"
+      "value": "acct-elena-sokolova"
     },
     "resolvedAt": null,
     "sourceKey": "primary-tracker",
@@ -12092,9 +12092,9 @@
   },
   {
     "assigneeIdentity": {
-      "displayName": "Tom Whitfield",
+      "displayName": "Priya Raman",
       "kind": "account",
-      "value": "acct-tom-whitfield"
+      "value": "acct-priya-raman"
     },
     "createdAt": "2026-07-28T11:00:00.000Z",
     "description": null,
@@ -12111,9 +12111,9 @@
     "priority": "Low",
     "projectKey": "PLAT",
     "reporterIdentity": {
-      "displayName": "Tom Whitfield",
+      "displayName": "Priya Raman",
       "kind": "account",
-      "value": "acct-tom-whitfield"
+      "value": "acct-priya-raman"
     },
     "resolvedAt": null,
     "sourceKey": "primary-tracker",
@@ -12275,9 +12275,9 @@
   },
   {
     "assigneeIdentity": {
-      "displayName": "Aisha Bello",
+      "displayName": "Priya Raman",
       "kind": "account",
-      "value": "acct-aisha-bello"
+      "value": "acct-priya-raman"
     },
     "createdAt": "2026-07-28T14:00:00.000Z",
     "description": null,
@@ -12294,9 +12294,9 @@
     "priority": "Low",
     "projectKey": "PLAT",
     "reporterIdentity": {
-      "displayName": "Aisha Bello",
+      "displayName": "Priya Raman",
       "kind": "account",
-      "value": "acct-aisha-bello"
+      "value": "acct-priya-raman"
     },
     "resolvedAt": null,
     "sourceKey": "primary-tracker",

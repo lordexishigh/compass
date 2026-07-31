@@ -1,33 +1,78 @@
 [
   {
     "actorIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "account",
+      "value": "acct-priya-raman"
+    },
+    "change": "added",
+    "changedAt": "2026-05-20T09:00:00.000Z",
+    "itemKey": "PLAT-422",
+    "occurredAt": "2026-05-20T09:00:00.000Z",
+    "sourceKey": "primary-tracker",
+    "sourceKind": "tracker",
+    "sourceRecordId": "scope-change-sprint-PLAT-1-1",
+    "sprintRef": "sprint-PLAT-1"
+  },
+  {
+    "actorIdentity": {
       "displayName": "Rafael Lima",
       "kind": "account",
       "value": "acct-rafael-lima"
     },
     "change": "added",
-    "changedAt": "2026-05-22T09:00:00.000Z",
-    "itemKey": "CHK-204",
-    "occurredAt": "2026-05-22T09:00:00.000Z",
+    "changedAt": "2026-05-21T09:00:00.000Z",
+    "itemKey": "CHK-223",
+    "occurredAt": "2026-05-21T09:00:00.000Z",
     "sourceKey": "primary-tracker",
     "sourceKind": "tracker",
-    "sourceRecordId": "scope-change-sprint-CHK-1-1",
+    "sourceRecordId": "scope-change-sprint-CHK-1-2",
     "sprintRef": "sprint-CHK-1"
   },
   {
     "actorIdentity": {
-      "displayName": "Elena Sokolova",
+      "displayName": "Naomi Chen",
       "kind": "account",
-      "value": "acct-elena-sokolova"
+      "value": "acct-naomi-chen"
     },
-    "change": "removed",
-    "changedAt": "2026-05-24T09:00:00.000Z",
-    "itemKey": "PLAT-425",
-    "occurredAt": "2026-05-24T09:00:00.000Z",
+    "change": "added",
+    "changedAt": "2026-05-23T09:00:00.000Z",
+    "itemKey": "CHK-209",
+    "occurredAt": "2026-05-23T09:00:00.000Z",
     "sourceKey": "primary-tracker",
     "sourceKind": "tracker",
-    "sourceRecordId": "scope-change-sprint-PLAT-1-1",
+    "sourceRecordId": "scope-change-sprint-CHK-1-3",
+    "sprintRef": "sprint-CHK-1"
+  },
+  {
+    "actorIdentity": {
+      "displayName": "Priya Raman",
+      "kind": "account",
+      "value": "acct-priya-raman"
+    },
+    "change": "added",
+    "changedAt": "2026-05-25T09:00:00.000Z",
+    "itemKey": "PLAT-414",
+    "occurredAt": "2026-05-25T09:00:00.000Z",
+    "sourceKey": "primary-tracker",
+    "sourceKind": "tracker",
+    "sourceRecordId": "scope-change-sprint-PLAT-1-3",
     "sprintRef": "sprint-PLAT-1"
+  },
+  {
+    "actorIdentity": {
+      "displayName": "Rafael Lima",
+      "kind": "account",
+      "value": "acct-rafael-lima"
+    },
+    "change": "added",
+    "changedAt": "2026-05-28T09:00:00.000Z",
+    "itemKey": "CHK-219",
+    "occurredAt": "2026-05-28T09:00:00.000Z",
+    "sourceKey": "primary-tracker",
+    "sourceKind": "tracker",
+    "sourceRecordId": "scope-change-sprint-CHK-1-1",
+    "sprintRef": "sprint-CHK-1"
   },
   {
     "actorIdentity": {
@@ -36,9 +81,9 @@
       "value": "acct-priya-raman"
     },
     "change": "removed",
-    "changedAt": "2026-05-27T09:00:00.000Z",
-    "itemKey": "PLAT-405",
-    "occurredAt": "2026-05-27T09:00:00.000Z",
+    "changedAt": "2026-05-29T09:00:00.000Z",
+    "itemKey": "PLAT-406",
+    "occurredAt": "2026-05-29T09:00:00.000Z",
     "sourceKey": "primary-tracker",
     "sourceKind": "tracker",
     "sourceRecordId": "scope-change-sprint-PLAT-1-2",
@@ -46,14 +91,14 @@
   },
   {
     "actorIdentity": {
-      "displayName": "Rafael Lima",
+      "displayName": "Daniel Ortiz",
       "kind": "account",
-      "value": "acct-rafael-lima"
+      "value": "acct-daniel-ortiz"
     },
     "change": "added",
-    "changedAt": "2026-06-03T09:00:00.000Z",
-    "itemKey": "CHK-228",
-    "occurredAt": "2026-06-03T09:00:00.000Z",
+    "changedAt": "2026-06-05T09:00:00.000Z",
+    "itemKey": "CHK-238",
+    "occurredAt": "2026-06-05T09:00:00.000Z",
     "sourceKey": "primary-tracker",
     "sourceKind": "tracker",
     "sourceRecordId": "scope-change-sprint-CHK-2-1",
@@ -61,47 +106,17 @@
   },
   {
     "actorIdentity": {
-      "displayName": "Ingrid Falk",
+      "displayName": "Marcus Hale",
       "kind": "account",
-      "value": "acct-ingrid-falk"
-    },
-    "change": "removed",
-    "changedAt": "2026-06-05T09:00:00.000Z",
-    "itemKey": "CHK-229",
-    "occurredAt": "2026-06-05T09:00:00.000Z",
-    "sourceKey": "primary-tracker",
-    "sourceKind": "tracker",
-    "sourceRecordId": "scope-change-sprint-CHK-2-2",
-    "sprintRef": "sprint-CHK-2"
-  },
-  {
-    "actorIdentity": {
-      "displayName": "Tom Whitfield",
-      "kind": "account",
-      "value": "acct-tom-whitfield"
+      "value": "acct-marcus-hale"
     },
     "change": "added",
-    "changedAt": "2026-06-07T09:00:00.000Z",
-    "itemKey": "PLAT-440",
-    "occurredAt": "2026-06-07T09:00:00.000Z",
+    "changedAt": "2026-06-10T09:00:00.000Z",
+    "itemKey": "PLAT-431",
+    "occurredAt": "2026-06-10T09:00:00.000Z",
     "sourceKey": "primary-tracker",
     "sourceKind": "tracker",
     "sourceRecordId": "scope-change-sprint-PLAT-2-1",
-    "sprintRef": "sprint-PLAT-2"
-  },
-  {
-    "actorIdentity": {
-      "displayName": "Tom Whitfield",
-      "kind": "account",
-      "value": "acct-tom-whitfield"
-    },
-    "change": "added",
-    "changedAt": "2026-06-08T09:00:00.000Z",
-    "itemKey": "PLAT-440",
-    "occurredAt": "2026-06-08T09:00:00.000Z",
-    "sourceKey": "primary-tracker",
-    "sourceKind": "tracker",
-    "sourceRecordId": "scope-change-sprint-PLAT-2-3",
     "sprintRef": "sprint-PLAT-2"
   },
   {
@@ -111,28 +126,13 @@
       "value": "acct-marcus-hale"
     },
     "change": "removed",
-    "changedAt": "2026-06-10T09:00:00.000Z",
-    "itemKey": "PLAT-451",
-    "occurredAt": "2026-06-10T09:00:00.000Z",
+    "changedAt": "2026-06-19T09:00:00.000Z",
+    "itemKey": "PLAT-458",
+    "occurredAt": "2026-06-19T09:00:00.000Z",
     "sourceKey": "primary-tracker",
     "sourceKind": "tracker",
-    "sourceRecordId": "scope-change-sprint-PLAT-2-2",
-    "sprintRef": "sprint-PLAT-2"
-  },
-  {
-    "actorIdentity": {
-      "displayName": "Naomi Chen",
-      "kind": "account",
-      "value": "acct-naomi-chen"
-    },
-    "change": "added",
-    "changedAt": "2026-06-17T09:00:00.000Z",
-    "itemKey": "CHK-253",
-    "occurredAt": "2026-06-17T09:00:00.000Z",
-    "sourceKey": "primary-tracker",
-    "sourceKind": "tracker",
-    "sourceRecordId": "scope-change-sprint-CHK-3-3",
-    "sprintRef": "sprint-CHK-3"
+    "sourceRecordId": "scope-change-sprint-PLAT-3-2",
+    "sprintRef": "sprint-PLAT-3"
   },
   {
     "actorIdentity": {
@@ -140,28 +140,13 @@
       "kind": "account",
       "value": "acct-aisha-bello"
     },
-    "change": "added",
-    "changedAt": "2026-06-17T09:00:00.000Z",
-    "itemKey": "PLAT-483",
-    "occurredAt": "2026-06-17T09:00:00.000Z",
-    "sourceKey": "primary-tracker",
-    "sourceKind": "tracker",
-    "sourceRecordId": "scope-change-sprint-PLAT-3-3",
-    "sprintRef": "sprint-PLAT-3"
-  },
-  {
-    "actorIdentity": {
-      "displayName": "Tom Whitfield",
-      "kind": "account",
-      "value": "acct-tom-whitfield"
-    },
-    "change": "added",
+    "change": "removed",
     "changedAt": "2026-06-20T09:00:00.000Z",
-    "itemKey": "PLAT-483",
+    "itemKey": "PLAT-472",
     "occurredAt": "2026-06-20T09:00:00.000Z",
     "sourceKey": "primary-tracker",
     "sourceKind": "tracker",
-    "sourceRecordId": "scope-change-sprint-PLAT-3-2",
+    "sourceRecordId": "scope-change-sprint-PLAT-3-1",
     "sprintRef": "sprint-PLAT-3"
   },
   {
@@ -171,9 +156,9 @@
       "value": "acct-daniel-ortiz"
     },
     "change": "added",
-    "changedAt": "2026-06-22T09:00:00.000Z",
-    "itemKey": "CHK-250",
-    "occurredAt": "2026-06-22T09:00:00.000Z",
+    "changedAt": "2026-06-21T09:00:00.000Z",
+    "itemKey": "CHK-267",
+    "occurredAt": "2026-06-21T09:00:00.000Z",
     "sourceKey": "primary-tracker",
     "sourceKind": "tracker",
     "sourceRecordId": "scope-change-sprint-CHK-3-1",
@@ -186,43 +171,13 @@
       "value": "acct-naomi-chen"
     },
     "change": "added",
-    "changedAt": "2026-06-24T09:00:00.000Z",
-    "itemKey": "CHK-251",
-    "occurredAt": "2026-06-24T09:00:00.000Z",
+    "changedAt": "2026-06-25T09:00:00.000Z",
+    "itemKey": "CHK-265",
+    "occurredAt": "2026-06-25T09:00:00.000Z",
     "sourceKey": "primary-tracker",
     "sourceKind": "tracker",
     "sourceRecordId": "scope-change-sprint-CHK-3-2",
     "sprintRef": "sprint-CHK-3"
-  },
-  {
-    "actorIdentity": {
-      "displayName": "Marcus Hale",
-      "kind": "account",
-      "value": "acct-marcus-hale"
-    },
-    "change": "added",
-    "changedAt": "2026-06-25T09:00:00.000Z",
-    "itemKey": "PLAT-477",
-    "occurredAt": "2026-06-25T09:00:00.000Z",
-    "sourceKey": "primary-tracker",
-    "sourceKind": "tracker",
-    "sourceRecordId": "scope-change-sprint-PLAT-3-1",
-    "sprintRef": "sprint-PLAT-3"
-  },
-  {
-    "actorIdentity": {
-      "displayName": "Rafael Lima",
-      "kind": "account",
-      "value": "acct-rafael-lima"
-    },
-    "change": "removed",
-    "changedAt": "2026-07-02T09:00:00.000Z",
-    "itemKey": "CHK-280",
-    "occurredAt": "2026-07-02T09:00:00.000Z",
-    "sourceKey": "primary-tracker",
-    "sourceKind": "tracker",
-    "sourceRecordId": "scope-change-sprint-CHK-4-3",
-    "sprintRef": "sprint-CHK-4"
   },
   {
     "actorIdentity": {
@@ -231,69 +186,9 @@
       "value": "acct-elena-sokolova"
     },
     "change": "added",
-    "changedAt": "2026-07-03T09:00:00.000Z",
-    "itemKey": "PLAT-508",
-    "occurredAt": "2026-07-03T09:00:00.000Z",
-    "sourceKey": "primary-tracker",
-    "sourceKind": "tracker",
-    "sourceRecordId": "scope-change-sprint-PLAT-4-3",
-    "sprintRef": "sprint-PLAT-4"
-  },
-  {
-    "actorIdentity": {
-      "displayName": "Marcus Hale",
-      "kind": "account",
-      "value": "acct-marcus-hale"
-    },
-    "change": "added",
-    "changedAt": "2026-07-04T09:00:00.000Z",
-    "itemKey": "PLAT-493",
-    "occurredAt": "2026-07-04T09:00:00.000Z",
-    "sourceKey": "primary-tracker",
-    "sourceKind": "tracker",
-    "sourceRecordId": "scope-change-sprint-PLAT-4-2",
-    "sprintRef": "sprint-PLAT-4"
-  },
-  {
-    "actorIdentity": {
-      "displayName": "Daniel Ortiz",
-      "kind": "account",
-      "value": "acct-daniel-ortiz"
-    },
-    "change": "added",
-    "changedAt": "2026-07-05T09:00:00.000Z",
-    "itemKey": "CHK-287",
-    "occurredAt": "2026-07-05T09:00:00.000Z",
-    "sourceKey": "primary-tracker",
-    "sourceKind": "tracker",
-    "sourceRecordId": "scope-change-sprint-CHK-4-1",
-    "sprintRef": "sprint-CHK-4"
-  },
-  {
-    "actorIdentity": {
-      "displayName": "Daniel Ortiz",
-      "kind": "account",
-      "value": "acct-daniel-ortiz"
-    },
-    "change": "added",
-    "changedAt": "2026-07-07T09:00:00.000Z",
-    "itemKey": "CHK-290",
-    "occurredAt": "2026-07-07T09:00:00.000Z",
-    "sourceKey": "primary-tracker",
-    "sourceKind": "tracker",
-    "sourceRecordId": "scope-change-sprint-CHK-4-2",
-    "sprintRef": "sprint-CHK-4"
-  },
-  {
-    "actorIdentity": {
-      "displayName": "Marcus Hale",
-      "kind": "account",
-      "value": "acct-marcus-hale"
-    },
-    "change": "removed",
-    "changedAt": "2026-07-10T09:00:00.000Z",
-    "itemKey": "PLAT-507",
-    "occurredAt": "2026-07-10T09:00:00.000Z",
+    "changedAt": "2026-07-06T09:00:00.000Z",
+    "itemKey": "PLAT-509",
+    "occurredAt": "2026-07-06T09:00:00.000Z",
     "sourceKey": "primary-tracker",
     "sourceKind": "tracker",
     "sourceRecordId": "scope-change-sprint-PLAT-4-1",
@@ -305,44 +200,14 @@
       "kind": "account",
       "value": "acct-naomi-chen"
     },
-    "change": "removed",
-    "changedAt": "2026-07-15T09:00:00.000Z",
-    "itemKey": "CHK-320",
-    "occurredAt": "2026-07-15T09:00:00.000Z",
-    "sourceKey": "primary-tracker",
-    "sourceKind": "tracker",
-    "sourceRecordId": "scope-change-sprint-CHK-5-1",
-    "sprintRef": "sprint-CHK-5"
-  },
-  {
-    "actorIdentity": {
-      "displayName": "Aisha Bello",
-      "kind": "account",
-      "value": "acct-aisha-bello"
-    },
     "change": "added",
-    "changedAt": "2026-07-16T09:00:00.000Z",
-    "itemKey": "PLAT-524",
-    "occurredAt": "2026-07-16T09:00:00.000Z",
+    "changedAt": "2026-07-08T09:00:00.000Z",
+    "itemKey": "CHK-280",
+    "occurredAt": "2026-07-08T09:00:00.000Z",
     "sourceKey": "primary-tracker",
     "sourceKind": "tracker",
-    "sourceRecordId": "scope-change-sprint-PLAT-5-2",
-    "sprintRef": "sprint-PLAT-5"
-  },
-  {
-    "actorIdentity": {
-      "displayName": "Tom Whitfield",
-      "kind": "account",
-      "value": "acct-tom-whitfield"
-    },
-    "change": "removed",
-    "changedAt": "2026-07-20T09:00:00.000Z",
-    "itemKey": "PLAT-531",
-    "occurredAt": "2026-07-20T09:00:00.000Z",
-    "sourceKey": "primary-tracker",
-    "sourceKind": "tracker",
-    "sourceRecordId": "scope-change-sprint-PLAT-5-3",
-    "sprintRef": "sprint-PLAT-5"
+    "sourceRecordId": "scope-change-sprint-CHK-4-1",
+    "sprintRef": "sprint-CHK-4"
   },
   {
     "actorIdentity": {
@@ -351,9 +216,54 @@
       "value": "acct-marcus-hale"
     },
     "change": "added",
-    "changedAt": "2026-07-23T09:00:00.000Z",
-    "itemKey": "PLAT-517",
-    "occurredAt": "2026-07-23T09:00:00.000Z",
+    "changedAt": "2026-07-09T09:00:00.000Z",
+    "itemKey": "PLAT-508",
+    "occurredAt": "2026-07-09T09:00:00.000Z",
+    "sourceKey": "primary-tracker",
+    "sourceKind": "tracker",
+    "sourceRecordId": "scope-change-sprint-PLAT-4-2",
+    "sprintRef": "sprint-PLAT-4"
+  },
+  {
+    "actorIdentity": {
+      "displayName": "Naomi Chen",
+      "kind": "account",
+      "value": "acct-naomi-chen"
+    },
+    "change": "removed",
+    "changedAt": "2026-07-15T09:00:00.000Z",
+    "itemKey": "CHK-314",
+    "occurredAt": "2026-07-15T09:00:00.000Z",
+    "sourceKey": "primary-tracker",
+    "sourceKind": "tracker",
+    "sourceRecordId": "scope-change-sprint-CHK-5-1",
+    "sprintRef": "sprint-CHK-5"
+  },
+  {
+    "actorIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "account",
+      "value": "acct-tom-whitfield"
+    },
+    "change": "added",
+    "changedAt": "2026-07-15T09:00:00.000Z",
+    "itemKey": "PLAT-531",
+    "occurredAt": "2026-07-15T09:00:00.000Z",
+    "sourceKey": "primary-tracker",
+    "sourceKind": "tracker",
+    "sourceRecordId": "scope-change-sprint-PLAT-5-2",
+    "sprintRef": "sprint-PLAT-5"
+  },
+  {
+    "actorIdentity": {
+      "displayName": "Aisha Bello",
+      "kind": "account",
+      "value": "acct-aisha-bello"
+    },
+    "change": "added",
+    "changedAt": "2026-07-20T09:00:00.000Z",
+    "itemKey": "PLAT-522",
+    "occurredAt": "2026-07-20T09:00:00.000Z",
     "sourceKey": "primary-tracker",
     "sourceKind": "tracker",
     "sourceRecordId": "scope-change-sprint-PLAT-5-1",

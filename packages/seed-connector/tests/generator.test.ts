@@ -181,6 +181,106 @@ describe('a ticket history reads the way a tracker would have written it', () =>
   });
 });
 
+describe('a pull request reads the way a code host would have written it', () => {
+  const requestsByRecordId = new Map(
+    bundle.dataset.records.pull_requests.map((request) => [request.sourceRecordId, request]),
+  );
+
+  it('never merges a pull request before it was opened', () => {
+    const backwards = bundle.dataset.records.pull_requests.filter(
+      (request) => request.mergedAt !== null && toEpochMillis(request.mergedAt) < toEpochMillis(request.createdAt),
+    );
+
+    expect(
+      backwards.map((request) => `${request.sourceRecordId} opened ${toIso(request.createdAt)}`),
+      'a pull request is merged before it was opened, giving it a negative lifetime',
+    ).toEqual([]);
+  });
+
+  it('never last-updates a pull request before it was opened', () => {
+    const backwards = bundle.dataset.records.pull_requests.filter(
+      (request) => toEpochMillis(request.updatedAt) < toEpochMillis(request.createdAt),
+    );
+
+    expect(backwards.map((request) => request.sourceRecordId)).toEqual([]);
+  });
+
+  it('submits every review inside the interval its pull request was open', () => {
+    const outside = bundle.dataset.records.reviews.filter((review) => {
+      const request = requestsByRecordId.get(review.pullRequestRef);
+      if (request === undefined) return true;
+      const submitted = toEpochMillis(review.submittedAt);
+      if (submitted < toEpochMillis(request.createdAt)) return true;
+      return request.mergedAt !== null && submitted >= toEpochMillis(request.mergedAt);
+    });
+
+    expect(
+      outside.map((review) => `${review.sourceRecordId} at ${toIso(review.submittedAt)}`),
+      'a review — often the approval that gated the merge — is dated outside the life of its pull request',
+    ).toEqual([]);
+  });
+
+  it('never dates a commit before a commit it names as a parent', () => {
+    const occurredAt = new Map(bundle.dataset.records.commits.map((commit) => [commit.revisionId, commit.occurredAt]));
+    const inverted = bundle.dataset.records.commits.flatMap((commit) =>
+      commit.parentRevisionIds.flatMap((parent) => {
+        const parentAt = occurredAt.get(parent);
+        if (parentAt === undefined) return [];
+        return toEpochMillis(commit.occurredAt) < toEpochMillis(parentAt)
+          ? [`${commit.sourceRecordId} at ${toIso(commit.occurredAt)} precedes parent ${parent}`]
+          : [];
+      }),
+    );
+
+    expect(inverted, 'a child commit precedes its own parent').toEqual([]);
+  });
+
+  it('holds the same invariants on a fresh expansion, not only on the checked-in files', () => {
+    const fresh = generateSeed(fixtures);
+    const freshRequests = new Map(fresh.dataset.records.pull_requests.map((request) => [request.sourceRecordId, request]));
+    const freshCommitAt = new Map(fresh.dataset.records.commits.map((commit) => [commit.revisionId, commit.occurredAt]));
+
+    for (const request of fresh.dataset.records.pull_requests) {
+      if (request.mergedAt !== null) {
+        expect(
+          toEpochMillis(request.mergedAt) >= toEpochMillis(request.createdAt),
+          `${request.sourceRecordId} merges before it was opened`,
+        ).toBe(true);
+      }
+      expect(
+        toEpochMillis(request.updatedAt) >= toEpochMillis(request.createdAt),
+        `${request.sourceRecordId} was updated before it was opened`,
+      ).toBe(true);
+    }
+
+    for (const review of fresh.dataset.records.reviews) {
+      const request = freshRequests.get(review.pullRequestRef);
+      if (request === undefined) throw new Error(`${review.sourceRecordId} has no pull request row`);
+      const submitted = toEpochMillis(review.submittedAt);
+      expect(submitted >= toEpochMillis(request.createdAt), `${review.sourceRecordId} precedes its own pull request`).toBe(
+        true,
+      );
+      if (request.mergedAt !== null) {
+        expect(
+          submitted < toEpochMillis(request.mergedAt),
+          `${review.sourceRecordId} is dated at or after the merge it gated`,
+        ).toBe(true);
+      }
+    }
+
+    for (const commit of fresh.dataset.records.commits) {
+      for (const parent of commit.parentRevisionIds) {
+        const parentAt = freshCommitAt.get(parent);
+        if (parentAt === undefined) continue;
+        expect(
+          toEpochMillis(commit.occurredAt) >= toEpochMillis(parentAt),
+          `${commit.sourceRecordId} precedes its parent ${parent}`,
+        ).toBe(true);
+      }
+    }
+  });
+});
+
 describe('identities are fragmented on purpose', () => {
   it.each(fixtures.people.developers.map((developer) => [developer.displayName, developer] as const))(
     '%s holds two or more git emails, one tracker account and one chat handle',
