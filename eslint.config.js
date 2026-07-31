@@ -20,6 +20,16 @@ export const CLOCK_GUARDED_SOURCES = [
   'packages/pipeline/src/**/*.ts',
 ];
 
+/**
+ * The pure core. Nothing under here may import I/O, a database, a clock or a
+ * randomness source, and `compass/no-analysis-io` says so at the import site.
+ *
+ * This is one of two independent gates: `tools/quality-gates` runs a textual
+ * scan over the same tree, so a `files` glob edited here cannot silently switch
+ * enforcement off.
+ */
+export const PURE_ANALYSIS_SOURCES = ['packages/analysis/src/**/*.ts'];
+
 /** Layers that must never construct a clock — `now` is always a parameter. */
 export const CLOCK_INJECTION_SOURCES = [
   'packages/ingest/src/**/*.ts',
@@ -79,8 +89,9 @@ export default tseslint.config(
   },
   {
     // The analysis core is pure: no I/O, no time, no randomness.
-    files: ['packages/analysis/src/**/*.ts'],
+    files: PURE_ANALYSIS_SOURCES,
     rules: {
+      'compass/no-analysis-io': 'error',
       'no-restricted-globals': [
         'error',
         { name: 'process', message: 'The analysis core must not read process state.' },

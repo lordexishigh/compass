@@ -5,6 +5,7 @@ import { instantFromIso, timeWindow, type Instant as ClockInstant } from '@compa
 import { describe, expect, it } from 'vitest';
 
 import {
+  REPORT_SCHEMA_VERSION,
   SECTIONS,
   SECTION_ORDER,
   SectionOrderError,
@@ -97,7 +98,10 @@ describe('the structured report', () => {
 
     expect(() => assertSixSectionsInOrder(built)).not.toThrow();
     expect(built.sections.map((section) => section.key)).toEqual([...SECTION_ORDER]);
-    expect(built.schemaVersion).toBe(1);
+    // Bumped to 2 when `findings` joined the contract: a persisted row must be
+    // able to say which shape it is.
+    expect(built.schemaVersion).toBe(REPORT_SCHEMA_VERSION);
+    expect(REPORT_SCHEMA_VERSION).toBe(2);
   });
 
   it('reports zero counts for the spine rather than omitting sections', () => {

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { NON_SEMANTIC_REPORT_FIELDS } from '@compass/analysis';
 import {
   NON_SEMANTIC_FIELDS,
   NonSerializableValueError,
@@ -39,8 +40,15 @@ describe('the determinism gate', () => {
     sections: [{ key: 'yesterday', items: [] }],
   });
 
-  it('documents the non-semantic allowlist in one place', () => {
-    expect(NON_SEMANTIC_FIELDS).toEqual(['generatedAt', 'runId', 'narrationTraceId']);
+  it('re-exports the allowlist rather than keeping a second copy of it', () => {
+    // Asserting the same literal here would *be* the second copy this design
+    // exists to avoid: the list is owned by @compass/analysis and documented in
+    // its DETERMINISM.md, which `packages/analysis/tests` checks against the
+    // prose. This side's job is only to prove the pipeline forwards it intact.
+    expect(NON_SEMANTIC_FIELDS).toBe(NON_SEMANTIC_REPORT_FIELDS);
+    expect([...NON_SEMANTIC_FIELDS].sort()).toEqual([...NON_SEMANTIC_FIELDS]);
+    expect(NON_SEMANTIC_FIELDS).toContain('generatedAt');
+    expect(NON_SEMANTIC_FIELDS).toContain('runId');
   });
 
   it('hashes two runs of the same report identically', () => {

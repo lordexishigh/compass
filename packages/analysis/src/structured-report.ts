@@ -1,25 +1,46 @@
+import type { DetectedBlocker } from './blockers.js';
+import type { ElapsedFactStatement } from './elapsed.js';
+import type { EvidenceRef } from './evidence.js';
 import type { Instant, TimeWindow } from './instant.js';
+import type { LadderResult } from './ladder.js';
+import { noProgressSignal, type ProgressAssessment } from './progress.js';
+import { type CalibrationVerdict, type ProjectedCompletion } from './projection.js';
+import type { ReviewQueue } from './review-queue.js';
+import type { Recommendation } from './recommendations.js';
+import type { DetectedRisk } from './risks.js';
 import { SECTIONS, type SectionKey } from './sections.js';
+import { thresholdRef } from './thresholds.js';
+import type { TechnicalDebtSignal } from './technical-debt.js';
+import type { DetectedWin } from './wins.js';
+import type { YesterdayItem } from './yesterday.js';
+import { WORKLOAD_BASIS, type WorkloadDistribution } from './workload.js';
+
+export type { EvidenceRef } from './evidence.js';
 
 /**
  * The structured report: the versioned contract every renderer reads, and the
  * only thing narration is ever shown.
  *
+ * It has two halves, and the split is deliberate.
+ *
+ * `sections` is the **prose spine** — six sections, fixed order, forever, each a
+ * list of items with a headline, a detail and evidence. It is what a renderer
+ * walks to produce text, and it is intentionally uniform: a renderer must not
+ * need to know that Blockers are shaped differently from Wins.
+ *
+ * `findings` is the **computed detail** behind those items — the sprint
+ * reconciliation table, the review queue rows, the calibration verdict, the
+ * projection's reasoning. It is what the web view expands into the evidence
+ * gutter, what the weekly digest aggregates, and what a manager reconciles
+ * against their board. Every section item is derived from something in
+ * `findings`; nothing in `findings` is invented for display.
+ *
  * `schemaVersion` is stored on every persisted report row so a consumer can
  * always tell which shape it is holding.
  */
-export const REPORT_SCHEMA_VERSION = 1;
+export const REPORT_SCHEMA_VERSION = 2;
 
 export type ReportScope = { readonly kind: 'team'; readonly teamKey: string } | { readonly kind: 'merged' };
-
-/** Where a claim's receipt lives. Every computed claim carries at least one. */
-export interface EvidenceRef {
-  readonly kind: 'commit' | 'pull_request' | 'issue' | 'branch' | 'release' | 'message' | 'memo';
-  /** The identifier a human would recognise: `DEV-501`, `#883`, `1a2b3c4`. */
-  readonly label: string;
-  readonly sourceKey: string;
-  readonly sourceRecordId: string;
-}
 
 export type ChangeTag = 'new' | 'unchanged' | 'worsened' | 'improved' | 'resolved';
 
@@ -35,6 +56,17 @@ export interface ReportItem {
   /** Days this item has been continuously present, from its first sighting. */
   readonly ageDays: number;
   readonly evidence: readonly EvidenceRef[];
+  /**
+   * The five-notch completion meter. Present on Yesterday and Wins items, absent
+   * everywhere else — a blocker has not "completed" anything, and rendering an
+   * all-empty ladder next to one would suggest otherwise.
+   */
+  readonly ladder?: LadderResult;
+  /**
+   * The run-in italic clause: "reviewer added, age unchanged". Never a badge
+   * saying NEW.
+   */
+  readonly changeClause?: string;
 }
 
 export interface ReportSection {
@@ -44,6 +76,12 @@ export interface ReportSection {
   readonly items: readonly ReportItem[];
   /** Shown in place of the items when there are none. Never a blank space. */
   readonly emptyStatement: string;
+  /**
+   * The section's one-line summary, in the product's own voice. Present when the
+   * section has something to summarise beyond its items — the Progress section's
+   * completion sentence, the review queue's depth.
+   */
+  readonly summary?: string;
 }
 
 /** What was and was not ingested, stated plainly under the masthead. */
@@ -51,6 +89,30 @@ export interface ReportCoverageNote {
   readonly sourceKey: string;
   readonly status: 'complete' | 'partial' | 'unavailable';
   readonly detail: string;
+}
+
+/**
+ * The computed detail behind the six sections.
+ *
+ * Every field here is required. An absent finding is represented by its own
+ * type's honest empty value — `progress.mode === 'no_signal'`,
+ * `projection.kind === 'undefined'` — rather than by the key being missing,
+ * because an optional key means every consumer has to decide what its absence
+ * means and they will not all decide the same thing.
+ */
+export interface AnalysisFindings {
+  readonly progress: ProgressAssessment;
+  readonly projection: ProjectedCompletion;
+  readonly calibration: CalibrationVerdict;
+  readonly reviewQueue: ReviewQueue;
+  readonly workload: WorkloadDistribution;
+  readonly technicalDebt: TechnicalDebtSignal;
+  readonly yesterday: readonly YesterdayItem[];
+  readonly blockers: readonly DetectedBlocker[];
+  readonly risks: readonly DetectedRisk[];
+  readonly wins: readonly DetectedWin[];
+  readonly recommendations: readonly Recommendation[];
+  readonly elapsedFacts: readonly ElapsedFactStatement[];
 }
 
 export interface StructuredReport {
@@ -63,6 +125,7 @@ export interface StructuredReport {
   readonly window: TimeWindow;
   readonly sections: readonly ReportSection[];
   readonly coverage: readonly ReportCoverageNote[];
+  readonly findings: AnalysisFindings;
 }
 
 export interface EmptyReportInput {
@@ -72,6 +135,95 @@ export interface EmptyReportInput {
   readonly timezone: string;
   readonly window: TimeWindow;
   readonly coverage?: readonly ReportCoverageNote[];
+}
+
+/**
+ * The findings of an organization Compass knows nothing about yet.
+ *
+ * Every field is populated with its type's honest "nothing to say" value, and
+ * each one says so in a sentence. This is what the page renders on a fresh
+ * install, and it must read as a considered answer rather than as a form that
+ * failed to load.
+ */
+export function emptyFindings(): AnalysisFindings {
+  return {
+    progress: noProgressSignal(),
+    projection: {
+      kind: 'undefined',
+      reason: 'insufficient_history',
+      threshold: thresholdRef('T7'),
+      calibration: emptyCalibration(),
+      statement: 'There is no history behind this team yet, so Compass will not give you a date.',
+    },
+    calibration: emptyCalibration(),
+    reviewQueue: {
+      totalOpen: 0,
+      entries: [],
+      awaitingFirstReview: 0,
+      withNoReviewer: 0,
+      oldestAgeDays: 0,
+      medianTimeInReviewDays: 0,
+      openByReviewer: [],
+      concentration: null,
+      statement: 'Nothing is waiting for review.',
+    },
+    workload: {
+      basis: WORKLOAD_BASIS,
+      perDeveloper: [],
+      unassignedOpenItems: 0,
+      unassignedItemKeys: [],
+      totalOpenItems: 0,
+      peopleCarryingWork: 0,
+      concentration: null,
+      statement: 'Nothing is in flight, so there is no load to distribute.',
+    },
+    technicalDebt: {
+      signals: {
+        openTechDebtItems: { name: 'openTechDebtItems', value: 0, ticketKeys: [] },
+        netChangeOverTrailingWindow: {
+          name: 'netChangeOverTrailingWindow',
+          value: 0,
+          trailingDays: 28,
+          openedTicketKeys: [],
+          closedTicketKeys: [],
+        },
+        meanOpenAgeDays: { name: 'meanOpenAgeDays', value: 0, sampleSize: 0, oldestTicketKey: null, oldestAgeDays: 0 },
+        reworkedMergedPullRequestShare: {
+          name: 'reworkedMergedPullRequestShare',
+          granularity: 'perPullRequest',
+          valueBasisPoints: 0,
+          numerator: 0,
+          denominator: 0,
+          cycleCount: 3,
+          pullRequestNumbers: [],
+        },
+      },
+      openedPerSprint: [],
+      growth: 'flat',
+      thresholdsApplied: [thresholdRef('T9')],
+      reasons: ['No work has been ingested, so there is nothing labelled tech debt to count.'],
+      statement: 'No open work is labelled tech debt, so there is no debt signal to report beyond that fact.',
+      evidence: [],
+    },
+    yesterday: [],
+    blockers: [],
+    risks: [],
+    wins: [],
+    recommendations: [],
+    elapsedFacts: [],
+  };
+}
+
+function emptyCalibration(): CalibrationVerdict {
+  return {
+    verdict: 'not_enough_data',
+    sampleSize: 0,
+    correlationBasisPoints: null,
+    correlationThreshold: thresholdRef('T12'),
+    sampleThreshold: thresholdRef('T13'),
+    ticketKeys: [],
+    statement: 'Nothing has been completed with both an estimate and a measurable duration, so there is nothing to calibrate against.',
+  };
 }
 
 /**
@@ -94,6 +246,7 @@ export function createEmptyStructuredReport(input: EmptyReportInput): Structured
       emptyStatement: section.emptyStatement,
     })),
     coverage: input.coverage ?? [],
+    findings: emptyFindings(),
   };
 }
 

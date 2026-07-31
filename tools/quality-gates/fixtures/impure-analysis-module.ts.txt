@@ -1,0 +1,28 @@
+// A fixture, not a module. Deliberately impure in every way the analysis gate
+// must catch, so `analysis-purity.test.ts` can prove the gate reports rather
+// than assuming it would. Line numbers below are asserted by that test.
+//
+// It lives under `fixtures/` with a `.txt` suffix so neither `tsc` nor ESLint's
+// own run ever compiles it; the gate reads it as text and lints it virtually.
+import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { drizzle } from 'drizzle-orm/node-postgres';
+
+import { instantFromIso } from '@compass/clock';
+import { KnowledgeStore } from '@compass/knowledge-model';
+
+import type { AnalysisSnapshot } from './snapshot.js';
+
+export function summarise(snapshot: AnalysisSnapshot): number {
+  const jitter = Math.random();
+  const at = Date.now();
+  return snapshot.collections.entities.length + jitter + at;
+}
+
+export function loadAndCount(snapshot: AnalysisSnapshot, path: string): number {
+  const text = readFileSync(path, 'utf8');
+  const digest = createHash('sha256').update(text).digest('hex');
+  const database = drizzle(process.env['DATABASE_URL'] ?? '');
+  const store = new KnowledgeStore(database);
+  return instantFromIso('2026-07-30T08:00:00Z') + digest.length + Number(store !== null) + snapshot.window.start;
+}

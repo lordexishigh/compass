@@ -1,5 +1,7 @@
 import { createHash } from 'node:crypto';
 
+import { NON_SEMANTIC_REPORT_FIELDS } from '@compass/analysis';
+
 /**
  * The determinism gate.
  *
@@ -7,8 +9,13 @@ import { createHash } from 'node:crypto';
  * byte-identical structured JSON. Two things make that checkable: a canonical
  * serializer with sorted keys, and one documented allowlist of fields that are
  * genuinely non-semantic and therefore excluded from the hash.
+ *
+ * The allowlist is *re-exported*, not redeclared. It is a property of the report
+ * shape, which the analysis layer owns and `packages/analysis/DETERMINISM.md`
+ * documents; a second copy here would be a second thing to keep in step, and it
+ * would drift the first time somebody edited only one of them.
  */
-export const NON_SEMANTIC_FIELDS: readonly string[] = ['generatedAt', 'runId', 'narrationTraceId'];
+export const NON_SEMANTIC_FIELDS: readonly string[] = NON_SEMANTIC_REPORT_FIELDS;
 
 export class NonSerializableValueError extends Error {
   constructor(path: string, detail: string) {
