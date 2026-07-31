@@ -3,6 +3,8 @@ import { artifactHref } from '@compass/pipeline';
 import { describe, expect, it } from 'vitest';
 
 import {
+  ALIGNMENT_AFFORDANCE_ATTRIBUTE,
+  ALIGNMENT_VERDICT_ATTRIBUTE,
   CHART_MARKERS,
   ColdStartCheckFailed,
   REGRESSION_MARKERS,
@@ -123,6 +125,51 @@ describe('a page missing part of the report', () => {
 
     expect(inspection.sourceLinks).toEqual([]);
     expect(inspection.problems.join(' ')).toContain('No claim on the page links to an artifact page');
+  });
+});
+
+describe('an alignment verdict with no way to check it', () => {
+  /** One verdict and, optionally, the affordance that makes it checkable. */
+  const verdict = (options: { readonly withAffordance: boolean }): string =>
+    `<details ${ALIGNMENT_VERDICT_ATTRIBUTE}="off_goal">` +
+    (options.withAffordance ? `<summary ${ALIGNMENT_AFFORDANCE_ATTRIBUTE}="semantic">How</summary>` : '') +
+    '<div>OBJ-Q2-BILL</div></details>';
+
+  it('accepts a page whose every verdict carries one', () => {
+    const inspection = inspectReportHtml(
+      pageHtml({ extra: `${verdict({ withAffordance: true })}${verdict({ withAffordance: true })}` }),
+    );
+
+    expect(inspection.alignmentVerdicts).toBe(2);
+    expect(inspection.alignmentAffordances).toBe(2);
+    expect(inspection.problems).toEqual([]);
+  });
+
+  it('refuses a page with three verdicts and one affordance', () => {
+    // The failure a weaker "at least one" check would let through: two flags a
+    // manager cannot check before repeating them to a person.
+    const inspection = inspectReportHtml(
+      pageHtml({
+        extra:
+          verdict({ withAffordance: true }) +
+          verdict({ withAffordance: false }) +
+          verdict({ withAffordance: false }),
+      }),
+    );
+
+    expect(inspection.alignmentVerdicts).toBe(3);
+    expect(inspection.alignmentAffordances).toBe(1);
+    expect(inspection.problems.join(' ')).toContain('3 alignment verdicts but 1 evidence affordance');
+    expect(inspection.problems.join(' ')).toContain('including an unattributed one');
+  });
+
+  it('says nothing about a day with no alignment verdicts at all', () => {
+    // A quiet day is not a regression: nothing to check is different from
+    // something unfalsifiable.
+    const inspection = inspectReportHtml(pageHtml());
+
+    expect(inspection.alignmentVerdicts).toBe(0);
+    expect(inspection.problems).toEqual([]);
   });
 });
 

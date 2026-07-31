@@ -1,6 +1,14 @@
-import { SECTIONS } from '@compass/analysis';
+import { OFF_GOAL_LABEL, SECTIONS } from '@compass/analysis';
 import { instantFromIso } from '@compass/clock';
-import { loadFreshness, loadReportBundle, reportSections, reports } from '@compass/db';
+import {
+  listObjectiveLinks,
+  loadFreshness,
+  loadGoalStore,
+  loadReportBundle,
+  objectiveVersions,
+  reportSections,
+  reports,
+} from '@compass/db';
 import { createMigratedTestDatabase, type TestDatabase } from '@compass/db/testing';
 import { KnowledgeStore, provisionRoster } from '@compass/knowledge-model';
 import { RENDERER_ID } from '@compass/renderers';
@@ -28,8 +36,19 @@ import { describeColdStart, warmDailyReport } from '../src/cold-start.js';
 let database: TestDatabase;
 let run: SeededRun;
 
-/** Inside the seeded span, so no day-shift note is involved. */
-const HOST_NOW = instantFromIso('2026-07-30T07:15:00Z');
+/**
+ * Inside the seeded span, so no day-shift note is involved — and deliberately on
+ * the *documented* report day.
+ *
+ * The previous civil day in Europe/London is 2026-07-30, which is the window
+ * `seed/MANIFEST.md` calls "one daily report" and the window the seed was designed
+ * so that a single report exercises all four alignment resolution paths. It is also
+ * the window a reviewer actually sees: once the host clock passes the end of the
+ * seeded span, `resolveSeededInstant` shifts to the dataset's own `now` and lands on
+ * this same day. A cold-start test on any other day would be testing a window
+ * nobody will ever read.
+ */
+const HOST_NOW = instantFromIso('2026-07-31T07:15:00Z');
 
 beforeAll(async () => {
   const bundle = seedBundle();
@@ -74,7 +93,7 @@ describe('a clean database plus the seed produces a readable report', () => {
   });
 
   it('dates the report in the team timezone from the resolved instant', () => {
-    expect(warmed.reportDate).toBe('2026-07-30');
+    expect(warmed.reportDate).toBe('2026-07-31');
     expect(run.timezone).toBe('Europe/London');
     expect(run.timeShiftNote).toBeNull();
   });
@@ -150,6 +169,120 @@ describe('a clean database plus the seed produces a readable report', () => {
   });
 });
 
+/**
+ * Alignment, over the real seed and a real database.
+ *
+ * Every other alignment test runs the pure resolver against an in-memory snapshot.
+ * This is the only place the whole path runs: ingest writes the model, the pipeline
+ * projects the goal hierarchy into `objective_versions`, reads it back at the report
+ * instant, resolves three tiers against it, writes `objective_links`, and the
+ * report row ends up carrying an OFF-GOAL verdict a manager will read.
+ *
+ * The seed plants the case on purpose — three tickets and six commits inside
+ * Sprint 46 that serve `OBJ-Q2-BILL`, an objective that stopped being current at the
+ * end of Q2 — and `seed/MANIFEST.md` names every identifier involved.
+ */
+describe('the seeded off-goal stream survives the whole pipeline', () => {
+  it('projects the declared objectives and the observed sprint goals into the goal store', async () => {
+    const store = await loadGoalStore(scoped());
+    const nodeIds = store.nodes.map((node) => node.nodeId);
+
+    expect(nodeIds).toContain('OBJ-CO-1');
+    expect(nodeIds).toContain('OBJ-Q3-PLAT');
+    // The abandoned objective is stored too. Dropping it would make the off-goal
+    // work unattributed instead — it would vanish rather than be named.
+    expect(nodeIds).toContain('OBJ-Q2-BILL');
+    expect(nodeIds.some((nodeId) => nodeId.startsWith('PLAT/Sprint '))).toBe(true);
+
+    // A sync is nobody's opinion, so it writes `observed` and never supersedes a
+    // manager's `declared` revision.
+    expect(store.nodes.every((node) => node.origin === 'observed')).toBe(true);
+    expect(store.nodes.every((node) => node.revision === 1)).toBe(true);
+  });
+
+  it('writes an ObjectiveLink per resolved subject, across every tier it used', async () => {
+    const links = await listObjectiveLinks(scoped(), run.now);
+
+    expect(links.length).toBeGreaterThan(0);
+    const sources = new Set(links.map((link) => link.source));
+    expect(sources.has('configured')).toBe(true);
+    // Never `unattributed`: no link, no verdict. That absence is the storage half of
+    // the same commitment the report's wording makes.
+    expect(sources.has('unattributed')).toBe(false);
+
+    const configured = links.find((link) => link.source === 'configured');
+    expect(configured?.chainNodeIds.length).toBeGreaterThan(1);
+    expect(configured?.nodeRevision).toBe(1);
+  });
+
+  it('records the matched substring and offset on every inferred link', async () => {
+    const links = await listObjectiveLinks(scoped(), run.now);
+
+    for (const link of links.filter((candidate) => candidate.source === 'inferred')) {
+      expect(link.matchedSubstring, link.subjectKey).not.toBeNull();
+      expect(link.matchedOffset, link.subjectKey).not.toBeNull();
+      expect(link.matchedIn, link.subjectKey).not.toBeNull();
+    }
+  });
+
+  it('records the score and both compared texts on every semantic link', async () => {
+    const links = await listObjectiveLinks(scoped(), run.now);
+    const semantic = links.filter((candidate) => candidate.source === 'semantic');
+
+    expect(semantic.length).toBeGreaterThan(0);
+    for (const link of semantic) {
+      expect(link.score, link.subjectKey).not.toBeNull();
+      expect(link.score ?? 0).toBeGreaterThanOrEqual(link.threshold ?? 1);
+      expect(link.comparedTextA, link.subjectKey).not.toBeNull();
+      expect(link.comparedTextB, link.subjectKey).not.toBeNull();
+    }
+  });
+
+  it('puts exactly one OFF-GOAL verdict in Risks, naming the objective it serves', async () => {
+    const bundle = await loadReportBundle(scoped(), warmed.reportId);
+    const risks = bundle?.sections.find((section) => section.sectionKey === 'risks');
+    const offGoal = (risks?.items ?? []).filter((item) => item.headline.includes(OFF_GOAL_LABEL));
+
+    expect(offGoal).toHaveLength(1);
+    expect(offGoal[0]?.headline).toContain('OBJ-Q2-BILL');
+    expect(offGoal[0]?.headline).toContain('Migrate every merchant off the legacy billing client');
+    expect(offGoal[0]?.stableId).toBe('alignment:off_goal:OBJ-Q2-BILL');
+  });
+
+  it('carries the resolution path on the item, so both renderers can show it', async () => {
+    const bundle = await loadReportBundle(scoped(), warmed.reportId);
+    const alignmentItems = (bundle?.sections ?? [])
+      .flatMap((section) => section.items)
+      .filter((item) => item.payload['alignment'] !== undefined);
+
+    expect(alignmentItems.length).toBeGreaterThan(0);
+    for (const item of alignmentItems) {
+      const alignment = item.payload['alignment'] as Record<string, unknown>;
+      expect(alignment['thresholdId'], item.stableId).toBe('T17');
+      expect(typeof alignment['confidence'], item.stableId).toBe('number');
+      expect(typeof alignment['threshold'], item.stableId).toBe('number');
+      expect(alignment['evidence'], item.stableId).toBeDefined();
+    }
+  });
+
+  it('names no developer in the unattributed question', async () => {
+    const bundle = await loadReportBundle(scoped(), warmed.reportId);
+    const unattributed = (bundle?.sections ?? [])
+      .flatMap((section) => section.items)
+      .find((item) => item.stableId === 'alignment:unattributed:commits');
+
+    // Optional: a window in which every commit resolved is a good day, not a bug.
+    if (unattributed === undefined) return;
+
+    const text = `${unattributed.headline} ${unattributed.detail} ${unattributed.prose}`;
+    for (const name of ['Tom Whitfield', 'Priya Raman', 'Marcus Hale', 'Naomi Chen']) {
+      expect(text, `the unattributed question names ${name}`).not.toContain(name);
+    }
+    expect(text).not.toContain(OFF_GOAL_LABEL);
+    expect(unattributed.headline).toContain('could not be tied to a sprint objective');
+  });
+});
+
 describe('the second boot is a read', () => {
   it('finds the report the first boot wrote rather than writing another', async () => {
     const again = await warmDailyReport(database.db, run);
@@ -166,6 +299,24 @@ describe('the second boot is a read', () => {
     expect(forced.generated).toBe(true);
     expect(forced.reportId).toBe(warmed.reportId);
     expect(await scoped().selectFrom(reports)).toHaveLength(1);
+  }, 240_000);
+
+  /**
+   * The goal store does not grow a revision per boot, and the links do not
+   * accumulate.
+   *
+   * Both would be invisible failures: the report would stay correct while the
+   * effective-dating history filled with identical revisions, and "what was this
+   * measured against in August" would become unreadable within a month of restarts.
+   */
+  it('appends no goal revision and no duplicate link on a re-run', async () => {
+    const revisionsBefore = (await scoped().selectFrom(objectiveVersions)).length;
+    const linksBefore = (await listObjectiveLinks(scoped(), run.now)).length;
+
+    await warmDailyReport(database.db, run, { force: true });
+
+    expect((await scoped().selectFrom(objectiveVersions)).length).toBe(revisionsBefore);
+    expect((await listObjectiveLinks(scoped(), run.now)).length).toBe(linksBefore);
   }, 240_000);
 });
 

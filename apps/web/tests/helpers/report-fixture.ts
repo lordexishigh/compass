@@ -56,6 +56,11 @@ interface ItemSpec {
   readonly ageDays?: number;
   readonly changeClause?: string;
   readonly withLadder?: boolean;
+  /**
+   * The alignment payload, as the analysis core attaches it to the item and the
+   * pipeline stores it inside `payload`. Present on alignment claims only.
+   */
+  readonly alignment?: Record<string, unknown>;
   readonly evidence: readonly (readonly [kind: string, label: string, artifactId: string])[];
 }
 
@@ -93,7 +98,11 @@ function item(spec: ItemSpec, ordinal: number): StoredReportItem {
             deploySignalAvailable: false,
           }
         : null,
-    payload: { stableId: spec.stableId, headline: spec.headline },
+    payload: {
+      stableId: spec.stableId,
+      headline: spec.headline,
+      ...(spec.alignment === undefined ? {} : { alignment: spec.alignment }),
+    },
     evidence: spec.evidence.map(([kind, label, artifactId]) =>
       evidence(
         id,
@@ -159,6 +168,112 @@ const ITEMS: Readonly<Record<string, readonly ItemSpec[]>> = {
       prose: '1 item entered Sprint 43 after it started — which Compass rates medium severity and new.',
       ageDays: 3,
       evidence: [['sprint', 'Sprint 43', 'sprint-43']],
+    },
+    /**
+     * An OFF-GOAL verdict resolved semantically, and an unattributed question.
+     *
+     * Both live in Risks, both carry the payload the evidence panel reads, and both
+     * are here because the one-click criterion has to be asserted against the real
+     * component tree rather than against the analysis core's return value.
+     */
+    {
+      stableId: 'alignment:off_goal:OBJ-Q2-BILL',
+      headline:
+        'OFF-GOAL — 3 open items and 2 commits serve OBJ-Q2-BILL, "Migrate every merchant off the legacy billing client", which is not a current objective',
+      detail: 'PLAT-742, PLAT-743 match OBJ-Q2-BILL more closely than the goal chain they sit on.',
+      prose:
+        'OFF-GOAL — 3 open items and 2 commits serve OBJ-Q2-BILL — so Compass resolved this semantically at 0.62 confidence against the 0.30 threshold T17 sets.',
+      ageDays: 4,
+      alignment: {
+        kind: 'off_goal',
+        label: 'OFF-GOAL',
+        resolvedTier: 'semantic',
+        confidence: 0.6154,
+        threshold: 0.3,
+        thresholdId: 'T17',
+        objectiveNodeId: 'OBJ-Q2-BILL',
+        objectiveTitle: 'Migrate every merchant off the legacy billing client',
+        question: null,
+        subjectLabels: ['PLAT-742', 'PLAT-743', 'PLAT-744'],
+        evidence: {
+          tier: 'semantic',
+          chainNodeIds: ['OBJ-Q2-BILL', 'OBJ-CO-1'],
+          chainTitles: ['Migrate every merchant off the legacy billing client', 'Take a payment fastest'],
+          score: 0.6154,
+          threshold: 0.3,
+          comparedTextA: 'Migrate the legacy billing client onto the new SDK',
+          comparedTextB: 'Migrate every merchant off the legacy billing client',
+          matchedTokens: ['billing', 'client', 'legacy', 'migrate'],
+        },
+      },
+      evidence: [['issue', 'PLAT-742', 'issue-PLAT-742']],
+    },
+    {
+      stableId: 'alignment:unattributed:commits',
+      headline: '2 commits could not be tied to a sprint objective',
+      detail: 'a1b2c36, a1b2c38 name no tracker key in a commit message or a branch.',
+      prose:
+        '2 commits could not be tied to a sprint objective — so Compass is asking what they served rather than naming anyone.',
+      alignment: {
+        kind: 'unattributed',
+        label: null,
+        resolvedTier: 'unattributed',
+        confidence: 0.0833,
+        threshold: 0.3,
+        thresholdId: 'T17',
+        objectiveNodeId: null,
+        objectiveTitle: null,
+        question: 'What were these 2 commits for?',
+        subjectLabels: ['a1b2c36', 'a1b2c38'],
+        evidence: {
+          tier: 'unattributed',
+          score: 0.0833,
+          threshold: 0.3,
+          comparedTextA: 'bump the lockfile after the audit',
+          comparedTextB: 'Halve p95 latency on the tokenization path',
+          matchedTokens: ['after'],
+          question: 'What were these 2 commits for?',
+        },
+      },
+      evidence: [['commit', 'a1b2c36', 'platform-api:a1b2c36']],
+    },
+    /**
+     * An inferred verdict whose highlight has to land on the recorded offset.
+     *
+     * The branch names the same key twice on purpose: a component that searched for
+     * the substring again would underline the first occurrence, and the offset says
+     * the second. Only one of those is what Compass actually matched.
+     */
+    {
+      stableId: 'alignment:off_goal:OBJ-Q1-LEGACY',
+      headline: 'OFF-GOAL — 1 commit serves OBJ-Q1-LEGACY, which is not a current objective',
+      detail: 'Found the key in the branch name.',
+      prose:
+        'OFF-GOAL — 1 commit serves OBJ-Q1-LEGACY — so Compass resolved this from an inferred tracker key at 1.00 confidence against the 0.30 threshold T17 sets.',
+      alignment: {
+        kind: 'off_goal',
+        label: 'OFF-GOAL',
+        resolvedTier: 'inferred',
+        confidence: 1,
+        threshold: 0.3,
+        thresholdId: 'T17',
+        objectiveNodeId: 'OBJ-Q1-LEGACY',
+        objectiveTitle: 'Retire the legacy importer',
+        question: null,
+        subjectLabels: ['b2c3d40'],
+        evidence: {
+          tier: 'inferred',
+          chainNodeIds: ['OBJ-Q1-LEGACY'],
+          chainTitles: ['Retire the legacy importer'],
+          matchedSubstring: 'PLAT-742',
+          // The *second* occurrence, at character 27 of the branch name.
+          matchedOffset: 27,
+          matchedIn: 'branch_name',
+          searchedText: 'feature/PLAT-742-rebase-of-PLAT-742',
+          via: 'ticket_key_in_branch',
+        },
+      },
+      evidence: [['commit', 'b2c3d40', 'platform-api:b2c3d40']],
     },
   ],
   recommendations: [

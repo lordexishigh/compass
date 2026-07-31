@@ -45,6 +45,68 @@ export interface LadderView {
   readonly deploySignalAvailable: boolean;
 }
 
+/**
+ * A matched string, split so the matching span can be underlined in place.
+ *
+ * Split here rather than in the component, and by offset rather than by
+ * `indexOf`: the analysis core recorded *where* it found the key, and a component
+ * that searched for the substring again would highlight the first occurrence
+ * instead of the one Compass actually used. In `feature/PLAT-1-and-PLAT-1-again`
+ * those are different spans.
+ */
+export interface AlignmentHighlightView {
+  readonly before: string;
+  readonly match: string;
+  readonly after: string;
+  /** What was searched: "the branch name", "the commit message". */
+  readonly caption: string;
+}
+
+/** The two texts a semantic match compared, and the wording they share. */
+export interface AlignmentComparisonView {
+  readonly subjectText: string;
+  readonly goalText: string;
+  readonly sharedTokens: readonly string[];
+}
+
+export interface AlignmentChainNodeView {
+  readonly nodeId: string;
+  readonly title: string | null;
+}
+
+/**
+ * Everything the one-click evidence panel prints for one alignment verdict.
+ *
+ * Derived entirely from the stored item payload, so the panel shows what was
+ * computed rather than a re-derivation: a manager arguing with a flag six weeks
+ * later sees the chain, string or score that produced it, not today's answer to the
+ * same question.
+ */
+export interface AlignmentView {
+  readonly kind: 'off_goal' | 'unattributed';
+  /** `OFF-GOAL`, or null — an unattributed item carries no label by design. */
+  readonly label: string | null;
+  readonly tier: string;
+  /** "a configured chain", "an inferred tracker key", "a semantic match". */
+  readonly tierLabel: string;
+  readonly confidenceLabel: string;
+  readonly thresholdLabel: string;
+  readonly thresholdId: string;
+  readonly clearsThreshold: boolean;
+  readonly objectiveNodeId: string | null;
+  readonly objectiveTitle: string | null;
+  /** The question an unattributed item asks, verbatim. */
+  readonly question: string | null;
+  readonly chain: readonly AlignmentChainNodeView[];
+  readonly highlight: AlignmentHighlightView | null;
+  readonly comparison: AlignmentComparisonView | null;
+  readonly subjectLabels: readonly string[];
+  /** The affordance's own line, before it is opened. */
+  readonly summary: string;
+  /** Unique per claim, so the disclosure has a stable accessible name. */
+  readonly panelId: string;
+}
+
 export interface ClaimView {
   readonly stableId: string;
   readonly headline: string;
@@ -63,6 +125,8 @@ export interface ClaimView {
   readonly changeTag: string;
   readonly ladder: LadderView | null;
   readonly evidence: readonly EvidenceLinkView[];
+  /** Present on alignment claims only. Null everywhere else. */
+  readonly alignment: AlignmentView | null;
 }
 
 export interface SectionView {
@@ -172,6 +236,111 @@ function ladderView(raw: Record<string, unknown> | null): LadderView | null {
   };
 }
 
+// ---------------------------------------------------------------------------
+// The alignment evidence panel
+// ---------------------------------------------------------------------------
+
+const TIER_LABELS: Readonly<Record<string, string>> = {
+  configured: 'a configured chain',
+  inferred: 'an inferred tracker key',
+  semantic: 'a semantic match',
+  unattributed: 'nothing Compass could tie it to',
+};
+
+const MATCHED_IN_CAPTIONS: Readonly<Record<string, string>> = {
+  commit_message: 'the commit message',
+  branch_name: 'the branch name',
+};
+
+const asText = (value: unknown): string | null => (typeof value === 'string' ? value : null);
+const asNumber = (value: unknown): number | null =>
+  typeof value === 'number' && Number.isFinite(value) ? value : null;
+const asStringList = (value: unknown): readonly string[] =>
+  Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === 'string') : [];
+
+/**
+ * The evidence panel's view, from the stored item payload.
+ *
+ * Read defensively, exactly like `ladderView`, and for the same reason: the payload
+ * is JSON that a report written by an earlier build may not have carried at all. A
+ * claim from before this feature existed has no `alignment` key, and the honest
+ * answer there is `null` — no panel — rather than a panel full of empty rows.
+ */
+function alignmentView(raw: unknown, stableId: string): AlignmentView | null {
+  if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  const record = raw as Record<string, unknown>;
+
+  const kind = record['kind'] === 'off_goal' ? 'off_goal' : record['kind'] === 'unattributed' ? 'unattributed' : null;
+  if (kind === null) return null;
+
+  const tier = asText(record['resolvedTier']) ?? 'unattributed';
+  const confidence = asNumber(record['confidence']) ?? 0;
+  const threshold = asNumber(record['threshold']) ?? 0;
+  const evidence = record['evidence'];
+  const evidenceRecord =
+    evidence !== null && typeof evidence === 'object' && !Array.isArray(evidence)
+      ? (evidence as Record<string, unknown>)
+      : {};
+
+  const chainIds = asStringList(evidenceRecord['chainNodeIds']);
+  const chainTitles = asStringList(evidenceRecord['chainTitles']);
+  const objectiveNodeId = asText(record['objectiveNodeId']);
+  const confidenceLabel = confidence.toFixed(2);
+  const thresholdLabel = threshold.toFixed(2);
+
+  return {
+    kind,
+    label: asText(record['label']),
+    tier,
+    tierLabel: TIER_LABELS[tier] ?? tier,
+    confidenceLabel,
+    thresholdLabel,
+    thresholdId: asText(record['thresholdId']) ?? 'T17',
+    clearsThreshold: confidence >= threshold && threshold > 0,
+    objectiveNodeId,
+    objectiveTitle: asText(record['objectiveTitle']),
+    question: asText(record['question']),
+    chain: chainIds.map((nodeId, index) => ({ nodeId, title: chainTitles[index] ?? null })),
+    highlight: highlightView(evidenceRecord),
+    comparison: comparisonView(evidenceRecord),
+    subjectLabels: asStringList(record['subjectLabels']),
+    summary:
+      kind === 'off_goal'
+        ? `Resolved through ${TIER_LABELS[tier] ?? tier} — ${confidenceLabel} against a threshold of ${thresholdLabel}`
+        : `Nothing cleared the threshold — the closest match scored ${confidenceLabel} against ${thresholdLabel}`,
+    panelId: `alignment-evidence-${stableId.replace(/[^a-zA-Z0-9]+/g, '-')}`,
+  };
+}
+
+/** The searched string, split at the offset Compass recorded. */
+function highlightView(evidence: Record<string, unknown>): AlignmentHighlightView | null {
+  const searchedText = asText(evidence['searchedText']);
+  const match = asText(evidence['matchedSubstring']);
+  const offset = asNumber(evidence['matchedOffset']);
+  const matchedIn = asText(evidence['matchedIn']);
+  if (searchedText === null || match === null || offset === null || offset < 0) return null;
+
+  // If the offset does not land on the recorded substring the payload disagrees
+  // with itself, and a highlight in the wrong place is worse than none: it would
+  // point a manager at a string Compass never matched.
+  if (searchedText.slice(offset, offset + match.length) !== match) return null;
+
+  return {
+    before: searchedText.slice(0, offset),
+    match,
+    after: searchedText.slice(offset + match.length),
+    caption: MATCHED_IN_CAPTIONS[matchedIn ?? ''] ?? 'the text Compass searched',
+  };
+}
+
+function comparisonView(evidence: Record<string, unknown>): AlignmentComparisonView | null {
+  const subjectText = asText(evidence['comparedTextA']);
+  const goalText = asText(evidence['comparedTextB']);
+  if (subjectText === null || goalText === null) return null;
+
+  return { subjectText, goalText, sharedTokens: asStringList(evidence['matchedTokens']) };
+}
+
 /**
  * The per-source freshness rows, from `IngestRun` and nothing else.
  *
@@ -271,6 +440,9 @@ export function buildReportView(input: BuildReportViewInput): ReportView {
         changeClause: item.changeClause,
         changeTag: item.changeTag,
         ladder: ladderView(item.ladder),
+        // The resolution path rides on the item payload, so both renderers read the
+        // same field and neither can ship a verdict with no way to check it.
+        alignment: alignmentView(item.payload['alignment'], item.stableId),
         evidence: item.evidence.map((reference, index) => ({
           marker: superscriptMarker(index + 1),
           label: reference.label,

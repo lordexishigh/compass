@@ -12,6 +12,8 @@
  * already exercised against the page as built.
  */
 export {
+  ALIGNMENT_AFFORDANCE_ATTRIBUTE,
+  ALIGNMENT_VERDICT_ATTRIBUTE,
   CHART_MARKERS,
   ColdStartCheckFailed,
   REGRESSION_MARKERS,

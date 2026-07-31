@@ -56,7 +56,16 @@ export function ReportDocument({ view }: { readonly view: ReportView }) {
             generated {view.generatedAtLabel} {view.timezone}. Every figure above carries a link to the artifact it
             came from.
           </p>
-          <p className="mt-2">
+          <p className="mt-2 flex flex-wrap gap-x-5 gap-y-1">
+            {/* The goal hierarchy is reachable from the report because every
+                alignment verdict above resolves against it, and a manager who
+                disagrees with one needs somewhere to go and say so. */}
+            <a
+              href="/goals"
+              className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
+            >
+              Goal hierarchy
+            </a>
             <a
               href="/api/health"
               className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"

@@ -30,7 +30,8 @@ export type ThresholdId =
   | 'T13'
   | 'T14'
   | 'T15'
-  | 'T16';
+  | 'T16'
+  | 'T17';
 
 export interface Threshold {
   readonly id: ThresholdId;
@@ -123,6 +124,25 @@ export const THRESHOLDS = Object.freeze({
     3,
     'count',
     'Three or more merged pull requests sitting ahead of the newest release tag is unreleased work worth naming.',
+  ),
+
+  /**
+   * The alignment confidence threshold — the one number that decides whether
+   * Compass states a verdict or asks a question.
+   *
+   * It is a Sørensen–Dice coefficient over normalised token sets, expressed in
+   * basis points like every other ratio here, and it is deliberately low: 0.30 is
+   * about three shared words out of ten, which is roughly where a commit message
+   * stops coincidentally resembling a goal. Below it nothing is labelled at all —
+   * the work goes in the `unattributed` bucket and is rendered as a question — so
+   * the cost of setting it too high is a larger bucket and the cost of setting it
+   * too low is a wrong accusation. Compass errs toward the bucket.
+   */
+  T17: define(
+    'T17',
+    3_000,
+    'basis_points',
+    'Alignment is attributed semantically only when the shared-vocabulary score reaches 0.30; below that the work is unattributed and Compass asks rather than states.',
   ),
 } as const satisfies Record<ThresholdId, Threshold>);
 

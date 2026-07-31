@@ -200,6 +200,31 @@ interface SeedProject {
 }
 
 /**
+ * The declared goal hierarchy, from `seed/fixtures/organization.json`.
+ *
+ * Read from the fixtures rather than from the generated records for the same reason
+ * the roster is: an Objective is a `declared` entity that a manager configures, and
+ * no connector reports one. Without these rows every commit in the seeded window
+ * would resolve to nothing and the alignment section would be one large
+ * unattributed bucket — which is precisely the failure the seed exists to make
+ * visible rather than to reproduce.
+ */
+interface SeedObjective {
+  readonly key: string;
+  readonly kind: string;
+  readonly parentKey: string | null;
+  readonly current: boolean;
+  readonly effectiveFrom: string;
+  readonly effectiveUntil: string;
+  readonly title: string;
+}
+
+interface SeedTeam {
+  readonly key: string;
+  readonly objectiveKey: string;
+}
+
+/**
  * Parsed seed files, cached per path.
  *
  * The generated dataset is a couple of megabytes of JSON, and a single test file
@@ -312,6 +337,11 @@ export function buildSeedSnapshot(options: SeedSnapshotOptions = {}): AnalysisSn
 
   const people = readFixture<{ readonly developers: readonly SeedDeveloper[] }>('people.json').developers;
   const projects = readFixture<{ readonly projects: readonly SeedProject[] }>('projects.json').projects;
+  const organization = readFixture<{
+    readonly objectives: readonly SeedObjective[];
+    readonly teams: readonly SeedTeam[];
+  }>('organization.json');
+  const objectiveByTeam = new Map(organization.teams.map((team) => [team.key, team.objectiveKey]));
   const roster = buildRoster(people);
   const resolve = (identity: SeedIdentity | null): string | null =>
     identity === null ? null : (roster.get(identity.value.toLowerCase()) ?? null);
@@ -333,6 +363,22 @@ export function buildSeedSnapshot(options: SeedSnapshotOptions = {}): AnalysisSn
       declaredAt,
     );
   }
+  for (const objective of organization.objectives) {
+    observe(
+      builder,
+      'objective',
+      objective.key,
+      {
+        objectiveKind: objective.kind,
+        parentObjectiveKey: objective.parentKey,
+        title: objective.title,
+        effectiveFrom: instantFromIso(objective.effectiveFrom),
+        effectiveUntil: instantFromIso(objective.effectiveUntil),
+        isCurrent: objective.current,
+      },
+      declaredAt,
+    );
+  }
   for (const project of projects) {
     observe(
       builder,
@@ -342,7 +388,7 @@ export function buildSeedSnapshot(options: SeedSnapshotOptions = {}): AnalysisSn
         name: project.name,
         methodology: project.methodology,
         projectKey: project.key,
-        objectiveKey: null,
+        objectiveKey: objectiveByTeam.get(project.teamKey) ?? null,
         conversationKey: null,
         timezone: SEED_TIMEZONE,
       },

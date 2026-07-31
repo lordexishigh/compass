@@ -171,6 +171,62 @@ Compass is a single TypeScript monorepo deployed as two processes (a Next.js web
 
 REST/JSON over Next.js route handlers, typed end-to-end with Zod schemas shared between server and client; every handler resolves (organization_id, role) first and calls only scoped repositories. Reports: GET /api/teams/:teamId/report?at=<ISO instant> and GET /api/orgs/:orgId/report/merged?at=<instant> (both regenerate through the real pipeline for that instant — this is the time-travel control), GET /api/reports/:id, GET /api/reports?team=&from=&to= (archive), POST /api/reports/:id/regenerate (rate-limited 5/hour/org), GET /api/reports/:id/evidence/:itemId (alignment link or matched text). Feedback: POST /api/items/:stableItemId/feedback {action: dismiss_risk | reject_recommendation | accept_recommendation | flag_alignment_wrong | blocker_resolved | snooze, reason?, days?} — keyed to the entity-derived stable ID, reachable identically from web, from signed single-purpose email links (GET+POST /f/:signedToken, one item, one action, 30-day expiry, single use, never a session), and from Slack Block Kit actions (signature verified, Slack user mapped to a Compass identity with permission on that report). Memos: POST /api/memos {raw_text, source} → 201 typed assertion, 409 with 2–3 candidates when subject resolution is below threshold, 422 {refusal: "I can't represent that yet"} when outside the five kinds; same code path serves POST /api/email/inbound and Slack DM/thread events. Config CRUD: /api/teams, /api/projects, /api/repositories, /api/objectives (effective-dated), /api/developers, /api/identity-links (merge/un-merge), /api/absences, /api/subscriptions. Sharing: POST /api/reports/:id/share {expiry: 7|30|90|never, audience: org|anyone} → 128-bit token, DELETE to revoke, GET /s/:token public read-only render with access logging. Auth: POST /api/auth/signup|login|logout|magic-link|reset, session cookie rotated on privilege change. Ops: GET /api/freshness (per-source ingested-at, coverage, degradation), POST /api/ingest/run. Structured reports are the versioned contract (report_schema_version on every row) and renderers/consumers read only that object.
 
+## Effective dating and the freeze rule
+
+The goal hierarchy — company objective → quarter objective → sprint goal, and from
+any node downward to the Features and tickets attached to it — is a stored,
+editable, versioned object. It is also the thing every alignment verdict is
+resolved against, so "what was this report measured against" has to be answerable
+months later. This section is the single source of truth for how that works, and
+`alpha-configuration-and-identity-roster` reuses the same shape for teams, projects
+and repositories.
+
+### Two time axes
+
+Each revision carries two pairs of instants, answering different questions.
+
+| Column | Axis | Question it answers |
+| --- | --- | --- |
+| `effective_from` / `effective_until` | the goal's own horizon | "Q3 runs 1 July to 30 September." Business data the manager states. `effective_until` is nullable and null means open-ended. |
+| `recorded_at` | belief | "Compass came to believe this wording on 4 August." An edit appends a revision with a later `recorded_at`. |
+
+A revision is in force over `[recorded_at, next revision's recorded_at)`. That end
+is **derived, never stored**: writing it would mean UPDATEing a row a persisted
+report has already cited, and `objective_versions`, `objective_scope_links` and
+`objective_links` are append-only — refused by `ScopedDb`, and refused again by a
+statement-level trigger underneath it. Archiving is an append too
+(`archived = true` on a new revision), so the history of a goal abandoned
+mid-quarter survives the abandonment.
+
+There is exactly one implementation of the selection rule — `goalHierarchyAt` in
+`packages/analysis/src/goal-hierarchy.ts` — and every reader goes through it: the
+report pipeline, the goals API's `?at=` parameter, and the tests. `packages/db`
+deliberately reads *all* revisions and selects none, because a
+`WHERE recorded_at <= $1 ... LIMIT 1` in SQL would be a second implementation of
+this guarantee that no unit test could reach.
+
+### The freeze rule
+
+**Rewording an objective today can never change what Compass said about
+yesterday.** Concretely:
+
+- A verdict inside a persisted report is **frozen**. `reports.payload_json` is the
+  thing a manager read, and it is **never rewritten** — not when the objective is
+  reworded, not when it is archived, not when the thresholds move.
+- A verdict **recomputed** for a past instant — time travel, a backfill, a
+  regenerate — is **re-evaluated against the past**: alignment for a past instant
+  resolves against the objective version effective at that instant, meaning the
+  revision whose `recorded_at` was the latest at or before it. So a regenerate
+  reproduces the frozen verdict rather than re-judging last week's work against
+  this week's goal.
+- The only thing that legitimately changes what Compass believes about a past
+  instant is **new evidence about that instant** — which is what a `Correction`
+  records, and which leaves the prior belief on disk beside it. New *goals* never
+  qualify.
+
+The rule is asserted by `packages/analysis/tests/goal-hierarchy.test.ts`, which
+also reads this section and fails if it goes missing.
+
 ## Key decisions
 
 - One language (TypeScript) across web, worker, analysis and fixtures: a solo/small team cannot afford two toolchains, and the purity/determinism gates (dependency-cruiser, custom ESLint clock rule, shared Zod schemas) are cheapest to enforce inside one type system and one CI.

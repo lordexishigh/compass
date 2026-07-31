@@ -1,6 +1,14 @@
+import {
+  assertOffGoalGate,
+  assertUnattributedNamesNobody,
+  assessAlignment,
+  developerDisplayNames,
+  type AlignmentVerdict,
+} from './alignment.js';
 import { detectBlockers, type DetectedBlocker } from './blockers.js';
 import { computeElapsedFacts, type ElapsedFactStatement } from './elapsed.js';
 import { orderedEvidence } from './evidence.js';
+import type { GoalHierarchy } from './goal-hierarchy.js';
 import { compareStable, wholeDaysBetween, windowContains, type Instant } from './instant.js';
 import { PROGRESS_ITEM_IDS, assessProgress, type ProgressAssessment } from './progress.js';
 import { assessCalibration, projectCompletion } from './projection.js';
@@ -54,6 +62,17 @@ export interface AnalysisConfig {
   readonly coverage: readonly ReportCoverageNote[];
   /** Cap on items rendered per section. The detail stays in `findings`. */
   readonly maxItemsPerSection: number;
+  /**
+   * The goal hierarchy, already resolved for this instant by the caller that owns
+   * the store. Omitted only where there is no store — the analysis core then
+   * derives the chain from the objectives and sprint goals already in the
+   * snapshot, which is strictly better than calling every commit unattributed.
+   * `packages/analysis/src/goal-hierarchy.ts` documents the effective-dating rule
+   * both paths obey.
+   */
+  readonly goalHierarchy?: GoalHierarchy;
+  /** Overrides T17, so a manager can tune their own tolerance for a verdict. */
+  readonly alignmentThreshold?: number;
 }
 
 export const DEFAULT_ANALYSIS_CONFIG: AnalysisConfig = Object.freeze({
@@ -92,6 +111,10 @@ export function generateStructuredReport(
   });
   const wins = detectWins(snapshot, instant, yesterday);
   const elapsedFacts = computeElapsedFacts(snapshot, instant, scope);
+  const alignment = assessAlignment(snapshot, instant, scope, {
+    ...(config.goalHierarchy === undefined ? {} : { hierarchy: config.goalHierarchy }),
+    ...(config.alignmentThreshold === undefined ? {} : { threshold: config.alignmentThreshold }),
+  });
   const recommendations = generateRecommendations(snapshot, instant, scope, {
     blockers,
     reviewQueue,
@@ -113,6 +136,7 @@ export function generateStructuredReport(
     wins,
     recommendations,
     elapsedFacts,
+    alignment,
   };
 
   const report: StructuredReport = {
@@ -131,6 +155,12 @@ export function generateStructuredReport(
   assertWholeDayAges(report);
   assertEveryClaimHasEvidence(report);
   assertNoIndividualRanking(report);
+  // The two alignment guards. The first refuses an OFF-GOAL label the gate would
+  // not have produced; the second refuses an unattributed item that names a person
+  // or states a verdict. Both throw here, in the pure layer, rather than letting a
+  // wrong accusation reach a page somebody screenshots.
+  assertOffGoalGate(alignment);
+  assertUnattributedNamesNobody(alignment.verdicts, developerDisplayNames(snapshot));
   return report;
 }
 
@@ -150,7 +180,11 @@ function buildSections(
     yesterday: findings.yesterday.map((item) => yesterdayItem(instant, item)),
     progress: progressItems(findings),
     blockers: findings.blockers.map((blocker) => blockerItem(blocker, factsByEntity)),
-    risks: findings.risks.map(riskItem),
+    // Alignment lives in Risks, and after the measured risks rather than before
+    // them: work serving an objective the organization stopped funding is a risk to
+    // the sprint goal, and the unattributed question is a risk to the alignment
+    // claim itself. The Six Spine never grows a seventh section for a new finding.
+    risks: [...findings.risks.map(riskItem), ...findings.alignment.verdicts.map(alignmentItem)],
     recommendations: findings.recommendations.map(recommendationItem),
     wins: findings.wins.map(winItem),
   };
@@ -162,7 +196,7 @@ function buildSections(
         : `${findings.yesterday.length} unit${findings.yesterday.length === 1 ? '' : 's'} of work crossed a completion threshold in this window.`,
     progress: progressSummary(findings.progress),
     blockers: findings.blockers.length === 0 ? undefined : findings.reviewQueue.statement,
-    risks: findings.risks.length === 0 ? undefined : riskSummary(findings.risks),
+    risks: riskSectionSummary(findings),
     recommendations: findings.recommendations.length === 0 ? undefined : 'One step each, all of them finishable today.',
     wins: findings.wins.length === 0 ? undefined : `${findings.wins.length} piece${findings.wins.length === 1 ? '' : 's'} of substantial work landed.`,
   };
@@ -364,6 +398,57 @@ function winItem(win: DetectedWin): ReportItem {
     changeTag: 'resolved',
     ageDays: win.ageWorkingDays,
     evidence: win.evidence,
+  };
+}
+
+/**
+ * The Risks lead sentence, which now covers two families.
+ *
+ * A section carrying only alignment findings must not open with "0 risks crossed a
+ * threshold": that is a true sentence about the wrong subject, and it would make
+ * the OFF-GOAL verdict underneath it look like an afterthought.
+ */
+function riskSectionSummary(findings: AnalysisFindings): string | undefined {
+  const hasRisks = findings.risks.length > 0;
+  const hasAlignment = findings.alignment.verdicts.length > 0;
+
+  if (!hasRisks && !hasAlignment) return undefined;
+  if (!hasRisks) return findings.alignment.statement;
+  if (!hasAlignment) return riskSummary(findings.risks);
+  return `${riskSummary(findings.risks)} ${findings.alignment.statement}`;
+}
+
+/**
+ * One alignment verdict as a report item.
+ *
+ * The evidence payload rides on the item, so the web view and the static HTML
+ * report both get the resolution path without either having to reach back into
+ * `findings` — which is what makes the one-click affordance impossible to ship in
+ * only one of the two renderers.
+ */
+function alignmentItem(verdict: AlignmentVerdict): ReportItem {
+  return {
+    stableId: verdict.stableId,
+    headline: verdict.headline,
+    detail: verdict.detail,
+    // An unattributed item is never `new`: "NEW" on a question would read as an
+    // escalation of something Compass has not decided.
+    changeTag: verdict.kind === 'off_goal' ? 'new' : 'unchanged',
+    ageDays: verdict.ageDays,
+    evidence: verdict.evidenceRefs,
+    alignment: {
+      kind: verdict.kind,
+      label: verdict.label,
+      resolvedTier: verdict.resolvedTier,
+      confidence: verdict.confidence,
+      threshold: verdict.threshold.value / 10_000,
+      thresholdId: verdict.threshold.id,
+      objectiveNodeId: verdict.objectiveNodeId,
+      objectiveTitle: verdict.objectiveTitle,
+      question: verdict.question,
+      evidence: verdict.evidence,
+      subjectLabels: verdict.subjects.map((subject) => subject.label),
+    },
   };
 }
 

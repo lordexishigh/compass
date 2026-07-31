@@ -60,6 +60,35 @@ export {
   wins,
 } from './schema/entities.js';
 
+export { objectiveLinks, objectiveScopeLinks, objectiveVersions } from './schema/goals.js';
+
+export {
+  GoalNodeExistsError,
+  GoalNodeNotFoundError,
+  appendGoalRevision,
+  appendGoalScopeLink,
+  archiveGoalNode,
+  findObjectiveLinksForSubject,
+  goalRevisionRowId,
+  goalScopeLinkRowId,
+  listObjectiveLinks,
+  loadGoalNodeHistory,
+  loadGoalStore,
+  objectiveLinkRowId,
+  recordObjectiveLinks,
+  scopeLinkKey,
+  syncGoalNodes,
+  type GoalNodeInput,
+  type GoalNodeOrigin,
+  type GoalNodeRevisionRow,
+  type GoalScopeLinkInput,
+  type GoalScopeLinkRow,
+  type GoalStoreContents,
+  type GoalWriteResult,
+  type ObjectiveLinkInput,
+  type StoredObjectiveLink,
+} from './repositories/goals.js';
+
 export {
   REPORT_SECTION_COUNT,
   reportItemEvidence,

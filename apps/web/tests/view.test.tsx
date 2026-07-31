@@ -2,8 +2,9 @@ import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { SECTIONS } from '@compass/analysis';
+import { OFF_GOAL_LABEL, SECTIONS } from '@compass/analysis';
 import { artifactHref } from '@compass/pipeline';
+import { ALIGNMENT_AFFORDANCE_ATTRIBUTE, ALIGNMENT_VERDICT_ATTRIBUTE, inspectReportHtml } from '@compass/smoke';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
@@ -125,6 +126,104 @@ describe('the completion ladder', () => {
 
   it('prints the literal words for an unreachable R5 rather than inferring a deploy', () => {
     expect(markup).toContain('no deploy signal available');
+  });
+});
+
+/**
+ * The one-click evidence panel.
+ *
+ * "Clicking any alignment result opens a panel showing the resolution path actually
+ * used" is the criterion, and it is asserted here against the rendered markup rather
+ * than against the view model, because a field the view model carries and the page
+ * never prints satisfies neither the criterion nor the manager.
+ */
+describe('every alignment verdict has its evidence one click away', () => {
+  const alignmentClaims = view.sections
+    .flatMap((section) => section.items)
+    .filter((claim) => claim.alignment !== null);
+
+  it('renders one affordance per verdict, unattributed items included', () => {
+    expect(alignmentClaims.length).toBeGreaterThan(2);
+
+    const inspection = inspectReportHtml(markup);
+    expect(inspection.alignmentVerdicts).toBe(alignmentClaims.length);
+    expect(inspection.alignmentAffordances).toBe(alignmentClaims.length);
+    // The same check CI runs against a booted container, over the page as built.
+    expect(inspection.problems).toEqual([]);
+  });
+
+  it('opens with one click and no JavaScript, being a native disclosure', () => {
+    // A modal or a state toggle would give up keyboard support, screen-reader
+    // semantics and the static HTML report to gain an animation.
+    expect(markup).toContain('<details');
+    expect(markup).toContain('<summary');
+    expect(markup).toContain(`${ALIGNMENT_VERDICT_ATTRIBUTE}="off_goal"`);
+    expect(markup).toContain(`${ALIGNMENT_VERDICT_ATTRIBUTE}="unattributed"`);
+    expect(markup).toContain(`${ALIGNMENT_AFFORDANCE_ATTRIBUTE}="semantic"`);
+    expect(markup).toContain(`${ALIGNMENT_AFFORDANCE_ATTRIBUTE}="inferred"`);
+  });
+
+  it('states the confidence and the threshold it was compared against, together', () => {
+    expect(markup).toContain('0.62');
+    expect(markup).toContain('0.30');
+    expect(markup).toContain('T17');
+    expect(markup).toContain('at or above');
+    // The unattributed item's own score, below the same threshold.
+    expect(markup).toContain('0.08');
+    expect(markup).toContain('below');
+  });
+
+  it('shows the chain node ids for the tier that resolved it', () => {
+    expect(markup).toContain('OBJ-Q2-BILL');
+    expect(markup).toContain('OBJ-CO-1');
+    expect(markup).toContain('Leaf first');
+  });
+
+  it('underlines the matched substring at the offset Compass recorded', () => {
+    const inferred = alignmentClaims.find((claim) => claim.alignment?.tier === 'inferred');
+
+    // The branch names PLAT-742 twice; the highlight must land on the second, which
+    // is the one the offset points at. A component that re-searched the string would
+    // split it at 8 and underline the wrong span.
+    expect(inferred?.alignment?.highlight).toEqual({
+      before: 'feature/PLAT-742-rebase-of-',
+      match: 'PLAT-742',
+      after: '',
+      caption: 'the branch name',
+    });
+    expect(markup).toContain('evidence-matched__span');
+    expect(markup).toContain('at character <span class="data-token">27</span>');
+  });
+
+  it('shows both compared texts and the wording they share', () => {
+    expect(markup).toContain('Migrate the legacy billing client onto the new SDK');
+    expect(markup).toContain('Migrate every merchant off the legacy billing client');
+    expect(markup).toContain('Shared wording: billing, client, legacy, migrate.');
+  });
+
+  it('renders the unattributed item as a question and never as a verdict', () => {
+    const unattributed = alignmentClaims.find((claim) => claim.alignment?.kind === 'unattributed');
+
+    expect(unattributed?.alignment?.label).toBeNull();
+    expect(markup).toContain('What were these 2 commits for?');
+    expect(markup).toContain('alignment-question');
+    expect(markup).toContain('named no person');
+    // The question sits in the reading column, not only inside the panel.
+    expect(markup.indexOf('alignment-question')).toBeLessThan(markup.lastIndexOf('evidence-disclosure__body'));
+  });
+
+  it('labels only the verdicts the gate produced', () => {
+    const labels = alignmentClaims.map((claim) => claim.alignment?.label);
+
+    expect(labels).toEqual([OFF_GOAL_LABEL, null, OFF_GOAL_LABEL]);
+  });
+
+  it('renders no panel for a claim that carries no alignment payload', () => {
+    const blocker = view.sections
+      .find((section) => section.key === 'blockers')
+      ?.items.find((claim) => claim.stableId.startsWith('blocker:'));
+
+    expect(blocker?.alignment).toBeNull();
   });
 });
 

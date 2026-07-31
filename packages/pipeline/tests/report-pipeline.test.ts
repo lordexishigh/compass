@@ -64,8 +64,31 @@ afterAll(async () => {
 const scoped = () => harness.database.scopedFor(ORGANIZATION_ID);
 
 describe('the pipeline runs the layers in order', () => {
-  it('ingests, snapshots, analyses, renders and persists, in that order', () => {
-    expect(result.stages).toEqual(['ingest-window', 'build-snapshot', 'analyse', 'render', 'persist']);
+  it('ingests, snapshots, syncs goals, analyses, renders, persists and records links, in that order', () => {
+    expect(result.stages).toEqual([
+      'ingest-window',
+      'build-snapshot',
+      // Between the snapshot and the analysis, and in that order for a reason: the
+      // goal hierarchy is projected from the model and then *read back*, so a
+      // manager's edit — which lives only in the store — is what the next report
+      // resolves against.
+      'sync-goals',
+      'analyse',
+      'render',
+      'persist',
+      // After the report rather than during analysis: the analysis core is pure and
+      // cannot write the audit trail of its own verdicts.
+      'record-objective-links',
+    ]);
+  });
+
+  it('resolves the goal hierarchy for the report instant and aligns against it', () => {
+    expect(result.goalHierarchy.resolvedAt).toBe(NOW);
+    expect(result.goalHierarchy.nodes.length).toBeGreaterThan(0);
+    // Every resolved subject leaves a row; unattributed work deliberately leaves
+    // none, so this is a floor rather than an equality.
+    expect(result.objectiveLinkCount).toBeGreaterThan(0);
+    expect(result.objectiveLinkCount).toBeLessThanOrEqual(result.report.findings.alignment.resolutions.length);
   });
 
   it('pulls the window through the port and journals the run', async () => {

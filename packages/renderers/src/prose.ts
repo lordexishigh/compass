@@ -308,6 +308,21 @@ function progressClause(report: StructuredReport, item: ReportItem): Interpretat
 function clauseFor(report: StructuredReport, sectionKey: SectionKey, item: ReportItem): InterpretationClause {
   const findings = report.findings;
 
+  // Alignment first, and by the field on the item rather than by a lookup into
+  // findings: the resolution path travels with the claim, so the clause cannot
+  // drift from the evidence panel printed beside it.
+  const alignment = item.alignment;
+  if (alignment !== undefined) {
+    return alignment.resolvedTier === 'unattributed'
+      ? interpretation.unattributed(alignment.subjectLabels.length)
+      : interpretation.alignment(
+          alignment.resolvedTier,
+          alignment.confidence,
+          alignment.threshold,
+          alignment.thresholdId,
+        );
+  }
+
   switch (sectionKey) {
     case 'yesterday': {
       const ladder = item.ladder;

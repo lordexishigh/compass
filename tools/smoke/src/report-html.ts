@@ -95,6 +95,25 @@ function escapeRegExp(text: string): string {
  */
 export const sectionLandmark = (sectionKey: string): string => `id="section-${sectionKey}"`;
 
+/**
+ * The attributes an alignment verdict and its evidence affordance carry.
+ *
+ * There are two render paths for a Compass report — the Next.js view and anything
+ * else that reads the structured payload — and the one-click evidence criterion is
+ * exactly the kind of thing that gets built in one of them. So the check is stated
+ * in bytes and run over the real page: **every alignment verdict on the page has an
+ * evidence affordance, and the counts match.**
+ *
+ * Matching counts rather than "at least one" is the load-bearing part. A page with
+ * three verdicts and one affordance would satisfy any weaker check while leaving two
+ * flags unfalsifiable, which is the precise failure the criterion exists to prevent.
+ */
+export const ALIGNMENT_VERDICT_ATTRIBUTE = 'data-alignment-evidence';
+export const ALIGNMENT_AFFORDANCE_ATTRIBUTE = 'data-alignment-affordance';
+
+const countOccurrences = (html: string, needle: string): number =>
+  html.split(needle).length - 1;
+
 export interface ReportHtmlInspection {
   /** The six section titles, in the order they appear in the HTML. */
   readonly headingsFound: readonly string[];
@@ -104,6 +123,10 @@ export interface ReportHtmlInspection {
   readonly sectionsNotRendered: readonly string[];
   /** Distinct `/artifact/<kind>/<id>` paths the page links to, sorted. */
   readonly sourceLinks: readonly string[];
+  /** Alignment verdicts rendered on the page. Zero is a legitimate quiet day. */
+  readonly alignmentVerdicts: number;
+  /** Evidence affordances beside them. Must equal `alignmentVerdicts`. */
+  readonly alignmentAffordances: number;
   /** One sentence per failed check. Empty means the cold start is honest. */
   readonly problems: readonly string[];
 }
@@ -164,6 +187,18 @@ export function inspectReportHtml(html: string): ReportHtmlInspection {
     );
   }
 
+  const alignmentVerdicts = countOccurrences(html, ALIGNMENT_VERDICT_ATTRIBUTE);
+  const alignmentAffordances = countOccurrences(html, ALIGNMENT_AFFORDANCE_ATTRIBUTE);
+
+  if (alignmentAffordances !== alignmentVerdicts) {
+    problems.push(
+      `The page renders ${alignmentVerdicts} alignment verdict${alignmentVerdicts === 1 ? '' : 's'} but ` +
+        `${alignmentAffordances} evidence affordance${alignmentAffordances === 1 ? '' : 's'}. Every alignment verdict, ` +
+        'including an unattributed one, must have its resolution path reachable in one click — a flag a manager cannot ' +
+        'check before repeating it to a person is the one output this product must never produce.',
+    );
+  }
+
   for (const marker of REGRESSION_MARKERS) {
     if (lowered.includes(marker.needle)) {
       problems.push(`The response contains \`${marker.needle}\`, which means ${marker.why}.`);
@@ -176,7 +211,15 @@ export function inspectReportHtml(html: string): ReportHtmlInspection {
     }
   }
 
-  return { headingsFound, headingsMissing, sectionsNotRendered, sourceLinks, problems };
+  return {
+    headingsFound,
+    headingsMissing,
+    sectionsNotRendered,
+    sourceLinks,
+    alignmentVerdicts,
+    alignmentAffordances,
+    problems,
+  };
 }
 
 export class ColdStartCheckFailed extends Error {

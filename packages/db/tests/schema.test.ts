@@ -57,6 +57,9 @@ describe('base schema convention', () => {
       'ingest_source_coverage',
       'manager_memos',
       'memberships',
+      'objective_links',
+      'objective_scope_links',
+      'objective_versions',
       'objectives',
       'organizations',
       'projects',
@@ -237,9 +240,28 @@ describe('the append-only register', () => {
       'audit_log_entries',
       'corrections',
       'entity_versions',
+      'objective_links',
+      'objective_scope_links',
+      'objective_versions',
       'sprint_scope_changes',
       'ticket_status_transitions',
     ]);
+  });
+
+  /**
+   * The goal store earns its place on that list rather than inheriting it.
+   *
+   * An objective is *edited* through this table, which is exactly the case where
+   * somebody reaches for an UPDATE. It is append-only because a persisted report
+   * cites a revision by number and rewriting one would change what yesterday's
+   * alignment verdict resolved against — so the guard is asserted here as well as
+   * exercised against a real engine in `migrations.test.ts`.
+   */
+  it('holds the goal store to the append-only rule, since an edit is where an UPDATE is tempting', () => {
+    for (const table of ['objective_versions', 'objective_scope_links', 'objective_links']) {
+      expect(isAppendOnlyTableName(table), `${table} must refuse an UPDATE`).toBe(true);
+      expect(tableNames, `${table} is not a table in the schema`).toContain(table);
+    }
   });
 
   it('does not claim an entity table is append-only — current beliefs are meant to move', () => {

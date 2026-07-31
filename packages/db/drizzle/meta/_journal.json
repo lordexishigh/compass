@@ -29,6 +29,13 @@
       "when": 1785480760721,
       "tag": "0003_report_item_prose",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1785486412299,
+      "tag": "0004_goal_hierarchy",
+      "breakpoints": true
     }
   ]
 }

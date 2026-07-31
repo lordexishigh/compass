@@ -44,6 +44,8 @@ export const INTERPRETATION_TEMPLATE_IDS = [
   'sectionCount',
   'coverage',
   'collar',
+  'alignment',
+  'unattributed',
 ] as const;
 
 export type InterpretationTemplateId = (typeof INTERPRETATION_TEMPLATE_IDS)[number];
@@ -165,6 +167,21 @@ export const INTERPRETATION_TEMPLATES: readonly InterpretationTemplateDefinition
     example: 'and the collar on that date is low confidence from cycle time',
     pattern: /\band the collar on that date is (?:low|medium|high) confidence from (?:trailing velocity|cycle time)\b/,
   },
+  {
+    id: 'alignment',
+    purpose:
+      'An alignment verdict. Names the tier that actually resolved it and the confidence against the threshold it was compared with, so an OFF-GOAL flag arrives as an argument a manager can check rather than as a pronouncement.',
+    example: 'so Compass resolved this semantically at 0.62 confidence against the 0.30 threshold T17 sets',
+    pattern:
+      /\bso Compass resolved this (?:through a configured chain|from an inferred tracker key|semantically) at \d\.\d{2} confidence against the \d\.\d{2} threshold T\d+[a-z]? sets\b/,
+  },
+  {
+    id: 'unattributed',
+    purpose:
+      'Work Compass could not tie to a goal. Turns the count into a question rather than a finding — low-confidence attribution phrased as a verdict against a named developer is the one mistake that ends adoption of a product like this.',
+    example: 'so Compass is asking what they served rather than naming anyone',
+    pattern: /\bso Compass is asking what (?:it|they) served rather than naming anyone\b/,
+  },
 ]);
 
 const BY_ID: ReadonlyMap<InterpretationTemplateId, InterpretationTemplateDefinition> = new Map(
@@ -251,4 +268,29 @@ export const interpretation = {
         method === 'trailing_velocity' ? 'trailing velocity' : 'cycle time'
       }`,
     ),
+
+  /**
+   * Both numbers, always, in the same clause.
+   *
+   * A confidence with no threshold beside it invites the reader to guess what it
+   * was compared against, and the whole safety argument for OFF-GOAL rests on that
+   * comparison being visible. Two decimal places rather than the stored four: the
+   * score is quotable at two, and a seventeen-digit float in a sentence reads as a
+   * machine talking to itself.
+   */
+  alignment: (
+    tier: 'configured' | 'inferred' | 'semantic',
+    confidence: number,
+    threshold: number,
+    thresholdId: string,
+  ): InterpretationClause =>
+    clause(
+      'alignment',
+      `so Compass resolved this ${
+        tier === 'configured' ? 'through a configured chain' : tier === 'inferred' ? 'from an inferred tracker key' : 'semantically'
+      } at ${confidence.toFixed(2)} confidence against the ${threshold.toFixed(2)} threshold ${thresholdId} sets`,
+    ),
+
+  unattributed: (count: number): InterpretationClause =>
+    clause('unattributed', `so Compass is asking what ${count === 1 ? 'it' : 'they'} served rather than naming anyone`),
 } as const;

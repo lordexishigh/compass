@@ -117,7 +117,13 @@ describe('the first request to / passes no gate', () => {
   it('is a Server Component all the way down: no client island renders the report', () => {
     // The one client component in the tree is the Six Spine, which is navigation
     // rather than content — so the prose renders with JavaScript switched off.
-    for (const file of ['components/report-document.tsx', 'components/report-section.tsx']) {
+    for (const file of [
+      'components/report-document.tsx',
+      'components/report-section.tsx',
+      // The evidence panel is a native `<details>` for exactly this reason: one
+      // click has to open it with JavaScript switched off.
+      'components/alignment-evidence.tsx',
+    ]) {
       expect(codeOf(...file.split('/')), `${file} must stay a Server Component`).not.toContain('use client');
     }
   });
@@ -147,7 +153,12 @@ describe('the first request to / passes no gate', () => {
   });
 
   it('reads its data on the server, with no client-side fetch on the report path', () => {
-    for (const file of ['app/page.tsx', 'components/report-document.tsx', 'components/report-section.tsx']) {
+    for (const file of [
+      'app/page.tsx',
+      'components/report-document.tsx',
+      'components/report-section.tsx',
+      'components/alignment-evidence.tsx',
+    ]) {
       const source = codeOf(...file.split('/'));
       expect(source, `${file} must not fetch on the client`).not.toContain('useEffect');
       expect(source, `${file} must not fetch on the client`).not.toContain('fetch(');
@@ -181,6 +192,7 @@ describe('the report is readable on a 375px viewport', () => {
       'components/freshness-panel.tsx',
       'components/completion-ladder.tsx',
       'components/evidence-markers.tsx',
+      'components/alignment-evidence.tsx',
     ]) {
       const source = readWebFile(...file.split('/'));
       for (const match of source.matchAll(/\b(?:min-w|w)-\[(\d+)px\]/g)) {

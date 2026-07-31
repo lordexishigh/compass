@@ -1,3 +1,9 @@
+import type {
+  AlignmentAssessment,
+  AlignmentClass,
+  AlignmentEvidence,
+  AlignmentVerdictKind,
+} from './alignment.js';
 import type { DetectedBlocker } from './blockers.js';
 import type { ElapsedFactStatement } from './elapsed.js';
 import type { EvidenceRef } from './evidence.js';
@@ -67,6 +73,44 @@ export interface ReportItem {
    * saying NEW.
    */
   readonly changeClause?: string;
+  /**
+   * The resolution path behind an alignment claim, attached to the claim itself.
+   *
+   * Present only on alignment items. It is carried *on the item* rather than left
+   * in `findings` so that every render path gets the evidence for free: the web
+   * view and the static HTML report each read the item they are already rendering,
+   * and neither can ship an alignment verdict with no way to check it. That is the
+   * failure mode the one-click criterion exists to prevent, and a shared field is
+   * the only arrangement in which the two renderers cannot diverge.
+   */
+  readonly alignment?: ReportItemAlignment;
+}
+
+/**
+ * Everything the evidence panel prints, in one place.
+ *
+ * `evidence` is the tier-specific payload — a chain of node ids, a matched
+ * substring with its offset, or two compared texts with a score. `confidence` and
+ * `threshold` are stated separately and always, because "0.62 against a threshold
+ * of 0.30" is the sentence that makes a verdict arguable, and an item that showed
+ * one without the other would invite the reader to guess the comparison.
+ */
+export interface ReportItemAlignment {
+  readonly kind: AlignmentVerdictKind;
+  /** `OFF-GOAL`, or null for an unattributed item. */
+  readonly label: string | null;
+  readonly resolvedTier: AlignmentClass;
+  readonly confidence: number;
+  readonly threshold: number;
+  /** The numbered rule the confidence was compared against. */
+  readonly thresholdId: string;
+  readonly objectiveNodeId: string | null;
+  readonly objectiveTitle: string | null;
+  /** The question an unattributed item asks. Null on an off-goal verdict. */
+  readonly question: string | null;
+  readonly evidence: AlignmentEvidence;
+  /** The artifacts the verdict is about: `PLAT-742`, `4f5a6b7`. */
+  readonly subjectLabels: readonly string[];
 }
 
 export interface ReportSection {
@@ -113,6 +157,13 @@ export interface AnalysisFindings {
   readonly wins: readonly DetectedWin[];
   readonly recommendations: readonly Recommendation[];
   readonly elapsedFacts: readonly ElapsedFactStatement[];
+  /**
+   * Every alignment resolution behind the section, not only the ones that became
+   * verdicts. A manager arguing with an OFF-GOAL flag needs to see what the other
+   * twenty commits resolved to as well, and the coverage rows are what "Compass
+   * placed 20 of 25 commits" is read from.
+   */
+  readonly alignment: AlignmentAssessment;
 }
 
 export interface StructuredReport {
@@ -211,6 +262,16 @@ export function emptyFindings(): AnalysisFindings {
     wins: [],
     recommendations: [],
     elapsedFacts: [],
+    alignment: {
+      threshold: thresholdRef('T17'),
+      hierarchyResolvedAt: 0,
+      goalNodeCount: 0,
+      resolutions: [],
+      coverage: [],
+      verdicts: [],
+      statement:
+        'No goal hierarchy has been configured, so Compass has nothing to align this work against and will not guess.',
+    },
   };
 }
 

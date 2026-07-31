@@ -219,7 +219,7 @@ describe('the non-semantic allowlist is documented where it is defined', () => {
 });
 
 describe('every declared threshold is applied somewhere', () => {
-  const sources = ['blockers', 'progress', 'projection', 'recommendations', 'review-queue', 'risks', 'technical-debt', 'wins', 'workload', 'yesterday', 'structured-report', 'ladder', 'elapsed']
+  const sources = ['alignment', 'blockers', 'progress', 'projection', 'recommendations', 'review-queue', 'risks', 'technical-debt', 'wins', 'workload', 'yesterday', 'structured-report', 'ladder', 'elapsed']
     .map((name) => readFileSync(fileURLToPath(new URL(`../src/${name}.ts`, import.meta.url)), 'utf8'))
     .join('\n');
 

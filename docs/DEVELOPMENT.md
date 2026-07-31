@@ -64,6 +64,32 @@ The seeded history ends on a fixed date. Once the host clock passes it, the page
 reports the last day it has real data for and says so in a sentence rather than
 showing you six honest, useless absences.
 
+### Alignment, and how to argue with it
+
+Inside **04 Risks** you will find two alignment findings the seeded org plants on
+purpose.
+
+- One **OFF-GOAL** verdict, naming `OBJ-Q2-BILL` — an objective that stopped being
+  current at the end of Q2 — and the billing-migration tickets and commits running
+  inside the current sprint that serve it.
+- One **unattributed** question: the commits with no tracker key in a message or a
+  branch, asked about rather than judged, with no developer named.
+
+Both carry a disclosure reading *How Compass resolved this* / *What Compass
+compared*. Open it and you get the tier that actually resolved the verdict — the
+chain of node ids, or the matched tracker key underlined in the branch it was found
+in, or both compared texts with the score — plus the confidence and the threshold it
+was measured against, always together. It is a native `<details>`, so it opens in one
+click with JavaScript switched off.
+
+`/goals`, linked from the report footer, is the chain those verdicts resolve
+against. Every write there appends an effective-dated revision and leaves the prior
+one on disk: edit an objective and the revision number beside it goes up, archive one
+and it disappears from today's hierarchy while last week's report still resolves the
+wording it was measured against. `GET /api/goals?at=<ISO instant>` answers "what was
+Tuesday's report measured against". The rule in full is in
+[ARCHITECTURE.md](ARCHITECTURE.md#effective-dating-and-the-freeze-rule).
+
 ## Verifying
 
 ```bash

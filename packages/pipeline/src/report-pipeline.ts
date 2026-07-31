@@ -1,6 +1,7 @@
 import {
   DEFAULT_ANALYSIS_CONFIG,
   generateStructuredReport,
+  type GoalHierarchy,
   type ReportCoverageNote,
   type ReportScope,
   type StructuredReport,
@@ -12,6 +13,7 @@ import { ingestWindowIntoModel, type ModelIngestResult } from '@compass/ingest';
 import { KnowledgeStore, buildKnowledgeSnapshot, type KnowledgeSnapshot } from '@compass/knowledge-model';
 import { renderReport, type RenderedReport } from '@compass/renderers';
 
+import { loadGoalHierarchyAt, persistObjectiveLinks, syncGoalHierarchy } from './goal-sync.js';
 import { persistReport } from './persist.js';
 import { definePipelineStage, runStage, type PipelineContext } from './stage.js';
 
@@ -65,6 +67,10 @@ export interface ReportPipelineResult {
   readonly rendered: RenderedReport;
   readonly stored: StoredReport;
   readonly snapshot: KnowledgeSnapshot;
+  /** The goal hierarchy this report's alignment verdicts resolved against. */
+  readonly goalHierarchy: GoalHierarchy;
+  /** ObjectiveLinks offered to the store — one per resolved, non-orphan subject. */
+  readonly objectiveLinkCount: number;
   /** Null when `skipIngest` was set. */
   readonly ingest: ModelIngestResult | null;
   /** Each stage in the order it ran, for a log line worth reading. */
@@ -140,7 +146,19 @@ export async function runReportPipeline(request: ReportPipelineRequest): Promise
   );
   const snapshot = record('build-snapshot', await runStage(snapshotStage, null, context));
 
-  // ---- 3. analysis ---------------------------------------------------------
+  // ---- 3. the goal hierarchy -----------------------------------------------
+  // Projected from the model, then read back at the report instant. Two steps
+  // rather than one because the *stored* hierarchy is what a verdict is resolved
+  // against: a manager's edit lives only in the store, and reading it back is what
+  // makes the edit take effect on the next report. `goal-sync.ts` explains why an
+  // observed sync never supersedes a declared revision.
+  const goalStage = definePipelineStage<null, GoalHierarchy>('sync-goals', async (_input, inner) => {
+    await syncGoalHierarchy(scoped, snapshot, inner.now);
+    return loadGoalHierarchyAt(scoped, inner.now);
+  });
+  const goalHierarchy = record('sync-goals', await runStage(goalStage, null, context));
+
+  // ---- 4. analysis ---------------------------------------------------------
   // The one pure stage. It is handed the materialized snapshot and the instant,
   // and it reaches for nothing else — which is why the report it returns is
   // reproducible from those two arguments alone.
@@ -153,17 +171,18 @@ export async function runReportPipeline(request: ReportPipelineRequest): Promise
         deploySignalAvailable: request.connector.capabilities().deploySignal,
         coverage: ingest === null ? [] : coverageNotesFrom(ingest.summary.coverage),
         maxItemsPerSection: request.maxItemsPerSection ?? DEFAULT_ANALYSIS_CONFIG.maxItemsPerSection,
+        goalHierarchy,
       }),
   );
   const report = record('analyse', await runStage(analysisStage, snapshot, context));
 
-  // ---- 4. render -----------------------------------------------------------
+  // ---- 5. render -----------------------------------------------------------
   const renderStage = definePipelineStage<StructuredReport, RenderedReport>('render', (input, _inner) =>
     renderReport(input),
   );
   const rendered = record('render', await runStage(renderStage, report, context));
 
-  // ---- 5. persist ----------------------------------------------------------
+  // ---- 6. persist ----------------------------------------------------------
   const persistStage = definePipelineStage<StructuredReport, StoredReport>('persist', async (input, inner) =>
     persistReport(scoped, {
       report: input,
@@ -174,5 +193,15 @@ export async function runReportPipeline(request: ReportPipelineRequest): Promise
   );
   const stored = record('persist', await runStage(persistStage, report, context));
 
-  return { report, rendered, stored, snapshot, ingest, stages };
+  // ---- 7. the alignment audit trail ----------------------------------------
+  // Written after the report rather than during analysis, because the analysis core
+  // is pure and cannot write anything. One row per resolved subject, keyed by the
+  // report instant, so a manager arguing with an OFF-GOAL flag six weeks later can
+  // be shown exactly which chain, string or score produced it.
+  const linkStage = definePipelineStage<StructuredReport, number>('record-objective-links', async (input, inner) =>
+    persistObjectiveLinks(scoped, input.instant, input.findings.alignment, inner.now),
+  );
+  const objectiveLinkCount = record('record-objective-links', await runStage(linkStage, report, context));
+
+  return { report, rendered, stored, snapshot, ingest, goalHierarchy, objectiveLinkCount, stages };
 }

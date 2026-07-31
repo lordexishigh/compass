@@ -1,5 +1,6 @@
 import type { ClaimView, SectionView } from '../lib/view-model';
 
+import { AlignmentEvidence } from './alignment-evidence';
 import { CompletionLadder } from './completion-ladder';
 import { EvidenceChain, EvidenceMarkers } from './evidence-markers';
 
@@ -50,6 +51,11 @@ export function ReportSectionBlock({ section }: { readonly section: SectionView 
  * The day counter is a pill rather than a badge saying NEW, and the change since
  * yesterday is a run-in italic clause, because "this is day 6 of the same
  * blocker" is a fact a manager can act on and "NEW" is decoration.
+ *
+ * An alignment claim gets one thing more: the resolution path, one click away. The
+ * question an unattributed item asks is printed in serif italic above it, because a
+ * question Compass is asking must read as a question and not as a finding with a
+ * footnote.
  */
 function ReportClaim({ item }: { readonly item: ClaimView }) {
   const sentences = item.prose.length > 0 ? item.prose : `${item.headline}. ${item.detail}`.trim();
@@ -66,8 +72,13 @@ function ReportClaim({ item }: { readonly item: ClaimView }) {
         )}
       </p>
 
+      {item.alignment?.question !== null && item.alignment?.question !== undefined && (
+        <p className="alignment-question">{item.alignment.question}</p>
+      )}
+
       {item.ladder !== null && <CompletionLadder ladder={item.ladder} />}
       <EvidenceChain evidence={item.evidence} />
+      {item.alignment !== null && <AlignmentEvidence alignment={item.alignment} />}
     </article>
   );
 }

@@ -34,6 +34,14 @@ export {
 } from './persist.js';
 
 export {
+  goalNodeInputsFromSnapshot,
+  loadGoalHierarchyAt,
+  objectiveLinkInputsFrom,
+  persistObjectiveLinks,
+  syncGoalHierarchy,
+} from './goal-sync.js';
+
+export {
   coverageNotesFrom,
   runReportPipeline,
   type ReportPipelineRequest,

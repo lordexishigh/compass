@@ -26,6 +26,17 @@
   --verified-hover: #047857; /* emerald-700 */
   /* The text-safe emerald: 4.6:1 on white. */
   --verified-text: #047857;
+  /*
+   * The primary button's fill and its label.
+   *
+   * Emerald-700 rather than the emerald-600 the brief names for the fill, because
+   * white on emerald-600 is 3.3:1 and the label is 13px: the brief's own contrast
+   * floor is 4.5:1, and white on emerald-700 is 4.6:1. The button still reads as
+   * the one saturated emerald object on the page.
+   */
+  --action-surface: #047857;
+  --action-surface-hover: #065f46; /* emerald-800 */
+  --action-ink: #ffffff;
   --authored: #14b8a6; /* teal-500 — the manager's hand */
   --authored-text: #0f766e;
 
@@ -59,6 +70,11 @@
     --verified-text: #34d399;
     --authored: #2dd4bf;
     --authored-text: #2dd4bf;
+
+    /* A light fill needs dark ink: white on emerald-400 is 1.9:1. */
+    --action-surface: #34d399;
+    --action-surface-hover: #6ee7b7;
+    --action-ink: #052e21;
   }
 }
 
@@ -78,6 +94,9 @@
   --verified-text: #047857;
   --authored: #14b8a6;
   --authored-text: #0f766e;
+  --action-surface: #047857;
+  --action-surface-hover: #065f46;
+  --action-ink: #ffffff;
 }
 
 :root[data-theme='dark'] {
@@ -95,6 +114,9 @@
   --verified-text: #34d399;
   --authored: #2dd4bf;
   --authored-text: #2dd4bf;
+  --action-surface: #34d399;
+  --action-surface-hover: #6ee7b7;
+  --action-ink: #052e21;
 }
 
 @theme inline {
@@ -112,6 +134,8 @@
   --color-verified-text: var(--verified-text);
   --color-authored: var(--authored);
   --color-authored-text: var(--authored-text);
+  --color-action-surface: var(--action-surface);
+  --color-action-ink: var(--action-ink);
 
   --font-sans:
     Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -199,6 +223,293 @@
 
   .hairline {
     border-top: 1px solid var(--rule);
+  }
+
+  /* -------------------------------------------------------------------------
+     The evidence disclosure.
+
+     A native `<details>`, because one click has to open it with JavaScript
+     disabled and because the same markup has to render in the static HTML report.
+     Density is the design's own rule: prose is airy, evidence is dense — 13px,
+     1.45 leading, 8px rows, tabular mono.
+     ------------------------------------------------------------------------- */
+  .evidence-disclosure {
+    border-left: 1px solid var(--rule-strong);
+    padding-left: 12px;
+  }
+
+  .evidence-disclosure__summary {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    cursor: pointer;
+    list-style: none;
+    padding: 4px 0;
+    font-family: var(--font-sans);
+    font-size: 0.8125rem; /* 13px */
+    line-height: 1.45;
+    color: var(--ink-muted);
+    transition: color var(--motion-quick) var(--motion-ease);
+  }
+
+  .evidence-disclosure__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .evidence-disclosure__summary:hover {
+    color: var(--ink-strong);
+  }
+
+  /* A 4px CSS triangle rather than an icon: the page ships no SVG, by rule. */
+  .evidence-disclosure__caret {
+    width: 0;
+    height: 0;
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    border-left: 5px solid var(--rule-strong);
+    transition: transform var(--motion-standard) var(--motion-ease);
+    transform-origin: 25% 50%;
+    flex: none;
+    align-self: center;
+  }
+
+  .evidence-disclosure__summary:hover .evidence-disclosure__caret,
+  .evidence-disclosure[open] .evidence-disclosure__caret {
+    border-left-color: var(--verified);
+  }
+
+  .evidence-disclosure[open] .evidence-disclosure__caret {
+    transform: rotate(90deg);
+  }
+
+  .evidence-disclosure__label {
+    text-decoration: underline;
+    text-decoration-color: var(--rule-strong);
+    text-underline-offset: 4px;
+    transition: text-decoration-color var(--motion-quick) var(--motion-ease);
+  }
+
+  .evidence-disclosure__summary:hover .evidence-disclosure__label {
+    text-decoration-color: var(--verified);
+  }
+
+  .evidence-disclosure__meta {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+    color: var(--ink-faint);
+  }
+
+  /* The gutter slide: 8px and a fade, never a scale. */
+  .evidence-disclosure__body {
+    margin-top: 8px;
+    animation: evidence-reveal 240ms var(--motion-ease) both;
+  }
+
+  @keyframes evidence-reveal {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .evidence-rows {
+    display: grid;
+    gap: 8px;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+  }
+
+  .evidence-rows__row {
+    display: grid;
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+    gap: 4px 12px;
+    align-items: baseline;
+  }
+
+  @media (max-width: 30rem) {
+    .evidence-rows__row {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  .evidence-rows__term {
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .evidence-rows__value {
+    display: grid;
+    gap: 2px;
+    color: var(--ink);
+    min-width: 0;
+  }
+
+  .evidence-rows__aside {
+    color: var(--ink-faint);
+  }
+
+  .evidence-chain-trail {
+    font-family: var(--font-mono);
+    overflow-wrap: anywhere;
+  }
+
+  .evidence-chain-trail__arrow {
+    color: var(--rule-strong);
+  }
+
+  /* The matched span, underlined rather than filled: a highlight behind prose
+     would be the one saturated block on an otherwise quiet page. */
+  .evidence-matched {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    overflow-wrap: anywhere;
+    color: var(--ink-muted);
+  }
+
+  .evidence-matched__span {
+    color: var(--ink-strong);
+    border-bottom: 2px solid var(--verified);
+    padding-bottom: 1px;
+  }
+
+  .evidence-compared {
+    display: grid;
+    gap: 4px;
+  }
+
+  .evidence-compared__line {
+    display: grid;
+    grid-template-columns: 4.5rem minmax(0, 1fr);
+    gap: 8px;
+    align-items: baseline;
+  }
+
+  .evidence-compared__side {
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .evidence-compared q {
+    font-family: var(--font-serif);
+    font-style: italic;
+    color: var(--ink);
+  }
+
+  .evidence-disclosure__note {
+    margin-top: 12px;
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--ink-faint);
+    max-width: 60ch;
+  }
+
+  /* -------------------------------------------------------------------------
+     Controls. Three tiers only, per the design brief: primary emerald solid and
+     allowed at most once per view; tertiary bare text with a hairline underline
+     appearing on hover. There is no secondary tier on this surface yet.
+     ------------------------------------------------------------------------- */
+  .primary-action {
+    display: inline-flex;
+    align-items: center;
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 8px;
+    background-color: var(--action-surface);
+    color: var(--action-ink);
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    transition:
+      background-color var(--motion-quick) var(--motion-ease),
+      opacity var(--motion-quick) var(--motion-ease);
+  }
+
+  .primary-action:hover:not(:disabled) {
+    background-color: var(--action-surface-hover);
+  }
+
+  .primary-action:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  .tertiary-action {
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    color: var(--ink-faint);
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 4px;
+    transition:
+      color var(--motion-quick) var(--motion-ease),
+      text-decoration-color var(--motion-quick) var(--motion-ease);
+  }
+
+  .tertiary-action:hover:not(:disabled) {
+    color: var(--ink-strong);
+    text-decoration-color: var(--rule-strong);
+  }
+
+  .tertiary-action:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  /* Bottom hairline only. Focus raises it to 2px emerald, with no ring and no glow. */
+  .goal-input {
+    display: block;
+    width: 100%;
+    height: 40px;
+    margin-top: 4px;
+    padding: 0 0 2px;
+    border: 0;
+    border-bottom: 1px solid var(--rule-strong);
+    border-radius: 0;
+    background: transparent;
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    color: var(--ink-strong);
+    transition: border-color var(--motion-quick) var(--motion-ease);
+  }
+
+  .goal-input:hover {
+    border-bottom-color: var(--ink-faint);
+  }
+
+  .goal-input:focus {
+    outline: none;
+    border-bottom: 2px solid var(--verified);
+    padding-bottom: 1px;
+  }
+
+  .goal-input:read-only {
+    color: var(--ink-muted);
+    border-bottom-style: dashed;
+  }
+
+  /* The unattributed question: a question in serif italic, never an accusation. */
+  .alignment-question {
+    margin-top: 8px;
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1rem;
+    line-height: 1.55;
+    color: var(--ink-muted);
   }
 }
 

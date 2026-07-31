@@ -193,6 +193,13 @@ export const APPEND_ONLY_TABLE_NAMES = [
   'audit_log_entries',
   'corrections',
   'entity_versions',
+  // The goal store. An objective is edited by appending a revision and archived by
+  // appending one with `archived = true`; the belief window's end is derived from
+  // the next revision rather than written back, so no row here is ever sealed in
+  // place. `schema/goals.ts` states why in full.
+  'objective_links',
+  'objective_scope_links',
+  'objective_versions',
   'sprint_scope_changes',
   'ticket_status_transitions',
 ] as const;
