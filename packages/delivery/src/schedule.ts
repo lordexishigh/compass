@@ -1,7 +1,9 @@
 import {
   assertValidTimeZone,
+  compareInstants,
   formatCivilDate,
   instantAtLocalTime,
+  isAfter,
   type Instant,
   LOCAL_TIME_PATTERN,
 } from '@compass/clock';
@@ -93,6 +95,37 @@ export const dueAtOn = (subscription: SubscriptionSchedule, civilDate: string): 
   instantAtLocalTime(civilDate, subscription.sendTime, subscription.timezone);
 
 /**
+ * One scheduled delivery, identified.
+ *
+ * These four fields are what "the same send" means everywhere in the system: the partial unique
+ * index on `delivery_log`, the pg-boss `singletonKey`, and the provider-side idempotency key are
+ * all derived from them. A `both` subscription's merged and per-team sends differ in
+ * `scopeKind`/`scopeKey`, so they are distinct scheduled deliveries rather than duplicates.
+ */
+export interface ScheduledDelivery {
+  readonly subscriptionId: string;
+  readonly deliveryDate: string;
+  readonly scopeKind: 'team' | 'merged';
+  readonly scopeKey: string;
+}
+
+/**
+ * The idempotency key for one scheduled delivery.
+ *
+ * Used for the pg-boss `singletonKey` *and* handed to the email provider, so the queue and the
+ * provider cannot disagree about what counts as the same message. Deriving both from one function
+ * is the point: the bug this replaced used the email *subject* as the provider key, and because
+ * the subject is the masthead — identical for every recipient of the same team and date — the
+ * first subscriber's copy won at Resend and every other subscriber's was silently deduplicated
+ * away while the transport still reported `sent`.
+ *
+ * The recipient is not in the key because the subscription determines it: two subscriptions are
+ * two keys even when they point at the same address, and one subscription is one recipient.
+ */
+export const deliveryIdempotencyKey = (delivery: ScheduledDelivery): string =>
+  `compass:${delivery.subscriptionId}:${delivery.deliveryDate}:${delivery.scopeKind}:${delivery.scopeKey}`;
+
+/**
  * Which subscriptions are due at `now`, and for which civil date.
  *
  * "Due" means the send time for *today in the subscription's own zone* has passed. A tick at
@@ -130,7 +163,9 @@ export function dueDeliveries(
     for (let back = lookback; back >= 0; back -= 1) {
       const civilDate = shiftCivilDate(today, -back);
       const dueAt = dueAtOn(subscription, civilDate);
-      if (dueAt > now) continue;
+      // `isAfter` rather than `>`: an Instant is nominal, and the clock package owns comparison
+      // so no layer has to know it is a number underneath.
+      if (isAfter(dueAt, now)) continue;
 
       due.push({
         subscriptionId: subscription.id,
@@ -143,7 +178,10 @@ export function dueDeliveries(
   }
 
   // Oldest first, so a catch-up delivers Monday before Tuesday.
-  return due.sort((left, right) => left.dueAt - right.dueAt || (left.subscriptionId < right.subscriptionId ? -1 : 1));
+  return due.sort(
+    (left, right) =>
+      compareInstants(left.dueAt, right.dueAt) || (left.subscriptionId < right.subscriptionId ? -1 : 1),
+  );
 }
 
 /**

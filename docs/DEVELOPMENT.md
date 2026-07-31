@@ -23,3 +23,55 @@ The exact commands depend on the tech stack (see `docs/ARCHITECTURE.md`). Genera
 - `docs/` — project brief, architecture, and the build plan
 - source code is organised per the architecture document
 - `.nous/` — pipeline session state (safe to ignore / not part of the product)
+
+## Delivery
+
+The daily arrives by email and Slack as a pg-boss job (`report.deliver`) in the same
+PostgreSQL database. Every environment variable it reads is documented in `.env.example`;
+all of them are optional and the product is fully usable with none of them set.
+
+### Retries
+
+**The limit is 5 attempts, with exponential backoff** (`DELIVERY_RETRY_LIMIT` in
+`apps/worker/src/delivery.ts`, `retryBackoff: true`), which spaces the attempts over roughly
+half an hour. Five is chosen against what the failures actually are: a Resend or Slack outage
+is usually minutes long, and a report is worth less with every hour it is late — a daily that
+arrives at 16:00 is not a daily. After the fifth attempt the `delivery_log` rows are the
+record, and they carry what the provider said on each one.
+
+### Exactly one message per scheduled delivery
+
+A "scheduled delivery" is `(subscription, delivery date, scope kind, scope key)`. Three
+independent mechanisms stop a duplicate sending twice, because the queue alone is not enough:
+
+1. a pg-boss `singletonKey` collapses a duplicate while the job is live;
+2. a pre-send check against `delivery_log` stops a drained-and-re-enqueued job from calling
+   the provider at all;
+3. a **partial unique index** on `delivery_log` over `status = 'sent'` refuses a second
+   successful row. This is the only one of the three that holds under genuine concurrency,
+   which is why it is in the schema. It is partial rather than a plain constraint so that
+   failed, deferred and skipped attempts can accumulate freely — a plain unique constraint
+   would turn the first retry into a duplicate-key crash.
+
+The same key is sent to Resend as its `idempotency-key`, so the queue and the provider agree
+about what "the same message" is.
+
+### What happens when something is missing
+
+- **No report yet for (org, scope, date)** — the attempt is recorded as `deferred` with a null
+  `report_id` and nothing is sent. An empty message is worse than a late one.
+- **No provider key** — the transport reports `skipped` with a sentence naming the variable,
+  the row records it, and the worker moves to the next subscription. It never throws.
+- **The provider refuses** — the row is written first, then the handler throws so pg-boss
+  applies the backoff, so a failure is on the record even though the job failed.
+
+### Email deliverability
+
+Configure **SPF, DKIM and DMARC** on the sending domain in the Resend dashboard before sending
+to real inboxes; a daily that lands in spam is a daily nobody reads. `COMPASS_EMAIL_FROM` must
+be an address on that domain. Compass takes it from configuration and never from a request, so
+a caller cannot choose what a report appears to be sent from.
+
+Every email carries RFC 8058 `List-Unsubscribe` and `List-Unsubscribe-Post` headers, so mail
+clients show their own one-click unsubscribe button; it POSTs to
+`/api/delivery/unsubscribe`, which is idempotent.

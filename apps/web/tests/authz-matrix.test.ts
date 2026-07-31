@@ -104,6 +104,18 @@ const EXPECTED: Readonly<Record<string, Partial<Record<Action, readonly Principa
   '/api/audit': { GET: ['owner'] },
 
   /**
+   * Delivery and share links: token-authorised rather than session-authorised.
+   *
+   * `public` here is deliberate and is not a hole. A one-click unsubscribe arrives from a mail
+   * client with no cookies, and the token can only switch off one person's daily — reversibly,
+   * since the row is kept. A share link is meant to be openable from an address somebody was
+   * sent, and the route enforces its own audience rule on top of this: `org_members` by default,
+   * so an anonymous reader is still refused unless the link was explicitly made public.
+   */
+  '/api/delivery/unsubscribe': { POST: ['public', 'owner', 'manager', 'member', 'viewer'] },
+  '/api/share/[token]': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
+
+  /**
    * Configuration and the identity roster: owner *and* manager on every verb.
    *
    * Restated here as intent rather than copied as fact. The widening to managers is

@@ -13,6 +13,7 @@
     { "path": "../../packages/clock" },
     { "path": "../../packages/connector-port" },
     { "path": "../../packages/db" },
+    { "path": "../../packages/delivery" },
     { "path": "../../packages/ingest" },
     { "path": "../../packages/knowledge-model" },
     { "path": "../../packages/narrator" },

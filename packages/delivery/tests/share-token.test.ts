@@ -143,11 +143,29 @@ describe('the expiry choices', () => {
 });
 
 describe('the IP prefix an access row records', () => {
-  it('truncates IPv4 to /24 and IPv6 to /48', () => {
+  it('truncates IPv4 to /24 and a full IPv6 to /48', () => {
     // Enough to tell one office from forty countries, without keeping a precise record of
     // where a manager reads their daily from.
     expect(ipPrefixOf('203.0.113.42')).toBe('203.0.113.0/24');
     expect(ipPrefixOf('2001:db8:85a3:8d3:1319:8a2e:370:7348')).toBe('2001:db8:85a3::/48');
+  });
+
+  it('expands `::` before slicing, so the network it names is the real one', () => {
+    // The bug this replaced dropped the empty groups and took the first three, turning
+    // `2001:db8::abcd` into `2001:db8:abcd::/48` — a network the client is demonstrably not
+    // on, written into an audit log as though it were fact.
+    expect(ipPrefixOf('2001:db8::abcd')).toBe('2001:db8:0::/48');
+    expect(ipPrefixOf('2001:db8::')).toBe('2001:db8:0::/48');
+    expect(ipPrefixOf('2001::1')).toBe('2001:0:0::/48');
+    expect(ipPrefixOf('::1')).toBe('0:0:0::/48');
+    expect(ipPrefixOf('fe80::1234:5678:9abc:def0')).toBe('fe80:0:0::/48');
+  });
+
+  it('treats an IPv4-mapped address as the IPv4 client it is', () => {
+    // A /48 of a mapped address describes nothing real, and returning null lost the one
+    // address a dual-stack proxy actually forwards.
+    expect(ipPrefixOf('::ffff:203.0.113.7')).toBe('203.0.113.0/24');
+    expect(ipPrefixOf('::ffff:203.0.113.7, 70.41.3.18')).toBe('203.0.113.0/24');
   });
 
   it('takes the client from a forwarded-for list', () => {
@@ -160,5 +178,9 @@ describe('the IP prefix an access row records', () => {
     expect(ipPrefixOf('')).toBeNull();
     expect(ipPrefixOf('not-an-address')).toBeNull();
     expect(ipPrefixOf('999.1.1')).toBeNull();
+    expect(ipPrefixOf('300.1.1.1'), 'an octet over 255 is not an address').toBeNull();
+    expect(ipPrefixOf('2001:db8::abcd::1'), 'two `::` runs is not an address').toBeNull();
+    expect(ipPrefixOf('2001:db8:85a3'), 'a short address with no `::` is not one').toBeNull();
+    expect(ipPrefixOf('2001:zzzz::1')).toBeNull();
   });
 });

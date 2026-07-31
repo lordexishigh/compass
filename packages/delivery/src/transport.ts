@@ -1,5 +1,6 @@
 import type { RenderedEmail } from './email.js';
 import { safeHeaderValue } from './email.js';
+import { deliveryIdempotencyKey, type ScheduledDelivery } from './schedule.js';
 import type { SlackMessage } from './slack.js';
 
 /**
@@ -33,6 +34,15 @@ export interface DeliveryOutcome {
 export interface EmailMessage {
   readonly to: string;
   readonly rendered: RenderedEmail;
+  /**
+   * Which scheduled delivery this is, for the provider's idempotency key.
+   *
+   * Required rather than optional: the key has to identify the *send*, and the only thing that
+   * does is the scheduled delivery. Leaving it out let the transport fall back to something
+   * derived from the content, which is exactly how every subscriber after the first had their
+   * copy deduplicated away at the provider.
+   */
+  readonly delivery: ScheduledDelivery;
 }
 
 export interface EmailTransport {
@@ -123,9 +133,17 @@ export class ResendEmailTransport implements EmailTransport {
         headers: {
           authorization: `Bearer ${this.#apiKey ?? ''}`,
           'content-type': 'application/json',
-          // Resend deduplicates on this, which makes a retried POST safe at the provider as
-          // well as in `delivery_log`.
-          'idempotency-key': message.rendered.subject,
+          /**
+           * Keyed on the scheduled delivery, never on the content.
+           *
+           * Resend's idempotency keys are account-scoped, so a key derived from the message —
+           * the subject is the masthead, identical for everyone on the same team and date —
+           * means the first subscriber's send wins and every other subscriber's is
+           * deduplicated away while this transport still answers `sent` and returns the
+           * *first* message's id. Keying on (subscription, date, scope) makes a retry of the
+           * same send idempotent at the provider and two different subscribers two messages.
+           */
+          'idempotency-key': deliveryIdempotencyKey(message.delivery),
         },
         body: JSON.stringify({
           from: safeHeaderValue(this.#from ?? ''),

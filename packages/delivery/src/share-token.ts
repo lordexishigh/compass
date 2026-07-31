@@ -1,6 +1,6 @@
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 
-import type { Instant } from '@compass/clock';
+import { isAtOrAfter, type Instant } from '@compass/clock';
 
 /**
  * Share-link tokens: unguessable, and not derived from anything.
@@ -92,7 +92,8 @@ export function shareLinkVerdict(
   request: { readonly now: Instant; readonly signedIn: boolean },
 ): ShareLinkVerdict {
   if (state.revokedAt !== null) return 'revoked';
-  if (state.expiresAt !== null && request.now >= state.expiresAt) return 'expired';
+  // `isAtOrAfter`, so expiry stays half-open through the clock package's own comparison.
+  if (state.expiresAt !== null && isAtOrAfter(request.now, state.expiresAt)) return 'expired';
   if (state.audience === 'org_members' && !request.signedIn) return 'forbidden';
   return 'served';
 }
@@ -128,13 +129,55 @@ export function ipPrefixOf(address: string | null | undefined): string | null {
   const first = trimmed.split(',')[0]?.trim() ?? '';
   if (first.length === 0) return null;
 
-  if (first.includes(':')) {
-    const groups = first.split(':').filter((group) => group.length > 0);
-    if (groups.length < 3) return null;
-    return `${groups.slice(0, 3).join(':')}::/48`;
+  if (first.includes(':')) return ipv6Prefix(first);
+  return ipv4Prefix(first);
+}
+
+const ipv4Prefix = (address: string): string | null => {
+  const octets = address.split('.');
+  if (octets.length !== 4) return null;
+  if (octets.some((octet) => !/^\d{1,3}$/.test(octet) || Number.parseInt(octet, 10) > 255)) return null;
+  return `${octets.slice(0, 3).join('.')}.0/24`;
+};
+
+/**
+ * The /48 of an IPv6 address, with `::` expanded first.
+ *
+ * Expansion is the whole correctness of this function. Dropping empty groups and taking the
+ * first three turns `2001:db8::abcd` into `2001:db8:abcd::/48` — a network the client is
+ * demonstrably not on, written into an audit log as though it were fact. The true /48 is
+ * `2001:db8:0::/48`, and getting there means restoring the zero groups that `::` stands for.
+ *
+ * `::ffff:203.0.113.7` falls through to the IPv4 branch rather than being reported as an IPv6
+ * network: an IPv4-mapped address *is* an IPv4 client, usually one arriving through a
+ * dual-stack proxy, and a /48 of a mapped address describes nothing real.
+ */
+function ipv6Prefix(address: string): string | null {
+  // An IPv4-mapped or IPv4-compatible address ends in dotted-quad form. That client is on an
+  // IPv4 network, so answer with its /24.
+  const mapped = /^(?:.*:)?(\d{1,3}(?:\.\d{1,3}){3})$/.exec(address);
+  if (mapped) return ipv4Prefix(mapped[1]);
+
+  const halves = address.split('::');
+  if (halves.length > 2) return null;
+
+  const groupsOf = (part: string): readonly string[] =>
+    part.length === 0 ? [] : part.split(':').filter((group) => group.length > 0);
+
+  const head = groupsOf(halves[0] ?? '');
+  const tail = halves.length === 2 ? groupsOf(halves[1] ?? '') : [];
+
+  if ([...head, ...tail].some((group) => !/^[0-9a-fA-F]{1,4}$/.test(group))) return null;
+
+  // No `::` at all: the address must already be a full eight groups.
+  if (halves.length === 1) {
+    if (head.length !== 8) return null;
+    return `${head.slice(0, 3).join(':')}::/48`;
   }
 
-  const octets = first.split('.');
-  if (octets.length !== 4 || octets.some((octet) => !/^\d{1,3}$/.test(octet))) return null;
-  return `${octets.slice(0, 3).join('.')}.0/24`;
+  const missing = 8 - head.length - tail.length;
+  if (missing < 1) return null;
+
+  const expanded = [...head, ...Array.from({ length: missing }, () => '0'), ...tail];
+  return `${expanded.slice(0, 3).join(':')}::/48`;
 }

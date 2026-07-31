@@ -55,6 +55,7 @@ export {
   InvalidScheduleError,
   assertSchedulable,
   defaultScopeFor,
+  deliveryIdempotencyKey,
   dueAtOn,
   dueDeliveries,
   scopesFor,
@@ -62,6 +63,7 @@ export {
   type DeliveryChannel,
   type DeliveryScope,
   type DueDelivery,
+  type ScheduledDelivery,
   type SubscriptionSchedule,
 } from './schedule.js';
 

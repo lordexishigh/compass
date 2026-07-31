@@ -14,6 +14,14 @@ import { z } from 'zod';
 export const JOB_NAMES = {
   ingestWindow: 'ingest.window',
   reportGenerate: 'report.generate',
+  /**
+   * The scheduler tick.
+   *
+   * A cron cannot enqueue per-subscription work directly — every manager has their own send time
+   * and zone — so one recurring job asks "what is due now" and enqueues the individual deliveries.
+   * Idempotency lives on those, not here, so a tick that runs twice costs nothing.
+   */
+  deliveryTick: 'delivery.tick',
   reportDeliver: 'report.deliver',
 } as const;
 

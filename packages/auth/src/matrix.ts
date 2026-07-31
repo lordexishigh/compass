@@ -272,6 +272,33 @@ export const ROLE_MATRIX: readonly RouteRule[] = [
   },
 
   // -------------------------------------------------------------------------
+  // Delivery and share links.
+  //
+  // Both are `public` in the matrix, and in both cases what authorises the request is a token
+  // rather than a session — which is the only workable answer for each:
+  //
+  //  - a one-click unsubscribe arrives from a *mail client*, which has no cookies, and RFC 8058
+  //    requires it to be a POST so that a link scanner cannot unsubscribe somebody by previewing
+  //    the message;
+  //  - a share link is meant to be openable by a colleague who was sent an address.
+  //
+  // Neither is a hole. The unsubscribe token can only switch off one person's daily, reversibly.
+  // The share route enforces its own audience rule — `org_members` by default — so a `public`
+  // matrix entry still refuses an anonymous reader unless the link was deliberately made public,
+  // and every attempt is written to `share_link_access` either way.
+  // -------------------------------------------------------------------------
+  {
+    route: '/api/delivery/unsubscribe',
+    summary: 'RFC 8058 one-click unsubscribe. Token-authorised, idempotent, POST only.',
+    allow: { POST: ANYONE },
+  },
+  {
+    route: '/api/share/[token]',
+    summary: 'A shared report permalink. Org-members-only by default; every access is logged.',
+    allow: { GET: ANYONE },
+  },
+
+  // -------------------------------------------------------------------------
   // The audit trail. Owner only, and append-only underneath.
   // -------------------------------------------------------------------------
   {
