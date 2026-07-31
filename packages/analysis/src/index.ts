@@ -62,6 +62,17 @@ export {
 export { SECTIONS, SECTION_ORDER, sectionDefinition, type SectionDefinition, type SectionKey } from './sections.js';
 
 export {
+  STABLE_ID_PATTERN,
+  STABLE_ID_VERSION,
+  canonicalIdentityString,
+  entityRef,
+  isStableItemId,
+  itemCauseKey,
+  stableItemId,
+  type ItemIdentity,
+} from './identity.js';
+
+export {
   BLOCKED_STATUS_PATTERN,
   DONE_STATUS_CATEGORY,
   TODO_STATUS_CATEGORY,

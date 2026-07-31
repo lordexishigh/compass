@@ -280,8 +280,10 @@ export {
   insertIngestRun,
   listCoverageForRun,
   listRecentIngestRuns,
+  sourceCoverageCursors,
   type IngestRunCoverageInput,
   type IngestRunInput,
+  type SourceCoverageCursor,
   type StoredIngestRun,
 } from './repositories/ingest-runs.js';
 

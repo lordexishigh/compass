@@ -24,6 +24,75 @@ The exact commands depend on the tech stack (see `docs/ARCHITECTURE.md`). Genera
 - source code is organised per the architecture document
 - `.nous/` — pipeline session state (safe to ignore / not part of the product)
 
+## The scheduled pipeline
+
+Three recurring pg-boss jobs run the pipeline in one order — **ingest → generation →
+delivery** — per (org, team, date). All three take their instant from the injected clock
+(`packages/clock`); nothing in the worker reads `Date.now()`.
+
+| Tick | Cron | What it enqueues |
+| --- | --- | --- |
+| `ingest.tick` | `*/15 * * * *` | one `ingest.window` per source that is behind |
+| `generate.tick` | `*/10 * * * *` | one `report.generate` per (team, civil date) whose local generation time has passed |
+| `delivery.tick` | `*/5 * * * *` | one `report.deliver` per due subscription and scope |
+
+### Incremental ingest windows
+
+The next window for a source is `[covered_through, now)`, where `covered_through` is
+`MAX(covered_window_end)` over that source's coverage rows. It is deliberately **not**
+`ingest_runs.window_end`:
+
+- a source that was rate-limited or unavailable records `covered_window = null`, contributes
+  no cursor, and so the next window still begins where the last *successful* read finished —
+  the unread range is retried rather than skipped;
+- a `partial` source advances only as far as it actually got.
+
+Consecutive windows are half-open and contiguous (`start` is the previous `end` verbatim), so
+there is no gap and no re-read of the boundary instant. A source with no history is backfilled
+`INGEST_BACKFILL_HOURS` (24). One run asks for at most `INGEST_MAX_WINDOW_HOURS` (24), so a
+worker that was down for a week catches up over several ticks instead of asking a provider for
+a week at once. Re-ingesting a window is a no-op: the knowledge model's `observe` is idempotent,
+so a replay appends no entity versions.
+
+### Generation cadence
+
+Each team generates **daily at a documented local time in its own timezone** —
+`DEFAULT_GENERATION_LOCAL_TIME` (06:00), overridable per deployment with
+`COMPASS_GENERATION_LOCAL_TIME`. The model has no per-team cadence column; the per-team
+variation that does exist — the team's `timezone` — is honoured, so a Tokyo team generates on
+Tokyo's calendar day. 06:00 is early enough to precede the 07:30 subscription default.
+
+**One Report per (org, team, date)** is enforced by arithmetic plus the existing key, not by a
+check: the job derives `reportInstant = instantAtLocalTime(reportDate, generationTime, timezone)`,
+`saveReport` derives the row id from `(org, scope, reportInstant)`, and two runs on the same day
+therefore write the *same row*. Deliberate time travel supplies a different instant and so is a
+different row, which is why the constraint is on the instant rather than on the date.
+
+DST falls out of `instantAtLocalTime`: 06:00 local stays 06:00 across both transitions, so the
+elapsed gap between consecutive generations is 23 hours in spring and 25 in autumn with no
+daylight-saving code in the worker. A generation time inside the hour a spring transition skips
+still resolves to a real instant, so no day is silently lost.
+
+Generation retries **5 times with exponential backoff** (`GENERATION_RETRY_LIMIT`). A failure is
+logged with the organization, scope and instant before it is rethrown, and nothing partial is
+left behind — `ensureDailyReport` writes a report and its six sections together, and regenerates
+from scratch if it ever finds a report row whose sections are missing.
+
+### Ordering, and the deferral window
+
+Delivery never sends against a missing or stale report, and the guarantee does **not** rest on
+enqueue order — a retry or a queue reorder would break that. Instead the delivery job reads the
+stored report for its own (org, scope, date) and, finding none, records a `deferred` attempt and
+returns without sending.
+
+**The deferral window is one day.** `dueDeliveries` looks back `lookbackDays` (1), so a delivery
+whose generation has not finished is retried on subsequent ticks for up to a day and then stops
+being enqueued; every deferral is a `delivery_log` row naming the (scope, date) that was missing.
+A late report is delivered late; a report that never arrives is never sent, and the log says why
+rather than a stale report going out.
+`apps/worker/tests/pipeline-ordering.test.ts` drives the whole sequence — delivery first, then
+generation, then delivery again — and asserts exactly one message.
+
 ## Delivery
 
 The daily arrives by email and Slack as a pg-boss job (`report.deliver`) in the same

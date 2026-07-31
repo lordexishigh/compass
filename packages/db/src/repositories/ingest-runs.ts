@@ -145,3 +145,65 @@ export async function listRecentIngestRuns(scoped: ScopedDb, limit = 10): Promis
 export async function listCoverageForRun(scoped: ScopedDb, ingestRunId: string) {
   return scoped.selectFrom(ingestSourceCoverage, eq(ingestSourceCoverage.ingestRunId, ingestRunId));
 }
+
+/** How far one source has actually been read, and when that was last observed. */
+export interface SourceCoverageCursor {
+  readonly sourceKey: string;
+  /**
+   * The latest instant this source has been *observed up to*, across every run.
+   *
+   * This is the next incremental window's start, and it is deliberately derived from
+   * `covered_window_end` rather than from `ingest_runs.window_end`. The two differ exactly when a
+   * source could not answer: a rate-limited or unavailable source records
+   * `covered_window = null`, so it contributes nothing here and its cursor stays where it was —
+   * which is what stops a failed fetch from advancing past an unread range and leaving a
+   * permanent hole. A `partial` source advances only as far as it actually got.
+   */
+  readonly coveredThrough: Instant;
+  /** The most recent status recorded for this source, for a log line. */
+  readonly lastObservedAt: Instant;
+}
+
+/**
+ * How far each source has been read, one row per source.
+ *
+ * `MAX(covered_window_end)` grouped by source, ignoring rows that covered nothing. A source that
+ * has never answered at all is simply absent from the result, which the caller reads as "no
+ * cursor yet" and backfills from.
+ */
+export async function sourceCoverageCursors(scoped: ScopedDb): Promise<readonly SourceCoverageCursor[]> {
+  const rows = await scoped.selectFrom(ingestSourceCoverage);
+
+  const bySource = new Map<string, { coveredThrough: Date; lastObservedAt: Date }>();
+
+  for (const row of rows) {
+    // A row that covered nothing does not move the cursor. That is the whole point.
+    if (row.coveredWindowEnd === null) continue;
+
+    const current = bySource.get(row.sourceKey);
+    if (current === undefined) {
+      bySource.set(row.sourceKey, {
+        coveredThrough: row.coveredWindowEnd,
+        lastObservedAt: row.observedAt,
+      });
+      continue;
+    }
+
+    bySource.set(row.sourceKey, {
+      coveredThrough:
+        row.coveredWindowEnd.getTime() > current.coveredThrough.getTime()
+          ? row.coveredWindowEnd
+          : current.coveredThrough,
+      lastObservedAt:
+        row.observedAt.getTime() > current.lastObservedAt.getTime() ? row.observedAt : current.lastObservedAt,
+    });
+  }
+
+  return [...bySource.entries()]
+    .map(([sourceKey, value]) => ({
+      sourceKey,
+      coveredThrough: fromDatabaseInstant(value.coveredThrough),
+      lastObservedAt: fromDatabaseInstant(value.lastObservedAt),
+    }))
+    .sort((left, right) => (left.sourceKey < right.sourceKey ? -1 : left.sourceKey > right.sourceKey ? 1 : 0));
+}
