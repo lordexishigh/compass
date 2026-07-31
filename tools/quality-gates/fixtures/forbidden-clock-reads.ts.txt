@@ -1,0 +1,31 @@
+// A stage that reaches for the host clock in every banned way.
+//
+// This file is a FIXTURE, not source. It is stored with a `.txt` suffix so no
+// compiler, linter or test runner can mistake it for part of the product, and it
+// is excluded from `eslint.config.js` and `tsconfig.tests.json` besides.
+//
+// `clock-gate.test.ts` scans it and asserts the exact file:line of every
+// violation below. That is what proves the scanner has teeth: a gate that only
+// ever asserts "the repo is clean" passes just as well when it is broken.
+//
+// Line numbers are asserted, so DO NOT reformat this file. The comment below
+// deliberately names Date.now() in prose to prove comments are not scanned.
+import { readFileSync } from 'node:fs';
+
+export function stampedAt(): number {
+  return Date.now();
+}
+
+export function startedAt(): Date {
+  return new Date();
+}
+
+export function measure(): number {
+  return performance.now();
+}
+
+export function convertsButDoesNotRead(epochMillis: number): string {
+  // `new Date(value)` and `Date.parse(value)` convert an instant that already
+  // came from the Clock port, so neither is a violation.
+  return new Date(epochMillis).toISOString() + String(Date.parse('2026-07-31T00:00:00Z')) + readFileSync.name;
+}

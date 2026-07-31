@@ -1,0 +1,23 @@
+{
+  "name": "@compass/eslint-plugin",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Build gates that keep time, and only time, behind the Clock port.",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js"
+  },
+  "files": [
+    "index.js",
+    "rules"
+  ],
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "eslint": "9.39.5",
+    "vitest": "4.1.10"
+  }
+}

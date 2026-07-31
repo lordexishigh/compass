@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "tsBuildInfoFile": "dist/.tsbuildinfo",
+    "types": ["node"]
+  },
+  "include": ["src/**/*.ts"],
+  "references": [
+    { "path": "../../packages/clock" },
+    { "path": "../../packages/connector-port" },
+    { "path": "../../packages/db" },
+    { "path": "../../packages/ingest" },
+    { "path": "../../packages/pipeline" },
+    { "path": "../../packages/seed-connector" }
+  ]
+}

@@ -1,0 +1,370 @@
+import { instantFromIso, timeWindow, type TimeWindow } from '@compass/clock';
+import type { ExternalIdentity } from '@compass/connector-port';
+
+import type { SeedDataset } from './dataset.js';
+
+/**
+ * A small, hand-written fixture: three working sources plus one that is down.
+ *
+ * This is the foundation dataset, not the product's seed dataset — the full
+ * declarative seed (3+ projects, 12 developers, 4 completed sprints, planted
+ * pathologies) is authored in its own task. What this one exists for is to give
+ * the conformance suite something real to run against, covering all ten artifact
+ * families and both the available and unavailable source paths.
+ */
+
+const at = (iso: string) => instantFromIso(iso);
+
+const identity = (kind: ExternalIdentity['kind'], value: string, displayName: string): ExternalIdentity => ({
+  kind,
+  value,
+  displayName,
+});
+
+const priya = identity('email', 'priya@example.com', 'Priya Raman');
+const marcus = identity('email', 'marcus@example.com', 'Marcus Hale');
+const priyaAccount = identity('account', 'acct-priya', 'Priya Raman');
+const marcusAccount = identity('account', 'acct-marcus', 'Marcus Hale');
+const priyaHandle = identity('handle', 'handle-priya', 'Priya Raman');
+
+const CODE = { sourceKey: 'primary-code', sourceKind: 'code' } as const;
+const TRACKER = { sourceKey: 'primary-tracker', sourceKind: 'tracker' } as const;
+const CHAT = { sourceKey: 'team-chat', sourceKind: 'chat' } as const;
+
+/** The window the fixture has data in, for every artifact family. */
+export const FOUNDATION_WINDOW: TimeWindow = timeWindow(
+  at('2026-07-27T00:00:00Z'),
+  at('2026-07-31T00:00:00Z'),
+);
+
+/** A source deliberately configured as down, to exercise honest degradation. */
+export const FOUNDATION_UNAVAILABLE_SOURCE_KEY = 'legacy-code';
+
+export const foundationDataset: SeedDataset = {
+  datasetId: 'foundation-v1',
+  deploySignal: false,
+  sources: [
+    { ...CODE, availability: { status: 'available' } },
+    { ...TRACKER, availability: { status: 'available' } },
+    { ...CHAT, availability: { status: 'available' } },
+    {
+      sourceKey: FOUNDATION_UNAVAILABLE_SOURCE_KEY,
+      sourceKind: 'code',
+      availability: {
+        status: 'unavailable',
+        reason: 'authentication_failed',
+        detail: 'legacy-code rejected the stored credential; no artifacts could be read.',
+      },
+    },
+  ],
+  records: {
+    commits: [
+      {
+        ...CODE,
+        sourceRecordId: 'commit-1',
+        occurredAt: at('2026-07-27T09:14:00Z'),
+        repositoryKey: 'platform',
+        revisionId: '1a2b3c4',
+        parentRevisionIds: ['0f0f0f0'],
+        authorIdentity: priya,
+        committerIdentity: priya,
+        authoredAt: at('2026-07-27T09:10:00Z'),
+        message: 'DEV-501 split the batch writer out of the ingest loop',
+        changedFileCount: 4,
+        branchName: 'feature/DEV-501-batch-writer',
+      },
+      {
+        ...CODE,
+        sourceRecordId: 'commit-2',
+        occurredAt: at('2026-07-28T16:02:00Z'),
+        repositoryKey: 'platform',
+        revisionId: '2b3c4d5',
+        parentRevisionIds: ['1a2b3c4'],
+        authorIdentity: marcus,
+        committerIdentity: marcus,
+        authoredAt: at('2026-07-28T15:58:00Z'),
+        message: 'DEV-501 add a retry budget to the batch writer',
+        changedFileCount: 2,
+        branchName: 'feature/DEV-501-batch-writer',
+      },
+      {
+        ...CODE,
+        sourceRecordId: 'commit-3',
+        occurredAt: at('2026-07-30T11:41:00Z'),
+        repositoryKey: 'platform',
+        revisionId: '3c4d5e6',
+        parentRevisionIds: ['2b3c4d5', '1a2b3c4'],
+        authorIdentity: priya,
+        committerIdentity: null,
+        authoredAt: at('2026-07-30T11:30:00Z'),
+        message: 'Merge pull request #883 from feature/DEV-501-batch-writer',
+        changedFileCount: 6,
+        branchName: 'main',
+      },
+    ],
+    pull_requests: [
+      {
+        ...CODE,
+        sourceRecordId: 'pull-request-883',
+        occurredAt: at('2026-07-30T11:41:00Z'),
+        repositoryKey: 'platform',
+        displayNumber: 883,
+        title: 'DEV-501 batch writer',
+        description: 'Splits the batch writer out of the ingest loop so retries are bounded.',
+        authorIdentity: priya,
+        state: 'merged',
+        createdAt: at('2026-07-27T09:20:00Z'),
+        updatedAt: at('2026-07-30T11:41:00Z'),
+        mergedAt: at('2026-07-30T11:41:00Z'),
+        closedAt: at('2026-07-30T11:41:00Z'),
+        sourceBranch: 'feature/DEV-501-batch-writer',
+        targetBranch: 'main',
+        headRevisionId: '2b3c4d5',
+        mergeRevisionId: '3c4d5e6',
+        requestedReviewerIdentities: [marcus],
+        linkedWorkItemKeys: ['DEV-501'],
+      },
+      {
+        ...CODE,
+        sourceRecordId: 'pull-request-884',
+        occurredAt: at('2026-07-29T13:05:00Z'),
+        repositoryKey: 'platform',
+        displayNumber: 884,
+        title: 'DEV-514 tighten the coverage indicator copy',
+        description: null,
+        authorIdentity: marcus,
+        state: 'open',
+        createdAt: at('2026-07-28T10:00:00Z'),
+        updatedAt: at('2026-07-29T13:05:00Z'),
+        mergedAt: null,
+        closedAt: null,
+        sourceBranch: 'feature/DEV-514-coverage-copy',
+        targetBranch: 'main',
+        headRevisionId: '9e8d7c6',
+        mergeRevisionId: null,
+        requestedReviewerIdentities: [priya],
+        linkedWorkItemKeys: ['DEV-514'],
+      },
+    ],
+    reviews: [
+      {
+        ...CODE,
+        sourceRecordId: 'review-1',
+        occurredAt: at('2026-07-28T09:30:00Z'),
+        repositoryKey: 'platform',
+        pullRequestRef: 'pull-request-883',
+        reviewerIdentity: marcus,
+        verdict: 'changes_requested',
+        submittedAt: at('2026-07-28T09:30:00Z'),
+        commentCount: 3,
+      },
+      {
+        ...CODE,
+        sourceRecordId: 'review-2',
+        occurredAt: at('2026-07-30T10:55:00Z'),
+        repositoryKey: 'platform',
+        pullRequestRef: 'pull-request-883',
+        reviewerIdentity: marcus,
+        verdict: 'approved',
+        submittedAt: at('2026-07-30T10:55:00Z'),
+        commentCount: 0,
+      },
+    ],
+    branch_refs: [
+      {
+        ...CODE,
+        sourceRecordId: 'branch-main',
+        occurredAt: at('2026-07-30T12:00:00Z'),
+        repositoryKey: 'platform',
+        name: 'main',
+        revisionId: '3c4d5e6',
+        isDefault: true,
+        observedAt: at('2026-07-30T12:00:00Z'),
+      },
+      {
+        ...CODE,
+        sourceRecordId: 'branch-dev-501',
+        occurredAt: at('2026-07-28T16:05:00Z'),
+        repositoryKey: 'platform',
+        name: 'feature/DEV-501-batch-writer',
+        revisionId: '2b3c4d5',
+        isDefault: false,
+        observedAt: at('2026-07-28T16:05:00Z'),
+      },
+    ],
+    release_tags: [
+      {
+        ...CODE,
+        sourceRecordId: 'release-2.4.0',
+        occurredAt: at('2026-07-29T17:00:00Z'),
+        repositoryKey: 'platform',
+        name: 'v2.4.0',
+        revisionId: '1a2b3c4',
+        releasedAt: at('2026-07-29T17:00:00Z'),
+        description: 'Release 2 — first cut of the batch writer.',
+      },
+    ],
+    issues: [
+      {
+        ...TRACKER,
+        sourceRecordId: 'issue-DEV-501',
+        occurredAt: at('2026-07-30T11:45:00Z'),
+        projectKey: 'DEV',
+        itemKey: 'DEV-501',
+        title: 'Batch writer keeps the ingest loop busy',
+        description: 'Retries block the loop; split the writer out.',
+        status: 'Done',
+        statusCategory: 'done',
+        itemType: 'Story',
+        priority: 'High',
+        estimatePoints: 8,
+        labels: ['platform'],
+        assigneeIdentity: priyaAccount,
+        reporterIdentity: marcusAccount,
+        createdAt: at('2026-07-20T08:00:00Z'),
+        updatedAt: at('2026-07-30T11:45:00Z'),
+        resolvedAt: at('2026-07-30T11:45:00Z'),
+        parentItemKey: null,
+        sprintRefs: ['sprint-24'],
+        flaggedBlocked: false,
+      },
+      {
+        ...TRACKER,
+        sourceRecordId: 'issue-DEV-514',
+        occurredAt: at('2026-07-29T13:10:00Z'),
+        projectKey: 'DEV',
+        itemKey: 'DEV-514',
+        title: 'Coverage indicator says "complete" when Slack is stale',
+        description: null,
+        status: 'In Review',
+        statusCategory: 'in_progress',
+        itemType: 'Bug',
+        priority: 'Medium',
+        estimatePoints: 3,
+        labels: ['tech-debt'],
+        assigneeIdentity: marcusAccount,
+        reporterIdentity: priyaAccount,
+        createdAt: at('2026-07-26T09:00:00Z'),
+        updatedAt: at('2026-07-29T13:10:00Z'),
+        resolvedAt: null,
+        parentItemKey: null,
+        sprintRefs: ['sprint-24'],
+        flaggedBlocked: false,
+      },
+      {
+        ...TRACKER,
+        sourceRecordId: 'issue-DEV-522',
+        occurredAt: at('2026-07-27T15:20:00Z'),
+        projectKey: 'DEV',
+        itemKey: 'DEV-522',
+        title: 'Waiting on the payments team for the settlement contract',
+        description: 'Blocked externally.',
+        status: 'Blocked',
+        statusCategory: 'in_progress',
+        itemType: 'Task',
+        priority: 'High',
+        estimatePoints: null,
+        labels: [],
+        assigneeIdentity: priyaAccount,
+        reporterIdentity: priyaAccount,
+        createdAt: at('2026-07-22T10:00:00Z'),
+        updatedAt: at('2026-07-27T15:20:00Z'),
+        resolvedAt: null,
+        parentItemKey: null,
+        sprintRefs: ['sprint-24'],
+        flaggedBlocked: true,
+      },
+    ],
+    issue_transitions: [
+      {
+        ...TRACKER,
+        sourceRecordId: 'transition-1',
+        occurredAt: at('2026-07-27T15:20:00Z'),
+        itemKey: 'DEV-522',
+        fromStatus: 'In Progress',
+        toStatus: 'Blocked',
+        fromStatusCategory: 'in_progress',
+        toStatusCategory: 'in_progress',
+        actorIdentity: priyaAccount,
+        transitionedAt: at('2026-07-27T15:20:00Z'),
+      },
+      {
+        ...TRACKER,
+        sourceRecordId: 'transition-2',
+        occurredAt: at('2026-07-29T13:10:00Z'),
+        itemKey: 'DEV-514',
+        fromStatus: 'In Progress',
+        toStatus: 'In Review',
+        fromStatusCategory: 'in_progress',
+        toStatusCategory: 'in_progress',
+        actorIdentity: marcusAccount,
+        transitionedAt: at('2026-07-29T13:10:00Z'),
+      },
+      {
+        ...TRACKER,
+        sourceRecordId: 'transition-3',
+        occurredAt: at('2026-07-30T11:45:00Z'),
+        itemKey: 'DEV-501',
+        fromStatus: 'In Review',
+        toStatus: 'Done',
+        fromStatusCategory: 'in_progress',
+        toStatusCategory: 'done',
+        actorIdentity: priyaAccount,
+        transitionedAt: at('2026-07-30T11:45:00Z'),
+      },
+    ],
+    sprints: [
+      {
+        ...TRACKER,
+        sourceRecordId: 'sprint-24',
+        occurredAt: at('2026-07-27T08:00:00Z'),
+        projectKey: 'DEV',
+        name: 'Sprint 24',
+        goal: 'Ship Release 2 of the batch writer.',
+        state: 'active',
+        startAt: at('2026-07-27T08:00:00Z'),
+        endAt: at('2026-08-07T17:00:00Z'),
+        completedAt: null,
+        committedItemKeys: ['DEV-501', 'DEV-514', 'DEV-522'],
+      },
+    ],
+    sprint_scope_changes: [
+      {
+        ...TRACKER,
+        sourceRecordId: 'scope-change-1',
+        occurredAt: at('2026-07-29T09:00:00Z'),
+        sprintRef: 'sprint-24',
+        itemKey: 'DEV-514',
+        change: 'added',
+        actorIdentity: marcusAccount,
+        changedAt: at('2026-07-29T09:00:00Z'),
+      },
+    ],
+    messages: [
+      {
+        ...CHAT,
+        sourceRecordId: 'message-1',
+        occurredAt: at('2026-07-28T08:45:00Z'),
+        conversationKey: 'conversation-platform',
+        conversationName: 'platform-standup',
+        authorIdentity: priyaHandle,
+        body: 'DEV-522 is still waiting on the payments team — day 6.',
+        threadRef: null,
+        referencedItemKeys: ['DEV-522'],
+        postedAt: at('2026-07-28T08:45:00Z'),
+      },
+      {
+        ...CHAT,
+        sourceRecordId: 'message-2',
+        occurredAt: at('2026-07-30T12:05:00Z'),
+        conversationKey: 'conversation-platform',
+        conversationName: 'platform-standup',
+        authorIdentity: priyaHandle,
+        body: 'DEV-501 merged. Release 2 tag still points at the previous revision.',
+        threadRef: 'message-1',
+        referencedItemKeys: ['DEV-501'],
+        postedAt: at('2026-07-30T12:05:00Z'),
+      },
+    ],
+  },
+};

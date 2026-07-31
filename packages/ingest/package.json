@@ -1,0 +1,33 @@
+{
+  "name": "@compass/ingest",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Pulls a half-open window through the connector port and reports what was and was not covered.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@compass/clock": "workspace:*",
+    "@compass/connector-port": "workspace:*",
+    "@compass/db": "workspace:*",
+    "@compass/knowledge-model": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "vitest": "4.1.10"
+  }
+}

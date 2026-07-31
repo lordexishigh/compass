@@ -1,0 +1,36 @@
+{
+  "name": "compass",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Compass — an AI Engineering Manager that delivers one prose daily report.",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "build": "pnpm run build:packages && pnpm run build:web",
+    "build:packages": "tsc -b tsconfig.build.json",
+    "build:web": "pnpm --filter @compass/web run build",
+    "clean": "tsc -b tsconfig.build.json --clean",
+    "typecheck": "tsc -b tsconfig.build.json && tsc -p tsconfig.tests.json && pnpm --filter @compass/web run typecheck",
+    "test": "pnpm -r --workspace-concurrency=1 --reporter=append-only run test",
+    "lint": "eslint .",
+    "verify": "pnpm run lint && pnpm run typecheck && pnpm run test",
+    "dev": "pnpm run build:packages && pnpm --filter @compass/web run dev",
+    "worker": "pnpm --filter @compass/worker run start",
+    "db:generate": "pnpm --filter @compass/db run generate",
+    "db:migrate": "pnpm --filter @compass/db run migrate"
+  },
+  "devDependencies": {
+    "@compass/eslint-plugin": "workspace:*",
+    "@eslint/js": "9.39.5",
+    "@types/node": "24.13.3",
+    "dependency-cruiser": "18.1.0",
+    "eslint": "9.39.5",
+    "globals": "16.5.0",
+    "tsx": "4.23.1",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.65.0",
+    "vitest": "4.1.10"
+  }
+}

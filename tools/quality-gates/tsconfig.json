@@ -1,0 +1,18 @@
+{
+  // Editor-only. `pnpm typecheck` checks these tests through the root
+  // `tsconfig.tests.json` project, which is also what defines the `@compass/*`
+  // path mappings. Nothing here is emitted: the package is tests and fixtures.
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": false,
+    "incremental": false,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false,
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["vitest.config.ts", "tests/**/*.ts"],
+  "exclude": ["fixtures/**"]
+}

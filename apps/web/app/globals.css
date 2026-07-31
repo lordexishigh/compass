@@ -1,0 +1,219 @@
+@import 'tailwindcss';
+
+/* ---------------------------------------------------------------------------
+   Design tokens — defined once, referenced everywhere.
+   Emerald marks verified positive fact. Teal marks the manager's own hand.
+   Everything else is carried by zinc, weight and rule thickness: Compass never
+   colour-codes bad news.
+   --------------------------------------------------------------------------- */
+:root {
+  color-scheme: light dark;
+
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+
+  --ink-strong: #18181b; /* zinc-900 — data tokens, names */
+  --ink: #27272a; /* zinc-800 — narration */
+  --ink-muted: #52525b; /* zinc-600 — collars, evidence */
+  --ink-faint: #71717a; /* zinc-500 — labels, stated absences (4.87:1 on white) */
+
+  --rule: #e4e4e7; /* zinc-200 — hairline */
+  --rule-strong: #d4d4d8; /* zinc-300 — low severity, uncrossed notches */
+  --rule-severe: #18181b; /* zinc-900 — high severity */
+
+  /* Marks and rules only — never small text (3.4:1 on white). */
+  --verified: #059669; /* emerald-600 */
+  --verified-hover: #047857; /* emerald-700 */
+  /* The text-safe emerald: 4.6:1 on white. */
+  --verified-text: #047857;
+  --authored: #14b8a6; /* teal-500 — the manager's hand */
+  --authored-text: #0f766e;
+
+  --focus-ring: var(--verified);
+
+  --measure: 40rem; /* 640px reading column */
+  --spine: 12.5rem; /* 200px left rail */
+  --gutter: 20rem; /* 320px evidence gutter */
+
+  --motion-standard: 180ms;
+  --motion-quick: 150ms;
+  --motion-ease: cubic-bezier(0.2, 0, 0, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface: #09090b; /* zinc-950 */
+    --surface-raised: #18181b;
+
+    --ink-strong: #fafafa;
+    --ink: #e4e4e7;
+    --ink-muted: #a1a1aa;
+    --ink-faint: #a1a1aa;
+
+    --rule: #27272a;
+    --rule-strong: #3f3f46;
+    --rule-severe: #f4f4f5;
+
+    --verified: #34d399; /* emerald-400 for contrast on zinc-950 */
+    --verified-hover: #6ee7b7;
+    --verified-text: #34d399;
+    --authored: #2dd4bf;
+    --authored-text: #2dd4bf;
+  }
+}
+
+/* The viewer's explicit choice always wins over the media query. */
+:root[data-theme='light'] {
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --ink-strong: #18181b;
+  --ink: #27272a;
+  --ink-muted: #52525b;
+  --ink-faint: #71717a;
+  --rule: #e4e4e7;
+  --rule-strong: #d4d4d8;
+  --rule-severe: #18181b;
+  --verified: #059669;
+  --verified-hover: #047857;
+  --verified-text: #047857;
+  --authored: #14b8a6;
+  --authored-text: #0f766e;
+}
+
+:root[data-theme='dark'] {
+  --surface: #09090b;
+  --surface-raised: #18181b;
+  --ink-strong: #fafafa;
+  --ink: #e4e4e7;
+  --ink-muted: #a1a1aa;
+  --ink-faint: #a1a1aa;
+  --rule: #27272a;
+  --rule-strong: #3f3f46;
+  --rule-severe: #f4f4f5;
+  --verified: #34d399;
+  --verified-hover: #6ee7b7;
+  --verified-text: #34d399;
+  --authored: #2dd4bf;
+  --authored-text: #2dd4bf;
+}
+
+@theme inline {
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-ink-strong: var(--ink-strong);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+  --color-rule-severe: var(--rule-severe);
+  --color-verified: var(--verified);
+  --color-verified-hover: var(--verified-hover);
+  --color-verified-text: var(--verified-text);
+  --color-authored: var(--authored);
+  --color-authored-text: var(--authored-text);
+
+  --font-sans:
+    Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-serif: 'Source Serif 4', Newsreader, 'Iowan Old Style', Georgia, Cambria, 'Times New Roman', serif;
+  --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--surface);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Data tokens are always mono, tabular and never bold. */
+  code,
+  kbd,
+  samp {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-weight: 400;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background-color: color-mix(in oklab, var(--verified) 22%, transparent);
+  }
+}
+
+@layer components {
+  /* Narration. One measure, generous leading, never bold except for names. */
+  .prose-narration {
+    font-family: var(--font-serif);
+    font-size: 1.0625rem; /* 17px on phone */
+    line-height: 1.6;
+    color: var(--ink);
+    max-width: 66ch;
+  }
+
+  @media (min-width: 40rem) {
+    .prose-narration {
+      font-size: 1.125rem; /* 18px */
+      line-height: 1.65;
+    }
+  }
+
+  .prose-narration strong {
+    font-weight: 600;
+    color: var(--ink-strong);
+  }
+
+  /* A stated absence, in the product's own voice. Never a grey skeleton box. */
+  .stated-absence {
+    font-family: var(--font-serif);
+    font-style: italic;
+    color: var(--ink-faint);
+  }
+
+  .section-label {
+    font-family: var(--font-sans);
+    font-size: 0.6875rem; /* 11px */
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .data-token {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+    color: var(--ink-strong);
+  }
+
+  .hairline {
+    border-top: 1px solid var(--rule);
+  }
+}
+
+/* Motion exists to preserve identity and acknowledge input, nothing else. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 120ms !important;
+    transition-property: opacity !important;
+  }
+}

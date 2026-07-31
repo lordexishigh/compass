@@ -1,0 +1,31 @@
+{
+  "name": "@compass/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The pg-boss worker process: scheduled ingest, generation and delivery.",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc -b",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@compass/clock": "workspace:*",
+    "@compass/connector-port": "workspace:*",
+    "@compass/db": "workspace:*",
+    "@compass/ingest": "workspace:*",
+    "@compass/pipeline": "workspace:*",
+    "@compass/seed-connector": "workspace:*",
+    "pg-boss": "12.26.3",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.3",
+    "tsx": "4.23.1",
+    "typescript": "5.9.3",
+    "vitest": "4.1.10"
+  }
+}

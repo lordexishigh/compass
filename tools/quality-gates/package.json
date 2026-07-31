@@ -1,0 +1,17 @@
+{
+  "name": "@compass/quality-gates",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Workspace-wide gates: the no-system-clock source scan and the per-package layout contract.",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@compass/eslint-plugin": "workspace:*",
+    "eslint": "9.39.5",
+    "typescript": "5.9.3",
+    "vitest": "4.1.10"
+  }
+}
