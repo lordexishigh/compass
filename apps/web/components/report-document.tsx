@@ -1,8 +1,59 @@
 import type { ReportView } from '../lib/view-model';
 
+import { CalibrationCollar } from './calibration-collar';
 import { FreshnessPanel } from './freshness-panel';
 import { ReportSectionBlock } from './report-section';
 import { SixSpine } from './six-spine';
+
+/**
+ * The attribute the cold-start inspector looks for. One per report, or none.
+ *
+ * Declared here and *asserted* against `@compass/smoke` in the view tests rather
+ * than imported from it: `@compass/smoke` is a dev dependency of this app, so a
+ * runtime import would put a test tool in the production bundle. The assertion is
+ * what stops the two drifting.
+ */
+export const FALLBACK_NOTE_ATTRIBUTE = 'data-narration-fallback';
+
+/**
+ * The narration-fallback disclosure.
+ *
+ * A hairline note above the report, in 13px zinc-500 — the design brief's rule for
+ * this exact case: *"narration fallback to the deterministic template renderer is
+ * disclosed, not hidden"*. It is a sentence, not a warning banner, because nothing
+ * is wrong with the report: every section, figure, notch and link is complete and
+ * correct. Only the wording is templated, and a manager is entitled to know that
+ * before they quote a sentence back to their team as Compass's own.
+ *
+ * `role="status"` rather than `alert`: this is a standing fact about the document,
+ * not an event demanding attention, and an assertive live region would interrupt a
+ * screen reader mid-heading for something that is not urgent.
+ *
+ * Rendered only when narration was *attempted* and fell back. A deployment with no
+ * Anthropic key is templated by design and says so in the footer instead — telling
+ * that reader something failed would be a fabrication of its own.
+ */
+function NarrationFallbackNote({ view }: { readonly view: ReportView }) {
+  if (!view.fallbackRenderer) return null;
+
+  return (
+    <p
+      {...{ [FALLBACK_NOTE_ATTRIBUTE]: 'true' }}
+      role="status"
+      className="hairline mt-4 pt-3 text-[13px] leading-relaxed text-ink-faint"
+    >
+      <span className="text-ink-muted">Rendered from template — narration unavailable.</span>{' '}
+      Compass wrote this report with its own deterministic renderer because the narration model stated something the
+      computed report did not contain, so its prose was discarded. Every figure, link and notch below is complete.
+      {view.fallbackReason !== null && (
+        <>
+          {' '}
+          <span className="stated-absence">{view.fallbackReason}</span>
+        </>
+      )}
+    </p>
+  );
+}
 
 /**
  * The whole report, from a value.
@@ -39,6 +90,8 @@ export function ReportDocument({ view }: { readonly view: ReportView }) {
             <p className="stated-absence mt-3 text-[13px]">{view.timeShiftNote}</p>
           )}
 
+          <NarrationFallbackNote view={view} />
+
           <FreshnessPanel freshness={view.freshness} />
         </header>
 
@@ -50,11 +103,25 @@ export function ReportDocument({ view }: { readonly view: ReportView }) {
           ))}
         </div>
 
+        {/*
+          The confidence collar sits after the six sections rather than inside
+          Progress, and that is deliberate on two counts. The Six Spine is fixed at
+          six entries forever, so the collar must not become a seventh heading a
+          reader scrolls to. And its job is to qualify the *whole* report — the
+          audit's verdicts are about the data every section above was computed from
+          — so it reads last, the way a footnote to the document rather than a
+          paragraph inside one of its parts.
+        */}
+        <CalibrationCollar collar={view.collar} />
+
         <footer className="mt-16 hairline pt-6 text-[13px] text-ink-faint">
           <p>
-            Written by the deterministic template renderer (<span className="data-token">{view.rendererId}</span>),
-            generated {view.generatedAtLabel} {view.timezone}. Every figure above carries a link to the artifact it
-            came from.
+            {view.narrated
+              ? 'Written by the narration model, with every number, date, name and identifier checked against the ' +
+                'computed report before publication'
+              : 'Written by the deterministic template renderer'}{' '}
+            (<span className="data-token">{view.rendererId}</span>), generated {view.generatedAtLabel} {view.timezone}.
+            Every figure above carries a link to the artifact it came from.
           </p>
           <p className="mt-2 flex flex-wrap gap-x-5 gap-y-1">
             {/* The goal hierarchy is reachable from the report because every
@@ -65,6 +132,15 @@ export function ReportDocument({ view }: { readonly view: ReportView }) {
               className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
             >
               Goal hierarchy
+            </a>
+            {/* Reachable, never imposed. `/` gates nothing and never redirects here:
+                the zero-config promise is that a manager reads a report first and
+                decides about accounts afterwards. */}
+            <a
+              href="/account"
+              className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
+            >
+              Account and sessions
             </a>
             <a
               href="/api/health"

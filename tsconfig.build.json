@@ -6,10 +6,12 @@
     { "path": "packages/connector-port" },
     { "path": "packages/seed-connector" },
     { "path": "packages/db" },
+    { "path": "packages/auth" },
     { "path": "packages/knowledge-model" },
     { "path": "packages/ingest" },
     { "path": "packages/analysis" },
     { "path": "packages/renderers" },
+    { "path": "packages/narrator" },
     { "path": "packages/pipeline" },
     { "path": "apps/worker" },
     { "path": "tools/smoke" }

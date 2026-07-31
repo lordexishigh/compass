@@ -76,6 +76,26 @@ export const memberships = pgTable(
   ],
 );
 
+/**
+ * One row per signed-in browser.
+ *
+ * `token_hash` is a SHA-256 digest of the secret in the cookie, never the secret:
+ * the cookie is a bearer credential, and a leaked backup that contained the raw
+ * values would be a leak of every live session. Lookup is therefore by digest,
+ * which is also why the digest carries the unique constraint.
+ *
+ * Two expiries, not one. `expires_at` is absolute — 30 days from `issued_at`,
+ * frozen at creation, so a session cannot be extended forever by using it. Idle
+ * expiry is *derived* from `last_used_at` plus a documented interval rather than
+ * stored, because a stored second deadline would be a second source of truth that
+ * a missed write could silently push out. `@compass/auth`'s `SESSION_ABSOLUTE_TTL`
+ * and `SESSION_IDLE_TTL` are the only place either number exists.
+ *
+ * `rotated_from_session_id` records the lineage a privilege change creates. When a
+ * role changes, the old row is revoked and a new one issued rather than the old one
+ * edited: the point of rotation is that the previously-issued cookie stops working,
+ * and that is only checkable if the revoked row is still there to be read.
+ */
 export const sessions = pgTable(
   'sessions',
   {
@@ -84,12 +104,22 @@ export const sessions = pgTable(
     userId: uuid('user_id')
       .notNull()
       .references(() => users.id),
+    /** SHA-256 of the cookie secret, hex. */
+    tokenHash: text('token_hash').notNull(),
     issuedAt: instantColumn('issued_at').notNull(),
     lastUsedAt: instantColumn('last_used_at').notNull(),
+    /** Absolute deadline, frozen at creation. Never extended. */
     expiresAt: instantColumn('expires_at').notNull(),
     revokedAt: instantColumn('revoked_at'),
+    /** `role_change`, `sign_out`, `sign_out_all_devices`, `seat_revoked`. */
+    revokedReason: text('revoked_reason'),
+    /** The session this one replaced, when it was issued by a rotation. */
+    rotatedFromSessionId: uuid('rotated_from_session_id'),
   },
-  (table) => [index('sessions_org_user_idx').on(table.organizationId, table.userId)],
+  (table) => [
+    unique('sessions_org_token_hash_key').on(table.organizationId, table.tokenHash),
+    index('sessions_org_user_idx').on(table.organizationId, table.userId),
+  ],
 );
 
 /** Append-only. No update or delete path exists for this table by design. */

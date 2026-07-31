@@ -4,10 +4,16 @@ import { fileURLToPath } from 'node:url';
 
 import { OFF_GOAL_LABEL, SECTIONS } from '@compass/analysis';
 import { artifactHref } from '@compass/pipeline';
-import { ALIGNMENT_AFFORDANCE_ATTRIBUTE, ALIGNMENT_VERDICT_ATTRIBUTE, inspectReportHtml } from '@compass/smoke';
+import {
+  ALIGNMENT_AFFORDANCE_ATTRIBUTE,
+  ALIGNMENT_VERDICT_ATTRIBUTE,
+  COLLAR_ATTRIBUTE,
+  inspectReportHtml,
+} from '@compass/smoke';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
+import { COLLAR_ATTRIBUTE as COMPONENT_COLLAR_ATTRIBUTE } from '../components/calibration-collar';
 import { ReportDocument } from '../components/report-document';
 import { buildReportView } from '../lib/view-model';
 
@@ -49,6 +55,84 @@ describe('the report view renders six sections in the fixed order', () => {
     expect(markup).toContain('which is behind the pace the elapsed schedule implies');
     expect(markup).toContain('and it is one step, finishable today');
     expect(markup).toContain('so it has held for 6 days');
+  });
+});
+
+/**
+ * The two differentiators, on the rendered page.
+ *
+ * Both are asserted against markup rather than against the view model, because both
+ * have already been built once at the data layer and the failure mode is a component
+ * that quietly drops the honest half. A `rungSuffix` computed and never printed and a
+ * calibration verdict sitting in `findings` with no collar to show it are the same
+ * bug: the analysis was right and the reader never saw it.
+ */
+describe('the completion ladder prints its notches, its rung and what it has not reached', () => {
+  it('renders five notches and the furthest rung reached', () => {
+    expect(markup).toContain('R3 integrated');
+  });
+
+  it('states the half that has not happened as a run-in clause', () => {
+    // The mono token already reads `R3 integrated`, so the clause is the remainder —
+    // printing the rung twice on one line makes the meter read like a template.
+    expect(markup).toContain('not yet released');
+    expect(markup).not.toContain('integrated, not yet released');
+  });
+
+  it('prints the literal words an unreachable R5 requires', () => {
+    expect(markup).toContain('no deploy signal available');
+  });
+});
+
+describe('the confidence collar qualifies the projected date on the page', () => {
+  it('renders the collar landmark the smoke check counts', () => {
+    // Asserted against `@compass/smoke` rather than imported from it: smoke is a dev
+    // dependency of this app, so a runtime import would put a test tool in the
+    // production bundle. This assertion is what stops the two drifting.
+    expect(COMPONENT_COLLAR_ATTRIBUTE).toBe(COLLAR_ATTRIBUTE);
+    expect(markup).toContain(`${COLLAR_ATTRIBUTE}="true"`);
+    expect(view.collar).not.toBeNull();
+  });
+
+  it('prints the date once, in square-bracket mono', () => {
+    expect(markup).toContain('2026-08-08');
+    expect(markup.match(/data-calibration-collar/g)).toHaveLength(1);
+  });
+
+  it('sets the date in a lighter weight when the audit has something to say', () => {
+    // The typography loses conviction along with the prose. A page whose type stayed
+    // confident while its words withdrew would have overruled its own words.
+    expect(view.collar?.lowConviction).toBe(true);
+    expect(markup).toContain('text-ink-faint');
+  });
+
+  it('states the method, the band and the verdict that chose it', () => {
+    expect(markup).toContain('cycle-time guess, not a velocity forecast');
+    expect(markup).toContain('low confidence');
+    expect(markup).toContain('points_uninformative');
+  });
+
+  it('names every verdict with its value, its threshold and its sample size', () => {
+    expect(markup).toContain('Points are uninformative');
+    expect(markup).toContain('Statuses are stale');
+    // 444 basis points against T12's 3 000, formatted for the unit.
+    expect(markup).toContain('0.04');
+    expect(markup).toContain('0.30');
+    expect(markup).toContain('T12');
+    expect(markup).toContain('n=118');
+  });
+
+  it('states the absence rather than an empty panel for a report with no audit', () => {
+    const bundle = storedBundle();
+    const older = buildReportView({
+      bundle: { ...bundle, report: { ...bundle.report, payload: {}, payloadJson: '{}' } },
+      freshness: freshnessComplete(),
+    });
+
+    expect(older.collar).toBeNull();
+    const olderMarkup = renderToStaticMarkup(<ReportDocument view={older} />);
+    expect(olderMarkup).toContain('before Compass audited the data behind it');
+    expect(olderMarkup).not.toContain('data-calibration-collar');
   });
 });
 

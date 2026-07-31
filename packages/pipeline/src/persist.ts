@@ -51,6 +51,25 @@ export interface PersistReportInput {
   /** Passed in by the edge. This layer never reads a clock. */
   readonly generatedAt: Instant;
   readonly ingestRunId: string | null;
+  /**
+   * The narration outcome, when narration ran.
+   *
+   * Absent means "this build had no narration stage", which is how the MVP's tests
+   * and any caller that only wants the deterministic render keep working unchanged.
+   * Present-and-fallback is a *different* fact from absent, and the report row
+   * distinguishes them: see `reports.fallbackRenderer`.
+   */
+  readonly narration?: PersistedNarration;
+}
+
+/** What the pipeline learned from narrating, reduced to what a row holds. */
+export interface PersistedNarration {
+  /** `narrated`, or the template renderer's id on a fallback. */
+  readonly rendererId: string;
+  /** Null when narration succeeded. */
+  readonly fallbackReason: string | null;
+  /** One entry per section, in the fixed order. Overrides the rendered prose. */
+  readonly sections: readonly { readonly key: string; readonly prose: string }[];
 }
 
 /** `team` / `platform`, or `merged` / `*`. Never a nullable key. */
@@ -130,7 +149,12 @@ function itemRow(item: ReportItem, prose: string): ReportItemInput {
   };
 }
 
-function sectionRow(section: ReportSection, rendered: RenderedSection | undefined, ordinal: number): ReportSectionInput {
+function sectionRow(
+  section: ReportSection,
+  rendered: RenderedSection | undefined,
+  ordinal: number,
+  narratedProse: string | undefined,
+): ReportSectionInput {
   // Joined by stable id rather than by position: the renderer emits one claim
   // per item today, but a paragraph that is not an item would silently shift
   // every claim's prose onto its neighbour if this indexed by position.
@@ -140,7 +164,12 @@ function sectionRow(section: ReportSection, rendered: RenderedSection | undefine
     sectionKey: section.key,
     ordinal,
     title: section.title,
-    prose: rendered?.prose ?? '',
+    // One column, one meaning: the prose a manager actually read for this
+    // section. Narrated when narration was grounded, the template renderer's
+    // otherwise. The per-claim `prose` below stays the deterministic renderer's
+    // either way — narration may reorder and merge items, so a claim's own
+    // validated sentences are the only text that can still be attributed to it.
+    prose: narratedProse ?? rendered?.prose ?? '',
     payload: JSON.parse(canonicalJson(section)) as Record<string, unknown>,
     emptyStatement: section.emptyStatement,
     summary: section.summary ?? null,
@@ -148,12 +177,36 @@ function sectionRow(section: ReportSection, rendered: RenderedSection | undefine
   };
 }
 
+/**
+ * The whole-report prose, with narrated sections substituted in.
+ *
+ * `rendered.text` is the deterministic document — masthead, freshness line, the
+ * `01`–`06` numerals — and narration only ever replaces section bodies. So the
+ * furniture is kept and the bodies are swapped, rather than the narrator being
+ * asked to reproduce a masthead it was never shown.
+ */
+function documentProse(rendered: RenderedReport, narration: PersistedNarration | undefined): string {
+  if (narration === undefined) return rendered.text;
+  const proseByKey = new Map(narration.sections.map((section) => [section.key, section.prose]));
+
+  const body = rendered.sections.flatMap((section) => [
+    `${section.numeral} ${section.title.toUpperCase()}`,
+    '',
+    proseByKey.get(section.key) ?? section.prose,
+    '',
+  ]);
+
+  return `${[rendered.masthead, '', rendered.freshness, '', ...body].join('\n').trimEnd()}\n`;
+}
+
 /** The row shape for one report, section ordinals derived from `SECTIONS`. */
 export function reportRows(input: PersistReportInput): ReportInput {
-  const { report, rendered } = input;
+  const { report, rendered, narration } = input;
   assertSixSectionsInOrder(report);
 
   const renderedByKey = new Map(rendered.sections.map((section) => [section.key, section]));
+  const narratedByKey = new Map((narration?.sections ?? []).map((section) => [section.key, section.prose]));
+  const fallbackReason = narration?.fallbackReason ?? null;
 
   return {
     ...scopeColumns(report),
@@ -165,8 +218,14 @@ export function reportRows(input: PersistReportInput): ReportInput {
     contentHash: reportHash(report),
     payloadJson: canonicalJson(report),
     payload: JSON.parse(canonicalJson(report)) as Record<string, unknown>,
-    prose: rendered.text,
-    rendererId: rendered.rendererId,
+    prose: documentProse(rendered, narration),
+    rendererId: narration?.rendererId ?? rendered.rendererId,
+    // True only when narration was *attempted* and did not survive grounding.
+    // A build with no narrator at all reports `false` with a null reason: nothing
+    // degraded there, and an operator alerting on this number must not be woken by
+    // a deployment that was never configured to narrate.
+    fallbackRenderer: narration !== undefined && fallbackReason !== null,
+    fallbackReason,
     coverageStatus: coverageStatusOf(report),
     ingestRunId: input.ingestRunId,
     generatedAt: input.generatedAt,
@@ -177,7 +236,7 @@ export function reportRows(input: PersistReportInput): ReportInput {
           `Section ${position + 1} must be \`${definition.key}\`; the section-order assertion should have caught this.`,
         );
       }
-      return sectionRow(section, renderedByKey.get(section.key), definition.index);
+      return sectionRow(section, renderedByKey.get(section.key), definition.index, narratedByKey.get(section.key));
     }),
   };
 }

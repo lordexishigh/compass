@@ -294,6 +294,20 @@
       "title": "Merged work sitting ahead of the newest release tag"
     },
     {
+      "detail": "`PLAT-901` carries 8 points and its 2 sub-tasks carry 5 and 3, so a total spanning both levels counts it twice.\n`PLAT-905` entered In Progress at 2026-07-22T10:00:00Z and sat for 7 working days with no commit and no pull request.\nNegative controls: `PLAT-906` moved yesterday; `PLAT-907` is older but was committed to as `fa11ed7`.",
+      "id": "process-hygiene-plat",
+      "identifiers": [
+        "PLAT-901",
+        "PLAT-902",
+        "PLAT-903",
+        "PLAT-905",
+        "PLAT-906",
+        "PLAT-907",
+        "fa11ed7"
+      ],
+      "title": "A story estimated alongside its own estimated sub-tasks, and a ticket that entered In Progress and was never touched again"
+    },
+    {
       "detail": "Tickets labelled `tech-debt` opened per sprint: Sprint 43 → 2, Sprint 44 → 3, Sprint 45 → 4, Sprint 46 → 7. The count rises every sprint, which is the growth signal.",
       "id": "tech-debt-growth-plat",
       "identifiers": [
@@ -323,9 +337,9 @@
   ],
   "recordCounts": {
     "branch_refs": 160,
-    "commits": 912,
-    "issue_transitions": 885,
-    "issues": 376,
+    "commits": 913,
+    "issue_transitions": 888,
+    "issues": 382,
     "messages": 867,
     "pull_requests": 155,
     "release_tags": 8,
@@ -364,7 +378,7 @@
     },
     {
       "label": "Commits",
-      "observed": 912,
+      "observed": 913,
       "required": 600,
       "satisfied": true
     },
@@ -376,7 +390,7 @@
     },
     {
       "label": "Issues",
-      "observed": 376,
+      "observed": 382,
       "required": 300,
       "satisfied": true
     },
@@ -399,17 +413,17 @@
       "satisfied": true
     }
   ],
-  "totalRecords": 3692,
+  "totalRecords": 3702,
   "traceability": {
     "dataset": [
       {
         "count": 497,
-        "percentage": 54.5,
+        "percentage": 54.4,
         "traceabilityClass": "structural"
       },
       {
-        "count": 226,
-        "percentage": 24.8,
+        "count": 227,
+        "percentage": 24.9,
         "traceabilityClass": "inferred"
       },
       {
@@ -444,22 +458,22 @@
     "reportWindow": [
       {
         "count": 14,
-        "percentage": 56,
+        "percentage": 53.8,
         "traceabilityClass": "structural"
       },
       {
-        "count": 3,
-        "percentage": 12,
+        "count": 4,
+        "percentage": 15.4,
         "traceabilityClass": "inferred"
       },
       {
         "count": 3,
-        "percentage": 12,
+        "percentage": 11.5,
         "traceabilityClass": "semantic"
       },
       {
         "count": 5,
-        "percentage": 20,
+        "percentage": 19.2,
         "traceabilityClass": "unattributed"
       }
     ],

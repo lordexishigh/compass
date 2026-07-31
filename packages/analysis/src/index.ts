@@ -102,6 +102,7 @@ export {
 } from './snapshot.js';
 
 export {
+  branchEvidence,
   commitEvidence,
   orderedEvidence,
   pullRequestEvidence,
@@ -115,11 +116,17 @@ export {
 export {
   LADDER_RUNGS,
   NO_DEPLOY_SIGNAL_STATEMENT,
+  RUNG_DETECTORS,
   RUNG_LABELS,
   assessLadder,
+  commitNodeKey,
+  emptyCommitGraph,
   indexArtifactsByTicket,
+  indexCommitGraph,
+  reachesCommit,
   rungAtOrAbove,
   rungIndex,
+  type CommitGraph,
   type HighestRung,
   type LadderInput,
   type LadderNotch,
@@ -128,6 +135,41 @@ export {
   type LadderRungId,
   type WorkUnitArtifacts,
 } from './ladder.js';
+
+export {
+  CALIBRATION_TRAILING_SPRINTS,
+  ESTIMATE_COVERAGE_TRAILING_DAYS,
+  PROCESS_VERDICTS,
+  PROCESS_VERDICT_RULES,
+  auditProcessCalibration,
+  carryoverRate,
+  emptyCalibrationAudit,
+  estimateCoverage,
+  hasProcessVerdict,
+  pointToElapsedCorrelation,
+  scopeChurn,
+  staleStatusIncidence,
+  statusDwellConsistency,
+  subTaskDoubleCount,
+  type CalibrationAudit,
+  type CalibrationSpread,
+  type CalibrationStatistics,
+  type CarryoverStatistic,
+  type EstimateCoverage,
+  type PointElapsedSample,
+  type PointToElapsedCorrelation,
+  type ProcessVerdict,
+  type ProcessVerdictName,
+  type ProcessVerdictRule,
+  type ScopeChurnStatistic,
+  type SprintCarryover,
+  type SprintScopeChurn,
+  type StaleStatusStatistic,
+  type StaleTicket,
+  type StatusDwell,
+  type StatusDwellStatistic,
+  type SubTaskDoubleCount,
+} from './calibration.js';
 
 export {
   CYCLE_TIME_TRAILING_DAYS,
@@ -156,6 +198,7 @@ export {
   YESTERDAY_ORDER_KEY,
   detectYesterdayItems,
   yesterdayHeadline,
+  yesterdaySubject,
   type YesterdayEvent,
   type YesterdayEventKind,
   type YesterdayItem,
@@ -242,6 +285,7 @@ export {
 export {
   CALIBRATION_VERDICTS,
   assessCalibration,
+  calibrationVerdictFrom,
   projectCompletion,
   resolvedInsideWindow,
   type CalibrationVerdict,
@@ -287,6 +331,21 @@ export {
   type Sentence,
   type SentenceNumbers,
 } from './numeric-tokens.js';
+
+export {
+  COMMIT_SHA_TOKEN_PATTERN,
+  OBJECTIVE_KEY_TOKEN_PATTERN,
+  PERSON_NAME_TOKEN_PATTERN,
+  PROSE_CAPITALISED_VOCABULARY,
+  PROSE_DATE_TOKEN_PATTERN,
+  PROSE_TOKEN_KINDS,
+  PULL_REQUEST_TOKEN_PATTERN,
+  TRACKER_KEY_TOKEN_PATTERN,
+  extractProseTokens,
+  personNameWords,
+  type ProseToken,
+  type ProseTokenKind,
+} from './prose-tokens.js';
 
 export {
   NON_SEMANTIC_REPORT_FIELDS,

@@ -111,6 +111,42 @@ export const sectionLandmark = (sectionKey: string): string => `id="section-${se
 export const ALIGNMENT_VERDICT_ATTRIBUTE = 'data-alignment-evidence';
 export const ALIGNMENT_AFFORDANCE_ATTRIBUTE = 'data-alignment-affordance';
 
+/**
+ * The narration-fallback disclosure, if the page is showing one.
+ *
+ * Counted rather than required: a fallback is a legitimate state and so is its
+ * absence, so there is nothing here to fail on. What *is* checked is that the two do
+ * not contradict each other — a page carrying the marker has to carry the sentence,
+ * because a disclosure attribute with no disclosure text is a fallback that was
+ * recorded and then not actually disclosed to the reader.
+ */
+export const FALLBACK_NOTE_ATTRIBUTE = 'data-narration-fallback';
+
+/** The sentence the disclosure must actually say. Design brief's wording. */
+export const FALLBACK_NOTE_SENTENCE = 'narration unavailable';
+
+/**
+ * The confidence collar's landmark.
+ *
+ * Checked in bytes for the same reason the alignment affordance is: a projected date
+ * with no collar under it is the single most dangerous object this product can put on
+ * a page, because it looks exactly like a commitment. The collar is what makes it a
+ * guess with a stated method, so a page that renders the date and drops the collar is
+ * a product regression rather than a layout one.
+ */
+export const COLLAR_ATTRIBUTE = 'data-calibration-collar';
+
+/**
+ * The words an unreachable R5 must print, literally.
+ *
+ * `packages/analysis/src/ladder.ts` owns the string and the analysis tests assert the
+ * detector emits it; this asserts it *survives to the page*. Inferring a deploy from
+ * a merge would be the most damaging claim Compass could make, and the way that ships
+ * is not a wrong detector — it is a correct detector whose honest sentence a
+ * component quietly dropped because it looked like clutter.
+ */
+export const NO_DEPLOY_SIGNAL_SENTENCE = 'no deploy signal available';
+
 const countOccurrences = (html: string, needle: string): number =>
   html.split(needle).length - 1;
 
@@ -127,6 +163,12 @@ export interface ReportHtmlInspection {
   readonly alignmentVerdicts: number;
   /** Evidence affordances beside them. Must equal `alignmentVerdicts`. */
   readonly alignmentAffordances: number;
+  /** Whether the page discloses that narration fell back. Either is legitimate. */
+  readonly narrationFallbackDisclosed: boolean;
+  /** Whether the confidence collar rendered. */
+  readonly hasCalibrationCollar: boolean;
+  /** Whether an unreachable R5 stated itself in the words the design requires. */
+  readonly statesNoDeploySignal: boolean;
   /** One sentence per failed check. Empty means the cold start is honest. */
   readonly problems: readonly string[];
 }
@@ -199,6 +241,38 @@ export function inspectReportHtml(html: string): ReportHtmlInspection {
     );
   }
 
+  const hasCalibrationCollar = html.includes(COLLAR_ATTRIBUTE);
+  if (!hasCalibrationCollar) {
+    problems.push(
+      'The page carries no confidence collar. The projected completion date must never appear without the band, the ' +
+        'method and the calibration verdict that qualify it — a date on its own reads as a commitment, which is the one ' +
+        'thing Compass never states.',
+    );
+  }
+
+  // Only meaningful where the ladder rendered at all: a report with no completions
+  // has no notches, and demanding the sentence there would fail an honest quiet day.
+  const statesNoDeploySignal = lowered.includes(NO_DEPLOY_SIGNAL_SENTENCE);
+  if (html.includes('id="section-yesterday"') && html.includes('R5') && !statesNoDeploySignal) {
+    problems.push(
+      `The page renders the completion ladder without the words "${NO_DEPLOY_SIGNAL_SENTENCE}". With no CI/CD ` +
+        'connector R5 is unreachable, and it must say so rather than render as an ordinary uncrossed notch — a reader ' +
+        'who cannot tell "not deployed" from "Compass cannot tell" has been misled about the only rung that matters.',
+    );
+  }
+
+  // A recorded fallback that the page does not actually say out loud is the exact
+  // "confident polish over honest degradation" failure the design brief forbids, and
+  // it is invisible to every other check here.
+  const narrationFallbackDisclosed = html.includes(FALLBACK_NOTE_ATTRIBUTE);
+  if (narrationFallbackDisclosed && !lowered.includes(FALLBACK_NOTE_SENTENCE)) {
+    problems.push(
+      `The page carries \`${FALLBACK_NOTE_ATTRIBUTE}\` but never says "${FALLBACK_NOTE_SENTENCE}". A report whose ` +
+        'prose was written by the fallback renderer must state that in the reading column, not only in a data ' +
+        'attribute — a manager about to repeat a sentence to their team is entitled to know who wrote it.',
+    );
+  }
+
   for (const marker of REGRESSION_MARKERS) {
     if (lowered.includes(marker.needle)) {
       problems.push(`The response contains \`${marker.needle}\`, which means ${marker.why}.`);
@@ -216,8 +290,11 @@ export function inspectReportHtml(html: string): ReportHtmlInspection {
     headingsMissing,
     sectionsNotRendered,
     sourceLinks,
+    hasCalibrationCollar,
+    statesNoDeploySignal,
     alignmentVerdicts,
     alignmentAffordances,
+    narrationFallbackDisclosed,
     problems,
   };
 }

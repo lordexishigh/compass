@@ -9,7 +9,10 @@
     "test:watch": "vitest"
   },
   "devDependencies": {
+    "@compass/analysis": "workspace:*",
+    "@compass/clock": "workspace:*",
     "@compass/eslint-plugin": "workspace:*",
+    "@compass/narrator": "workspace:*",
     "eslint": "9.39.5",
     "typescript": "5.9.3",
     "vitest": "4.1.10"

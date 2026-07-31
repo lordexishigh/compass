@@ -15,11 +15,13 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@compass/auth": "workspace:*",
     "@compass/clock": "workspace:*",
     "@compass/connector-port": "workspace:*",
     "@compass/db": "workspace:*",
     "@compass/ingest": "workspace:*",
     "@compass/knowledge-model": "workspace:*",
+    "@compass/narrator": "workspace:*",
     "@compass/pipeline": "workspace:*",
     "@compass/seed-connector": "workspace:*",
     "pg-boss": "12.26.3",

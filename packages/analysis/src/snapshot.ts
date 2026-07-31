@@ -350,6 +350,33 @@ export function developerName(snapshot: AnalysisSnapshot, developerKey: string |
   return developer === null ? developerKey : (textField(developer, 'displayName') ?? developerKey);
 }
 
+/**
+ * The status category an item was in at `instant`, by replaying its transitions.
+ *
+ * `null` when no transition had happened yet — which is a real answer meaning
+ * "Compass has no observation of this item's state at that moment", and is
+ * deliberately not treated as `todo`. Two callers need it and they must agree:
+ * the work-concentration risk reconstructs yesterday's in-flight set with it, and
+ * the carryover rate reconstructs each sprint's unfinished set. A second copy
+ * would let the two drift, and then a manager could read a carryover rate that
+ * disagreed with a trend computed from the same history.
+ */
+export function statusCategoryAt(
+  transitions: readonly { readonly toStatusCategory: string; readonly transitionedAt: number }[],
+  instant: Instant,
+): string | null {
+  let category: string | null = null;
+  let at = -Infinity;
+  for (const transition of transitions) {
+    if (transition.transitionedAt > instant) continue;
+    if (transition.transitionedAt >= at) {
+      at = transition.transitionedAt;
+      category = transition.toStatusCategory;
+    }
+  }
+  return category;
+}
+
 /** Status categories the tracker considers finished. */
 export const DONE_STATUS_CATEGORY = 'done';
 

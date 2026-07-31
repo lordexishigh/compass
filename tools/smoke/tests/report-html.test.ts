@@ -6,7 +6,11 @@ import {
   ALIGNMENT_AFFORDANCE_ATTRIBUTE,
   ALIGNMENT_VERDICT_ATTRIBUTE,
   CHART_MARKERS,
+  COLLAR_ATTRIBUTE,
   ColdStartCheckFailed,
+  FALLBACK_NOTE_ATTRIBUTE,
+  FALLBACK_NOTE_SENTENCE,
+  NO_DEPLOY_SIGNAL_SENTENCE,
   REGRESSION_MARKERS,
   assertColdStartHtml,
   inspectReportHtml,
@@ -27,6 +31,8 @@ function pageHtml(
     readonly sections?: readonly { readonly key: string; readonly title: string }[];
     readonly links?: readonly string[];
     readonly extra?: string;
+    /** Drop the confidence collar, to prove the check notices. */
+    readonly withoutCollar?: boolean;
   } = {},
 ): string {
   const sections = options.sections ?? SECTIONS.map((section) => ({ key: section.key, title: section.title }));
@@ -40,12 +46,49 @@ function pageHtml(
         `<h2 class="section-label"><span>${section.title}</span></h2><p>Prose about it.</p></section>`,
     ),
     ...links.map((href) => `<a href="${href}">DEV-501</a>`),
+    // The collar is part of the shape of a correct page, not an extra: a projected
+    // date with nothing qualifying it is the one object this product must never ship.
+    options.withoutCollar === true ? '' : `<section ${COLLAR_ATTRIBUTE}="true"><p>[2026-08-08]</p></section>`,
     options.extra ?? '',
     '</main>',
   ].join('');
 }
 
 const allSections = SECTIONS.map((section) => ({ key: section.key, title: section.title }));
+
+describe('the narration-fallback disclosure', () => {
+  it('reports no disclosure on a page that did not fall back', () => {
+    const inspection = assertColdStartHtml(pageHtml());
+    expect(inspection.narrationFallbackDisclosed).toBe(false);
+  });
+
+  it('accepts a fallback that actually says so in the reading column', () => {
+    const inspection = assertColdStartHtml(
+      pageHtml({
+        extra: `<p ${FALLBACK_NOTE_ATTRIBUTE}="true">Rendered from template — ${FALLBACK_NOTE_SENTENCE}.</p>`,
+      }),
+    );
+
+    expect(inspection.problems).toEqual([]);
+    expect(inspection.narrationFallbackDisclosed).toBe(true);
+  });
+
+  /**
+   * The failure this check exists for: the flag is set, the attribute is on the page,
+   * and the reader is told nothing. Every other check here passes on such a page —
+   * six headings, links, a collar — which is exactly why it needs its own.
+   */
+  it('refuses a marker with no sentence beside it', () => {
+    const inspection = inspectReportHtml(
+      pageHtml({ extra: `<p ${FALLBACK_NOTE_ATTRIBUTE}="true">Something happened.</p>` }),
+    );
+
+    expect(inspection.narrationFallbackDisclosed).toBe(true);
+    expect(inspection.problems).toHaveLength(1);
+    expect(inspection.problems[0]).toContain(FALLBACK_NOTE_SENTENCE);
+    expect(inspection.problems[0]).toContain('entitled to know who wrote it');
+  });
+});
 
 describe('a cold start that delivered what it promised', () => {
   it('finds the six sections in the fixed order and says nothing is wrong', () => {
@@ -125,6 +168,52 @@ describe('a page missing part of the report', () => {
 
     expect(inspection.sourceLinks).toEqual([]);
     expect(inspection.problems.join(' ')).toContain('No claim on the page links to an artifact page');
+  });
+});
+
+describe('a projected date with nothing qualifying it', () => {
+  it('accepts a page whose collar rendered', () => {
+    const inspection = inspectReportHtml(pageHtml());
+
+    expect(inspection.hasCalibrationCollar).toBe(true);
+    expect(inspection.problems).toEqual([]);
+  });
+
+  it('refuses a page that dropped the collar', () => {
+    const inspection = inspectReportHtml(pageHtml({ withoutCollar: true }));
+
+    expect(inspection.hasCalibrationCollar).toBe(false);
+    expect(inspection.problems.join(' ')).toContain('no confidence collar');
+    expect(inspection.problems.join(' ')).toContain('reads as a commitment');
+  });
+});
+
+describe('an unreachable R5 has to say so', () => {
+  const ladder = (options: { readonly withSentence: boolean }): string =>
+    `<p><span>R5 deployed</span>${options.withSentence ? `<span>${NO_DEPLOY_SIGNAL_SENTENCE}</span>` : ''}</p>`;
+
+  it('accepts a ladder that prints the sentence', () => {
+    const inspection = inspectReportHtml(pageHtml({ extra: ladder({ withSentence: true }) }));
+
+    expect(inspection.statesNoDeploySignal).toBe(true);
+    expect(inspection.problems).toEqual([]);
+  });
+
+  it('refuses a ladder that renders R5 as an ordinary empty notch', () => {
+    const inspection = inspectReportHtml(pageHtml({ extra: ladder({ withSentence: false }) }));
+
+    expect(inspection.statesNoDeploySignal).toBe(false);
+    expect(inspection.problems.join(' ')).toContain(NO_DEPLOY_SIGNAL_SENTENCE);
+    expect(inspection.problems.join(' ')).toContain('Compass cannot tell');
+  });
+
+  it('says nothing about a quiet day with no completions and so no ladder', () => {
+    // A report with nothing in Yesterday has no notches to check, and demanding the
+    // sentence there would fail an honest empty day.
+    const inspection = inspectReportHtml(pageHtml());
+
+    expect(inspection.statesNoDeploySignal).toBe(false);
+    expect(inspection.problems).toEqual([]);
   });
 });
 

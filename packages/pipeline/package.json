@@ -27,6 +27,7 @@
     "@compass/db": "workspace:*",
     "@compass/ingest": "workspace:*",
     "@compass/knowledge-model": "workspace:*",
+    "@compass/narrator": "workspace:*",
     "@compass/renderers": "workspace:*"
   },
   "devDependencies": {

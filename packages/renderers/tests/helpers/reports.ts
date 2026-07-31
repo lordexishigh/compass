@@ -1,7 +1,9 @@
 import {
   PROGRESS_ITEM_IDS,
   createEmptyStructuredReport,
+  emptyCalibrationAudit,
   thresholdRef,
+  type CalibrationVerdict,
   type Instant,
   type ReportItem,
   type SectionKey,
@@ -18,6 +20,30 @@ import { instantFromIso, timeWindow } from '@compass/clock';
  */
 
 export const INSTANT: Instant = instantFromIso('2026-07-31T08:12:00Z');
+
+/**
+ * The collar's verdict for a team whose points mean nothing.
+ *
+ * The correlation is taken from `emptyCalibrationAudit()` and given a coefficient,
+ * rather than being written out as a literal: the whole point of the shape is that a
+ * coefficient cannot exist without the sample size and spread beside it, and a
+ * fixture that assembled one by hand would be the first place that stopped being
+ * true.
+ */
+const CALIBRATION_VERDICT: CalibrationVerdict = {
+  verdict: 'points_uninformative',
+  sampleSize: 12,
+  correlation: {
+    ...emptyCalibrationAudit().statistics.pointToElapsed,
+    sampleSize: 12,
+    coefficientBasisPoints: 1_200,
+    absoluteCoefficientBasisPoints: 1_200,
+  },
+  correlationThreshold: thresholdRef('T12'),
+  sampleThreshold: thresholdRef('T13'),
+  ticketKeys: [],
+  statement: 'Your points have not tracked elapsed working days for 4 sprints, so this date is a cycle-time guess.',
+};
 export const WINDOW = timeWindow(instantFromIso('2026-07-29T23:00:00Z'), instantFromIso('2026-07-30T23:00:00Z'));
 
 export function emptyReport(): StructuredReport {
@@ -75,6 +101,7 @@ export function fullReport(): StructuredReport {
       highestCrossedLabel: 'merged',
       highestContiguous: 'R2',
       deploySignalAvailable: false,
+      rungSuffix: 'merged, not yet integrated',
     },
   };
 
@@ -211,17 +238,16 @@ export function fullReport(): StructuredReport {
           confidence: 'low',
         },
         method: 'cycle_time',
-        reasoning: { method: 'cycle_time', formula: 'remaining / rate', inputs: [], assumptions: [] },
-        calibration: {
-          verdict: 'points_uninformative',
-          sampleSize: 9,
-          correlationBasisPoints: 1200,
-          correlationThreshold: thresholdRef('T12'),
-          sampleThreshold: thresholdRef('T13'),
-          ticketKeys: [],
-          statement:
-            'Your points have not tracked elapsed days for 4 sprints, so this date is a cycle-time guess.',
+        reasoning: {
+          method: 'cycle_time',
+          formula: 'remaining / rate',
+          inputs: [],
+          assumptions: [],
+          selectedByVerdicts: ['points_uninformative'],
+          confidence: 'low',
         },
+        selectedByVerdicts: ['points_uninformative'],
+        calibration: CALIBRATION_VERDICT,
         statement: 'Between 2026-08-11 and 2026-08-19, from cycle time over the trailing window.',
       },
       blockers: [

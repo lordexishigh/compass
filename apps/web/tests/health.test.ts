@@ -54,6 +54,39 @@ describe('readiness', () => {
   it('names every capability it checked', async () => {
     const report = await readiness();
 
-    expect(report.checks.map((check) => check.name)).toEqual(['clock', 'connector', 'seed-dataset', 'database']);
+    expect(report.checks.map((check) => check.name)).toEqual([
+      'clock',
+      'connector',
+      'seed-dataset',
+      'database',
+      'seats',
+      'mail',
+    ]);
+  });
+
+  /**
+   * Sign-in is a capability, so it is reported like every other one.
+   *
+   * "Nobody can sign in" and "the owner is still on the published demonstration password"
+   * are both states an operator has to be told about, and this is the one place they look
+   * when something seems wrong. A deployment that quietly kept the demo credentials would
+   * otherwise look completely healthy.
+   */
+  it('states that seats could not be read when there is no database, rather than crashing', async () => {
+    const report = await readiness();
+
+    const seats = report.checks.find((check) => check.name === 'seats');
+    expect(seats?.status).toBe('not_configured');
+    expect(seats?.detail).toContain('Sign-in is unavailable');
+  });
+
+  it('says out loud where a sign-in link actually goes', async () => {
+    const report = await readiness();
+
+    const mail = report.checks.find((check) => check.name === 'mail');
+    expect(mail?.status).toBe('not_configured');
+    // The honest-degradation rule: nothing is silently dropped, and the report says so.
+    expect(mail?.detail).toContain('process log');
+    expect(mail?.detail).toContain('Nothing is silently dropped');
   });
 });

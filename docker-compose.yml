@@ -43,6 +43,16 @@ services:
       DATABASE_URL_DIRECT: postgresql://compass:compass@postgres:5432/compass
       COMPASS_DEFAULT_TIMEZONE: ${COMPASS_DEFAULT_TIMEZONE:-Europe/London}
       COMPASS_DEFAULT_TEAM: ${COMPASS_DEFAULT_TEAM:-platform}
+      # The first owner. Passed through rather than defaulted here: unset, the boot
+      # script uses the published demonstration credentials and prints them, and
+      # `/api/health` reports `seats: not_configured` for as long as that is true. So
+      # `docker compose up` gives you an account to sign in with, and a deployment that
+      # kept the demo password cannot look healthy. See `.env.example`.
+      COMPASS_OWNER_EMAIL: ${COMPASS_OWNER_EMAIL:-}
+      COMPASS_OWNER_PASSWORD: ${COMPASS_OWNER_PASSWORD:-}
+      COMPASS_OWNER_NAME: ${COMPASS_OWNER_NAME:-}
+      # Mailed links point at the origin the request arrived on unless this is set.
+      COMPASS_BASE_URL: ${COMPASS_BASE_URL:-}
       # Narration is optional. Absent, the report renders through the
       # deterministic template renderer and the page says which renderer wrote it.
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
@@ -68,6 +78,13 @@ services:
       DATABASE_URL_DIRECT: postgresql://compass:compass@postgres:5432/compass
       COMPASS_DEFAULT_TIMEZONE: ${COMPASS_DEFAULT_TIMEZONE:-Europe/London}
       COMPASS_DEFAULT_TEAM: ${COMPASS_DEFAULT_TEAM:-platform}
+      # The worker's boot also calls `bootstrapOwner`, which is idempotent — so the two
+      # containers starting together do not produce two owner seats. They must agree on
+      # the credentials, though, or whichever boots first wins.
+      COMPASS_OWNER_EMAIL: ${COMPASS_OWNER_EMAIL:-}
+      COMPASS_OWNER_PASSWORD: ${COMPASS_OWNER_PASSWORD:-}
+      COMPASS_OWNER_NAME: ${COMPASS_OWNER_NAME:-}
+      COMPASS_BASE_URL: ${COMPASS_BASE_URL:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     depends_on:
       postgres:

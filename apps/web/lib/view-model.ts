@@ -2,6 +2,7 @@ import { SECTIONS } from '@compass/analysis';
 import { formatCivilDateTime, type TimeWindow } from '@compass/clock';
 import type { FreshnessReport, SourceFreshness, StoredReportBundle } from '@compass/db';
 import { artifactHref } from '@compass/pipeline';
+import { collapseWhitespace, parseProse, type ProseParagraph } from '@compass/renderers';
 
 /**
  * The read model the report page renders.
@@ -43,6 +44,60 @@ export interface LadderView {
   readonly highestCrossed: string;
   readonly highestCrossedLabel: string | null;
   readonly deploySignalAvailable: boolean;
+  /**
+   * `merged, not yet released` — the furthest rung reached and the next one it has
+   * not.
+   *
+   * Read off the stored payload rather than reassembled from the notches. The
+   * analysis core decided what the furthest rung was, and a component that worked it
+   * out again from five booleans would eventually disagree with the sentence in the
+   * headline beside it.
+   */
+  readonly rungSuffix: string | null;
+}
+
+/**
+ * The confidence collar, and the Process Calibration Audit behind it.
+ *
+ * This is the one object on the page whose job is to *undercut* another object on
+ * the page. The projected date is the most authoritative-looking thing in the
+ * report; the collar is what stops a manager reading it as a promise. So it carries
+ * the band and the method on one line, the audit's verdict on the next, and a
+ * `confidence` a component can use to set the date itself in a lighter weight —
+ * because typography that keeps its conviction while the prose beneath it withdraws
+ * is typography that has overruled the prose.
+ */
+export interface CalibrationVerdictView {
+  readonly name: string;
+  /** `points_uninformative` → `Points are uninformative`. */
+  readonly label: string;
+  readonly statement: string;
+  /** `T12` — the numbered rule, printed so it can be looked up and argued with. */
+  readonly thresholdId: string;
+  /** The measured value and the threshold, already formatted for their unit. */
+  readonly valueLabel: string;
+  readonly thresholdLabel: string;
+  readonly sampleSize: number;
+}
+
+export interface CalibrationCollarView {
+  /** `2026-08-08`, or null when Compass refused to give a date. */
+  readonly projectedDate: string | null;
+  /** The band and the method, as one sentence. Always present. */
+  readonly bandStatement: string;
+  readonly confidence: 'low' | 'medium' | 'high' | null;
+  /** True when the date should be set in a lighter weight than the prose. */
+  readonly lowConviction: boolean;
+  readonly method: string | null;
+  /** The verdicts that chose the method, in the audit's own vocabulary. */
+  readonly selectedByVerdicts: readonly string[];
+  /** The estimate-calibration line: the first of the collar's two lines. */
+  readonly calibrationStatement: string;
+  /** The audit's own verdict on the data: the second line. */
+  readonly auditStatement: string;
+  readonly verdicts: readonly CalibrationVerdictView[];
+  /** Verdicts the audit refused to state, and there is no history for. */
+  readonly suppressed: readonly string[];
 }
 
 /**
@@ -143,6 +198,26 @@ export interface SectionView {
   readonly ordinal: number;
   readonly title: string;
   readonly prose: string;
+  /**
+   * The section's prose, parsed into the allowlisted inline tokens.
+   *
+   * Parsed here rather than in the component so there is exactly one place prose
+   * becomes renderable, and it is the same parser the static HTML report and the
+   * email body use. A component that rendered `prose` directly — or worse, through
+   * `dangerouslySetInnerHTML` — is the failure this field exists to make
+   * unnecessary: there is no string of HTML anywhere on this path.
+   */
+  readonly paragraphs: readonly ProseParagraph[];
+  /**
+   * Whether a model wrote this section, carried onto the section rather than read
+   * from the report by the component.
+   *
+   * The two voices render differently — narrated prose owns the section body and the
+   * claims become receipts — and a component that reached up to the report for the
+   * answer would have to be passed the report as well as the section, which is how a
+   * section ends up rendered in a voice its prose was not written for.
+   */
+  readonly narrated: boolean;
   readonly summary: string | null;
   readonly emptyStatement: string;
   readonly items: readonly ClaimView[];
@@ -183,9 +258,28 @@ export interface ReportView {
   readonly windowLabel: string;
   readonly generatedAtLabel: string;
   readonly rendererId: string;
+  /** True when a model wrote this report's sections and grounding accepted them. */
+  readonly narrated: boolean;
+  /**
+   * Set when narration was attempted and the template renderer answered instead.
+   *
+   * Distinct from `!narrated`: a deployment with no Anthropic key is templated and
+   * *not* a fallback, and the page must not tell that reader something went wrong.
+   * This is the flag the disclosure note above the report is driven by.
+   */
+  readonly fallbackRenderer: boolean;
+  /** The sentence the disclosure prints. Null unless `fallbackRenderer`. */
+  readonly fallbackReason: string | null;
   readonly coverageStatus: string;
   readonly sections: readonly SectionView[];
   readonly freshness: FreshnessView;
+  /**
+   * The confidence collar and the Process Calibration Audit behind it.
+   *
+   * Null for a report persisted before the audit existed — stated on the page as an
+   * absence rather than rendered as an empty panel.
+   */
+  readonly collar: CalibrationCollarView | null;
   /** Set when the page is showing a day other than the host's own today. */
   readonly timeShiftNote: string | null;
 }
@@ -241,6 +335,122 @@ function ladderView(raw: Record<string, unknown> | null): LadderView | null {
     highestCrossed: String(raw['highestCrossed'] ?? 'R0'),
     highestCrossedLabel: typeof raw['highestCrossedLabel'] === 'string' ? raw['highestCrossedLabel'] : null,
     deploySignalAvailable: raw['deploySignalAvailable'] === true,
+    // Null rather than a reconstructed phrase: a report written before the suffix
+    // existed genuinely has no furthest-rung sentence, and inventing one from the
+    // notches would put words in an old report's mouth.
+    rungSuffix: typeof raw['rungSuffix'] === 'string' ? raw['rungSuffix'] : null,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// The confidence collar
+// ---------------------------------------------------------------------------
+
+/** `points_uninformative` → `Points are uninformative`. */
+const VERDICT_LABELS: Readonly<Record<string, string>> = {
+  points_uninformative: 'Points are uninformative',
+  estimates_sparse: 'Estimates are sparse',
+  scope_is_fiction: 'Scope is fiction',
+  workflow_inconsistent: 'The workflow is inconsistent',
+  statuses_stale: 'Statuses are stale',
+  insufficient_history: 'There is not enough history',
+};
+
+/** A threshold value, formatted for the unit it is stated in. */
+function unitLabel(value: number, unit: string): string {
+  switch (unit) {
+    case 'basis_points':
+      return `${(value / 10_000).toFixed(2)}`;
+    case 'working_days':
+      return `${value} working ${value === 1 ? 'day' : 'days'}`;
+    case 'sample_size':
+      return `${value} completed ${value === 1 ? 'sprint' : 'sprints'}`;
+    default:
+      return String(value);
+  }
+}
+
+function verdictView(raw: unknown): CalibrationVerdictView | null {
+  if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  const record = raw as Record<string, unknown>;
+  const name = asText(record['name']);
+  const value = asNumber(record['value']);
+  if (name === null || value === null) return null;
+
+  const threshold =
+    record['threshold'] !== null && typeof record['threshold'] === 'object'
+      ? (record['threshold'] as Record<string, unknown>)
+      : {};
+  const unit = asText(threshold['unit']) ?? 'count';
+  const thresholdValue = asNumber(threshold['value']);
+
+  return {
+    name,
+    label: VERDICT_LABELS[name] ?? name,
+    statement: asText(record['statement']) ?? '',
+    thresholdId: asText(threshold['id']) ?? '',
+    valueLabel: unitLabel(value, unit),
+    thresholdLabel: thresholdValue === null ? '' : unitLabel(thresholdValue, unit),
+    sampleSize: asNumber(record['sampleSize']) ?? 0,
+  };
+}
+
+/**
+ * The collar, from the stored report payload.
+ *
+ * Read defensively out of `report.payload.findings`, exactly as `alignmentView` reads
+ * the item payload, and for the same reason: a report persisted by an earlier build
+ * carries no audit at all, and the honest answer there is no collar rather than a
+ * collar full of zeroes. `null` means "this report predates the audit", which the
+ * page states as an absence instead of rendering an empty box.
+ */
+export function calibrationCollarView(payload: Record<string, unknown>): CalibrationCollarView | null {
+  const findings =
+    payload['findings'] !== null && typeof payload['findings'] === 'object' && !Array.isArray(payload['findings'])
+      ? (payload['findings'] as Record<string, unknown>)
+      : null;
+  if (findings === null) return null;
+
+  const projection =
+    findings['projection'] !== null && typeof findings['projection'] === 'object'
+      ? (findings['projection'] as Record<string, unknown>)
+      : null;
+  const audit =
+    findings['calibrationAudit'] !== null && typeof findings['calibrationAudit'] === 'object'
+      ? (findings['calibrationAudit'] as Record<string, unknown>)
+      : null;
+  if (projection === null || audit === null) return null;
+
+  const band =
+    projection['band'] !== null && typeof projection['band'] === 'object'
+      ? (projection['band'] as Record<string, unknown>)
+      : {};
+  const confidenceRaw = asText(band['confidence']);
+  const confidence =
+    confidenceRaw === 'low' || confidenceRaw === 'medium' || confidenceRaw === 'high' ? confidenceRaw : null;
+
+  const calibration =
+    projection['calibration'] !== null && typeof projection['calibration'] === 'object'
+      ? (projection['calibration'] as Record<string, unknown>)
+      : {};
+
+  const verdicts = Array.isArray(audit['verdicts'])
+    ? (audit['verdicts'] as readonly unknown[]).map(verdictView).filter((entry): entry is CalibrationVerdictView => entry !== null)
+    : [];
+
+  return {
+    projectedDate: projection['kind'] === 'projected' ? asText(projection['utcDate']) : null,
+    bandStatement: asText(projection['statement']) ?? '',
+    confidence,
+    // Low confidence, or any verdict at all: the date loses conviction the moment
+    // the audit has something to say about the data underneath it.
+    lowConviction: confidence !== 'high' && (confidence === 'low' || verdicts.length > 0),
+    method: asText(projection['method']),
+    selectedByVerdicts: asStringList(projection['selectedByVerdicts']),
+    calibrationStatement: asText(calibration['statement']) ?? '',
+    auditStatement: asText(audit['statement']) ?? '',
+    verdicts,
+    suppressed: asStringList(audit['suppressed']),
   };
 }
 
@@ -437,6 +647,11 @@ export function buildReportView(input: BuildReportViewInput): ReportView {
     windowLabel: windowLabel(report.window, timezone),
     generatedAtLabel: formatCivilDateTime(report.generatedAt, timezone),
     rendererId: report.rendererId,
+    narrated: report.rendererId === 'narrated',
+    fallbackRenderer: report.fallbackRenderer,
+    // Read defensively together: a flag with no reason would print an empty
+    // disclosure, and a reason with no flag is a row that disagrees with itself.
+    fallbackReason: report.fallbackRenderer ? report.fallbackReason : null,
     coverageStatus: report.coverageStatus,
     sections: sections.map((section) => ({
       key: section.sectionKey,
@@ -447,12 +662,18 @@ export function buildReportView(input: BuildReportViewInput): ReportView {
       ordinal: section.ordinal,
       title: section.title,
       prose: section.prose,
+      paragraphs: parseProse(section.prose),
+      narrated: report.rendererId === 'narrated',
       summary: section.summary,
       emptyStatement: section.emptyStatement,
       items: section.items.map((item) => ({
         stableId: item.stableId,
-        headline: item.headline,
-        detail: item.detail,
+        // Collapsed because these two reach the page *outside* a paragraph — as an
+        // accessible name and as the fallback when a claim has no prose — and a
+        // ticket titled `fine\r\nBcc: …` would otherwise carry a bare CR into an
+        // attribute. No words are removed; only the whitespace between them.
+        headline: collapseWhitespace(item.headline),
+        detail: collapseWhitespace(item.detail),
         prose: item.prose,
         ageDays: item.ageDays,
         changeClause: item.changeClause,
@@ -471,6 +692,7 @@ export function buildReportView(input: BuildReportViewInput): ReportView {
       })),
     })),
     freshness: freshnessView(input.freshness, timezone),
+    collar: calibrationCollarView(report.payload),
     timeShiftNote: input.timeShiftNote ?? null,
   };
 }

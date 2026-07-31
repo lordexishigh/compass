@@ -453,6 +453,12 @@ export function renderSectionParts(report: StructuredReport, section: ReportSect
   // The confidence collar appears once per report, under Progress: the
   // calibration verdict in the product's own plain voice, carrying the same
   // clause the projected date does, so the two cannot be read apart.
+  //
+  // Two lines, matching the design's two-line collar. The first is the estimate
+  // calibration; the second is the Process Calibration Audit's verdict on the data
+  // as a whole. The audit line comes second on purpose — it is allowed to undercut
+  // the date directly above it, and the reader should meet the number first and the
+  // reason to doubt it immediately after.
   let trailer: string | null = null;
   if (section.key === 'progress') {
     const projection = report.findings.projection;
@@ -462,7 +468,10 @@ export function renderSectionParts(report: StructuredReport, section: ReportSect
         ? interpretation.collar(projection.band.confidence, projection.method)
         : interpretation.threshold(projection.threshold.id, false),
     );
-    if (collar.length > 0) trailer = collar;
+    const audit = report.findings.calibrationAudit;
+    const auditLine = statedSentence(audit.statement, interpretation.calibration(audit.verdictNames));
+    const lines = [collar, auditLine].filter((line) => line.length > 0);
+    if (lines.length > 0) trailer = lines.join(' ');
   }
 
   const prose = [lead, ...claims.map((claim) => claim.prose), ...(trailer === null ? [] : [trailer])]

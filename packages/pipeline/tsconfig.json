@@ -15,6 +15,7 @@
     { "path": "../db" },
     { "path": "../ingest" },
     { "path": "../knowledge-model" },
+    { "path": "../narrator" },
     { "path": "../renderers" }
   ]
 }

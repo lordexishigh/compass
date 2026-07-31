@@ -1,4 +1,12 @@
-import { orderedEvidence, pullRequestEvidence, releaseEvidence, sprintEvidence, ticketEvidence, type EvidenceRef } from './evidence.js';
+import {
+  orderedEvidence,
+  pullRequestEvidence,
+  pullRequestLabel,
+  releaseEvidence,
+  sprintEvidence,
+  ticketEvidence,
+  type EvidenceRef,
+} from './evidence.js';
 import {
   MILLIS_PER_DAY,
   basisPoints,
@@ -19,6 +27,7 @@ import {
   scopedPullRequests,
   scopedReleaseTags,
   scopedTickets,
+  statusCategoryAt,
   textField,
   textListField,
   transitionsByTicket,
@@ -29,6 +38,7 @@ import {
 import { netTechnicalDebtChange, type TechnicalDebtSignal } from './technical-debt.js';
 import { THRESHOLDS, thresholdRef, type ThresholdRef } from './thresholds.js';
 import type { WorkloadDistribution } from './workload.js';
+import type { YesterdayItem } from './yesterday.js';
 
 /**
  * Risk detection, with severity and a trend that names what it compared against.
@@ -69,6 +79,7 @@ export const RISK_CAUSES = [
   'work_concentration',
   'estimation_noise',
   'technical_debt_growth',
+  'done_without_pull_request',
 ] as const;
 
 export type RiskCause = (typeof RISK_CAUSES)[number];
@@ -102,6 +113,16 @@ export interface RiskInputs {
   readonly workload: WorkloadDistribution;
   readonly technicalDebt: TechnicalDebtSignal;
   readonly calibration: CalibrationVerdict;
+  /**
+   * The Yesterday items, already laddered.
+   *
+   * Risks reads them rather than recomputing, because a ladder mismatch is a
+   * finding *about a line the manager just read* — "DEV-402 is accepted with no
+   * pull request behind it" has to name the same unit of work, with the same
+   * artifacts, as the Yesterday line two sections above it. Recomputing the
+   * completion here would eventually let the two disagree about what happened.
+   */
+  readonly yesterday: readonly YesterdayItem[];
 }
 
 /**
@@ -123,6 +144,7 @@ export function detectRisks(
     workConcentrationRisk(snapshot, instant, scope, inputs.workload),
     estimationNoiseRisk(snapshot, scope, inputs.calibration),
     technicalDebtRisk(snapshot, instant, scope, inputs.technicalDebt),
+    ...hygieneRisks(instant, inputs.yesterday),
   ];
 
   const severityRank: Readonly<Record<RiskSeverity, number>> = { high: 0, medium: 1, low: 2 };
@@ -305,7 +327,12 @@ function unreleasedWorkRisk(
   // Everything ahead of the tag merged inside this window: the backlog is new,
   // rather than having been measured at zero yesterday.
   const priorValue = prior === 0 ? null : prior;
-  const oldest = [...unreleased].sort((left, right) => compareNumbers(left.mergedAt, right.mergedAt))[0];
+  const oldest = [...unreleased].sort(
+    (left, right) =>
+      compareNumbers(left.mergedAt, right.mergedAt) ||
+      compareStable(left.pullRequest.naturalKey, right.pullRequest.naturalKey),
+  )[0] as { pullRequest: AnalysisEntity; mergedAt: Instant };
+  const oldestItemKeys = [...textListField(oldest.pullRequest, 'linkedItemKeys')].sort(compareStable);
 
   return {
     stableId: `risk:repository:${repositoryKey ?? 'unknown'}:unreleased_merged_work`,
@@ -320,7 +347,12 @@ function unreleasedWorkRisk(
     threshold: thresholdRef('T16'),
     ageDays: wholeDaysBetween(oldest.mergedAt, instant),
     headline: `${unreleased.length} merged pull request${unreleased.length === 1 ? '' : 's'} ${unreleased.length === 1 ? 'sits' : 'sit'} ahead of ${textField(newest.tag, 'name') ?? newest.tag.naturalKey}`,
-    detail: `${textField(newest.tag, 'name') ?? 'The newest tag'} was cut ${wholeDaysBetween(newest.releasedAt, instant)} days ago and ${unreleased.length} pull request${unreleased.length === 1 ? ' has' : 's have'} merged into ${repositoryKey ?? 'the repository'} since — ${prior} of them before this window. T16 fires at ${THRESHOLDS.T16.value}. The oldest unreleased merge has been waiting ${wholeDaysBetween(oldest.mergedAt, instant)} days.`,
+    // The oldest item is *named*, not merely counted. "Three merges are
+    // unreleased" is a number a manager can do nothing with; "#8042 has been
+    // sitting on trunk for nine days" is the one they can go and cut a tag for.
+    detail: `${textField(newest.tag, 'name') ?? 'The newest tag'} was cut ${wholeDaysBetween(newest.releasedAt, instant)} days ago and ${unreleased.length} pull request${unreleased.length === 1 ? ' has' : 's have'} merged into ${repositoryKey ?? 'the repository'} since — ${prior} of them before this window. T16 fires at ${THRESHOLDS.T16.value}. The oldest is ${pullRequestLabel(oldest.pullRequest)}${
+      oldestItemKeys.length === 0 ? '' : ` (${oldestItemKeys.join(', ')})`
+    }, which has been waiting ${wholeDaysBetween(oldest.mergedAt, instant)} days.`,
     evidence: orderedEvidence([
       releaseEvidence(newest.tag),
       ...unreleased.map((entry) => pullRequestEvidence(entry.pullRequest)),
@@ -414,7 +446,7 @@ function estimationNoiseRisk(
 ): DetectedRisk | null {
   if (calibration.verdict !== 'points_uninformative') return null;
 
-  const value = calibration.correlationBasisPoints ?? 0;
+  const value = calibration.correlation.absoluteCoefficientBasisPoints ?? 0;
   const sampled = new Set(calibration.ticketKeys);
   const tickets = scopedTickets(snapshot, scope).filter((ticket) => {
     const itemKey = textField(ticket, 'itemKey');
@@ -515,24 +547,63 @@ function technicalDebtRisk(
 }
 
 /**
- * The status category an item was in at `instant`, by replaying its transitions.
+ * Ladder mismatches, as hygiene findings.
  *
- * `null` when no transition had happened yet — which is a real answer meaning
- * "Compass has no observation of this item's state at that moment", and is
- * deliberately not treated as `todo`.
+ * A completion that crossed R1 — the tracker accepted it — with R2 uncrossed is a
+ * work item somebody marked Done with nothing in version control behind it. That
+ * is not a slow team or a risky release; it is the board describing work that
+ * cannot be found, and every number computed from that board inherits the error.
+ *
+ * It carries `T0`: the rule applies no threshold because the sources state the
+ * condition outright. One is emitted per item so the finding *names the ticket* —
+ * an aggregate count is something a manager can read and do nothing about, and the
+ * fix here is always "go and ask about this specific item".
  */
-export function statusCategoryAt(
-  transitions: readonly { readonly toStatusCategory: string; readonly transitionedAt: number }[],
-  instant: Instant,
-): string | null {
-  let category: string | null = null;
-  let at = -Infinity;
-  for (const transition of transitions) {
-    if (transition.transitionedAt > instant) continue;
-    if (transition.transitionedAt >= at) {
-      at = transition.transitionedAt;
-      category = transition.toStatusCategory;
-    }
-  }
-  return category;
+function hygieneRisks(instant: Instant, yesterday: readonly YesterdayItem[]): readonly DetectedRisk[] {
+  const mismatched = yesterday.filter((item) => {
+    const accepted = item.ladder.notches.find((notch) => notch.rung === 'R1')?.crossed === true;
+    const merged = item.ladder.notches.find((notch) => notch.rung === 'R2')?.crossed === true;
+    return accepted && !merged;
+  });
+
+  return mismatched
+    .map((item): DetectedRisk => {
+      const subject = item.ticketKey ?? item.unitOfWork;
+      const ageDays = wholeDaysBetween(item.completedAt as Instant, instant);
+      return {
+        stableId: `risk:ticket:${subject}:done_without_pull_request`,
+        cause: 'done_without_pull_request',
+        // Every mismatch is the same size: one item that cannot be traced. There
+        // is nothing to be twice as far past, so the severity is not derived from a
+        // distance the way the measured risks are.
+        severity: 'medium',
+        trend: 'new',
+        subject: { kind: 'ticket', key: subject, label: subject },
+        measured: { value: 1, unit: 'count' },
+        priorValue: null,
+        priorAt: null,
+        priorBasis: 'no_prior_observation',
+        threshold: thresholdRef('T0'),
+        ageDays,
+        headline: `${subject} is accepted with no pull request behind it`,
+        detail: `The tracker moved ${subject} into a done status${
+          item.title.length > 0 ? ` — "${item.title}"` : ''
+        }, and Compass can find no pull request the forge linked to it. The completion ladder therefore stops at R1 ${
+          item.ladder.notches[0]?.label ?? 'accepted'
+        } with nothing above it. Either the work landed under a branch that never named the key, or the status was moved ahead of the work; both make every points total and every velocity that counts this item wrong.`,
+        evidence: orderedEvidence(item.artifacts),
+      };
+    })
+    .sort((left, right) => compareStable(left.stableId, right.stableId));
 }
+
+/**
+ * Re-exported from `snapshot.ts`, where the one implementation lives.
+ *
+ * It was declared here first, then a second caller appeared — the carryover rate,
+ * which reconstructs each sprint's unfinished set at the instant the sprint
+ * closed. Two copies of "what state was this in then" is exactly the kind of
+ * duplication that lets a trend and a rate computed from the same history
+ * disagree, so it moved down a layer rather than being copied.
+ */
+export { statusCategoryAt } from './snapshot.js';

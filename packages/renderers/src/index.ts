@@ -37,3 +37,16 @@ export {
 } from './prose.js';
 
 export { renderCoverageLine, renderPlainTextReport, type PlainTextOptions } from './plain-text.js';
+
+export {
+  PROSE_TOKEN_TYPES,
+  collapseWhitespace,
+  escapeHtml,
+  parseProse,
+  parseProseInlines,
+  renderProseHtml,
+  renderProseText,
+  type ProseInline,
+  type ProseInlineType,
+  type ProseParagraph,
+} from './markdown.js';

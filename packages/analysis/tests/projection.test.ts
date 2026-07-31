@@ -205,9 +205,12 @@ describe('the calibration collar qualifies the date in the product’s own voice
       const calibration = projection.calibration;
       if (calibration.sampleSize < THRESHOLDS.T13.value) {
         expect(calibration.verdict, teamKey).toBe('not_enough_data');
-        expect(calibration.correlationBasisPoints).toBeNull();
       }
       expect(calibration.ticketKeys.length).toBe(calibration.sampleSize);
+      // The coefficient never travels without the sample size and the spread it was
+      // drawn from — the collar and the audit read the same object for that reason.
+      expect(calibration.correlation.sampleSize, teamKey).toBe(calibration.sampleSize);
+      expect(calibration.correlation.spread.elapsedWorkingDays.unit).toBe('working_days');
     }
   });
 

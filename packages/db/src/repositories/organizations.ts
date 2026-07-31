@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 
 import { organizations } from '../schema/tables.js';
-import type { CompassDatabase } from '../scoped-db.js';
+import type { CompassDatabase, ScopedDb } from '../scoped-db.js';
 
 /**
  * The tenant root.
@@ -56,4 +56,31 @@ export async function ensureOrganization(
     .execute();
 
   return { id: input.id, created: true };
+}
+
+export interface OrganizationRow {
+  readonly id: string;
+  readonly name: string;
+  readonly slug: string;
+  readonly timezone: string;
+}
+
+/**
+ * The tenant's own row, read through the scope like everything else.
+ *
+ * `ensureOrganization` above is the one write in Compass that cannot take a scope —
+ * the scope it would be checked against is the row being created. The *read* has no
+ * such excuse, so it takes one, and `tests/scoped-repositories.test.ts` holds every
+ * repository function but that single documented exception to the same rule.
+ *
+ * Needed because the organization's name appears in the mail Compass sends. A sign-in
+ * link that said "Compass" and nothing else would give the reader no way to tell which
+ * organization had just tried to sign them in.
+ */
+export async function findOrganization(scoped: ScopedDb): Promise<OrganizationRow | null> {
+  const rows = await scoped.selectFrom(organizations).limit(1);
+  const row = rows.at(0);
+  return row === undefined
+    ? null
+    : { id: row.id, name: row.name, slug: row.slug, timezone: row.timezone };
 }

@@ -6,12 +6,14 @@ import {
   type AlignmentVerdict,
 } from './alignment.js';
 import { detectBlockers, type DetectedBlocker } from './blockers.js';
+import { auditProcessCalibration } from './calibration.js';
 import { computeElapsedFacts, type ElapsedFactStatement } from './elapsed.js';
-import { orderedEvidence } from './evidence.js';
+import { orderedEvidence, type EvidenceRef } from './evidence.js';
 import type { GoalHierarchy } from './goal-hierarchy.js';
 import { compareStable, wholeDaysBetween, windowContains, type Instant } from './instant.js';
+import { indexCommitGraph } from './ladder.js';
 import { PROGRESS_ITEM_IDS, assessProgress, type ProgressAssessment } from './progress.js';
-import { assessCalibration, projectCompletion } from './projection.js';
+import { calibrationVerdictFrom, projectCompletion } from './projection.js';
 import { assertNoIndividualRanking } from './ranking-guard.js';
 import { generateRecommendations, type Recommendation } from './recommendations.js';
 import { aggregateReviewQueue, type ReviewQueue } from './review-queue.js';
@@ -95,11 +97,22 @@ export function generateStructuredReport(
   const reviewQueue = aggregateReviewQueue(snapshot, instant, scope);
   const workload = assessWorkload(snapshot, instant, scope);
   const technicalDebt = assessTechnicalDebt(snapshot, instant, scope);
-  const calibration = assessCalibration(snapshot, instant, scope);
-  const projection = projectCompletion(snapshot, instant, scope, progress);
+
+  // The Process Calibration Audit runs before the projection, because its verdicts
+  // are what choose the projection's method and cap its confidence band. The
+  // collar's own verdict is derived from the audit's correlation rather than
+  // recomputed, so the two cannot state different numbers for the same statistic.
+  const calibrationAudit = auditProcessCalibration(snapshot, instant, scope);
+  const calibration = calibrationVerdictFrom(calibrationAudit.statistics.pointToElapsed);
+  const projection = projectCompletion(snapshot, instant, scope, progress, calibrationAudit);
+
+  // One parent-edge graph for the whole report. R3 and R4 walk it once per item;
+  // building it per item turned a millisecond into a second on the seeded org.
+  const commitGraph = indexCommitGraph(snapshot);
 
   const yesterday = detectYesterdayItems(snapshot, instant, scope, {
     deploySignalAvailable: config.deploySignalAvailable,
+    graph: commitGraph,
   });
   const blockers = detectBlockers(snapshot, instant, scope);
   const risks = detectRisks(snapshot, instant, scope, {
@@ -108,6 +121,7 @@ export function generateStructuredReport(
     workload,
     technicalDebt,
     calibration,
+    yesterday,
   });
   const wins = detectWins(snapshot, instant, yesterday);
   const elapsedFacts = computeElapsedFacts(snapshot, instant, scope);
@@ -127,6 +141,7 @@ export function generateStructuredReport(
     progress,
     projection,
     calibration,
+    calibrationAudit,
     reviewQueue,
     workload,
     technicalDebt,
@@ -240,17 +255,25 @@ function emptyStatementFor(
 
 function yesterdayItem(instant: Instant, item: YesterdayItem): ReportItem {
   const artifacts = item.artifacts.map((reference) => reference.label).join(', ');
+  const ladder = item.ladder;
+  // A gap below the highest rung is the interesting half of a completion, so the
+  // detail says so rather than leaving the reader to count notches.
+  const gap =
+    ladder.highestCrossed === ladder.highestContiguous
+      ? ''
+      : ` A rung below it was never crossed, so this is a claim of completion rather than a chain of one — contiguous to ${ladder.highestContiguous}.`;
+
   return {
     stableId: item.stableId,
     headline: yesterdayHeadline(item),
-    detail: `Reached ${item.ladder.highestCrossed} ${item.ladder.highestCrossedLabel ?? ''} — evidence: ${artifacts}.`.replace(
+    detail: `Reached ${ladder.highestCrossed} ${ladder.highestCrossedLabel ?? ''} — evidence: ${artifacts}.${gap}`.replace(
       /\s+—/,
       ' —',
     ),
     changeTag: 'resolved',
     ageDays: wholeDaysBetween(item.completedAt as Instant, instant),
     evidence: item.artifacts,
-    ladder: item.ladder,
+    ladder,
   };
 }
 
@@ -270,6 +293,12 @@ function progressItems(findings: AnalysisFindings): readonly ReportItem[] {
         ageDays: 0,
         evidence: flow.evidence,
       },
+      // A team with no sprints still gets the projection line, and on this path it
+      // is almost always the refusal. That is the point: "no completion date,
+      // because fewer than two sprints have completed" is the honest answer for a
+      // Kanban or brand-new team, and omitting the line entirely would leave the
+      // reader to assume Compass simply had not got round to it.
+      projectionItem(findings, flow.evidence),
     ];
   }
 
@@ -297,25 +326,7 @@ function progressItems(findings: AnalysisFindings): readonly ReportItem[] {
   // is what a reader following the marker should land on. A date with no way back
   // to the board behind it is exactly the kind of unfalsifiable claim the
   // evidence rule exists to forbid.
-  if (findings.projection.kind === 'projected') {
-    items.push({
-      stableId: PROGRESS_ITEM_IDS.projection,
-      headline: `Projected completion ${findings.projection.utcDate}`,
-      detail: `${findings.projection.statement} ${findings.projection.calibration.statement}`,
-      changeTag: 'unchanged',
-      ageDays: 0,
-      evidence: sprint.evidence,
-    });
-  } else {
-    items.push({
-      stableId: PROGRESS_ITEM_IDS.projection,
-      headline: 'No completion date',
-      detail: findings.projection.statement,
-      changeTag: 'unchanged',
-      ageDays: 0,
-      evidence: sprint.evidence,
-    });
-  }
+  items.push(projectionItem(findings, sprint.evidence));
 
   if (progress.velocity.kind === 'measured') {
     items.push({
@@ -333,6 +344,46 @@ function progressItems(findings: AnalysisFindings): readonly ReportItem[] {
   }
 
   return items;
+}
+
+/**
+ * The projected date, or the stated refusal to give one.
+ *
+ * Either way it carries the *whole* reasoning: the method, the audit verdicts that
+ * selected it, and the confidence band. That is the difference between a date a
+ * manager can argue with and a date they either believe or ignore — and it is why
+ * the refusal arm is built here too rather than being a shorter, quieter branch.
+ * "No completion date" with no reason attached reads as a bug in Compass; "no
+ * completion date, because two sprints have not completed" reads as an answer.
+ */
+function projectionItem(findings: AnalysisFindings, evidence: readonly EvidenceRef[]): ReportItem {
+  const projection = findings.projection;
+  const audit = findings.calibrationAudit;
+  const verdicts = projection.selectedByVerdicts;
+  const because =
+    verdicts.length === 0
+      ? ''
+      : ` Method selected by the calibration audit: ${verdicts.join(', ')}.`;
+
+  if (projection.kind === 'projected') {
+    return {
+      stableId: PROGRESS_ITEM_IDS.projection,
+      headline: `Projected completion ${projection.utcDate}`,
+      detail: `${projection.statement} ${projection.calibration.statement} Computed by ${projection.reasoning.method === 'cycle_time' ? 'measured cycle time' : 'trailing velocity'} at ${projection.band.confidence} confidence — ${projection.reasoning.formula}.${because} ${audit.statement}`,
+      changeTag: 'unchanged',
+      ageDays: 0,
+      evidence,
+    };
+  }
+
+  return {
+    stableId: PROGRESS_ITEM_IDS.projection,
+    headline: 'No completion date',
+    detail: `${projection.statement}${because} ${audit.statement}`,
+    changeTag: 'unchanged',
+    ageDays: 0,
+    evidence,
+  };
 }
 
 function progressSummary(progress: ProgressAssessment): string | undefined {

@@ -36,14 +36,19 @@ const asCases = (packages: readonly WorkspacePackage[]) =>
   packages.map((workspacePackage) => [workspacePackage.relativeDirectory, workspacePackage] as const);
 
 describe('the pnpm workspace holds every layer as its own package', () => {
-  it('contains the seven layer packages the architecture names', () => {
+  it('contains every layer package the architecture names', () => {
     expect(layerPackages.map((workspacePackage) => workspacePackage.directoryName)).toEqual([
       'analysis',
+      'auth',
       'clock',
       'connector-port',
       'db',
       'ingest',
       'knowledge-model',
+      // Between `renderers` and `pipeline`: narration's fail-closed fallback is the
+      // deterministic template renderer, so it sits above the renderers and calls
+      // them, and it writes no rows, so it sits below the pipeline.
+      'narrator',
       'pipeline',
       'renderers',
       'seed-connector',

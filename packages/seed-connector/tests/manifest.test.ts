@@ -177,7 +177,7 @@ describe('every identifier the manifest names resolves to a real row', () => {
     }
   });
 
-  it('documents all eight planted pathologies', () => {
+  it('documents all nine planted pathologies', () => {
     expect(bundle.manifest.pathologies.map((pathology) => pathology.id)).toEqual([
       'off-goal-billing-migration',
       'review-bottleneck-marcus-hale',
@@ -186,6 +186,7 @@ describe('every identifier the manifest names resolves to a real row', () => {
       'estimation-noise-plat',
       'done-with-no-pull-request-INS-204',
       'merged-not-released-platform-api',
+      'process-hygiene-plat',
       'tech-debt-growth-plat',
     ]);
   });

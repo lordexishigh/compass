@@ -16,11 +16,15 @@ import {
   detectWins,
   detectYesterdayItems,
   generateStructuredReport,
+  indexCommitGraph,
   resolveScope,
   rungAtOrAbove,
+  sectionOf,
   severityFor,
   trendFor,
+  wholeDaysBetween,
 } from '@compass/analysis';
+import { instantFromIso } from '@compass/clock';
 
 import { SEED_NOW, buildSeedSnapshot, orphanPullRequestSnapshot } from './helpers/seed-snapshot.js';
 
@@ -35,6 +39,10 @@ const platform = buildSeedSnapshot({ scope: { kind: 'team', teamKey: 'platform' 
 const platformScope = resolveScope(platform);
 const checkout = buildSeedSnapshot({ scope: { kind: 'team', teamKey: 'checkout' } });
 const checkoutScope = resolveScope(checkout);
+
+/** R3 and R4 walk parent edges, so every ladder caller is handed the commit graph. */
+const ladderOptions = (snapshot: Parameters<typeof indexCommitGraph>[0]) =>
+  ({ deploySignalAvailable: false, graph: indexCommitGraph(snapshot) }) as const;
 
 describe('every blocker names its signal, its threshold and its evidence', () => {
   const blockers = [
@@ -247,6 +255,31 @@ describe('risks carry severity and a trend with the value it compared against', 
     expect(unreleased?.evidence.some((reference) => reference.kind === 'release')).toBe(true);
   });
 
+  it('names the oldest unreleased item and its age rather than only a count', () => {
+    // `merged-not-released-platform-api` plants three merges ahead of `v4.2.0`:
+    // #9301 at 2026-07-29T18:05Z, #9302 at 2026-07-30T10:47Z, #9303 at
+    // 2026-07-30T16:12Z. The oldest is the one a manager acts on — it is what they
+    // cut the next tag for — so it is named, with how long it has been waiting.
+    const mergedAt = [
+      '2026-07-29T18:05:00.000Z',
+      '2026-07-30T10:47:00.000Z',
+      '2026-07-30T16:12:00.000Z',
+    ].map(instantFromIso);
+    const unreleased = risks.find((risk) => risk.cause === 'unreleased_merged_work');
+
+    expect(unreleased).toBeDefined();
+    expect(unreleased?.headline).toContain('v4.2.0');
+    expect(unreleased?.detail).toContain('#9301');
+    expect(unreleased?.detail).toContain('PLAT-753');
+
+    // Computed from the three planted instants rather than asserted as a literal:
+    // the age reported has to be the *largest* of them, which is what proves the
+    // detector picked the oldest merge and not merely the first one it walked past.
+    const oldestAgeDays = Math.max(...mergedAt.map((at) => wholeDaysBetween(at, SEED_NOW)));
+    expect(unreleased?.ageDays).toBe(oldestAgeDays);
+    expect(unreleased?.detail).toContain(`waiting ${oldestAgeDays} days`);
+  });
+
   it('orders risks most severe first', () => {
     const rank = { high: 0, medium: 1, low: 2 } as const;
     for (let index = 1; index < risks.length; index += 1) {
@@ -255,10 +288,75 @@ describe('risks carry severity and a trend with the value it compared against', 
   });
 });
 
+/**
+ * The other half of the ladder-mismatch rule.
+ *
+ * `unreleased_merged_work` fires when code has landed and not shipped. This one
+ * fires on the opposite failure: the tracker says finished and version control has
+ * never heard of the work. It is the cheapest event in the chain to produce — one
+ * click — and it silently corrupts every points total and every velocity that
+ * counts the item, which is why it is named per ticket rather than counted.
+ */
+describe('a ticket accepted with no pull request becomes a hygiene finding', () => {
+  const insights = buildSeedSnapshot({ scope: { kind: 'team', teamKey: 'insights' } });
+  const report = generateStructuredReport(insights, SEED_NOW);
+  const hygiene = report.findings.risks.filter((risk) => risk.cause === 'done_without_pull_request');
+
+  it('names the seeded item the tracker closed with nothing behind it', () => {
+    // `done-with-no-pull-request-INS-204`: INS-204 transitions to Done at
+    // 2026-07-30T11:05Z with no pull request, no branch and no commit naming it.
+    const finding = hygiene.find((risk) => risk.subject.key === 'INS-204');
+
+    expect(hygiene.map((risk) => risk.subject.key), 'the planted pathology must be named').toContain('INS-204');
+    expect(finding?.subject.kind).toBe('ticket');
+    expect(finding?.headline).toContain('INS-204');
+    expect(finding?.detail).toContain('no pull request');
+    // T0: the sources state the condition outright, so no number is applied.
+    expect(finding?.threshold.id).toBe('T0');
+    expect(finding?.measured.value).toBe(1);
+  });
+
+  it('fires precisely because the ladder stopped at R1 with R2 uncrossed', () => {
+    const item = report.findings.yesterday.find((entry) => entry.ticketKey === 'INS-204');
+
+    expect(item, 'INS-204 completed inside the report window').toBeDefined();
+    expect(item?.ladder.notches.find((notch) => notch.rung === 'R1')?.crossed).toBe(true);
+    expect(item?.ladder.notches.find((notch) => notch.rung === 'R2')?.crossed).toBe(false);
+    expect(item?.ladder.highestCrossed).toBe('R1');
+  });
+
+  it('reaches the Risks section rather than staying inside findings', () => {
+    const named = sectionOf(report, 'risks').items.filter((item) => item.headline.includes('INS-204'));
+
+    expect(named.length, 'the finding must be on the page a manager reads').toBe(1);
+  });
+
+  it('does not name a completion that does have a pull request behind it', () => {
+    // A detector that named every completion would satisfy the assertions above, so
+    // the platform team — which merges its work — must produce no finding for any
+    // item whose ladder reached R2.
+    const platformReport = generateStructuredReport(platform, SEED_NOW);
+    const merged = platformReport.findings.yesterday.filter(
+      (entry) => entry.ladder.notches.find((notch) => notch.rung === 'R2')?.crossed === true,
+    );
+    const flagged = new Set(
+      platformReport.findings.risks
+        .filter((risk) => risk.cause === 'done_without_pull_request')
+        .map((risk) => risk.subject.key),
+    );
+
+    expect(merged.length, 'the platform team merges its work').toBeGreaterThan(0);
+    for (const entry of merged) {
+      const subject = entry.ticketKey ?? entry.unitOfWork;
+      expect(flagged.has(subject), `${subject} merged, yet was named a hygiene finding`).toBe(false);
+    }
+  });
+});
+
 describe('wins follow rule W1 and nothing else', () => {
   const wins = [
-    ...detectWins(platform, SEED_NOW, detectYesterdayItems(platform, SEED_NOW, platformScope, { deploySignalAvailable: false })),
-    ...detectWins(checkout, SEED_NOW, detectYesterdayItems(checkout, SEED_NOW, checkoutScope, { deploySignalAvailable: false })),
+    ...detectWins(platform, SEED_NOW, detectYesterdayItems(platform, SEED_NOW, platformScope, ladderOptions(platform))),
+    ...detectWins(checkout, SEED_NOW, detectYesterdayItems(checkout, SEED_NOW, checkoutScope, ladderOptions(checkout))),
   ];
 
   it('yields at least two wins from the seeded dataset', () => {
@@ -298,7 +396,7 @@ describe('wins follow rule W1 and nothing else', () => {
     const insightsWins = detectWins(
       insights,
       SEED_NOW,
-      detectYesterdayItems(insights, SEED_NOW, insightsScope, { deploySignalAvailable: false }),
+      detectYesterdayItems(insights, SEED_NOW, insightsScope, ladderOptions(insights)),
     );
 
     expect(insightsWins.some((win) => win.ticketKey === 'INS-204')).toBe(false);
@@ -405,6 +503,7 @@ describe('the technical-debt signal is a named set, not a score', () => {
       workload: assessWorkload(platform, SEED_NOW, platformScope),
       technicalDebt: debt,
       calibration: assessCalibration(platform, SEED_NOW, platformScope),
+      yesterday: detectYesterdayItems(platform, SEED_NOW, platformScope, ladderOptions(platform)),
     });
 
     if (debt.growth === 'growing') {

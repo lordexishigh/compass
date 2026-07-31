@@ -9,11 +9,13 @@ import {
   compareStable,
   detectYesterdayItems,
   entitiesOfKind,
+  indexCommitGraph,
   instantField,
   resolveScope,
   scopedPullRequests,
   textField,
   windowContains,
+  type AnalysisSnapshot,
   type Instant,
 } from '@compass/analysis';
 
@@ -29,7 +31,17 @@ import { SEED_NOW, SEED_WINDOW, buildSeedSnapshot } from './helpers/seed-snapsho
  */
 const checkout = buildSeedSnapshot({ scope: { kind: 'team', teamKey: 'checkout' } });
 const checkoutScope = resolveScope(checkout);
-const options = { deploySignalAvailable: false } as const;
+
+/**
+ * The ladder's R3 and R4 detectors walk parent edges, so every caller supplies the
+ * graph. Built per snapshot rather than shared, because a graph indexed from one
+ * snapshot and used against another would answer reachability questions about the
+ * wrong repository history.
+ */
+const optionsFor = (snapshot: AnalysisSnapshot) =>
+  ({ deploySignalAvailable: false, graph: indexCommitGraph(snapshot) }) as const;
+
+const options = optionsFor(checkout);
 
 const items = detectYesterdayItems(checkout, SEED_NOW, checkoutScope, options);
 
@@ -167,7 +179,10 @@ describe('the completion ladder', () => {
   });
 
   it('marks R5 reachable when a connector reports a deploy signal', () => {
-    const withDeploy = detectYesterdayItems(checkout, SEED_NOW, checkoutScope, { deploySignalAvailable: true });
+    const withDeploy = detectYesterdayItems(checkout, SEED_NOW, checkoutScope, {
+      ...options,
+      deploySignalAvailable: true,
+    });
     for (const item of withDeploy) {
       expect(item.ladder.notches[4].reachable).toBe(true);
       expect(item.ladder.notches[4].statement).toBeNull();
@@ -182,18 +197,32 @@ describe('the completion ladder', () => {
     expect(merged?.evidence.map((reference) => reference.label)).toContain('#9201');
   });
 
-  it('exposes a tracker-only completion as R3 with R1 and R2 uncrossed', () => {
+  it('exposes a merge with no tracker acceptance as R3 crossed and R0 contiguous', () => {
+    // `blocked-then-merged-CHK-701`: the code merged and reached trunk while the
+    // tracker still says Blocked. R2 and R3 are crossed, R1 is not — so the highest
+    // crossed rung is R3 and the contiguous rung is R0, and the win rule reads the
+    // contiguous one. A merge no board can account for is a finding, not a win.
+    const chk701 = items.find((item) => item.ticketKey === 'CHK-701');
+
+    expect(chk701?.ladder.notches.find((notch) => notch.rung === 'R1')?.crossed).toBe(false);
+    expect(chk701?.ladder.notches.find((notch) => notch.rung === 'R3')?.crossed).toBe(true);
+    expect(chk701?.ladder.highestCrossed).toBe('R3');
+    expect(chk701?.ladder.highestContiguous).toBe('R0');
+  });
+
+  it('exposes a tracker-only completion as R1 with nothing above it', () => {
     // `done-with-no-pull-request-INS-204`: marked Done with nothing in version
     // control to show for it. The gap is the finding.
     const insights = buildSeedSnapshot({ scope: { kind: 'team', teamKey: 'insights' } });
-    const insightsItems = detectYesterdayItems(insights, SEED_NOW, resolveScope(insights), options);
+    const insightsItems = detectYesterdayItems(insights, SEED_NOW, resolveScope(insights), optionsFor(insights));
     const ins204 = insightsItems.find((item) => item.ticketKey === 'INS-204');
 
     expect(ins204, 'INS-204 transitions to Done inside the window').toBeDefined();
-    expect(ins204?.ladder.notches.find((notch) => notch.rung === 'R1')?.crossed).toBe(false);
+    expect(ins204?.ladder.notches.find((notch) => notch.rung === 'R1')?.crossed).toBe(true);
     expect(ins204?.ladder.notches.find((notch) => notch.rung === 'R2')?.crossed).toBe(false);
-    expect(ins204?.ladder.notches.find((notch) => notch.rung === 'R3')?.crossed).toBe(true);
-    expect(ins204?.ladder.highestCrossed).toBe('R3');
+    expect(ins204?.ladder.notches.find((notch) => notch.rung === 'R3')?.crossed).toBe(false);
+    expect(ins204?.ladder.highestCrossed).toBe('R1');
+    expect(ins204?.ladder.rungSuffix).toBe('accepted, not yet merged');
   });
 });
 

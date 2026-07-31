@@ -266,6 +266,65 @@ export interface FixturePathologies {
       readonly mergeRevisionId: string;
     }[];
   };
+  /**
+   * The two Process Calibration Audit cases a generated backlog never produces:
+   * a story estimated alongside its own estimated sub-tasks, and a ticket that
+   * entered In Progress and was never touched again.
+   */
+  readonly processHygiene: {
+    readonly id: string;
+    readonly title: string;
+    readonly projectKey: string;
+    readonly developerKey: string;
+    readonly doubleCountedParent: {
+      readonly itemKey: string;
+      readonly title: string;
+      readonly points: number;
+      readonly createdAt: string;
+      readonly subTasks: readonly {
+        readonly itemKey: string;
+        readonly title: string;
+        readonly points: number;
+      }[];
+    };
+    readonly staleTicket: {
+      readonly itemKey: string;
+      readonly title: string;
+      readonly points: number;
+      readonly createdAt: string;
+      readonly inProgressAt: string;
+      /** Working days it has sat still as of the manifest's `now`. */
+      readonly expectedStaleWorkingDays: number;
+    };
+    /**
+     * The two negative controls, one per limb of the stale rule.
+     *
+     * `recentlyMoved` entered its status yesterday, so it fails the dwell limb.
+     * `activelyPushed` has been in progress for a fortnight but was committed to
+     * yesterday, so it passes the dwell limb and fails the activity limb. Without
+     * both, "a freshly-active ticket is not named" would only ever exercise one of
+     * the two conditions the detector ands together.
+     */
+    readonly recentlyMoved: {
+      readonly itemKey: string;
+      readonly title: string;
+      readonly points: number;
+      readonly createdAt: string;
+      readonly inProgressAt: string;
+    };
+    readonly activelyPushed: {
+      readonly itemKey: string;
+      readonly title: string;
+      readonly points: number;
+      readonly createdAt: string;
+      readonly inProgressAt: string;
+      readonly repositoryKey: string;
+      readonly branchName: string;
+      readonly revisionId: string;
+      readonly commitAt: string;
+      readonly subject: string;
+    };
+  };
   readonly technicalDebtGrowth: {
     readonly id: string;
     readonly title: string;

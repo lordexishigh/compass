@@ -22,10 +22,13 @@ export const compassAliases: ReadonlyArray<{ find: string; replacement: string }
   { find: '@compass/seed-connector', replacement: resolveSource('seed-connector/src/index.ts') },
   { find: '@compass/db/testing', replacement: resolveSource('db/src/testing/pglite.ts') },
   { find: '@compass/db', replacement: resolveSource('db/src/index.ts') },
+  { find: '@compass/auth', replacement: resolveSource('auth/src/index.ts') },
   { find: '@compass/knowledge-model', replacement: resolveSource('knowledge-model/src/index.ts') },
   { find: '@compass/ingest', replacement: resolveSource('ingest/src/index.ts') },
   { find: '@compass/analysis', replacement: resolveSource('analysis/src/index.ts') },
   { find: '@compass/renderers', replacement: resolveSource('renderers/src/index.ts') },
+  { find: '@compass/narrator/testkit', replacement: resolveSource('narrator/src/testkit/index.ts') },
+  { find: '@compass/narrator', replacement: resolveSource('narrator/src/index.ts') },
   { find: '@compass/pipeline', replacement: resolveSource('pipeline/src/index.ts') },
 ];
 

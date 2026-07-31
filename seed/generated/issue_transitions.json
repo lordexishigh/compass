@@ -11425,6 +11425,23 @@
   },
   {
     "actorIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "account",
+      "value": "acct-tom-whitfield"
+    },
+    "fromStatus": "To Do",
+    "fromStatusCategory": "todo",
+    "itemKey": "PLAT-907",
+    "occurredAt": "2026-07-15T10:00:00.000Z",
+    "sourceKey": "primary-tracker",
+    "sourceKind": "tracker",
+    "sourceRecordId": "transition-PLAT-907-1",
+    "toStatus": "In Progress",
+    "toStatusCategory": "in_progress",
+    "transitionedAt": "2026-07-15T10:00:00.000Z"
+  },
+  {
+    "actorIdentity": {
       "displayName": "Clara Mbeki",
       "kind": "account",
       "value": "acct-clara-mbeki"
@@ -13003,6 +13020,23 @@
     "toStatus": "In Progress",
     "toStatusCategory": "in_progress",
     "transitionedAt": "2026-07-22T02:38:00.000Z"
+  },
+  {
+    "actorIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "account",
+      "value": "acct-tom-whitfield"
+    },
+    "fromStatus": "To Do",
+    "fromStatusCategory": "todo",
+    "itemKey": "PLAT-905",
+    "occurredAt": "2026-07-22T10:00:00.000Z",
+    "sourceKey": "primary-tracker",
+    "sourceKind": "tracker",
+    "sourceRecordId": "transition-PLAT-905-1",
+    "toStatus": "In Progress",
+    "toStatusCategory": "in_progress",
+    "transitionedAt": "2026-07-22T10:00:00.000Z"
   },
   {
     "actorIdentity": {
@@ -14737,6 +14771,23 @@
     "toStatus": "In Review",
     "toStatusCategory": "in_progress",
     "transitionedAt": "2026-07-30T08:59:00.000Z"
+  },
+  {
+    "actorIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "account",
+      "value": "acct-tom-whitfield"
+    },
+    "fromStatus": "To Do",
+    "fromStatusCategory": "todo",
+    "itemKey": "PLAT-906",
+    "occurredAt": "2026-07-30T10:00:00.000Z",
+    "sourceKey": "primary-tracker",
+    "sourceKind": "tracker",
+    "sourceRecordId": "transition-PLAT-906-1",
+    "toStatus": "In Progress",
+    "toStatusCategory": "in_progress",
+    "transitionedAt": "2026-07-30T10:00:00.000Z"
   },
   {
     "actorIdentity": {

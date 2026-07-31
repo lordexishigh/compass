@@ -2,6 +2,7 @@ import type { Instant, TimeWindow } from '@compass/clock';
 import { and, asc, desc, eq, type InferSelectModel } from 'drizzle-orm';
 
 import { fromDatabaseInstant, toDatabaseInstant } from '../schema/columns.js';
+import { narrationTraces } from '../schema/narration.js';
 import {
   REPORT_SECTION_COUNT,
   reportItemEvidence,
@@ -92,6 +93,10 @@ export interface ReportInput {
   readonly payload: Record<string, unknown>;
   readonly prose: string;
   readonly rendererId: string;
+  /** True only when narration was attempted and the template renderer answered. */
+  readonly fallbackRenderer: boolean;
+  /** Null exactly when `fallbackRenderer` is false. */
+  readonly fallbackReason: string | null;
   readonly coverageStatus: string;
   readonly ingestRunId: string | null;
   /** Passed in by the edge. This layer never reads a clock. */
@@ -114,6 +119,8 @@ export interface StoredReport {
   readonly payload: Record<string, unknown>;
   readonly prose: string;
   readonly rendererId: string;
+  readonly fallbackRenderer: boolean;
+  readonly fallbackReason: string | null;
   readonly coverageStatus: string;
   readonly ingestRunId: string | null;
   readonly generatedAt: Instant;
@@ -208,6 +215,11 @@ export async function saveReport(scoped: ScopedDb, input: ReportInput): Promise<
     payload: input.payload,
     prose: input.prose,
     rendererId: input.rendererId,
+    fallbackRenderer: input.fallbackRenderer,
+    // Normalised rather than trusted: a reason with no flag would render a
+    // disclosure the report row says did not happen, and a flag with no reason
+    // would render a disclosure with nothing in it.
+    fallbackReason: input.fallbackRenderer ? input.fallbackReason : null,
     coverageStatus: input.coverageStatus,
     ingestRunId: input.ingestRunId,
     generatedAt: toDatabaseInstant(input.generatedAt),
@@ -276,8 +288,19 @@ export async function saveReport(scoped: ScopedDb, input: ReportInput): Promise<
   return stored;
 }
 
-/** Children first: the foreign keys point downward, so the deletes go upward. */
+/**
+ * Children first: the foreign keys point downward, so the deletes go upward.
+ *
+ * `narration_traces` belongs here even though the pipeline writes it in a later
+ * stage. It references `reports.id`, so a replay that deleted the report row without
+ * clearing the traces first hit a foreign-key violation — and because a replay is the
+ * *normal* path (a cold start re-runs the day it has no report for, a backfill
+ * re-runs a past instant), that broke every second run with narration enabled. One
+ * function owns the report's cascade; a table added to the schema without being added
+ * here is the bug this comment exists to prevent recurring.
+ */
 async function deleteReportChildren(scoped: ScopedDb, reportId: string): Promise<void> {
+  await scoped.deleteFrom(narrationTraces, eq(narrationTraces.reportId, reportId));
   await scoped.deleteFrom(reportItemEvidence, eq(reportItemEvidence.reportId, reportId));
   await scoped.deleteFrom(reportItems, eq(reportItems.reportId, reportId));
   await scoped.deleteFrom(reportSections, eq(reportSections.reportId, reportId));
@@ -300,6 +323,8 @@ const toStoredReport = (row: ReportRow): StoredReport => ({
   payload: row.payload,
   prose: row.prose,
   rendererId: row.rendererId,
+  fallbackRenderer: row.fallbackRenderer,
+  fallbackReason: row.fallbackReason,
   coverageStatus: row.coverageStatus,
   ingestRunId: row.ingestRunId,
   generatedAt: fromDatabaseInstant(row.generatedAt),

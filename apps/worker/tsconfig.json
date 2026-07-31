@@ -9,11 +9,13 @@
   },
   "include": ["src/**/*.ts"],
   "references": [
+    { "path": "../../packages/auth" },
     { "path": "../../packages/clock" },
     { "path": "../../packages/connector-port" },
     { "path": "../../packages/db" },
     { "path": "../../packages/ingest" },
     { "path": "../../packages/knowledge-model" },
+    { "path": "../../packages/narrator" },
     { "path": "../../packages/pipeline" },
     { "path": "../../packages/seed-connector" }
   ]

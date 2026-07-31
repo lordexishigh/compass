@@ -46,6 +46,7 @@ export const INTERPRETATION_TEMPLATE_IDS = [
   'collar',
   'alignment',
   'unattributed',
+  'calibration',
 ] as const;
 
 export type InterpretationTemplateId = (typeof INTERPRETATION_TEMPLATE_IDS)[number];
@@ -94,8 +95,14 @@ export const INTERPRETATION_TEMPLATES: readonly InterpretationTemplateDefinition
     purpose:
       'A completion. Says which rung of the Completion Ladder was actually reached, and whether anything below it was skipped, so "done" is never a single bit.',
     example: 'so it reached R2 merged and nothing above that',
+    // The label alternation is an allowlist, not a convenience. It is what made the
+    // Completion Ladder's rung rename a build failure rather than a silent
+    // regression: a renderer emitting `R3 integrated` against a pattern that only
+    // knew `accepted` would have thrown `UngroundedNumberError` for the whole
+    // report, which is the correct fail-closed behaviour and the reason the two
+    // vocabularies have to be edited together.
     pattern:
-      /\bso (?:it reached R[1-5] (?:committed|merged|accepted|released|deployed) (?:and nothing above that|with a rung skipped below it)|nothing it did crossed a completion rung)\b/,
+      /\bso (?:it reached R[1-5] (?:accepted|merged|integrated|released|deployed) (?:and nothing above that|with a rung skipped below it)|nothing it did crossed a completion rung)\b/,
   },
   {
     id: 'threshold',
@@ -181,6 +188,14 @@ export const INTERPRETATION_TEMPLATES: readonly InterpretationTemplateDefinition
       'Work Compass could not tie to a goal. Turns the count into a question rather than a finding — low-confidence attribution phrased as a verdict against a named developer is the one mistake that ends adoption of a product like this.',
     example: 'so Compass is asking what they served rather than naming anyone',
     pattern: /\bso Compass is asking what (?:it|they) served rather than naming anyone\b/,
+  },
+  {
+    id: 'calibration',
+    purpose:
+      'A Process Calibration Audit statistic. Says the number is a measurement of the *data* rather than of the team, and names the verdict it produced — because "your carryover is 50%" reads as an accusation until it is attached to the reason Compass is measuring it at all.',
+    example: 'which is a measurement of the data behind this report, and it reached scope_is_fiction',
+    pattern:
+      /\bwhich is a measurement of the data behind this report, and it (?:reached [a-z_, ]+|found nothing worth withholding a number for)\b/,
   },
 ]);
 
@@ -293,4 +308,22 @@ export const interpretation = {
 
   unattributed: (count: number): InterpretationClause =>
     clause('unattributed', `so Compass is asking what ${count === 1 ? 'it' : 'they'} served rather than naming anyone`),
+
+  /**
+   * The Process Calibration Audit's clause.
+   *
+   * Two things at once, and both are load-bearing. It says the figure is about the
+   * *data* — a carryover rate is a statement about how a commitment was recorded,
+   * not about how hard anyone worked — and it names the verdicts, so the reader can
+   * see whether the number crossed a threshold or is merely being reported.
+   */
+  calibration: (verdicts: readonly string[]): InterpretationClause =>
+    clause(
+      'calibration',
+      `which is a measurement of the data behind this report, and it ${
+        verdicts.length === 0
+          ? 'found nothing worth withholding a number for'
+          : `reached ${[...verdicts].join(', ')}`
+      }`,
+    ),
 } as const;

@@ -30,6 +30,7 @@ export {
   persistReport,
   reportRows,
   scopeColumns,
+  type PersistedNarration,
   type PersistReportInput,
 } from './persist.js';
 

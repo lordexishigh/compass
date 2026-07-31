@@ -273,9 +273,19 @@ describe('every exported analysis function takes an explicit instant', () => {
         20,
       );
     }
-    // Not a cap for its own sake: an exemption count that creeps upward is how
-    // "the analysis core is told the instant" quietly stops being true.
-    expect(accessors.length, accessors.map((entry) => entry.location).join(', ')).toBeLessThanOrEqual(12);
+    /**
+     * Not a cap for its own sake: an exemption count that creeps upward is how "the
+     * analysis core is told the instant" quietly stops being true.
+     *
+     * Raised from 12 to 13 for `indexCommitGraph`, which the Completion Ladder's R3
+     * and R4 detectors walk. A parent edge between two commits is not a fact about
+     * any particular moment — it is what the code host reported, and it is the same
+     * answer whether the question is asked today or next year — so giving the
+     * function an `instant` parameter it does not read would satisfy the gate by
+     * lying to it, which is strictly worse than moving the number in a commit a
+     * reviewer can see. Every entry still has to state its reason above.
+     */
+    expect(accessors.length, accessors.map((entry) => entry.location).join(', ')).toBeLessThanOrEqual(13);
   });
 
   it('names the entry point the architecture document promises', async () => {

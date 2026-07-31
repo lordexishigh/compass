@@ -14,8 +14,11 @@ import {
   assertUnattributedNamesNobody,
   assertWholeDayAges,
   createEmptyStructuredReport,
+  generateStructuredReport,
   offGoalVerdict,
   passesOffGoalGate,
+  sectionOf,
+  yesterdaySubject,
   type AlignmentAssessment,
   type AlignmentVerdict,
   type EvidenceRef,
@@ -23,6 +26,8 @@ import {
   type ReportItem,
   type StructuredReport,
 } from '@compass/analysis';
+
+import { SEED_NOW, buildSeedSnapshot } from './helpers/seed-snapshot.js';
 
 /**
  * The two invariants a report must satisfy before anything renders it.
@@ -137,6 +142,94 @@ describe('every claim carries an artifact a reader can open', () => {
 
     expect(() => assertEveryClaimHasEvidence(empty)).not.toThrow();
     expect(empty.sections).toHaveLength(SECTIONS.length);
+  });
+});
+
+/**
+ * The Yesterday suffix and the projection's reasoning, over the real dataset.
+ *
+ * Both are invariants rather than features, and both are asserted over every seeded
+ * team rather than over one: the failure mode is a single line somewhere in a
+ * forty-line report that lost its clause, and a spot check on one team is exactly
+ * how that ships.
+ */
+describe('no Yesterday line is emitted without its rung suffix', () => {
+  const teams = ['platform', 'checkout', 'insights'] as const;
+
+  it.each(teams)('suffixes every %s line with the furthest rung it reached', (teamKey) => {
+    const report = generateStructuredReport(buildSeedSnapshot({ scope: { kind: 'team', teamKey } }), SEED_NOW);
+    const yesterday = sectionOf(report, 'yesterday');
+
+    expect(yesterday.items.length, `${teamKey} produced no Yesterday items`).toBeGreaterThan(0);
+    for (const line of yesterday.items) {
+      const ladder = line.ladder;
+      expect(ladder, `${line.stableId} carries no ladder`).toBeDefined();
+      expect(line.headline.endsWith(ladder!.rungSuffix), `"${line.headline}" states no rung`).toBe(true);
+      // And the suffix is appended to a real subject rather than standing alone.
+      expect(line.headline.length).toBeGreaterThan(ladder!.rungSuffix.length + 3);
+    }
+  });
+
+  it('builds the headline from the subject plus the suffix, and nothing else', () => {
+    const report = generateStructuredReport(
+      buildSeedSnapshot({ scope: { kind: 'team', teamKey: 'checkout' } }),
+      SEED_NOW,
+    );
+    for (const item of report.findings.yesterday) {
+      expect(`${yesterdaySubject(item)} — ${item.ladder.rungSuffix}`).toBe(
+        sectionOf(report, 'yesterday').items.find((line) => line.stableId === item.stableId)?.headline,
+      );
+    }
+  });
+});
+
+describe('the projection states its method, the verdicts that chose it and its band', () => {
+  const platform = generateStructuredReport(
+    buildSeedSnapshot({ scope: { kind: 'team', teamKey: 'platform' } }),
+    SEED_NOW,
+  );
+  const insights = generateStructuredReport(
+    buildSeedSnapshot({ scope: { kind: 'team', teamKey: 'insights' } }),
+    SEED_NOW,
+  );
+
+  it('projects by cycle time and says it is a guess when points are uninformative', () => {
+    const projection = platform.findings.projection;
+
+    expect(platform.findings.calibrationAudit.verdictNames).toContain('points_uninformative');
+    expect(projection.kind).toBe('projected');
+    if (projection.kind !== 'projected') return;
+
+    expect(projection.method).toBe('cycle_time');
+    expect(projection.reasoning.method).toBe('cycle_time');
+    expect(projection.selectedByVerdicts).toContain('points_uninformative');
+    expect(projection.reasoning.selectedByVerdicts).toContain('points_uninformative');
+    expect(projection.reasoning.confidence).toBe(projection.band.confidence);
+    expect(projection.statement).toContain('cycle-time guess, not a velocity forecast');
+  });
+
+  it('emits no date at all when there is not enough history, and says why', () => {
+    const projection = insights.findings.projection;
+
+    expect(insights.findings.calibrationAudit.verdictNames).toContain('insufficient_history');
+    expect(projection.kind).toBe('undefined');
+    if (projection.kind !== 'undefined') return;
+
+    expect(projection.reason).toBe('insufficient_history');
+    expect(projection.selectedByVerdicts).toEqual(['insufficient_history']);
+    expect(projection.threshold.id).toBe('T7');
+    expect(projection.statement).toContain('completed sprints');
+    // And the refusal reaches the page rather than being left in `findings`.
+    const line = sectionOf(insights, 'progress').items.find((item) => item.headline === 'No completion date');
+    expect(line, 'a report with no date must still carry the line that says so').toBeDefined();
+    expect(line?.detail).toContain('insufficient_history');
+  });
+
+  it('names the audit’s verdicts on the page beside the date', () => {
+    const line = sectionOf(platform, 'progress').items.find((item) => item.headline.startsWith('Projected completion'));
+
+    expect(line?.detail).toContain('points_uninformative');
+    expect(line?.detail).toContain('measured cycle time');
   });
 });
 

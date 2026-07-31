@@ -259,6 +259,7 @@ function describePathologies(
   const hygiene = pathologies.doneWithNoPullRequest;
   const unreleased = pathologies.mergedNotReleased;
   const unreleasedTail = unreleasedMerges(records, unreleased.repositoryKey);
+  const hygieneAudit = pathologies.processHygiene;
   const debt = pathologies.technicalDebtGrowth;
 
   return [
@@ -349,6 +350,29 @@ function describePathologies(
           ...unreleased.pullRequests.map((request) => request.itemKey),
           ...unreleased.pullRequests.map((request) => request.mergeRevisionId),
         ]),
+      ],
+    },
+    {
+      id: hygieneAudit.id,
+      title: hygieneAudit.title,
+      detail:
+        `\`${hygieneAudit.doubleCountedParent.itemKey}\` carries ${hygieneAudit.doubleCountedParent.points} points ` +
+        `and its ${hygieneAudit.doubleCountedParent.subTasks.length} sub-tasks carry ` +
+        `${hygieneAudit.doubleCountedParent.subTasks.map((subTask) => subTask.points).join(' and ')}, so a total ` +
+        'spanning both levels counts it twice.\n' +
+        `\`${hygieneAudit.staleTicket.itemKey}\` entered In Progress at ${hygieneAudit.staleTicket.inProgressAt} and ` +
+        `sat for ${hygieneAudit.staleTicket.expectedStaleWorkingDays} working days with no commit and no pull ` +
+        'request.\n' +
+        `Negative controls: \`${hygieneAudit.recentlyMoved.itemKey}\` moved yesterday; ` +
+        `\`${hygieneAudit.activelyPushed.itemKey}\` is older but was committed to as ` +
+        `\`${hygieneAudit.activelyPushed.revisionId}\`.`,
+      identifiers: [
+        hygieneAudit.doubleCountedParent.itemKey,
+        ...hygieneAudit.doubleCountedParent.subTasks.map((subTask) => subTask.itemKey),
+        hygieneAudit.staleTicket.itemKey,
+        hygieneAudit.recentlyMoved.itemKey,
+        hygieneAudit.activelyPushed.itemKey,
+        hygieneAudit.activelyPushed.revisionId,
       ],
     },
     {

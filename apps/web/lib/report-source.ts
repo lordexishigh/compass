@@ -6,6 +6,7 @@ import {
   type CompassDatabase,
   type DatabaseHandle,
 } from '@compass/db';
+import { narratorFromEnvironment } from '@compass/narrator';
 import { ensureDailyReport, loadFreshnessFor, type EnsuredReport } from '@compass/pipeline';
 import { SeedConnector, resolveSeededRun, type SeededRun } from '@compass/seed-connector';
 
@@ -93,6 +94,11 @@ export async function ensureTodaysReport(database_: CompassDatabase): Promise<{
     ),
     connector,
     database: database_,
+    // Resolved at the edge, exactly like the connector and the clock. Null when
+    // `ANTHROPIC_API_KEY` is absent, which is the zero-config default: the report
+    // is then the deterministic render, complete and correct, with no fallback
+    // flag — nothing was attempted, so nothing degraded.
+    narrator: narratorFromEnvironment(process.env),
   });
 
   return { ensured, run };

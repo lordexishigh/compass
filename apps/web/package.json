@@ -14,9 +14,11 @@
   },
   "dependencies": {
     "@compass/analysis": "workspace:*",
+    "@compass/auth": "workspace:*",
     "@compass/clock": "workspace:*",
     "@compass/connector-port": "workspace:*",
     "@compass/db": "workspace:*",
+    "@compass/narrator": "workspace:*",
     "@compass/pipeline": "workspace:*",
     "@compass/renderers": "workspace:*",
     "@compass/seed-connector": "workspace:*",
@@ -26,6 +28,7 @@
   },
   "devDependencies": {
     "@compass/smoke": "workspace:*",
+    "@electric-sql/pglite": "0.3.11",
     "@tailwindcss/postcss": "4.3.3",
     "@types/node": "24.13.3",
     "@types/react": "19.2.18",

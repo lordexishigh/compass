@@ -31,9 +31,9 @@ is therefore a determinism check, and the test suite runs the equivalent in memo
 | Developers | 12 | 12 | yes |
 | Completed sprints | 4 | 10 | yes |
 | In-flight sprints | 1 | 2 | yes |
-| Commits | 600 | 912 | yes |
+| Commits | 600 | 913 | yes |
 | Pull requests | 120 | 155 | yes |
-| Issues | 300 | 376 | yes |
+| Issues | 300 | 382 | yes |
 | Messages | 800 | 867 | yes |
 | Conversations carrying messages | 3 | 4 | yes |
 | Commits from unmapped git addresses | 5 | 9 | yes |
@@ -42,18 +42,18 @@ Record counts by artifact family, as the connector returns them:
 
 | Artifact | Rows | File |
 | --- | --- | --- |
-| commits | 912 | `seed/generated/commits.json` |
+| commits | 913 | `seed/generated/commits.json` |
 | pull_requests | 155 | `seed/generated/pull_requests.json` |
 | reviews | 299 | `seed/generated/reviews.json` |
 | branch_refs | 160 | `seed/generated/branch_refs.json` |
 | release_tags | 8 | `seed/generated/release_tags.json` |
-| issues | 376 | `seed/generated/issues.json` |
-| issue_transitions | 885 | `seed/generated/issue_transitions.json` |
+| issues | 382 | `seed/generated/issues.json` |
+| issue_transitions | 888 | `seed/generated/issue_transitions.json` |
 | sprints | 12 | `seed/generated/sprints.json` |
 | sprint_scope_changes | 18 | `seed/generated/sprint_scope_changes.json` |
 | messages | 867 | `seed/generated/messages.json` |
 
-Total: **3692** records across 3 projects, 3 teams, 4 repositories and 4 conversations.
+Total: **3702** records across 3 projects, 3 teams, 4 repositories and 4 conversations.
 
 ## Objectives
 
@@ -167,6 +167,16 @@ identifier below against a real row in the generated dataset.
 
 **Entities:** `v4.2.0`, `#9301`, `#9302`, `#9303`, `PLAT-753`, `PLAT-754`, `PLAT-755`, `8b9c0d1`, `9c0d1e2`, `0d1e2f3`
 
+### A story estimated alongside its own estimated sub-tasks, and a ticket that entered In Progress and was never touched again
+
+**id:** `process-hygiene-plat`
+
+`PLAT-901` carries 8 points and its 2 sub-tasks carry 5 and 3, so a total spanning both levels counts it twice.
+`PLAT-905` entered In Progress at 2026-07-22T10:00:00Z and sat for 7 working days with no commit and no pull request.
+Negative controls: `PLAT-906` moved yesterday; `PLAT-907` is older but was committed to as `fa11ed7`.
+
+**Entities:** `PLAT-901`, `PLAT-902`, `PLAT-903`, `PLAT-905`, `PLAT-906`, `PLAT-907`, `fa11ed7`
+
 ### Tech-debt tickets opened per sprint, rising for four sprints
 
 **id:** `tech-debt-growth-plat`
@@ -186,8 +196,8 @@ threshold of `0.3` against a goal or objective (`semantic`); nothing (`unattribu
 
 | Class | Commits | Share | Design target |
 | --- | --- | --- | --- |
-| `structural` | 497 | 54.5% | 55% |
-| `inferred` | 226 | 24.8% | 25% |
+| `structural` | 497 | 54.4% | 55% |
+| `inferred` | 227 | 24.9% | 25% |
 | `semantic` | 107 | 11.7% | 12% |
 | `unattributed` | 82 | 9.0% | 8% |
 
@@ -198,10 +208,10 @@ dataset that quietly avoids its hardest case.
 
 | Class | Commits | Share |
 | --- | --- | --- |
-| `structural` | 14 | 56.0% |
-| `inferred` | 3 | 12.0% |
-| `semantic` | 3 | 12.0% |
-| `unattributed` | 5 | 20.0% |
+| `structural` | 14 | 53.8% |
+| `inferred` | 4 | 15.4% |
+| `semantic` | 3 | 11.5% |
+| `unattributed` | 5 | 19.2% |
 
 ## Generated files
 

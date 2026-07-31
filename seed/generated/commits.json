@@ -1605,6 +1605,7 @@
     "message": "INS-102 merge pull request #8116 from work/INS-102-daily-rollup-double-counts",
     "occurredAt": "2026-05-25T08:06:00.000Z",
     "parentRevisionIds": [
+      "ce828a9",
       "e9cdd84"
     ],
     "repositoryKey": "insights-etl",
@@ -1626,6 +1627,7 @@
     "message": "CHK-203 merge pull request #8064 from feature/CHK-203-guest-session-expires-mid",
     "occurredAt": "2026-05-25T08:12:00.000Z",
     "parentRevisionIds": [
+      "9109483",
       "0957ca8"
     ],
     "repositoryKey": "checkout-web",
@@ -2131,6 +2133,7 @@
     "message": "PLAT-405 merge pull request #8003 from feature/PLAT-405-fraud-check-blocks-the",
     "occurredAt": "2026-05-27T09:39:00.000Z",
     "parentRevisionIds": [
+      "88219de",
       "d0da44c"
     ],
     "repositoryKey": "platform-api",
@@ -2273,6 +2276,7 @@
     "message": "CHK-207 merge pull request #8066 from feature/CHK-207-email-receipt-omits-the",
     "occurredAt": "2026-05-27T15:09:00.000Z",
     "parentRevisionIds": [
+      "22ca4df",
       "8b8a457"
     ],
     "repositoryKey": "checkout-web",
@@ -2511,6 +2515,7 @@
     "message": "CHK-213 merge pull request #8068 from feature/CHK-213-back-navigation-resubmits-the",
     "occurredAt": "2026-05-28T09:57:00.000Z",
     "parentRevisionIds": [
+      "7217c20",
       "5a2bcd9"
     ],
     "repositoryKey": "checkout-web",
@@ -2555,6 +2560,7 @@
     "message": "CHK-201 merge pull request #8063 from feature/CHK-201-address-form-loses-state",
     "occurredAt": "2026-05-28T15:47:00.000Z",
     "parentRevisionIds": [
+      "638ab02",
       "547c042"
     ],
     "repositoryKey": "checkout-web",
@@ -2599,6 +2605,7 @@
     "message": "PLAT-413 merge pull request #8007 from feature/PLAT-413-migration-lock-blocks-the",
     "occurredAt": "2026-05-28T17:34:00.000Z",
     "parentRevisionIds": [
+      "93fe51f",
       "4c39f10"
     ],
     "repositoryKey": "platform-api",
@@ -2816,6 +2823,7 @@
     "message": "PLAT-403 merge pull request #8002 from feature/PLAT-403-tokenization-path-allocates-on",
     "occurredAt": "2026-05-29T08:39:00.000Z",
     "parentRevisionIds": [
+      "228c2d5",
       "bdb0a53"
     ],
     "repositoryKey": "shared-ui",
@@ -2981,6 +2989,7 @@
     "message": "INS-108 merge pull request #8118 from work/INS-108-column-rename-breaks-the",
     "occurredAt": "2026-05-29T13:59:00.000Z",
     "parentRevisionIds": [
+      "0b5e7d6",
       "019e255"
     ],
     "repositoryKey": "insights-etl",
@@ -3223,6 +3232,7 @@
     "message": "PLAT-409 merge pull request #8005 from feature/PLAT-409-gateway-metrics-under-report",
     "occurredAt": "2026-05-30T09:16:00.000Z",
     "parentRevisionIds": [
+      "53eaa53",
       "c5b0082"
     ],
     "repositoryKey": "platform-api",
@@ -3267,6 +3277,7 @@
     "message": "PLAT-422 merge pull request #8011 from feature/PLAT-422-profile-lookup-issues-one",
     "occurredAt": "2026-05-30T11:45:00.000Z",
     "parentRevisionIds": [
+      "6718d45",
       "fb65edf"
     ],
     "repositoryKey": "platform-api",
@@ -3311,6 +3322,7 @@
     "message": "INS-111 merge pull request #8119 from work/INS-111-null-merchant-identifier-passes",
     "occurredAt": "2026-05-30T15:55:00.000Z",
     "parentRevisionIds": [
+      "1b81a2a",
       "bd117e4"
     ],
     "repositoryKey": "insights-etl",
@@ -3551,6 +3563,7 @@
     "message": "CHK-217 merge pull request #8070 from feature/CHK-217-payment-sheet-flashes-before",
     "occurredAt": "2026-05-31T11:13:00.000Z",
     "parentRevisionIds": [
+      "5c46e78",
       "a8043b9"
     ],
     "repositoryKey": "checkout-web",
@@ -3620,6 +3633,7 @@
     "message": "CHK-222 merge pull request #8072 from feature/CHK-222-terms-checkbox-is-not",
     "occurredAt": "2026-05-31T14:47:00.000Z",
     "parentRevisionIds": [
+      "069b6f6",
       "c2b8831"
     ],
     "repositoryKey": "checkout-web",
@@ -3664,6 +3678,7 @@
     "message": "CHK-215 merge pull request #8069 from feature/CHK-215-focus-ring-is-invisible",
     "occurredAt": "2026-05-31T16:03:00.000Z",
     "parentRevisionIds": [
+      "3b07056",
       "283f301"
     ],
     "repositoryKey": "checkout-web",
@@ -3879,6 +3894,7 @@
     "message": "PLAT-416 merge pull request #8008 from feature/PLAT-416-gateway-client-retries-on",
     "occurredAt": "2026-06-01T10:16:00.000Z",
     "parentRevisionIds": [
+      "1566ebd",
       "e759d95"
     ],
     "repositoryKey": "shared-ui",
@@ -4094,6 +4110,7 @@
     "message": "PLAT-420 merge pull request #8010 from feature/PLAT-420-dead-letter-queue-has",
     "occurredAt": "2026-06-02T10:59:00.000Z",
     "parentRevisionIds": [
+      "cde755e",
       "3ae48c1"
     ],
     "repositoryKey": "shared-ui",
@@ -4161,6 +4178,7 @@
     "message": "INS-113 merge pull request #8120 from work/INS-113-schedule-drifts-an-hour",
     "occurredAt": "2026-06-02T14:04:00.000Z",
     "parentRevisionIds": [
+      "56f4322",
       "0cd6d53"
     ],
     "repositoryKey": "insights-etl",
@@ -4230,6 +4248,7 @@
     "message": "PLAT-418 merge pull request #8009 from feature/PLAT-418-background-reconciler-holds-a",
     "occurredAt": "2026-06-02T17:01:00.000Z",
     "parentRevisionIds": [
+      "be89fb2",
       "1f993e6"
     ],
     "repositoryKey": "platform-api",
@@ -4345,6 +4364,7 @@
     "message": "PLAT-411 merge pull request #8006 from feature/PLAT-411-payment-capture-logs-leak",
     "occurredAt": "2026-06-03T12:41:00.000Z",
     "parentRevisionIds": [
+      "54570f9",
       "2a3ce18"
     ],
     "repositoryKey": "shared-ui",
@@ -4389,6 +4409,7 @@
     "message": "PLAT-426 merge pull request #8013 from feature/PLAT-426-cold-start-on-the",
     "occurredAt": "2026-06-03T13:50:00.000Z",
     "parentRevisionIds": [
+      "190b8f8",
       "7a24f36"
     ],
     "repositoryKey": "platform-api",
@@ -4581,6 +4602,7 @@
     "message": "CHK-219 merge pull request #8071 from feature/CHK-219-guest-email-is-not",
     "occurredAt": "2026-06-04T15:46:00.000Z",
     "parentRevisionIds": [
+      "dbd9327",
       "432423f"
     ],
     "repositoryKey": "checkout-web",
@@ -4792,6 +4814,7 @@
     "message": "CHK-224 merge pull request #8073 from feature/CHK-224-session-cookie-is-set",
     "occurredAt": "2026-06-05T11:43:00.000Z",
     "parentRevisionIds": [
+      "29b1a07",
       "5e2ba9b"
     ],
     "repositoryKey": "checkout-web",
@@ -5276,6 +5299,7 @@
     "message": "PLAT-428 merge pull request #8014 from feature/PLAT-428-merchant-profile-cache-misses",
     "occurredAt": "2026-06-06T13:45:00.000Z",
     "parentRevisionIds": [
+      "fa88087",
       "e7f2f3c"
     ],
     "repositoryKey": "shared-ui",
@@ -5297,6 +5321,7 @@
     "message": "PLAT-437 merge pull request #8018 from feature/PLAT-437-migration-lock-blocks-the",
     "occurredAt": "2026-06-06T14:09:00.000Z",
     "parentRevisionIds": [
+      "f178e5c",
       "9d4a18f"
     ],
     "repositoryKey": "shared-ui",
@@ -5318,6 +5343,7 @@
     "message": "CHK-228 merge pull request #8075 from feature/CHK-228-card-entry-field-rejects",
     "occurredAt": "2026-06-06T14:50:00.000Z",
     "parentRevisionIds": [
+      "5652531",
       "f2f1e17"
     ],
     "repositoryKey": "checkout-web",
@@ -5485,6 +5511,7 @@
     "message": "CHK-233 merge pull request #8077 from feature/CHK-233-screen-reader-skips-the",
     "occurredAt": "2026-06-07T08:55:00.000Z",
     "parentRevisionIds": [
+      "64d0707",
       "e2b6a13"
     ],
     "repositoryKey": "checkout-web",
@@ -6013,6 +6040,7 @@
     "message": "PLAT-424 merge pull request #8012 from feature/PLAT-424-feature-flag-evaluation-blocks",
     "occurredAt": "2026-06-09T08:35:00.000Z",
     "parentRevisionIds": [
+      "f9eb56d",
       "79b8891"
     ],
     "repositoryKey": "shared-ui",
@@ -6034,6 +6062,7 @@
     "message": "CHK-226 merge pull request #8074 from feature/CHK-226-declined-card-message-names",
     "occurredAt": "2026-06-09T10:49:00.000Z",
     "parentRevisionIds": [
+      "475f68c",
       "84b2e73"
     ],
     "repositoryKey": "checkout-web",
@@ -6101,6 +6130,7 @@
     "message": "PLAT-441 merge pull request #8020 from feature/PLAT-441-tokenization-cache-key-ignores",
     "occurredAt": "2026-06-09T14:08:00.000Z",
     "parentRevisionIds": [
+      "beb19a7",
       "d9fe62e"
     ],
     "repositoryKey": "shared-ui",
@@ -6145,6 +6175,7 @@
     "message": "PLAT-435 merge pull request #8017 from feature/PLAT-435-payment-capture-logs-leak",
     "occurredAt": "2026-06-09T16:52:00.000Z",
     "parentRevisionIds": [
+      "03830c8",
       "71a65f6"
     ],
     "repositoryKey": "platform-api",
@@ -6627,6 +6658,7 @@
     "message": "CHK-231 merge pull request #8076 from feature/CHK-231-email-receipt-omits-the",
     "occurredAt": "2026-06-11T08:33:00.000Z",
     "parentRevisionIds": [
+      "a7d78b8",
       "1fd75f1"
     ],
     "repositoryKey": "checkout-web",
@@ -6696,6 +6728,7 @@
     "message": "PLAT-439 merge pull request #8019 from feature/PLAT-439-currency-rounding-disagrees-with",
     "occurredAt": "2026-06-11T14:27:00.000Z",
     "parentRevisionIds": [
+      "8b18e2d",
       "2bd7f45"
     ],
     "repositoryKey": "platform-api",
@@ -7055,6 +7088,7 @@
     "message": "PLAT-433 merge pull request #8016 from feature/PLAT-433-gateway-metrics-under-report",
     "occurredAt": "2026-06-12T16:01:00.000Z",
     "parentRevisionIds": [
+      "d09f804",
       "ad18eed"
     ],
     "repositoryKey": "shared-ui",
@@ -7295,6 +7329,7 @@
     "message": "PLAT-431 merge pull request #8015 from feature/PLAT-431-connection-pool-starves-under",
     "occurredAt": "2026-06-13T17:32:00.000Z",
     "parentRevisionIds": [
+      "cefbcf2",
       "66f6c44"
     ],
     "repositoryKey": "platform-api",
@@ -7702,6 +7737,7 @@
     "message": "CHK-237 merge pull request #8079 from feature/CHK-237-back-navigation-resubmits-the",
     "occurredAt": "2026-06-14T15:18:00.000Z",
     "parentRevisionIds": [
+      "5cb351e",
       "03ebe35"
     ],
     "repositoryKey": "checkout-web",
@@ -7921,6 +7957,7 @@
     "message": "CHK-239 merge pull request #8080 from feature/CHK-239-focus-ring-is-invisible",
     "occurredAt": "2026-06-15T09:15:00.000Z",
     "parentRevisionIds": [
+      "243f53f",
       "823e7e7"
     ],
     "repositoryKey": "checkout-web",
@@ -7967,6 +8004,7 @@
     "message": "INS-127 merge pull request #8125 from work/INS-127-late-arriving-events-never",
     "occurredAt": "2026-06-15T13:49:00.000Z",
     "parentRevisionIds": [
+      "e9b230e",
       "4e3bfa2"
     ],
     "repositoryKey": "insights-etl",
@@ -8036,6 +8074,7 @@
     "message": "INS-125 merge pull request #8124 from work/INS-125-timezone-conversion-shifts-the",
     "occurredAt": "2026-06-15T16:24:00.000Z",
     "parentRevisionIds": [
+      "1160075",
       "33d3764"
     ],
     "repositoryKey": "insights-etl",
@@ -8057,6 +8096,7 @@
     "message": "CHK-246 merge pull request #8083 from feature/CHK-246-terms-checkbox-is-not",
     "occurredAt": "2026-06-15T16:42:00.000Z",
     "parentRevisionIds": [
+      "514c70e",
       "1e156e0"
     ],
     "repositoryKey": "checkout-web",
@@ -8316,6 +8356,7 @@
     "message": "CHK-242 merge pull request #8081 from feature/CHK-242-delivery-estimate-ignores-the",
     "occurredAt": "2026-06-16T14:25:00.000Z",
     "parentRevisionIds": [
+      "148f7c0",
       "ae05c58"
     ],
     "repositoryKey": "checkout-web",
@@ -8360,6 +8401,7 @@
     "message": "PLAT-454 merge pull request #8026 from feature/PLAT-454-retry-budget-is-unbounded",
     "occurredAt": "2026-06-16T17:19:00.000Z",
     "parentRevisionIds": [
+      "268c097",
       "e71f14d"
     ],
     "repositoryKey": "shared-ui",
@@ -8556,6 +8598,7 @@
     "message": "CHK-251 merge pull request #8085 from feature/CHK-251-guest-session-expires-mid",
     "occurredAt": "2026-06-17T08:19:00.000Z",
     "parentRevisionIds": [
+      "a655115",
       "62dc7b2"
     ],
     "repositoryKey": "checkout-web",
@@ -8577,6 +8620,7 @@
     "message": "PLAT-448 merge pull request #8023 from feature/PLAT-448-feature-flag-evaluation-blocks",
     "occurredAt": "2026-06-17T08:22:00.000Z",
     "parentRevisionIds": [
+      "4ec1755",
       "fc8384f"
     ],
     "repositoryKey": "platform-api",
@@ -8646,6 +8690,7 @@
     "message": "INS-123 merge pull request #8123 from work/INS-123-warehouse-loader-retries-without",
     "occurredAt": "2026-06-17T12:01:00.000Z",
     "parentRevisionIds": [
+      "2cab550",
       "7f14db9"
     ],
     "repositoryKey": "insights-etl",
@@ -8690,6 +8735,7 @@
     "message": "CHK-235 merge pull request #8078 from feature/CHK-235-guest-order-cannot-be",
     "occurredAt": "2026-06-17T13:42:00.000Z",
     "parentRevisionIds": [
+      "8c629f8",
       "9279beb"
     ],
     "repositoryKey": "checkout-web",
@@ -8855,6 +8901,7 @@
     "message": "CHK-248 merge pull request #8084 from feature/CHK-248-session-cookie-is-set",
     "occurredAt": "2026-06-18T12:46:00.000Z",
     "parentRevisionIds": [
+      "f110f27",
       "d002d50"
     ],
     "repositoryKey": "checkout-web",
@@ -8924,6 +8971,7 @@
     "message": "PLAT-457 merge pull request #8027 from feature/PLAT-457-gateway-metrics-under-report",
     "occurredAt": "2026-06-18T14:26:00.000Z",
     "parentRevisionIds": [
+      "395f77c",
       "3ed9eb0"
     ],
     "repositoryKey": "platform-api",
@@ -9162,6 +9210,7 @@
     "message": "INS-131 merge pull request #8127 from work/INS-131-null-merchant-identifier-passes",
     "occurredAt": "2026-06-19T08:06:00.000Z",
     "parentRevisionIds": [
+      "f887f63",
       "bb39305"
     ],
     "repositoryKey": "insights-etl",
@@ -9183,6 +9232,7 @@
     "message": "CHK-255 merge pull request #8087 from feature/CHK-255-email-receipt-omits-the",
     "occurredAt": "2026-06-19T08:40:00.000Z",
     "parentRevisionIds": [
+      "ae722fe",
       "7de4822"
     ],
     "repositoryKey": "checkout-web",
@@ -9419,6 +9469,7 @@
     "message": "CHK-257 merge pull request #8088 from feature/CHK-257-screen-reader-skips-the",
     "occurredAt": "2026-06-20T09:10:00.000Z",
     "parentRevisionIds": [
+      "a109267",
       "c133f4a"
     ],
     "repositoryKey": "checkout-web",
@@ -9632,6 +9683,7 @@
     "message": "CHK-244 merge pull request #8082 from feature/CHK-244-retry-after-a-decline",
     "occurredAt": "2026-06-21T10:42:00.000Z",
     "parentRevisionIds": [
+      "0595ffd",
       "4978ec2"
     ],
     "repositoryKey": "checkout-web",
@@ -9920,6 +9972,7 @@
     "message": "PLAT-450 merge pull request #8024 from feature/PLAT-450-cold-start-on-the",
     "occurredAt": "2026-06-22T12:20:00.000Z",
     "parentRevisionIds": [
+      "cdac916",
       "97f6ab9"
     ],
     "repositoryKey": "shared-ui",
@@ -9941,6 +9994,7 @@
     "message": "PLAT-460 merge pull request #8028 from feature/PLAT-460-structured-logs-drop-the",
     "occurredAt": "2026-06-22T12:36:00.000Z",
     "parentRevisionIds": [
+      "f4d2d0c",
       "fa4d43f"
     ],
     "repositoryKey": "shared-ui",
@@ -9962,6 +10016,7 @@
     "message": "PLAT-467 merge pull request #8031 from feature/PLAT-467-alert-threshold-fires-on",
     "occurredAt": "2026-06-22T12:53:00.000Z",
     "parentRevisionIds": [
+      "6722dae",
       "b9368db"
     ],
     "repositoryKey": "platform-api",
@@ -10200,6 +10255,7 @@
     "message": "CHK-261 merge pull request #8089 from feature/CHK-261-back-navigation-resubmits-the",
     "occurredAt": "2026-06-23T11:18:00.000Z",
     "parentRevisionIds": [
+      "c2dd938",
       "d4532f5"
     ],
     "repositoryKey": "checkout-web",
@@ -10244,6 +10300,7 @@
     "message": "PLAT-452 merge pull request #8025 from feature/PLAT-452-merchant-profile-cache-misses",
     "occurredAt": "2026-06-23T14:38:00.000Z",
     "parentRevisionIds": [
+      "b0edd03",
       "d3422ba"
     ],
     "repositoryKey": "platform-api",
@@ -10557,6 +10614,7 @@
     "message": "PLAT-463 merge pull request #8029 from feature/PLAT-463-currency-rounding-disagrees-with",
     "occurredAt": "2026-06-24T08:57:00.000Z",
     "parentRevisionIds": [
+      "2a6e876",
       "66de0fd"
     ],
     "repositoryKey": "platform-api",
@@ -10578,6 +10636,7 @@
     "message": "INS-137 merge pull request #8130 from work/INS-137-payout-summary-omits-negative",
     "occurredAt": "2026-06-24T10:08:00.000Z",
     "parentRevisionIds": [
+      "d4abb3d",
       "034e544"
     ],
     "repositoryKey": "insights-etl",
@@ -11131,6 +11190,7 @@
     "message": "PLAT-474 merge pull request #8034 from feature/PLAT-474-cold-start-on-the",
     "occurredAt": "2026-06-26T09:54:00.000Z",
     "parentRevisionIds": [
+      "026ef21",
       "baa0725"
     ],
     "repositoryKey": "shared-ui",
@@ -11152,6 +11212,7 @@
     "message": "INS-129 merge pull request #8126 from work/INS-129-extract-runs-before-the",
     "occurredAt": "2026-06-26T10:00:00.000Z",
     "parentRevisionIds": [
+      "b4412b5",
       "55ecae5"
     ],
     "repositoryKey": "insights-etl",
@@ -11515,6 +11576,7 @@
     "message": "INS-133 merge pull request #8128 from work/INS-133-schedule-drifts-an-hour",
     "occurredAt": "2026-06-27T17:01:00.000Z",
     "parentRevisionIds": [
+      "cc8e954",
       "77e9bdd"
     ],
     "repositoryKey": "insights-etl",
@@ -11753,6 +11815,7 @@
     "message": "CHK-267 merge pull request #8092 from feature/CHK-267-guest-email-is-not",
     "occurredAt": "2026-06-28T11:17:00.000Z",
     "parentRevisionIds": [
+      "75e30af",
       "392eb77"
     ],
     "repositoryKey": "checkout-web",
@@ -12085,6 +12148,7 @@
     "message": "CHK-269 merge pull request #8093 from feature/CHK-269-form-autofill-overwrites-the",
     "occurredAt": "2026-06-29T17:29:00.000Z",
     "parentRevisionIds": [
+      "c107449",
       "69dae8d"
     ],
     "repositoryKey": "checkout-web",
@@ -12204,6 +12268,7 @@
     "message": "PLAT-472 merge pull request #8033 from feature/PLAT-472-feature-flag-evaluation-blocks",
     "occurredAt": "2026-06-30T10:41:00.000Z",
     "parentRevisionIds": [
+      "f064cb5",
       "e5d7405"
     ],
     "repositoryKey": "platform-api",
@@ -12511,6 +12576,7 @@
     "message": "PLAT-481 merge pull request #8036 from feature/PLAT-481-gateway-metrics-under-report",
     "occurredAt": "2026-07-01T16:43:00.000Z",
     "parentRevisionIds": [
+      "99386f9",
       "e603f06"
     ],
     "repositoryKey": "shared-ui",
@@ -12778,6 +12844,7 @@
     "message": "PLAT-469 merge pull request #8032 from feature/PLAT-469-timeout-budget-is-duplicated",
     "occurredAt": "2026-07-02T11:40:00.000Z",
     "parentRevisionIds": [
+      "6f8aabe",
       "a2d0254"
     ],
     "repositoryKey": "shared-ui",
@@ -12847,6 +12914,7 @@
     "message": "CHK-272 merge pull request #8094 from feature/CHK-272-session-cookie-is-set",
     "occurredAt": "2026-07-02T13:46:00.000Z",
     "parentRevisionIds": [
+      "c6b70e0",
       "ce67c23"
     ],
     "repositoryKey": "checkout-web",
@@ -12891,6 +12959,7 @@
     "message": "PLAT-489 merge pull request #8040 from feature/PLAT-489-tokenization-cache-key-ignores",
     "occurredAt": "2026-07-02T15:43:00.000Z",
     "parentRevisionIds": [
+      "08ed716",
       "e34a29e"
     ],
     "repositoryKey": "shared-ui",
@@ -13344,6 +13413,7 @@
     "message": "PLAT-485 merge pull request #8038 from feature/PLAT-485-migration-lock-blocks-the",
     "occurredAt": "2026-07-04T15:04:00.000Z",
     "parentRevisionIds": [
+      "716b9ae",
       "7029d6d"
     ],
     "repositoryKey": "shared-ui",
@@ -13365,6 +13435,7 @@
     "message": "PLAT-483 merge pull request #8037 from feature/PLAT-483-payment-capture-logs-leak",
     "occurredAt": "2026-07-04T15:11:00.000Z",
     "parentRevisionIds": [
+      "6e48e7e",
       "34fc126"
     ],
     "repositoryKey": "platform-api",
@@ -13655,6 +13726,7 @@
     "message": "CHK-265 merge pull request #8091 from feature/CHK-265-payment-sheet-flashes-before",
     "occurredAt": "2026-07-05T08:14:00.000Z",
     "parentRevisionIds": [
+      "0b43b50",
       "9f90cea"
     ],
     "repositoryKey": "checkout-web",
@@ -13699,6 +13771,7 @@
     "message": "INS-141 merge pull request #8132 from work/INS-141-settlement-export-drops-the",
     "occurredAt": "2026-07-05T09:30:00.000Z",
     "parentRevisionIds": [
+      "901f0cc",
       "3e8f345"
     ],
     "repositoryKey": "insights-etl",
@@ -13964,6 +14037,7 @@
     "message": "CHK-282 merge pull request #8098 from feature/CHK-282-apple-wallet-button-renders",
     "occurredAt": "2026-07-06T09:38:00.000Z",
     "parentRevisionIds": [
+      "7e00298",
       "54b6446"
     ],
     "repositoryKey": "checkout-web",
@@ -14008,6 +14082,7 @@
     "message": "PLAT-493 merge pull request #8042 from feature/PLAT-493-timeout-budget-is-duplicated",
     "occurredAt": "2026-07-06T10:23:00.000Z",
     "parentRevisionIds": [
+      "334de40",
       "768f3f5"
     ],
     "repositoryKey": "shared-ui",
@@ -14292,6 +14367,7 @@
     "message": "CHK-279 merge pull request #8097 from feature/CHK-279-email-receipt-omits-the",
     "occurredAt": "2026-07-07T13:40:00.000Z",
     "parentRevisionIds": [
+      "f508eb8",
       "0bb01f6"
     ],
     "repositoryKey": "checkout-web",
@@ -14964,6 +15040,7 @@
     "message": "CHK-275 merge pull request #8095 from feature/CHK-275-guest-session-expires-mid",
     "occurredAt": "2026-07-10T10:06:00.000Z",
     "parentRevisionIds": [
+      "8fe408d",
       "3d3a363"
     ],
     "repositoryKey": "checkout-web",
@@ -15033,6 +15110,7 @@
     "message": "PLAT-491 merge pull request #8041 from feature/PLAT-491-alert-threshold-fires-on",
     "occurredAt": "2026-07-10T11:28:00.000Z",
     "parentRevisionIds": [
+      "2b9d2fd",
       "120265f"
     ],
     "repositoryKey": "platform-api",
@@ -15079,6 +15157,7 @@
     "message": "CHK-286 merge pull request #8100 from feature/CHK-286-currency-symbol-is-hard",
     "occurredAt": "2026-07-10T14:48:00.000Z",
     "parentRevisionIds": [
+      "34f178b",
       "1eb6af3"
     ],
     "repositoryKey": "checkout-web",
@@ -15100,6 +15179,7 @@
     "message": "CHK-277 merge pull request #8096 from feature/CHK-277-mobile-keyboard-covers-the",
     "occurredAt": "2026-07-10T15:37:00.000Z",
     "parentRevisionIds": [
+      "7d26d39",
       "7064083"
     ],
     "repositoryKey": "checkout-web",
@@ -15169,6 +15249,7 @@
     "message": "PLAT-487 merge pull request #8039 from feature/PLAT-487-currency-rounding-disagrees-with",
     "occurredAt": "2026-07-10T16:41:00.000Z",
     "parentRevisionIds": [
+      "eeddc1a",
       "619cc50"
     ],
     "repositoryKey": "platform-api",
@@ -15407,6 +15488,7 @@
     "message": "PLAT-505 merge pull request #8047 from feature/PLAT-505-gateway-metrics-under-report",
     "occurredAt": "2026-07-11T12:23:00.000Z",
     "parentRevisionIds": [
+      "1e77ee5",
       "dfecd13"
     ],
     "repositoryKey": "platform-api",
@@ -15474,6 +15556,7 @@
     "message": "PLAT-496 merge pull request #8043 from feature/PLAT-496-feature-flag-evaluation-blocks",
     "occurredAt": "2026-07-11T17:20:00.000Z",
     "parentRevisionIds": [
+      "c67a4dc",
       "88c0757"
     ],
     "repositoryKey": "platform-api",
@@ -16008,6 +16091,7 @@
     "message": "PLAT-509 merge pull request #8049 from feature/PLAT-509-migration-lock-blocks-the",
     "occurredAt": "2026-07-13T14:47:00.000Z",
     "parentRevisionIds": [
+      "e561b35",
       "34b4b87"
     ],
     "repositoryKey": "platform-api",
@@ -16532,6 +16616,7 @@
     "message": "INS-151 merge pull request #8136 from work/INS-151-null-merchant-identifier-passes",
     "occurredAt": "2026-07-15T13:34:00.000Z",
     "parentRevisionIds": [
+      "e6d8edb",
       "1886145"
     ],
     "repositoryKey": "insights-etl",
@@ -16772,6 +16857,7 @@
     "message": "CHK-295 merge pull request #8104 from feature/CHK-295-merchant-theme-overrides-the",
     "occurredAt": "2026-07-16T08:12:00.000Z",
     "parentRevisionIds": [
+      "9388ac8",
       "00d0f25"
     ],
     "repositoryKey": "checkout-web",
@@ -16793,6 +16879,7 @@
     "message": "PLAT-498 merge pull request #8044 from feature/PLAT-498-cold-start-on-the",
     "occurredAt": "2026-07-16T08:16:00.000Z",
     "parentRevisionIds": [
+      "322d342",
       "174e50d"
     ],
     "repositoryKey": "shared-ui",
@@ -16839,6 +16926,7 @@
     "message": "CHK-284 merge pull request #8099 from feature/CHK-284-coupon-field-accepts-an",
     "occurredAt": "2026-07-16T13:38:00.000Z",
     "parentRevisionIds": [
+      "0a2fd4f",
       "7cb5d9b"
     ],
     "repositoryKey": "checkout-web",
@@ -16883,6 +16971,7 @@
     "message": "CHK-288 merge pull request #8101 from feature/CHK-288-checkout-bundle-ships-an",
     "occurredAt": "2026-07-16T16:38:00.000Z",
     "parentRevisionIds": [
+      "6343563",
       "8c84af9"
     ],
     "repositoryKey": "checkout-web",
@@ -17148,6 +17237,7 @@
     "message": "CHK-291 merge pull request #8102 from feature/CHK-291-guest-email-is-not",
     "occurredAt": "2026-07-17T10:21:00.000Z",
     "parentRevisionIds": [
+      "a3fb70f",
       "25640ac"
     ],
     "repositoryKey": "checkout-web",
@@ -17288,6 +17378,7 @@
     "message": "PLAT-512 merge pull request #8050 from feature/PLAT-512-gateway-client-retries-on",
     "occurredAt": "2026-07-17T15:52:00.000Z",
     "parentRevisionIds": [
+      "ba722ba",
       "f028117"
     ],
     "repositoryKey": "shared-ui",
@@ -17309,6 +17400,7 @@
     "message": "PLAT-503 merge pull request #8046 from feature/PLAT-503-connection-pool-starves-under",
     "occurredAt": "2026-07-17T17:42:00.000Z",
     "parentRevisionIds": [
+      "099a94e",
       "2b02166"
     ],
     "repositoryKey": "shared-ui",
@@ -17528,6 +17620,7 @@
     "message": "PLAT-515 merge pull request #8051 from feature/PLAT-515-alert-threshold-fires-on",
     "occurredAt": "2026-07-18T15:40:00.000Z",
     "parentRevisionIds": [
+      "4e273bf",
       "2186895"
     ],
     "repositoryKey": "platform-api",
@@ -17618,6 +17711,7 @@
     "message": "INS-160 merge pull request #8141 from work/INS-160-data-contract-has-no",
     "occurredAt": "2026-07-18T17:55:00.000Z",
     "parentRevisionIds": [
+      "b9eee08",
       "5787c12"
     ],
     "repositoryKey": "insights-etl",
@@ -17808,6 +17902,7 @@
     "message": "CHK-293 merge pull request #8103 from feature/CHK-293-form-autofill-overwrites-the",
     "occurredAt": "2026-07-19T12:17:00.000Z",
     "parentRevisionIds": [
+      "c083f32",
       "60d69a4"
     ],
     "repositoryKey": "checkout-web",
@@ -18142,6 +18237,7 @@
     "message": "CHK-299 merge pull request #8106 from feature/CHK-299-guest-session-expires-mid",
     "occurredAt": "2026-07-20T10:24:00.000Z",
     "parentRevisionIds": [
+      "ad3c97e",
       "3284bcc"
     ],
     "repositoryKey": "checkout-web",
@@ -18236,6 +18332,7 @@
     "message": "PLAT-507 merge pull request #8048 from feature/PLAT-507-payment-capture-logs-leak",
     "occurredAt": "2026-07-20T13:14:00.000Z",
     "parentRevisionIds": [
+      "54883ac",
       "8b07be4"
     ],
     "repositoryKey": "shared-ui",
@@ -18257,6 +18354,7 @@
     "message": "CHK-304 merge pull request #8108 from feature/CHK-304-postcode-lookup-times-out",
     "occurredAt": "2026-07-20T16:53:00.000Z",
     "parentRevisionIds": [
+      "3a3570f",
       "b3c5b74"
     ],
     "repositoryKey": "checkout-web",
@@ -18301,6 +18399,7 @@
     "message": "CHK-297 merge pull request #8105 from feature/CHK-297-address-form-loses-state",
     "occurredAt": "2026-07-20T17:41:00.000Z",
     "parentRevisionIds": [
+      "abfad3e",
       "53c49ee"
     ],
     "repositoryKey": "checkout-web",
@@ -18498,7 +18597,9 @@
     },
     "message": "merge release branch into main",
     "occurredAt": "2026-07-21T08:05:00.000Z",
-    "parentRevisionIds": [],
+    "parentRevisionIds": [
+      "9828704"
+    ],
     "repositoryKey": "platform-api",
     "revisionId": "a1b2c30",
     "sourceKey": "primary-code",
@@ -19050,6 +19151,7 @@
     "message": "PLAT-525 merge pull request #8056 from feature/PLAT-525-fraud-check-blocks-the",
     "occurredAt": "2026-07-22T17:34:00.000Z",
     "parentRevisionIds": [
+      "099f247",
       "004b36b"
     ],
     "repositoryKey": "shared-ui",
@@ -19195,7 +19297,9 @@
     },
     "message": "bump the lockfile after the audit",
     "occurredAt": "2026-07-23T04:00:00.000Z",
-    "parentRevisionIds": [],
+    "parentRevisionIds": [
+      "a1b2c30"
+    ],
     "repositoryKey": "platform-api",
     "revisionId": "a1b2c37",
     "sourceKey": "primary-code",
@@ -19215,6 +19319,7 @@
     "message": "CHK-306 merge pull request #8109 from feature/CHK-306-apple-wallet-button-renders",
     "occurredAt": "2026-07-23T09:14:00.000Z",
     "parentRevisionIds": [
+      "4d36f00",
       "e0d2d43"
     ],
     "repositoryKey": "checkout-web",
@@ -19236,6 +19341,7 @@
     "message": "CHK-311 merge pull request #8111 from feature/CHK-311-focus-ring-is-invisible",
     "occurredAt": "2026-07-23T09:45:00.000Z",
     "parentRevisionIds": [
+      "e8f4825",
       "6962376"
     ],
     "repositoryKey": "checkout-web",
@@ -19452,7 +19558,9 @@
     },
     "message": "hotfix the gateway timeout from the bastion",
     "occurredAt": "2026-07-23T22:41:00.000Z",
-    "parentRevisionIds": [],
+    "parentRevisionIds": [
+      "a1b2c37"
+    ],
     "repositoryKey": "platform-api",
     "revisionId": "a1b2c32",
     "sourceKey": "primary-code",
@@ -19568,6 +19676,7 @@
     "message": "PLAT-528 merge pull request #8057 from feature/PLAT-528-idempotency-keys-expire-before",
     "occurredAt": "2026-07-24T08:13:00.000Z",
     "parentRevisionIds": [
+      "a1b2c32",
       "30ec0ad"
     ],
     "repositoryKey": "platform-api",
@@ -19635,6 +19744,7 @@
     "message": "PLAT-530 merge pull request #8058 from feature/PLAT-530-settlement-webhook-retries-duplicate",
     "occurredAt": "2026-07-24T12:33:00.000Z",
     "parentRevisionIds": [
+      "f82988a",
       "743b7d5"
     ],
     "repositoryKey": "shared-ui",
@@ -19873,6 +19983,7 @@
     "message": "PLAT-519 merge pull request #8053 from feature/PLAT-519-trace-spans-stop-at",
     "occurredAt": "2026-07-25T09:26:00.000Z",
     "parentRevisionIds": [
+      "492159c",
       "0662daf"
     ],
     "repositoryKey": "platform-api",
@@ -19990,6 +20101,7 @@
     "message": "INS-162 merge pull request #8142 from work/INS-162-daily-rollup-double-counts",
     "occurredAt": "2026-07-25T15:20:00.000Z",
     "parentRevisionIds": [
+      "70fa449",
       "88e6390"
     ],
     "repositoryKey": "insights-etl",
@@ -20011,6 +20123,7 @@
     "message": "PLAT-532 merge pull request #8059 from feature/PLAT-532-structured-logs-drop-the",
     "occurredAt": "2026-07-25T15:22:00.000Z",
     "parentRevisionIds": [
+      "0eab987",
       "58f02fa"
     ],
     "repositoryKey": "platform-api",
@@ -20203,6 +20316,7 @@
     "message": "CHK-308 merge pull request #8110 from feature/CHK-308-coupon-field-accepts-an",
     "occurredAt": "2026-07-26T09:29:00.000Z",
     "parentRevisionIds": [
+      "600354d",
       "e1b0b9b"
     ],
     "repositoryKey": "checkout-web",
@@ -20270,6 +20384,7 @@
     "message": "PLAT-536 merge pull request #8061 from feature/PLAT-536-gateway-client-retries-on",
     "occurredAt": "2026-07-26T13:56:00.000Z",
     "parentRevisionIds": [
+      "526280c",
       "66022b0"
     ],
     "repositoryKey": "platform-api",
@@ -20291,6 +20406,7 @@
     "message": "PLAT-517 merge pull request #8052 from feature/PLAT-517-timeout-budget-is-duplicated",
     "occurredAt": "2026-07-26T15:30:00.000Z",
     "parentRevisionIds": [
+      "8dae00d",
       "e63b094"
     ],
     "repositoryKey": "shared-ui",
@@ -20338,7 +20454,9 @@
     },
     "message": "weekend spike on the settlement reconciler",
     "occurredAt": "2026-07-26T19:22:00.000Z",
-    "parentRevisionIds": [],
+    "parentRevisionIds": [
+      "b26828a"
+    ],
     "repositoryKey": "platform-api",
     "revisionId": "a1b2c35",
     "sourceKey": "primary-code",
@@ -20556,6 +20674,7 @@
     "message": "PLAT-521 merge pull request #8054 from feature/PLAT-521-batch-writer-keeps-the",
     "occurredAt": "2026-07-27T10:19:00.000Z",
     "parentRevisionIds": [
+      "dcb5174",
       "6b87bda"
     ],
     "repositoryKey": "shared-ui",
@@ -20649,7 +20768,9 @@
     },
     "message": "add the merchant onboarding export script",
     "occurredAt": "2026-07-27T16:30:00.000Z",
-    "parentRevisionIds": [],
+    "parentRevisionIds": [
+      "a1b2c35"
+    ],
     "repositoryKey": "platform-api",
     "revisionId": "a1b2c33",
     "sourceKey": "primary-code",
@@ -20772,7 +20893,9 @@
     },
     "message": "merge release branch into main",
     "occurredAt": "2026-07-28T08:05:00.000Z",
-    "parentRevisionIds": [],
+    "parentRevisionIds": [
+      "a1b2c33"
+    ],
     "repositoryKey": "platform-api",
     "revisionId": "a1b2c31",
     "sourceKey": "primary-code",
@@ -20888,6 +21011,7 @@
     "message": "PLAT-538 merge pull request #8062 from feature/PLAT-538-background-reconciler-holds-a",
     "occurredAt": "2026-07-28T15:43:00.000Z",
     "parentRevisionIds": [
+      "64fa0ec",
       "9175b29"
     ],
     "repositoryKey": "shared-ui",
@@ -20962,7 +21086,9 @@
     },
     "message": "tidy up the export script arguments",
     "occurredAt": "2026-07-29T12:14:00.000Z",
-    "parentRevisionIds": [],
+    "parentRevisionIds": [
+      "a1b2c31"
+    ],
     "repositoryKey": "platform-api",
     "revisionId": "a1b2c34",
     "sourceKey": "primary-code",
@@ -21030,6 +21156,7 @@
     "message": "PLAT-753 merge pull request #9301 from feature/PLAT-753-fold-the-duplicate",
     "occurredAt": "2026-07-29T18:05:00.000Z",
     "parentRevisionIds": [
+      "a1b2c34",
       "10932ce"
     ],
     "repositoryKey": "platform-api",
@@ -21054,7 +21181,9 @@
     },
     "message": "bump the lockfile after the audit",
     "occurredAt": "2026-07-30T04:00:00.000Z",
-    "parentRevisionIds": [],
+    "parentRevisionIds": [
+      "8b9c0d1"
+    ],
     "repositoryKey": "platform-api",
     "revisionId": "a1b2c36",
     "sourceKey": "primary-code",
@@ -21168,6 +21297,7 @@
     "message": "PLAT-754 merge pull request #9302 from feature/PLAT-754-record-the-correlation",
     "occurredAt": "2026-07-30T10:47:00.000Z",
     "parentRevisionIds": [
+      "a1b2c36",
       "185e104"
     ],
     "repositoryKey": "platform-api",
@@ -21284,7 +21414,9 @@
     },
     "message": "wip",
     "occurredAt": "2026-07-30T13:47:00.000Z",
-    "parentRevisionIds": [],
+    "parentRevisionIds": [
+      "9c0d1e2"
+    ],
     "repositoryKey": "platform-api",
     "revisionId": "a1b2c38",
     "sourceKey": "primary-code",
@@ -21338,6 +21470,29 @@
     "sourceKey": "primary-code",
     "sourceKind": "code",
     "sourceRecordId": "commit-5f6a7b8"
+  },
+  {
+    "authorIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "tom.whitfield@northwind.example"
+    },
+    "authoredAt": "2026-07-30T14:20:00.000Z",
+    "branchName": "chore/PLAT-907-single-idempotency-cache",
+    "changedFileCount": 4,
+    "committerIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "email",
+      "value": "tom.whitfield@northwind.example"
+    },
+    "message": "PLAT-907 collapse the second idempotency cache into the first",
+    "occurredAt": "2026-07-30T14:20:00.000Z",
+    "parentRevisionIds": [],
+    "repositoryKey": "platform-api",
+    "revisionId": "fa11ed7",
+    "sourceKey": "primary-code",
+    "sourceKind": "code",
+    "sourceRecordId": "commit-fa11ed7"
   },
   {
     "authorIdentity": {
@@ -21398,6 +21553,7 @@
     "message": "PLAT-755 merge pull request #9303 from feature/PLAT-755-stop-logging-the",
     "occurredAt": "2026-07-30T16:12:00.000Z",
     "parentRevisionIds": [
+      "a1b2c38",
       "76ce34a"
     ],
     "repositoryKey": "platform-api",
@@ -21488,6 +21644,7 @@
     "message": "CHK-701 merge pull request #9201 from feature/CHK-701-declined-card-retry",
     "occurredAt": "2026-07-30T18:40:00.000Z",
     "parentRevisionIds": [
+      "a4d4c6e",
       "6a7b8c9"
     ],
     "repositoryKey": "checkout-web",
@@ -21555,6 +21712,7 @@
     "message": "CHK-318 merge pull request #8114 from feature/CHK-318-terms-checkbox-is-not",
     "occurredAt": "2026-07-30T23:59:00.000Z",
     "parentRevisionIds": [
+      "7a8b9c0",
       "4d41900"
     ],
     "repositoryKey": "checkout-web",
@@ -21576,6 +21734,7 @@
     "message": "CHK-316 merge pull request #8113 from feature/CHK-316-retry-after-a-decline",
     "occurredAt": "2026-07-30T23:59:00.000Z",
     "parentRevisionIds": [
+      "350c411",
       "3aa1db5"
     ],
     "repositoryKey": "checkout-web",
@@ -21597,6 +21756,7 @@
     "message": "CHK-313 merge pull request #8112 from feature/CHK-313-payment-sheet-flashes-before",
     "occurredAt": "2026-07-30T23:59:00.000Z",
     "parentRevisionIds": [
+      "91ce371",
       "05e40a2"
     ],
     "repositoryKey": "checkout-web",

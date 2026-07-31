@@ -133,6 +133,49 @@
       { "displayNumber": 9303, "itemKey": "PLAT-755", "title": "PLAT-755 stop logging the card bin in capture", "authorDeveloperKey": "aisha-bello", "mergedAt": "2026-07-30T16:12:00Z", "mergeRevisionId": "0d1e2f3" }
     ]
   },
+  "processHygiene": {
+    "id": "process-hygiene-plat",
+    "title": "A story estimated alongside its own estimated sub-tasks, and a ticket that entered In Progress and was never touched again",
+    "projectKey": "PLAT",
+    "developerKey": "tom-whitfield",
+    "doubleCountedParent": {
+      "itemKey": "PLAT-901",
+      "title": "Move the settlement reconciler onto the batch writer",
+      "points": 8,
+      "createdAt": "2026-07-27T09:00:00Z",
+      "subTasks": [
+        { "itemKey": "PLAT-902", "title": "Read the reconciler input through the batch reader", "points": 5 },
+        { "itemKey": "PLAT-903", "title": "Backfill the reconciler ledger for June", "points": 3 }
+      ]
+    },
+    "staleTicket": {
+      "itemKey": "PLAT-905",
+      "title": "Split the payout ledger writer from the projector",
+      "points": 3,
+      "createdAt": "2026-07-20T09:00:00Z",
+      "inProgressAt": "2026-07-22T10:00:00Z",
+      "expectedStaleWorkingDays": 7
+    },
+    "recentlyMoved": {
+      "itemKey": "PLAT-906",
+      "title": "Retire the second settlement retry queue",
+      "points": 2,
+      "createdAt": "2026-07-29T09:00:00Z",
+      "inProgressAt": "2026-07-30T10:00:00Z"
+    },
+    "activelyPushed": {
+      "itemKey": "PLAT-907",
+      "title": "Collapse the two idempotency caches into one",
+      "points": 5,
+      "createdAt": "2026-07-14T09:00:00Z",
+      "inProgressAt": "2026-07-15T10:00:00Z",
+      "repositoryKey": "platform-api",
+      "branchName": "chore/PLAT-907-single-idempotency-cache",
+      "revisionId": "fa11ed7",
+      "commitAt": "2026-07-30T14:20:00Z",
+      "subject": "PLAT-907 collapse the second idempotency cache into the first"
+    }
+  },
   "technicalDebtGrowth": {
     "id": "tech-debt-growth-plat",
     "title": "Tech-debt tickets opened per sprint, rising for four sprints",

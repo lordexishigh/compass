@@ -14,6 +14,10 @@ import compass from '@compass/eslint-plugin';
  */
 export const CLOCK_GUARDED_SOURCES = [
   'packages/clock/src/**/*.ts',
+  // `@compass/auth` takes `now: Instant` on every function that cares about time, which
+  // is what lets the session-expiry suites choose instants instead of waiting 30 days. A
+  // single `Date.now()` in here would make those tests unwritable, so it is a build gate.
+  'packages/auth/src/**/*.ts',
   'packages/ingest/src/**/*.ts',
   'packages/knowledge-model/src/**/*.ts',
   'packages/analysis/src/**/*.ts',
@@ -32,6 +36,7 @@ export const PURE_ANALYSIS_SOURCES = ['packages/analysis/src/**/*.ts'];
 
 /** Layers that must never construct a clock — `now` is always a parameter. */
 export const CLOCK_INJECTION_SOURCES = [
+  'packages/auth/src/**/*.ts',
   'packages/ingest/src/**/*.ts',
   'packages/knowledge-model/src/**/*.ts',
   'packages/analysis/src/**/*.ts',

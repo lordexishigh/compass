@@ -1,6 +1,7 @@
 import { GoalNodeNotFoundError } from '@compass/db';
 import { NextResponse } from 'next/server';
 
+import { guard } from '../../../../lib/auth/guard';
 import { NO_STORE, failure } from '../../../../lib/goal-http';
 import { archiveGoal, readGoal, updateGoal } from '../../../../lib/goal-source';
 
@@ -26,8 +27,12 @@ import { archiveGoal, readGoal, updateGoal } from '../../../../lib/goal-source';
  * database.
  */
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 type Context = { readonly params: Promise<{ readonly nodeId: string }> };
+
+/** The one access decision, from the one matrix. Every verb below begins with it. */
+const ROUTE = '/api/goals/[nodeId]';
 
 const notFound = (nodeId: string): NextResponse =>
   NextResponse.json(
@@ -38,8 +43,10 @@ const notFound = (nodeId: string): NextResponse =>
     { status: 404, headers: NO_STORE },
   );
 
-export async function GET(_request: Request, context: Context): Promise<NextResponse> {
+export async function GET(request: Request, context: Context): Promise<NextResponse> {
   const { nodeId } = await context.params;
+  const admitted = await guard({ request, route: ROUTE, action: 'GET' });
+  if (!admitted.allowed) return admitted.response;
 
   try {
     const history = await readGoal(nodeId);
@@ -51,6 +58,8 @@ export async function GET(_request: Request, context: Context): Promise<NextResp
 
 export async function PATCH(request: Request, context: Context): Promise<NextResponse> {
   const { nodeId } = await context.params;
+  const admitted = await guard({ request, route: ROUTE, action: 'PATCH' });
+  if (!admitted.allowed) return admitted.response;
 
   let body: unknown;
   try {
@@ -86,6 +95,9 @@ export async function PATCH(request: Request, context: Context): Promise<NextRes
  */
 export async function DELETE(request: Request, context: Context): Promise<NextResponse> {
   const { nodeId } = await context.params;
+  const admitted = await guard({ request, route: ROUTE, action: 'DELETE' });
+  if (!admitted.allowed) return admitted.response;
+
   const changeNote = new URL(request.url).searchParams.get('note');
 
   try {

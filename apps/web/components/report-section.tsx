@@ -3,19 +3,26 @@ import type { ClaimView, SectionView } from '../lib/view-model';
 import { AlignmentEvidence } from './alignment-evidence';
 import { CompletionLadder } from './completion-ladder';
 import { EvidenceChain, EvidenceMarkers } from './evidence-markers';
+import { ProseBlock } from './prose-block';
 
 /**
- * One of the six sections.
+ * One of the six sections, in either of the two voices it can be written in.
  *
- * The text shown is the deterministic renderer's own prose, not a re-derivation
- * from the item fields. That matters for one reason: the renderer's hard rule is
- * that no quantity appears without a clause interpreting it, and a view that
- * printed `item.headline` instead would print "Sprint 43 is 62% complete" with
- * the pace clause stripped off — the exact bare metric the rule exists to
- * prevent. So the page renders what the renderer wrote, and inherits the rule.
+ * **Templated.** The deterministic renderer emits one paragraph per claim, so each
+ * claim is rendered with its own sentences and its evidence marker attached to them.
+ * The renderer's hard rule — no quantity without a clause interpreting it — lives in
+ * those sentences, which is why the page shows `item.prose` rather than
+ * `item.headline`: printing the headline would print `Sprint 43 is 62% complete`
+ * with the pace clause stripped off.
  *
- * Items are separated by space and a hairline — no cards, no fills, no shadows
- * in the reading column. An empty section states its absence as a sentence.
+ * **Narrated.** A model was free to reorder and merge the items, so per-claim
+ * paragraphs no longer exist and per-claim prose can no longer be attributed. The
+ * section's prose becomes the read, and each claim renders beneath it as its
+ * *receipts*: the notches, the day counter, the evidence chain and the alignment
+ * panel. That is the design brief's rule made literal — every claim carries its
+ * receipt, and receipts never interrupt the read.
+ *
+ * Both voices go through `ProseBlock`, so neither can emit raw HTML.
  */
 export function ReportSectionBlock({ section }: { readonly section: SectionView }) {
   return (
@@ -29,6 +36,17 @@ export function ReportSectionBlock({ section }: { readonly section: SectionView 
         <p className="stated-absence mt-3 text-[17px] leading-relaxed">
           {section.prose.length > 0 ? section.prose : section.emptyStatement}
         </p>
+      ) : section.narrated ? (
+        <>
+          <ProseBlock paragraphs={section.paragraphs} className="mt-3 space-y-4" />
+          <ul className="mt-5 space-y-4">
+            {section.items.map((item) => (
+              <li key={item.stableId}>
+                <ClaimReceipts item={item} />
+              </li>
+            ))}
+          </ul>
+        </>
       ) : (
         <>
           <p className="prose-narration mt-3 text-ink-muted">{section.summary ?? section.title}</p>
@@ -46,11 +64,58 @@ export function ReportSectionBlock({ section }: { readonly section: SectionView 
 }
 
 /**
- * One claim: its sentences, its elapsed sigil, its notches and its evidence.
+ * The elapsed-fact sigil: a mono day counter in a 1px-bordered pill.
+ *
+ * Shared by both voices so "day 6" is one object with one spelling, rather than a
+ * span that drifted between two branches of the same component.
+ */
+function DayPill({ ageDays }: { readonly ageDays: number }) {
+  if (ageDays <= 0) return null;
+
+  return (
+    <span className="ml-2 inline-flex items-baseline rounded-[4px] border border-rule-strong px-1.5 py-px font-mono text-[11px] not-italic tabular-nums text-ink-muted">
+      day {ageDays}
+    </span>
+  );
+}
+
+/**
+ * One claim's receipts, with no sentence of its own.
+ *
+ * Used under narrated prose. It carries no prose because the narration above it
+ * already said the thing; repeating a templated sentence beneath a narrated one
+ * would print every fact twice in two different voices. What it does carry is
+ * everything a reader needs to *check* the claim, and the accessible name keeps the
+ * row identifiable to a screen reader, which cannot see that the paragraph above
+ * mentioned this ticket.
+ */
+function ClaimReceipts({ item }: { readonly item: ClaimView }) {
+  return (
+    <article aria-label={item.headline} className="border-l border-rule pl-4">
+      {item.alignment?.question !== null && item.alignment?.question !== undefined && (
+        <p className="alignment-question">{item.alignment.question}</p>
+      )}
+
+      <p className="flex flex-wrap items-baseline gap-x-1 text-[13px] text-ink-faint">
+        <span className="sr-only">{item.headline}</span>
+        <EvidenceMarkers evidence={item.evidence} />
+        <DayPill ageDays={item.ageDays} />
+      </p>
+
+      {item.ladder !== null && <CompletionLadder ladder={item.ladder} />}
+      <EvidenceChain evidence={item.evidence} />
+      {item.alignment !== null && <AlignmentEvidence alignment={item.alignment} />}
+    </article>
+  );
+}
+
+/**
+ * One claim in the templated voice: its sentences, its sigil, its notches and its
+ * evidence.
  *
  * The day counter is a pill rather than a badge saying NEW, and the change since
- * yesterday is a run-in italic clause, because "this is day 6 of the same
- * blocker" is a fact a manager can act on and "NEW" is decoration.
+ * yesterday is a run-in italic clause, because "this is day 6 of the same blocker"
+ * is a fact a manager can act on and "NEW" is decoration.
  *
  * An alignment claim gets one thing more: the resolution path, one click away. The
  * question an unattributed item asks is printed in serif italic above it, because a
@@ -65,11 +130,7 @@ function ReportClaim({ item }: { readonly item: ClaimView }) {
       <p className="prose-narration">
         {sentences}
         <EvidenceMarkers evidence={item.evidence} />
-        {item.ageDays > 0 && (
-          <span className="ml-2 inline-flex items-baseline rounded-[4px] border border-rule-strong px-1.5 py-px font-mono text-[11px] not-italic tabular-nums text-ink-muted">
-            day {item.ageDays}
-          </span>
-        )}
+        <DayPill ageDays={item.ageDays} />
       </p>
 
       {item.alignment?.question !== null && item.alignment?.question !== undefined && (

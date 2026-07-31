@@ -62,6 +62,60 @@ export {
 
 export { objectiveLinks, objectiveScopeLinks, objectiveVersions } from './schema/goals.js';
 
+export { authTokenPurpose, authTokens, membershipTeamScopes } from './schema/auth.js';
+
+export {
+  appendAuditLogEntry,
+  auditLogRowId,
+  authTokenRowId,
+  consumeAuthToken,
+  ensureMembership,
+  ensureUser,
+  findAuthTokenByHash,
+  findMembershipById,
+  findMembershipByUserId,
+  findSessionById,
+  findSessionByTokenHash,
+  findUserByEmail,
+  findUserById,
+  insertAuthToken,
+  insertSession,
+  listAuditLogEntries,
+  listLiveAuthTokens,
+  listSeats,
+  listSessionsForUser,
+  listTeamScopes,
+  listUsableMemberships,
+  membershipRowId,
+  normalizeEmail,
+  replaceTeamScopes,
+  revokeAllSessionsForUser,
+  revokeAuthTokens,
+  revokeSession,
+  sessionRowId,
+  setMembershipRole,
+  setMembershipStatus,
+  setUserDisplayName,
+  setUserPasswordHash,
+  teamScopeRowId,
+  touchSession,
+  userRowId,
+  type AuditLogInput,
+  type AuditLogRow,
+  type AuthTokenInput,
+  type AuthTokenPurpose,
+  type AuthTokenRow,
+  type MembershipInput,
+  type MembershipRole,
+  type MembershipRow,
+  type MembershipStatus,
+  type SeatRow,
+  type SessionInput,
+  type SessionRow,
+  type UserInput,
+  type UserRow,
+} from './repositories/auth.js';
+
 export {
   GoalNodeExistsError,
   GoalNodeNotFoundError,
@@ -96,6 +150,16 @@ export {
   reportSections,
   reports,
 } from './schema/reports.js';
+
+export { narrationTraces } from './schema/narration.js';
+
+export {
+  listNarrationTraces,
+  narrationTraceRowId,
+  recordNarrationTraces,
+  type NarrationTraceInput,
+  type StoredNarrationTrace,
+} from './repositories/narration.js';
 
 export {
   APPEND_ONLY_TABLE_NAMES,
@@ -204,8 +268,10 @@ export {
 
 export {
   ensureOrganization,
+  findOrganization,
   type EnsuredOrganization,
   type OrganizationInput,
+  type OrganizationRow,
 } from './repositories/organizations.js';
 
 export {

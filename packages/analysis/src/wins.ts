@@ -26,12 +26,14 @@ import type { YesterdayItem } from './yesterday.js';
  * *R2 or higher* is measured against the ladder's **contiguous** rung, not its
  * highest crossed one, and that distinction is the whole rule. `INS-204`
  * transitions to Done with no branch, no pull request and no commit anywhere in
- * the dataset — it crosses R3 while R1 and R2 stay empty. Read as "highest rung
- * crossed" that is R3 and would be a win; read as "reached R2 without skipping
- * anything" it is R0 and is not. The second reading is the correct one, because
- * a tracker transition with nothing in version control behind it is the pathology
- * `done-with-no-pull-request-INS-204` exists to expose. It is a finding, not an
- * achievement.
+ * the dataset — it crosses R1 (the tracker accepted it) and nothing above. A rule
+ * reading "highest rung crossed" would still refuse it, but the contiguous reading
+ * is what also refuses the mirror-image case: a merge that is on trunk and inside
+ * a release with no tracker item behind it crosses R2, R3 and R4 while R1 stays
+ * empty, so its highest crossed rung is R4 and its contiguous rung is R0. Compass
+ * does not congratulate a team for work no board can account for, any more than it
+ * congratulates them for a status somebody clicked. Both are findings, not
+ * achievements.
  *
  * *Inside the window* keeps yesterday's wins out of today's report. And the
  * substantiality test has two limbs because a team that does not estimate would

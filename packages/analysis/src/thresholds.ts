@@ -31,7 +31,14 @@ export type ThresholdId =
   | 'T14'
   | 'T15'
   | 'T16'
-  | 'T17';
+  | 'T17'
+  | 'T18'
+  | 'T19'
+  | 'T20'
+  | 'T21'
+  | 'T22'
+  | 'T23'
+  | 'T24';
 
 export interface Threshold {
   readonly id: ThresholdId;
@@ -143,6 +150,64 @@ export const THRESHOLDS = Object.freeze({
     3_000,
     'basis_points',
     'Alignment is attributed semantically only when the shared-vocabulary score reaches 0.30; below that the work is unattributed and Compass asks rather than states.',
+  ),
+
+  /**
+   * The Process Calibration Audit's own numbers — `T18` through `T24`.
+   *
+   * These seven decide whether the *data* means anything, which is a different
+   * question from the ones above. `T1` fires on a work item; `T21` fires on the
+   * team's process. That is why each of them is compared against a statistic that
+   * carries its own sample size: a verdict about a team's estimating discipline
+   * drawn from four tickets would be exactly the unfalsifiable claim this product
+   * exists to replace, so the audit refuses to state one.
+   *
+   * Every one is duplicated as a number in `docs/CALIBRATION.md`, which tabulates
+   * each verdict against the constants it cites, and `tests/calibration.test.ts`
+   * fails if a verdict is produced without naming the constant it was compared
+   * against.
+   */
+  T18: define(
+    'T18',
+    6_000,
+    'basis_points',
+    'Estimates are sparse when fewer than three fifths of the work items in the trailing window carry a point estimate.',
+  ),
+  T19: define(
+    'T19',
+    3_000,
+    'basis_points',
+    'A sprint carried over when three tenths or more of its committed items were still unfinished when it closed.',
+  ),
+  T20: define(
+    'T20',
+    3,
+    'count',
+    'Scope is fiction when three or more of the trailing five sprints breached the carryover rate.',
+  ),
+  T21: define(
+    'T21',
+    2_500,
+    'basis_points',
+    'Scope is fiction when a quarter or more of the committed baseline was added or removed after the sprint started.',
+  ),
+  T22: define(
+    'T22',
+    15_000,
+    'basis_points',
+    'A workflow status is inconsistent when the spread of its dwell times reaches one and a half times its own median dwell.',
+  ),
+  T23: define(
+    'T23',
+    3,
+    'working_days',
+    'A work item is stale when it has sat in an in-progress status for three working days with no commit and no pull-request activity.',
+  ),
+  T24: define(
+    'T24',
+    2_000,
+    'basis_points',
+    'Statuses are stale when a fifth or more of the in-progress items are stale by T23.',
   ),
 } as const satisfies Record<ThresholdId, Threshold>);
 

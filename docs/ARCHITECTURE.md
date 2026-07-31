@@ -21,7 +21,7 @@ Compass is a single TypeScript monorepo deployed as two processes (a Next.js web
 - **Depends on:** app-server
 ### app-server (backend)
 
-- **Tech:** Node.js 22 + Next.js 15 route handlers, Zod request validation, iron-session-style httpOnly+Secure+SameSite=Lax cookies, @node-rs/argon2, Slack signature + GitHub HMAC verifiers with constant-time compare
+- **Tech:** Node.js 22 + Next.js 15 route handlers, Zod request validation, httpOnly+Secure+SameSite=Lax cookies, Argon2id via `hash-wasm` (WebAssembly rather than the originally-specified `@node-rs/argon2` native binding — `packages/auth/src/password.ts` documents why: a `.node` binary cannot be bundled by `next build`, and per-platform optional dependencies make `pnpm install --frozen-lockfile` in Docker fragile), Slack signature + GitHub HMAC verifiers with constant-time compare
 - HTTP surface colocated with the web app as Next.js route handlers and server actions: session auth (email+password with Argon2id, magic link, password reset), the four-role (owner/manager/member/viewer) authorization matrix as one table in code checked server-side per route, share-link issue/revoke/expiry/access-logging, feedback writes, memo intake from the web form, inbound Slack Events/interactivity and email inbound/bounce webhooks with signature verification, and on-demand report generation for a requested instant. All database access goes through the scoped-query layer; no route may construct a query without an organization_id.
 - **Exposes:** REST/JSON under /api/*, signed single-purpose email feedback links, POST /api/slack/events, /api/slack/interactivity, POST /api/email/inbound, /api/email/webhooks
 - **Depends on:** persistence-and-scoped-query-layer, report-pipeline-orchestrator, renderers, memo-intake
@@ -64,7 +64,32 @@ Compass is a single TypeScript monorepo deployed as two processes (a Next.js web
 - **Tech:** TypeScript + @anthropic-ai/sdk (claude-sonnet-5 for narration, claude-opus-5 optional for merged reports), deterministic Handlebars-style template fallback renderer, prompt/response trace rows
 - Renders the six fixed sections into prose from the structured section payload only — never raw events — using Claude with ingested text passed as clearly delimited untrusted data, no tool access and no network egress from the prompt. A grounding extractor pulls every number, percentage, date, PR number, commit SHA, Jira key and person name out of the prose and asserts each exists in that section's payload; on failure it retries a bounded number of times and then falls back to the deterministic template renderer, recording narration_fallback and the prompt/response trace on the report row. Narration output is never an input to any decision.
 - **Exposes:** narrateReport(structuredReport), groundingValidator(prose, payload), templateRender(structuredReport)
-- **Depends on:** analysis-core, persistence-and-scoped-query-layer, anthropic-claude-api
+- **Depends on:** analysis-core, renderers, anthropic-claude-api
+
+**As built** (`packages/narrator`), with three refinements to the sketch above:
+
+- **It sits above `renderers`, not beside them, and it depends on no database.** Its
+  fail-closed fallback *is* the deterministic template renderer, so `narrateReport`
+  calls `renderReport` rather than there being a second template path. And because a
+  narrator that could write rows would be a narrator that could persist unvalidated
+  prose, `NarrationTrace` and `Report.fallback_renderer` are written by the pipeline —
+  the same arrangement the alignment audit trail uses, and enforced by the
+  `narration-never-persists` dependency-cruiser rule.
+- **The payload is a projection, not the section object.** `ReportItemAlignment`
+  carries `searchedText` — the verbatim commit message a tracker key was matched
+  inside — so passing a section straight through would put commit messages in the
+  request. `payload.ts` names every field that travels and `assertNoRawIngestedText`
+  fails the build if a raw-text field is added to the shape.
+- **Eight token kinds, not seven.** The list in the acceptance criteria omits the
+  goal-node id, and an alignment verdict is the most consequential sentence Compass
+  writes: a narration that moved an OFF-GOAL flag from `OBJ-Q2-BILL` to
+  `OBJ-Q1-LEGACY` would accuse the same work of serving a different dead objective,
+  and none of the other seven kinds would notice. `objective_key` is discriminated
+  from a tracker key by requiring two or more hyphen groups, so `CHK-701` and the
+  product's own `OFF-GOAL` are unaffected.
+
+N (3), the whole-report fallback rule and the trace columns are documented in
+[DEVELOPMENT.md](DEVELOPMENT.md#narration-and-grounding).
 ### report-pipeline-orchestrator (backend)
 
 - **Tech:** TypeScript (@compass/pipeline), canonical JSON serializer, content-hashed report rows
@@ -170,6 +195,193 @@ Compass is a single TypeScript monorepo deployed as two processes (a Next.js web
 ## API design
 
 REST/JSON over Next.js route handlers, typed end-to-end with Zod schemas shared between server and client; every handler resolves (organization_id, role) first and calls only scoped repositories. Reports: GET /api/teams/:teamId/report?at=<ISO instant> and GET /api/orgs/:orgId/report/merged?at=<instant> (both regenerate through the real pipeline for that instant — this is the time-travel control), GET /api/reports/:id, GET /api/reports?team=&from=&to= (archive), POST /api/reports/:id/regenerate (rate-limited 5/hour/org), GET /api/reports/:id/evidence/:itemId (alignment link or matched text). Feedback: POST /api/items/:stableItemId/feedback {action: dismiss_risk | reject_recommendation | accept_recommendation | flag_alignment_wrong | blocker_resolved | snooze, reason?, days?} — keyed to the entity-derived stable ID, reachable identically from web, from signed single-purpose email links (GET+POST /f/:signedToken, one item, one action, 30-day expiry, single use, never a session), and from Slack Block Kit actions (signature verified, Slack user mapped to a Compass identity with permission on that report). Memos: POST /api/memos {raw_text, source} → 201 typed assertion, 409 with 2–3 candidates when subject resolution is below threshold, 422 {refusal: "I can't represent that yet"} when outside the five kinds; same code path serves POST /api/email/inbound and Slack DM/thread events. Config CRUD: /api/teams, /api/projects, /api/repositories, /api/objectives (effective-dated), /api/developers, /api/identity-links (merge/un-merge), /api/absences, /api/subscriptions. Sharing: POST /api/reports/:id/share {expiry: 7|30|90|never, audience: org|anyone} → 128-bit token, DELETE to revoke, GET /s/:token public read-only render with access logging. Auth: POST /api/auth/signup|login|logout|magic-link|reset, session cookie rotated on privilege change. Ops: GET /api/freshness (per-source ingested-at, coverage, degradation), POST /api/ingest/run. Structured reports are the versioned contract (report_schema_version on every row) and renderers/consumers read only that object.
+
+## Sessions, tokens and the four-role matrix
+
+Reports carry an organisation's own data, so who may read one is a first-class
+architectural decision rather than a middleware detail. This section is the single
+source of truth for it. Every number below exists once, as a named constant, and is
+referenced rather than repeated — the citation beside each one is where it lives.
+
+### The layer
+
+`@compass/auth` sits directly on top of `@compass/db` and beside the knowledge model,
+not beneath it. It needs the seat and session rows and nothing else. **Nothing in the
+report path may import it** — `.dependency-cruiser.cjs` enforces that under
+`authorization-is-not-a-report-concern`, because a section whose content could ask
+about a role would be a section whose content depended on who was looking, and the
+determinism gate would stop meaning anything.
+
+Nothing in the package reads a clock. Every function that cares about time takes
+`now: Instant`, the same rule the analysis core lives under, which is what lets
+`packages/auth/tests/sessions.test.ts` prove a fourteen-day idle expiry without
+waiting a fortnight.
+
+### Passwords
+
+Argon2id via `@node-rs/argon2`, with the parameters in `ARGON2ID_PARAMETERS`
+(`packages/auth/src/password.ts`):
+
+| parameter | value | why |
+| --- | --- | --- |
+| algorithm | Argon2id | The hybrid RFC 9106 recommends absent a specific reason for another. |
+| memory cost | 19 456 KiB (19 MiB) | The OWASP minimum for the `t=2, p=1` configuration. Memory is what makes a GPU farm expensive. |
+| time cost | 2 | ~50 ms per hash on a server core. |
+| parallelism | 1 | One lane; a route handler is already on one request's thread. |
+| output | 32 bytes | 256 bits of tag. |
+| salt | 16 bytes | Generated per hash by the binding from the OS CSPRNG. Never passed in — a chosen salt is a reused salt waiting to happen. |
+
+The stored value is a PHC string, so raising the cost later verifies old hashes with
+no migration. `packages/auth/tests/password.test.ts` reads the parameters back *out of
+a real hash* rather than trusting the table above, and asserts the password never
+appears in the digest, in an error message, or twice with the same salt.
+
+The floor is 12 characters (`PASSWORD_MIN_LENGTH`) with no composition rule: length is
+what resists guessing, and composition rules reliably produce `Password1!`.
+
+### Sessions
+
+Two deadlines, both in `packages/auth/src/sessions.ts`:
+
+- **Absolute — `SESSION_ABSOLUTE_TTL_DAYS` = 30.** Frozen at `issued_at`, never
+  extended. A tab open for a month still ends.
+- **Idle — `SESSION_IDLE_TTL_DAYS` = 14.** Derived from `last_used_at`, which advances
+  at most hourly (`SESSION_TOUCH_INTERVAL_MILLIS`) so a busy deployment is not one
+  UPDATE per request forever.
+
+The effective deadline is whichever comes first; `sessionDeadline` is the one place
+that comparison is made. The idle deadline is **derived, never stored**: a second
+stored deadline would be a second source of truth that a missed write could silently
+push out.
+
+The cookie is `compass_session`, `httpOnly; Secure; SameSite=Lax; Path=/`
+(`apps/web/lib/auth/cookies.ts`). `Secure` is decided from the request, not from
+`NODE_ENV` — a production deployment behind a plain-HTTP sidecar would otherwise set a
+cookie the browser drops, and the symptom is "sign-in appears to work and nothing
+happens". `SameSite=Lax` rather than `Strict` because the magic-link redirect is a
+top-level GET that has to arrive signed in; it is still not sent on a cross-site POST,
+which is the CSRF cover for every mutating route.
+
+Only the SHA-256 of the cookie's value is stored. A leaked backup yields no working
+session.
+
+**Rotation.** A session identifier is never reused and never edited. On a privilege
+change every live session is revoked and a new secret issued, so the previously
+handed-out cookie stops working — and because the revoked row stays on disk with its
+`revoked_reason`, a test can prove that it stopped rather than infer it. The role
+itself is read from the Membership on **every** request, never from the session, which
+is why a role changed a moment ago is in force immediately.
+
+### Single-use tokens
+
+One table, `auth_tokens`, three purposes, one set of rules — issue a secret, store
+only its digest, expire it, spend it once, revoke it early. Three tables would be
+three chances to implement "single use" slightly differently. Lifetimes
+(`TOKEN_TTL_MILLIS` in `packages/auth/src/secrets.ts`):
+
+| purpose | lifetime | why |
+| --- | --- | --- |
+| magic link | **15 minutes** | A full sign-in credential sitting in an inbox. |
+| password reset | **1 hour** | The person asking is often not at their desk; a link that lapsed before they read the mail is a support ticket. |
+| seat invitation | **7 days** | An invitee may be on leave. An owner can resend, which revokes the previous token, so the long window is never an unrevokable one. |
+
+Single use is enforced by an UPDATE whose predicate is `consumed_at is null`, not by a
+read followed by a write: two clicks on one mailed link arriving together would both
+pass a read-then-write check. Issuing a new token of a purpose revokes any unused one,
+so a forwarded older email stops working.
+
+`consumed_at` and `revoked_at` are separate terminal columns because "you already used
+this" and "an owner took it back" need different sentences and different next steps.
+
+### The matrix
+
+The whole of (principal × route × action) is one exported table, `ROLE_MATRIX` in
+`packages/auth/src/matrix.ts`, and every server-side decision reads it through
+`authorize`. A permission expressed as a condition inside a handler is invisible:
+nobody can enumerate it, no test can iterate it, and a new route ships with whatever
+its author remembered.
+
+`public` is a **principal in the same table** as the four roles, not a hole punched
+around it. Compass's zero-config promise is that a clean container serves `/` as a full
+six-section report with no session, so "no session" has to be something the matrix can
+*say* — otherwise the promise would have to be implemented by bypassing the matrix,
+which is how these things get lost.
+
+Public readability is confined to the demonstration tenant by the `demoOnlyPublic`
+flag: `/`, `/goals`, `/api/goals`, `/api/goals/[nodeId]` and `/api/reports/[teamKey]`
+are world-readable when the organisation being read is the seeded one and require a
+seat otherwise. A real customer's blockers and risks are not a landing page.
+`/api/health` is public in every tenant — the container's own `HEALTHCHECK` calls it
+and it carries no organisational data.
+
+Deny is the default at every step: an unknown route, an undeclared verb and an
+unlisted principal all refuse. A verb absent from a route's `allow` map is served to
+nobody, including an owner, which is what makes `/api/audit` unprunable by
+construction rather than by vigilance.
+
+Three tests hold the matrix to this. `apps/web/tests/authz-matrix.test.ts` walks every
+(principal × route × action) triple against an independently-written expectation table,
+and enumerates `app/api/**/route.ts` from disk so a new endpoint is a build failure
+until it declares who may call it. `apps/web/tests/auth-http.test.ts` reads every
+route file and requires a `guard()` call per verb served.
+
+**There is no Next.js middleware.** Middleware is the obvious place for this and it is
+the wrong one twice over: it runs before `/` and would need an exception for the
+zero-config report in the one layer no test can see the inside of, and Argon2id is a
+native addon that cannot load on the Edge runtime. Enforcement is one shared `guard()`
+in `apps/web/lib/auth/guard.ts` that every handler calls first, and
+`apps/web/tests/cold-start.test.tsx` asserts no middleware file exists.
+
+### Team scoping
+
+`membership_team_scopes` holds a row per (membership, team). The asymmetry is
+deliberate and lives in `teamScopeAllows`:
+
+- **Owners are unscoped.** An owner of a three-team organisation accidentally scoped to
+  zero teams would be locked out of their own product, and an owner can change the
+  scopes anyway, so restricting them would be theatre.
+- **Every other role needs the row.** A manager whose scopes were never set reads
+  nothing rather than everything — the safe direction for the failure to fall.
+
+A manager scoped to team A requesting team B gets **403, not 404**. A 404 would be the
+more secretive answer and it would also be a lie: the report exists, and the honest
+thing to tell a colleague is that it is not in their scope and which owner can change
+that. Compass does not pretend data is absent in order to look careful.
+
+### The audit log
+
+`audit_log_entries` is append-only in three independent places: `ScopedDb.updateIn` and
+`deleteFrom` throw `AppendOnlyTableError` for it, a statement-level database trigger
+raises underneath that, and **no repository function exists that would attempt either** —
+`packages/db/tests/scoped-repositories.test.ts` asserts the absence structurally, which
+is stronger than a guard, because a guard can be bypassed by a caller who finds another
+door and a door that was never built cannot be.
+
+Every privileged or destructive act writes one row with the actor, the target, and the
+whole before and after states — not a diff, because a diff cannot be read back into
+"what did this seat look like on Tuesday". The action comes from the closed
+`AUDIT_ACTIONS` vocabulary, so "show me every role change" is an indexed equality read
+rather than a text search. Row ids are derived from `(action, target, instant)`, so a
+retried request lands on the row it already wrote instead of double-counting a role
+change. Credentials never appear in an audit row: the log is browsed by people.
+
+### The first owner
+
+Seats are invite-only and the owner role can only be granted by an owner, so an
+organisation with no owner has no path to its first one — a deployment that could
+authenticate and could not be signed in to. `bootstrapOwner`
+(`packages/auth/src/bootstrap.ts`) is that path and deliberately the only one. It runs
+from the boot script on **every** container start, is idempotent (the user id is derived
+from the address), and never overwrites a password an operator has changed.
+
+`COMPASS_OWNER_EMAIL` and `COMPASS_OWNER_PASSWORD` name the credentials, with published
+demonstration defaults so `docker compose up` produces a working owner with no manual
+step. `/api/health` reports `seats: not_configured` for as long as those defaults are in
+use, and `/account` prints them — a deployment on a published password must not be able
+to look healthy.
+
+`POST /api/auth/register` is the second path and it closes itself: it creates an owner
+while the organisation has none and answers 409 once it has one.
 
 ## Effective dating and the freeze rule
 

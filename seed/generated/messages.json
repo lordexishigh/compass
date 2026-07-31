@@ -41,13 +41,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "PLAT-470 is in review, Marcus Hale has it.",
+    "body": "PLAT-472 is in review, Marcus Hale has it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-18T09:02:00.000Z",
     "postedAt": "2026-05-18T09:02:00.000Z",
     "referencedItemKeys": [
-      "PLAT-470"
+      "PLAT-472"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -60,13 +60,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "Yesterday: PLAT-503. Today: carrying on with PLAT-503. No blockers.",
+    "body": "Yesterday: PLAT-506. Today: carrying on with PLAT-506. No blockers.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-18T09:11:00.000Z",
     "postedAt": "2026-05-18T09:11:00.000Z",
     "referencedItemKeys": [
-      "PLAT-503"
+      "PLAT-506"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -98,13 +98,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "Picking up PLAT-470 this morning.",
+    "body": "Picking up PLAT-472 this morning.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-18T09:23:00.000Z",
     "postedAt": "2026-05-18T09:23:00.000Z",
     "referencedItemKeys": [
-      "PLAT-470"
+      "PLAT-472"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -208,13 +208,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "PLAT-449 is done — merged in #8045.",
+    "body": "PLAT-450 is done — merged in #8045.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-18T14:34:00.000Z",
     "postedAt": "2026-05-18T14:34:00.000Z",
     "referencedItemKeys": [
-      "PLAT-449"
+      "PLAT-450"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -354,13 +354,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "Standup: PLAT-452 slipped a day, I underestimated the migration.",
+    "body": "Standup: PLAT-454 slipped a day, I underestimated the migration.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-19T12:22:00.000Z",
     "postedAt": "2026-05-19T12:22:00.000Z",
     "referencedItemKeys": [
-      "PLAT-452"
+      "PLAT-454"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -462,13 +462,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "PLAT-439 is blocked on the settlement contract, no movement.",
+    "body": "PLAT-441 is blocked on the settlement contract, no movement.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-19T17:14:00.000Z",
     "postedAt": "2026-05-19T17:14:00.000Z",
     "referencedItemKeys": [
-      "PLAT-439"
+      "PLAT-441"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -538,13 +538,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "I am pairing with Marcus Hale on PLAT-771 after the sync.",
+    "body": "I am pairing with Marcus Hale on PLAT-755 after the sync.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-20T10:04:00.000Z",
     "postedAt": "2026-05-20T10:04:00.000Z",
     "referencedItemKeys": [
-      "PLAT-771"
+      "PLAT-755"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -593,13 +593,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "Rebased PLAT-483 onto main, tests are green.",
+    "body": "Rebased PLAT-486 onto main, tests are green.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-20T14:17:00.000Z",
     "postedAt": "2026-05-20T14:17:00.000Z",
     "referencedItemKeys": [
-      "PLAT-483"
+      "PLAT-486"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -667,13 +667,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "PLAT-768 turned out to be two tickets, splitting it.",
+    "body": "PLAT-773 turned out to be two tickets, splitting it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-20T17:18:00.000Z",
     "postedAt": "2026-05-20T17:18:00.000Z",
     "referencedItemKeys": [
-      "PLAT-768"
+      "PLAT-773"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -796,13 +796,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "No update on PLAT-506, still waiting on review.",
+    "body": "No update on PLAT-509, still waiting on review.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-21T15:06:00.000Z",
     "postedAt": "2026-05-21T15:06:00.000Z",
     "referencedItemKeys": [
-      "PLAT-506"
+      "PLAT-509"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -815,13 +815,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "Closed PLAT-783 — the fix was a one-liner in the end.",
+    "body": "Closed PLAT-789 — the fix was a one-liner in the end.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-21T15:45:00.000Z",
     "postedAt": "2026-05-21T15:45:00.000Z",
     "referencedItemKeys": [
-      "PLAT-783"
+      "PLAT-789"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -834,13 +834,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "PLAT-428 is in review, Tom Whitfield has it.",
+    "body": "PLAT-429 is in review, Tom Whitfield has it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-21T16:03:00.000Z",
     "postedAt": "2026-05-21T16:03:00.000Z",
     "referencedItemKeys": [
-      "PLAT-428"
+      "PLAT-429"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -889,13 +889,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "Yesterday: PLAT-518. Today: carrying on with PLAT-518. No blockers.",
+    "body": "Yesterday: PLAT-521. Today: carrying on with PLAT-521. No blockers.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-21T17:41:00.000Z",
     "postedAt": "2026-05-21T17:41:00.000Z",
     "referencedItemKeys": [
-      "PLAT-518"
+      "PLAT-521"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -908,13 +908,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "PLAT-404 is done — merged in #8087.",
+    "body": "PLAT-405 is done — merged in #8087.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-22T08:01:00.000Z",
     "postedAt": "2026-05-22T08:01:00.000Z",
     "referencedItemKeys": [
-      "PLAT-404"
+      "PLAT-405"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -1016,13 +1016,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "Standup: PLAT-754 slipped a day, I underestimated the migration.",
+    "body": "Standup: PLAT-784 slipped a day, I underestimated the migration.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-22T11:24:00.000Z",
     "postedAt": "2026-05-22T11:24:00.000Z",
     "referencedItemKeys": [
-      "PLAT-754"
+      "PLAT-784"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -1255,13 +1255,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "I am pairing with Tom Whitfield on PLAT-749 after the sync.",
+    "body": "I am pairing with Tom Whitfield on PLAT-760 after the sync.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-23T12:25:00.000Z",
     "postedAt": "2026-05-23T12:25:00.000Z",
     "referencedItemKeys": [
-      "PLAT-749"
+      "PLAT-760"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -1291,13 +1291,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "PLAT-754 is blocked on the settlement contract, no movement.",
+    "body": "PLAT-784 is blocked on the settlement contract, no movement.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-23T12:42:00.000Z",
     "postedAt": "2026-05-23T12:42:00.000Z",
     "referencedItemKeys": [
-      "PLAT-754"
+      "PLAT-784"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -1386,13 +1386,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "PLAT-761 turned out to be two tickets, splitting it.",
+    "body": "PLAT-766 turned out to be two tickets, splitting it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-24T10:55:00.000Z",
     "postedAt": "2026-05-24T10:55:00.000Z",
     "referencedItemKeys": [
-      "PLAT-761"
+      "PLAT-766"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -1441,13 +1441,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "Closed PLAT-530 — the fix was a one-liner in the end.",
+    "body": "Closed PLAT-534 — the fix was a one-liner in the end.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-24T11:20:00.000Z",
     "postedAt": "2026-05-24T11:20:00.000Z",
     "referencedItemKeys": [
-      "PLAT-530"
+      "PLAT-534"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -1496,13 +1496,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "Rebased PLAT-748 onto main, tests are green.",
+    "body": "Rebased PLAT-745 onto main, tests are green.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-24T12:32:00.000Z",
     "postedAt": "2026-05-24T12:32:00.000Z",
     "referencedItemKeys": [
-      "PLAT-748"
+      "PLAT-745"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -1534,13 +1534,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "No update on PLAT-742, still waiting on review.",
+    "body": "No update on PLAT-748, still waiting on review.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-24T16:48:00.000Z",
     "postedAt": "2026-05-24T16:48:00.000Z",
     "referencedItemKeys": [
-      "PLAT-742"
+      "PLAT-748"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -1699,13 +1699,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "PLAT-429 is in review, Elena Sokolova has it.",
+    "body": "PLAT-430 is in review, Elena Sokolova has it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-25T13:45:00.000Z",
     "postedAt": "2026-05-25T13:45:00.000Z",
     "referencedItemKeys": [
-      "PLAT-429"
+      "PLAT-430"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -1735,13 +1735,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "Picking up PLAT-432 this morning.",
+    "body": "Picking up PLAT-433 this morning.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-25T14:30:00.000Z",
     "postedAt": "2026-05-25T14:30:00.000Z",
     "referencedItemKeys": [
-      "PLAT-432"
+      "PLAT-433"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -1754,13 +1754,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "Yesterday: PLAT-529. Today: carrying on with PLAT-529. No blockers.",
+    "body": "Yesterday: PLAT-533. Today: carrying on with PLAT-533. No blockers.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-25T16:00:00.000Z",
     "postedAt": "2026-05-25T16:00:00.000Z",
     "referencedItemKeys": [
-      "PLAT-529"
+      "PLAT-533"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -1847,13 +1847,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "PLAT-406 is done — merged in #8097.",
+    "body": "PLAT-407 is done — merged in #8097.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-26T10:57:00.000Z",
     "postedAt": "2026-05-26T10:57:00.000Z",
     "referencedItemKeys": [
-      "PLAT-406"
+      "PLAT-407"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -2120,13 +2120,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "Rebased PLAT-754 onto main, tests are green.",
+    "body": "Rebased PLAT-784 onto main, tests are green.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-27T15:58:00.000Z",
     "postedAt": "2026-05-27T15:58:00.000Z",
     "referencedItemKeys": [
-      "PLAT-754"
+      "PLAT-784"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -2175,13 +2175,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "I am pairing with Priya Raman on PLAT-504 after the sync.",
+    "body": "I am pairing with Priya Raman on PLAT-507 after the sync.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-27T16:28:00.000Z",
     "postedAt": "2026-05-27T16:28:00.000Z",
     "referencedItemKeys": [
-      "PLAT-504"
+      "PLAT-507"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -2266,13 +2266,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "PLAT-760 turned out to be two tickets, splitting it.",
+    "body": "PLAT-765 turned out to be two tickets, splitting it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-28T09:27:00.000Z",
     "postedAt": "2026-05-28T09:27:00.000Z",
     "referencedItemKeys": [
-      "PLAT-760"
+      "PLAT-765"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -2304,13 +2304,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "No update on PLAT-521, still waiting on review.",
+    "body": "No update on PLAT-525, still waiting on review.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-28T11:14:00.000Z",
     "postedAt": "2026-05-28T11:14:00.000Z",
     "referencedItemKeys": [
-      "PLAT-521"
+      "PLAT-525"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -2342,13 +2342,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "Yesterday: PLAT-520. Today: carrying on with PLAT-520. No blockers.",
+    "body": "Yesterday: PLAT-524. Today: carrying on with PLAT-524. No blockers.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-28T11:56:00.000Z",
     "postedAt": "2026-05-28T11:56:00.000Z",
     "referencedItemKeys": [
-      "PLAT-520"
+      "PLAT-524"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -2361,13 +2361,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "Closed PLAT-753 — the fix was a one-liner in the end.",
+    "body": "Closed PLAT-783 — the fix was a one-liner in the end.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-28T12:38:00.000Z",
     "postedAt": "2026-05-28T12:38:00.000Z",
     "referencedItemKeys": [
-      "PLAT-753"
+      "PLAT-783"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -2528,13 +2528,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "PLAT-535 is done — merged in #8079.",
+    "body": "PLAT-539 is done — merged in #8079.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-29T11:58:00.000Z",
     "postedAt": "2026-05-29T11:58:00.000Z",
     "referencedItemKeys": [
-      "PLAT-535"
+      "PLAT-539"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -2602,13 +2602,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "PLAT-783 is in review, Tom Whitfield has it.",
+    "body": "PLAT-789 is in review, Tom Whitfield has it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-29T16:02:00.000Z",
     "postedAt": "2026-05-29T16:02:00.000Z",
     "referencedItemKeys": [
-      "PLAT-783"
+      "PLAT-789"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -2638,13 +2638,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "PLAT-425 is blocked on the settlement contract, no movement.",
+    "body": "PLAT-426 is blocked on the settlement contract, no movement.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-30T08:54:00.000Z",
     "postedAt": "2026-05-30T08:54:00.000Z",
     "referencedItemKeys": [
-      "PLAT-425"
+      "PLAT-426"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -2873,13 +2873,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "No update on PLAT-449, still waiting on review.",
+    "body": "No update on PLAT-451, still waiting on review.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-31T09:21:00.000Z",
     "postedAt": "2026-05-31T09:21:00.000Z",
     "referencedItemKeys": [
-      "PLAT-449"
+      "PLAT-451"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -2947,13 +2947,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "PLAT-769 turned out to be two tickets, splitting it.",
+    "body": "PLAT-754 turned out to be two tickets, splitting it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-31T10:34:00.000Z",
     "postedAt": "2026-05-31T10:34:00.000Z",
     "referencedItemKeys": [
-      "PLAT-769"
+      "PLAT-754"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -2985,13 +2985,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "I am pairing with Marcus Hale on PLAT-772 after the sync.",
+    "body": "I am pairing with Marcus Hale on PLAT-782 after the sync.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-31T11:46:00.000Z",
     "postedAt": "2026-05-31T11:46:00.000Z",
     "referencedItemKeys": [
-      "PLAT-772"
+      "PLAT-782"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -3004,13 +3004,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "Rebased PLAT-536 onto main, tests are green.",
+    "body": "Rebased PLAT-540 onto main, tests are green.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-05-31T14:22:00.000Z",
     "postedAt": "2026-05-31T14:22:00.000Z",
     "referencedItemKeys": [
-      "PLAT-536"
+      "PLAT-540"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -3114,13 +3114,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "PLAT-463 is in review, Marcus Hale has it.",
+    "body": "PLAT-465 is in review, Marcus Hale has it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-01T09:33:00.000Z",
     "postedAt": "2026-06-01T09:33:00.000Z",
     "referencedItemKeys": [
-      "PLAT-463"
+      "PLAT-465"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -3226,13 +3226,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "Closed PLAT-749 — the fix was a one-liner in the end.",
+    "body": "Closed PLAT-760 — the fix was a one-liner in the end.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-01T15:28:00.000Z",
     "postedAt": "2026-06-01T15:28:00.000Z",
     "referencedItemKeys": [
-      "PLAT-749"
+      "PLAT-760"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -3281,13 +3281,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "Yesterday: PLAT-475. Today: carrying on with PLAT-475. No blockers.",
+    "body": "Yesterday: PLAT-477. Today: carrying on with PLAT-477. No blockers.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-01T16:59:00.000Z",
     "postedAt": "2026-06-01T16:59:00.000Z",
     "referencedItemKeys": [
-      "PLAT-475"
+      "PLAT-477"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -3372,13 +3372,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "Standup: PLAT-449 slipped a day, I underestimated the migration.",
+    "body": "Standup: PLAT-450 slipped a day, I underestimated the migration.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-02T11:00:00.000Z",
     "postedAt": "2026-06-02T11:00:00.000Z",
     "referencedItemKeys": [
-      "PLAT-449"
+      "PLAT-450"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -3410,13 +3410,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "Picking up PLAT-439 this morning.",
+    "body": "Picking up PLAT-440 this morning.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-02T12:20:00.000Z",
     "postedAt": "2026-06-02T12:20:00.000Z",
     "referencedItemKeys": [
-      "PLAT-439"
+      "PLAT-440"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -3558,13 +3558,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "I am pairing with Tom Whitfield on PLAT-461 after the sync.",
+    "body": "I am pairing with Tom Whitfield on PLAT-463 after the sync.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-03T10:32:00.000Z",
     "postedAt": "2026-06-03T10:32:00.000Z",
     "referencedItemKeys": [
-      "PLAT-461"
+      "PLAT-463"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -3702,13 +3702,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "PLAT-531 is blocked on the settlement contract, no movement.",
+    "body": "PLAT-535 is blocked on the settlement contract, no movement.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-03T17:58:00.000Z",
     "postedAt": "2026-06-03T17:58:00.000Z",
     "referencedItemKeys": [
-      "PLAT-531"
+      "PLAT-535"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -3721,13 +3721,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "Closed PLAT-463 — the fix was a one-liner in the end.",
+    "body": "Closed PLAT-465 — the fix was a one-liner in the end.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-04T09:19:00.000Z",
     "postedAt": "2026-06-04T09:19:00.000Z",
     "referencedItemKeys": [
-      "PLAT-463"
+      "PLAT-465"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -3759,13 +3759,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "Rebased PLAT-790 onto main, tests are green.",
+    "body": "Rebased PLAT-795 onto main, tests are green.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-04T10:44:00.000Z",
     "postedAt": "2026-06-04T10:44:00.000Z",
     "referencedItemKeys": [
-      "PLAT-790"
+      "PLAT-795"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -3835,13 +3835,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "No update on PLAT-501, still waiting on review.",
+    "body": "No update on PLAT-504, still waiting on review.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-04T14:00:00.000Z",
     "postedAt": "2026-06-04T14:00:00.000Z",
     "referencedItemKeys": [
-      "PLAT-501"
+      "PLAT-504"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -3854,13 +3854,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "PLAT-783 turned out to be two tickets, splitting it.",
+    "body": "PLAT-789 turned out to be two tickets, splitting it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-04T14:21:00.000Z",
     "postedAt": "2026-06-04T14:21:00.000Z",
     "referencedItemKeys": [
-      "PLAT-783"
+      "PLAT-789"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -3981,13 +3981,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "Picking up PLAT-742 this morning.",
+    "body": "Picking up PLAT-747 this morning.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-05T08:42:00.000Z",
     "postedAt": "2026-06-05T08:42:00.000Z",
     "referencedItemKeys": [
-      "PLAT-742"
+      "PLAT-747"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -4000,13 +4000,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "Yesterday: PLAT-477. Today: carrying on with PLAT-477. No blockers.",
+    "body": "Yesterday: PLAT-479. Today: carrying on with PLAT-479. No blockers.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-05T08:46:00.000Z",
     "postedAt": "2026-06-05T08:46:00.000Z",
     "referencedItemKeys": [
-      "PLAT-477"
+      "PLAT-479"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -4146,13 +4146,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "PLAT-762 is in review, Aisha Bello has it.",
+    "body": "PLAT-767 is in review, Aisha Bello has it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-05T17:55:00.000Z",
     "postedAt": "2026-06-05T17:55:00.000Z",
     "referencedItemKeys": [
-      "PLAT-762"
+      "PLAT-767"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -4237,13 +4237,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "PLAT-527 is done — merged in #8134.",
+    "body": "PLAT-531 is done — merged in #8134.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-06T12:02:00.000Z",
     "postedAt": "2026-06-06T12:02:00.000Z",
     "referencedItemKeys": [
-      "PLAT-527"
+      "PLAT-531"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -4330,13 +4330,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "Standup: PLAT-789 slipped a day, I underestimated the migration.",
+    "body": "Standup: PLAT-795 slipped a day, I underestimated the migration.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-06T15:27:00.000Z",
     "postedAt": "2026-06-06T15:27:00.000Z",
     "referencedItemKeys": [
-      "PLAT-789"
+      "PLAT-795"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -4404,13 +4404,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "PLAT-448 is blocked on the settlement contract, no movement.",
+    "body": "PLAT-450 is blocked on the settlement contract, no movement.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-07T10:44:00.000Z",
     "postedAt": "2026-06-07T10:44:00.000Z",
     "referencedItemKeys": [
-      "PLAT-448"
+      "PLAT-450"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -4423,13 +4423,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "I am pairing with Aisha Bello on PLAT-477 after the sync.",
+    "body": "I am pairing with Aisha Bello on PLAT-480 after the sync.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-07T10:46:00.000Z",
     "postedAt": "2026-06-07T10:46:00.000Z",
     "referencedItemKeys": [
-      "PLAT-477"
+      "PLAT-480"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -4497,13 +4497,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "PLAT-501 turned out to be two tickets, splitting it.",
+    "body": "PLAT-504 turned out to be two tickets, splitting it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-07T13:35:00.000Z",
     "postedAt": "2026-06-07T13:35:00.000Z",
     "referencedItemKeys": [
-      "PLAT-501"
+      "PLAT-504"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -4698,13 +4698,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "Yesterday: PLAT-793. Today: carrying on with PLAT-793. No blockers.",
+    "body": "Yesterday: PLAT-902. Today: carrying on with PLAT-902. No blockers.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-08T13:27:00.000Z",
     "postedAt": "2026-06-08T13:27:00.000Z",
     "referencedItemKeys": [
-      "PLAT-793"
+      "PLAT-902"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -4717,13 +4717,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "No update on PLAT-531, still waiting on review.",
+    "body": "No update on PLAT-535, still waiting on review.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-08T13:54:00.000Z",
     "postedAt": "2026-06-08T13:54:00.000Z",
     "referencedItemKeys": [
-      "PLAT-531"
+      "PLAT-535"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -4808,13 +4808,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "Closed PLAT-790 — the fix was a one-liner in the end.",
+    "body": "Closed PLAT-796 — the fix was a one-liner in the end.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-08T17:04:00.000Z",
     "postedAt": "2026-06-08T17:04:00.000Z",
     "referencedItemKeys": [
-      "PLAT-790"
+      "PLAT-796"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -4882,13 +4882,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "PLAT-785 is in review, Priya Raman has it.",
+    "body": "PLAT-791 is in review, Priya Raman has it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-09T09:12:00.000Z",
     "postedAt": "2026-06-09T09:12:00.000Z",
     "referencedItemKeys": [
-      "PLAT-785"
+      "PLAT-791"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -4901,13 +4901,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "PLAT-796 is done — merged in #8050.",
+    "body": "PLAT-907 is done — merged in #8050.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-09T09:54:00.000Z",
     "postedAt": "2026-06-09T09:54:00.000Z",
     "referencedItemKeys": [
-      "PLAT-796"
+      "PLAT-907"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -4975,13 +4975,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "Picking up PLAT-431 this morning.",
+    "body": "Picking up PLAT-432 this morning.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-09T17:12:00.000Z",
     "postedAt": "2026-06-09T17:12:00.000Z",
     "referencedItemKeys": [
-      "PLAT-431"
+      "PLAT-432"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -5140,13 +5140,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "Standup: PLAT-470 slipped a day, I underestimated the migration.",
+    "body": "Standup: PLAT-472 slipped a day, I underestimated the migration.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-10T12:23:00.000Z",
     "postedAt": "2026-06-10T12:23:00.000Z",
     "referencedItemKeys": [
-      "PLAT-470"
+      "PLAT-472"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -5233,13 +5233,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "PLAT-519 turned out to be two tickets, splitting it.",
+    "body": "PLAT-523 turned out to be two tickets, splitting it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-11T09:09:00.000Z",
     "postedAt": "2026-06-11T09:09:00.000Z",
     "referencedItemKeys": [
-      "PLAT-519"
+      "PLAT-523"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -5303,13 +5303,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "No update on PLAT-518, still waiting on review.",
+    "body": "No update on PLAT-522, still waiting on review.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-11T10:50:00.000Z",
     "postedAt": "2026-06-11T10:50:00.000Z",
     "referencedItemKeys": [
-      "PLAT-518"
+      "PLAT-522"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -5377,13 +5377,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "Rebased PLAT-782 onto main, tests are green.",
+    "body": "Rebased PLAT-787 onto main, tests are green.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-11T12:15:00.000Z",
     "postedAt": "2026-06-11T12:15:00.000Z",
     "referencedItemKeys": [
-      "PLAT-782"
+      "PLAT-787"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -5415,13 +5415,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "I am pairing with Elena Sokolova on PLAT-456 after the sync.",
+    "body": "I am pairing with Elena Sokolova on PLAT-457 after the sync.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-11T14:18:00.000Z",
     "postedAt": "2026-06-11T14:18:00.000Z",
     "referencedItemKeys": [
-      "PLAT-456"
+      "PLAT-457"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -5487,13 +5487,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "Closed PLAT-783 — the fix was a one-liner in the end.",
+    "body": "Closed PLAT-788 — the fix was a one-liner in the end.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-12T11:30:00.000Z",
     "postedAt": "2026-06-12T11:30:00.000Z",
     "referencedItemKeys": [
-      "PLAT-783"
+      "PLAT-788"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -5525,13 +5525,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "PLAT-524 is in review, Priya Raman has it.",
+    "body": "PLAT-528 is in review, Priya Raman has it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-12T12:17:00.000Z",
     "postedAt": "2026-06-12T12:17:00.000Z",
     "referencedItemKeys": [
-      "PLAT-524"
+      "PLAT-528"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -5620,13 +5620,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "Yesterday: PLAT-446. Today: carrying on with PLAT-446. No blockers.",
+    "body": "Yesterday: PLAT-447. Today: carrying on with PLAT-447. No blockers.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-12T14:31:00.000Z",
     "postedAt": "2026-06-12T14:31:00.000Z",
     "referencedItemKeys": [
-      "PLAT-446"
+      "PLAT-447"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -5732,13 +5732,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "Standup: PLAT-453 slipped a day, I underestimated the migration.",
+    "body": "Standup: PLAT-455 slipped a day, I underestimated the migration.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-13T11:33:00.000Z",
     "postedAt": "2026-06-13T11:33:00.000Z",
     "referencedItemKeys": [
-      "PLAT-453"
+      "PLAT-455"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -5751,13 +5751,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "PLAT-416 is done — merged in #8059.",
+    "body": "PLAT-417 is done — merged in #8059.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-13T12:54:00.000Z",
     "postedAt": "2026-06-13T12:54:00.000Z",
     "referencedItemKeys": [
-      "PLAT-416"
+      "PLAT-417"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -5842,13 +5842,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "Picking up PLAT-478 this morning.",
+    "body": "Picking up PLAT-480 this morning.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-13T16:21:00.000Z",
     "postedAt": "2026-06-13T16:21:00.000Z",
     "referencedItemKeys": [
-      "PLAT-478"
+      "PLAT-480"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -5950,13 +5950,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "PLAT-748 is blocked on the settlement contract, no movement.",
+    "body": "PLAT-745 is blocked on the settlement contract, no movement.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-14T10:57:00.000Z",
     "postedAt": "2026-06-14T10:57:00.000Z",
     "referencedItemKeys": [
-      "PLAT-748"
+      "PLAT-745"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -5969,13 +5969,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "Rebased PLAT-424 onto main, tests are green.",
+    "body": "Rebased PLAT-425 onto main, tests are green.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-14T11:12:00.000Z",
     "postedAt": "2026-06-14T11:12:00.000Z",
     "referencedItemKeys": [
-      "PLAT-424"
+      "PLAT-425"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -6060,13 +6060,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "I am pairing with Tom Whitfield on PLAT-465 after the sync.",
+    "body": "I am pairing with Tom Whitfield on PLAT-468 after the sync.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-14T16:50:00.000Z",
     "postedAt": "2026-06-14T16:50:00.000Z",
     "referencedItemKeys": [
-      "PLAT-465"
+      "PLAT-468"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -6155,13 +6155,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "PLAT-752 turned out to be two tickets, splitting it.",
+    "body": "PLAT-762 turned out to be two tickets, splitting it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-15T09:54:00.000Z",
     "postedAt": "2026-06-15T09:54:00.000Z",
     "referencedItemKeys": [
-      "PLAT-752"
+      "PLAT-762"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -6212,13 +6212,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "No update on PLAT-476, still waiting on review.",
+    "body": "No update on PLAT-478, still waiting on review.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-15T13:24:00.000Z",
     "postedAt": "2026-06-15T13:24:00.000Z",
     "referencedItemKeys": [
-      "PLAT-476"
+      "PLAT-478"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -6248,13 +6248,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "Closed PLAT-463 — the fix was a one-liner in the end.",
+    "body": "Closed PLAT-465 — the fix was a one-liner in the end.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-15T13:34:00.000Z",
     "postedAt": "2026-06-15T13:34:00.000Z",
     "referencedItemKeys": [
-      "PLAT-463"
+      "PLAT-465"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -6375,13 +6375,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "Yesterday: PLAT-789. Today: carrying on with PLAT-789. No blockers.",
+    "body": "Yesterday: PLAT-795. Today: carrying on with PLAT-795. No blockers.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-16T09:13:00.000Z",
     "postedAt": "2026-06-16T09:13:00.000Z",
     "referencedItemKeys": [
-      "PLAT-789"
+      "PLAT-795"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -6470,13 +6470,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "Picking up PLAT-424 this morning.",
+    "body": "Picking up PLAT-425 this morning.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-16T11:59:00.000Z",
     "postedAt": "2026-06-16T11:59:00.000Z",
     "referencedItemKeys": [
-      "PLAT-424"
+      "PLAT-425"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -6648,13 +6648,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "Standup: PLAT-437 slipped a day, I underestimated the migration.",
+    "body": "Standup: PLAT-439 slipped a day, I underestimated the migration.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-17T14:09:00.000Z",
     "postedAt": "2026-06-17T14:09:00.000Z",
     "referencedItemKeys": [
-      "PLAT-437"
+      "PLAT-439"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -6777,13 +6777,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "Rebased PLAT-461 onto main, tests are green.",
+    "body": "Rebased PLAT-463 onto main, tests are green.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-18T09:10:00.000Z",
     "postedAt": "2026-06-18T09:10:00.000Z",
     "referencedItemKeys": [
-      "PLAT-461"
+      "PLAT-463"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -6815,13 +6815,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "I am pairing with Tom Whitfield on PLAT-782 after the sync.",
+    "body": "I am pairing with Tom Whitfield on PLAT-787 after the sync.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-18T10:21:00.000Z",
     "postedAt": "2026-06-18T10:21:00.000Z",
     "referencedItemKeys": [
-      "PLAT-782"
+      "PLAT-787"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -6834,13 +6834,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "PLAT-745 is blocked on the settlement contract, no movement.",
+    "body": "PLAT-764 is blocked on the settlement contract, no movement.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-18T10:36:00.000Z",
     "postedAt": "2026-06-18T10:36:00.000Z",
     "referencedItemKeys": [
-      "PLAT-745"
+      "PLAT-764"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -6963,13 +6963,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "PLAT-768 turned out to be two tickets, splitting it.",
+    "body": "PLAT-773 turned out to be two tickets, splitting it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-18T16:43:00.000Z",
     "postedAt": "2026-06-18T16:43:00.000Z",
     "referencedItemKeys": [
-      "PLAT-768"
+      "PLAT-773"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -7035,13 +7035,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "Closed PLAT-487 — the fix was a one-liner in the end.",
+    "body": "Closed PLAT-490 — the fix was a one-liner in the end.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-19T10:31:00.000Z",
     "postedAt": "2026-06-19T10:31:00.000Z",
     "referencedItemKeys": [
-      "PLAT-487"
+      "PLAT-490"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -7054,13 +7054,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "Yesterday: PLAT-465. Today: carrying on with PLAT-465. No blockers.",
+    "body": "Yesterday: PLAT-467. Today: carrying on with PLAT-467. No blockers.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-19T15:33:00.000Z",
     "postedAt": "2026-06-19T15:33:00.000Z",
     "referencedItemKeys": [
-      "PLAT-465"
+      "PLAT-467"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -7111,13 +7111,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "No update on PLAT-783, still waiting on review.",
+    "body": "No update on PLAT-788, still waiting on review.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-19T16:29:00.000Z",
     "postedAt": "2026-06-19T16:29:00.000Z",
     "referencedItemKeys": [
-      "PLAT-783"
+      "PLAT-788"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -7202,13 +7202,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "PLAT-534 is done — merged in #8058.",
+    "body": "PLAT-538 is done — merged in #8058.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-20T10:13:00.000Z",
     "postedAt": "2026-06-20T10:13:00.000Z",
     "referencedItemKeys": [
-      "PLAT-534"
+      "PLAT-538"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -7312,13 +7312,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "Picking up PLAT-528 this morning.",
+    "body": "Picking up PLAT-532 this morning.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-20T14:17:00.000Z",
     "postedAt": "2026-06-20T14:17:00.000Z",
     "referencedItemKeys": [
-      "PLAT-528"
+      "PLAT-532"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -7386,13 +7386,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "PLAT-534 is in review, Priya Raman has it.",
+    "body": "PLAT-538 is in review, Priya Raman has it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-20T17:02:00.000Z",
     "postedAt": "2026-06-20T17:02:00.000Z",
     "referencedItemKeys": [
-      "PLAT-534"
+      "PLAT-538"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -7460,13 +7460,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "I am pairing with Tom Whitfield on PLAT-520 after the sync.",
+    "body": "I am pairing with Tom Whitfield on PLAT-523 after the sync.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-21T12:06:00.000Z",
     "postedAt": "2026-06-21T12:06:00.000Z",
     "referencedItemKeys": [
-      "PLAT-520"
+      "PLAT-523"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -7568,13 +7568,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "Standup: PLAT-464 slipped a day, I underestimated the migration.",
+    "body": "Standup: PLAT-466 slipped a day, I underestimated the migration.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-21T17:25:00.000Z",
     "postedAt": "2026-06-21T17:25:00.000Z",
     "referencedItemKeys": [
-      "PLAT-464"
+      "PLAT-466"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -7720,13 +7720,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "PLAT-743 turned out to be two tickets, splitting it.",
+    "body": "PLAT-748 turned out to be two tickets, splitting it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-22T12:23:00.000Z",
     "postedAt": "2026-06-22T12:23:00.000Z",
     "referencedItemKeys": [
-      "PLAT-743"
+      "PLAT-748"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -7739,13 +7739,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "Rebased PLAT-786 onto main, tests are green.",
+    "body": "Rebased PLAT-791 onto main, tests are green.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-22T13:19:00.000Z",
     "postedAt": "2026-06-22T13:19:00.000Z",
     "referencedItemKeys": [
-      "PLAT-786"
+      "PLAT-791"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -7794,13 +7794,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "No update on PLAT-506, still waiting on review.",
+    "body": "No update on PLAT-509, still waiting on review.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-22T16:01:00.000Z",
     "postedAt": "2026-06-22T16:01:00.000Z",
     "referencedItemKeys": [
-      "PLAT-506"
+      "PLAT-509"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -7883,13 +7883,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "PLAT-410 is in review, Marcus Hale has it.",
+    "body": "PLAT-411 is in review, Marcus Hale has it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-23T10:52:00.000Z",
     "postedAt": "2026-06-23T10:52:00.000Z",
     "referencedItemKeys": [
-      "PLAT-410"
+      "PLAT-411"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -7993,13 +7993,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "Yesterday: PLAT-427. Today: carrying on with PLAT-427. No blockers.",
+    "body": "Yesterday: PLAT-428. Today: carrying on with PLAT-428. No blockers.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-23T14:17:00.000Z",
     "postedAt": "2026-06-23T14:17:00.000Z",
     "referencedItemKeys": [
-      "PLAT-427"
+      "PLAT-428"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -8067,13 +8067,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "PLAT-520 is done — merged in #8022.",
+    "body": "PLAT-524 is done — merged in #8022.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-24T08:08:00.000Z",
     "postedAt": "2026-06-24T08:08:00.000Z",
     "referencedItemKeys": [
-      "PLAT-520"
+      "PLAT-524"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -8143,13 +8143,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "Standup: PLAT-476 slipped a day, I underestimated the migration.",
+    "body": "Standup: PLAT-478 slipped a day, I underestimated the migration.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-24T12:34:00.000Z",
     "postedAt": "2026-06-24T12:34:00.000Z",
     "referencedItemKeys": [
-      "PLAT-476"
+      "PLAT-478"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -8162,13 +8162,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "Picking up PLAT-520 this morning.",
+    "body": "Picking up PLAT-524 this morning.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-24T14:37:00.000Z",
     "postedAt": "2026-06-24T14:37:00.000Z",
     "referencedItemKeys": [
-      "PLAT-520"
+      "PLAT-524"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -8325,13 +8325,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "PLAT-760 is blocked on the settlement contract, no movement.",
+    "body": "PLAT-765 is blocked on the settlement contract, no movement.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-25T09:38:00.000Z",
     "postedAt": "2026-06-25T09:38:00.000Z",
     "referencedItemKeys": [
-      "PLAT-760"
+      "PLAT-765"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -8363,13 +8363,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "I am pairing with Elena Sokolova on PLAT-475 after the sync.",
+    "body": "I am pairing with Elena Sokolova on PLAT-477 after the sync.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-25T10:54:00.000Z",
     "postedAt": "2026-06-25T10:54:00.000Z",
     "referencedItemKeys": [
-      "PLAT-475"
+      "PLAT-477"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -8437,13 +8437,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "Rebased PLAT-475 onto main, tests are green.",
+    "body": "Rebased PLAT-478 onto main, tests are green.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-25T14:55:00.000Z",
     "postedAt": "2026-06-25T14:55:00.000Z",
     "referencedItemKeys": [
-      "PLAT-475"
+      "PLAT-478"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -8564,13 +8564,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "No update on PLAT-498, still waiting on review.",
+    "body": "No update on PLAT-502, still waiting on review.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-26T09:33:00.000Z",
     "postedAt": "2026-06-26T09:33:00.000Z",
     "referencedItemKeys": [
-      "PLAT-498"
+      "PLAT-502"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -8583,13 +8583,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "Closed PLAT-475 — the fix was a one-liner in the end.",
+    "body": "Closed PLAT-478 — the fix was a one-liner in the end.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-26T09:46:00.000Z",
     "postedAt": "2026-06-26T09:46:00.000Z",
     "referencedItemKeys": [
-      "PLAT-475"
+      "PLAT-478"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -8672,13 +8672,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "PLAT-761 turned out to be two tickets, splitting it.",
+    "body": "PLAT-766 turned out to be two tickets, splitting it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-26T14:11:00.000Z",
     "postedAt": "2026-06-26T14:11:00.000Z",
     "referencedItemKeys": [
-      "PLAT-761"
+      "PLAT-766"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -8765,13 +8765,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "Picking up PLAT-749 this morning.",
+    "body": "Picking up PLAT-760 this morning.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-27T08:55:00.000Z",
     "postedAt": "2026-06-27T08:55:00.000Z",
     "referencedItemKeys": [
-      "PLAT-749"
+      "PLAT-760"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -8784,13 +8784,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "PLAT-787 is in review, Marcus Hale has it.",
+    "body": "PLAT-793 is in review, Marcus Hale has it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-27T10:33:00.000Z",
     "postedAt": "2026-06-27T10:33:00.000Z",
     "referencedItemKeys": [
-      "PLAT-787"
+      "PLAT-793"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -8896,13 +8896,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "Yesterday: PLAT-749. Today: carrying on with PLAT-749. No blockers.",
+    "body": "Yesterday: PLAT-745. Today: carrying on with PLAT-745. No blockers.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-27T16:56:00.000Z",
     "postedAt": "2026-06-27T16:56:00.000Z",
     "referencedItemKeys": [
-      "PLAT-749"
+      "PLAT-745"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -8970,13 +8970,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "PLAT-508 is blocked on the settlement contract, no movement.",
+    "body": "PLAT-511 is blocked on the settlement contract, no movement.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-28T09:54:00.000Z",
     "postedAt": "2026-06-28T09:54:00.000Z",
     "referencedItemKeys": [
-      "PLAT-508"
+      "PLAT-511"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -9078,13 +9078,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "PLAT-794 is done — merged in #8098.",
+    "body": "PLAT-903 is done — merged in #8098.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-28T12:38:00.000Z",
     "postedAt": "2026-06-28T12:38:00.000Z",
     "referencedItemKeys": [
-      "PLAT-794"
+      "PLAT-903"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -9097,13 +9097,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "Standup: PLAT-749 slipped a day, I underestimated the migration.",
+    "body": "Standup: PLAT-760 slipped a day, I underestimated the migration.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-28T14:08:00.000Z",
     "postedAt": "2026-06-28T14:08:00.000Z",
     "referencedItemKeys": [
-      "PLAT-749"
+      "PLAT-760"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -9171,13 +9171,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "PLAT-497 turned out to be two tickets, splitting it.",
+    "body": "PLAT-500 turned out to be two tickets, splitting it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-29T08:47:00.000Z",
     "postedAt": "2026-06-29T08:47:00.000Z",
     "referencedItemKeys": [
-      "PLAT-497"
+      "PLAT-500"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -9262,13 +9262,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "I am pairing with Tom Whitfield on PLAT-523 after the sync.",
+    "body": "I am pairing with Tom Whitfield on PLAT-527 after the sync.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-29T13:32:00.000Z",
     "postedAt": "2026-06-29T13:32:00.000Z",
     "referencedItemKeys": [
-      "PLAT-523"
+      "PLAT-527"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -9319,13 +9319,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "Rebased PLAT-520 onto main, tests are green.",
+    "body": "Rebased PLAT-524 onto main, tests are green.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-29T17:41:00.000Z",
     "postedAt": "2026-06-29T17:41:00.000Z",
     "referencedItemKeys": [
-      "PLAT-520"
+      "PLAT-524"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -9357,13 +9357,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "Yesterday: PLAT-499. Today: carrying on with PLAT-499. No blockers.",
+    "body": "Yesterday: PLAT-503. Today: carrying on with PLAT-503. No blockers.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-30T09:17:00.000Z",
     "postedAt": "2026-06-30T09:17:00.000Z",
     "referencedItemKeys": [
-      "PLAT-499"
+      "PLAT-503"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -9486,13 +9486,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "Closed PLAT-414 — the fix was a one-liner in the end.",
+    "body": "Closed PLAT-415 — the fix was a one-liner in the end.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-30T13:22:00.000Z",
     "postedAt": "2026-06-30T13:22:00.000Z",
     "referencedItemKeys": [
-      "PLAT-414"
+      "PLAT-415"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -9505,13 +9505,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "No update on PLAT-781, still waiting on review.",
+    "body": "No update on PLAT-787, still waiting on review.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-06-30T14:09:00.000Z",
     "postedAt": "2026-06-30T14:09:00.000Z",
     "referencedItemKeys": [
-      "PLAT-781"
+      "PLAT-787"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -9702,13 +9702,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "PLAT-783 is done — merged in #8142.",
+    "body": "PLAT-788 is done — merged in #8142.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-01T15:49:00.000Z",
     "postedAt": "2026-07-01T15:49:00.000Z",
     "referencedItemKeys": [
-      "PLAT-783"
+      "PLAT-788"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -9721,13 +9721,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "PLAT-538 is in review, Priya Raman has it.",
+    "body": "PLAT-744 is in review, Priya Raman has it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-01T16:14:00.000Z",
     "postedAt": "2026-07-01T16:14:00.000Z",
     "referencedItemKeys": [
-      "PLAT-538"
+      "PLAT-744"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -9759,13 +9759,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "Picking up PLAT-493 this morning.",
+    "body": "Picking up PLAT-496 this morning.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-01T16:53:00.000Z",
     "postedAt": "2026-07-01T16:53:00.000Z",
     "referencedItemKeys": [
-      "PLAT-493"
+      "PLAT-496"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -9797,13 +9797,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "I am pairing with Tom Whitfield on PLAT-493 after the sync.",
+    "body": "I am pairing with Tom Whitfield on PLAT-496 after the sync.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-02T08:15:00.000Z",
     "postedAt": "2026-07-02T08:15:00.000Z",
     "referencedItemKeys": [
-      "PLAT-493"
+      "PLAT-496"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -9816,13 +9816,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "PLAT-747 is blocked on the settlement contract, no movement.",
+    "body": "PLAT-752 is blocked on the settlement contract, no movement.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-02T09:02:00.000Z",
     "postedAt": "2026-07-02T09:02:00.000Z",
     "referencedItemKeys": [
-      "PLAT-747"
+      "PLAT-752"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -9890,13 +9890,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "Standup: PLAT-444 slipped a day, I underestimated the migration.",
+    "body": "Standup: PLAT-445 slipped a day, I underestimated the migration.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-02T11:45:00.000Z",
     "postedAt": "2026-07-02T11:45:00.000Z",
     "referencedItemKeys": [
-      "PLAT-444"
+      "PLAT-445"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -10093,13 +10093,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "PLAT-748 turned out to be two tickets, splitting it.",
+    "body": "PLAT-745 turned out to be two tickets, splitting it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-03T10:25:00.000Z",
     "postedAt": "2026-07-03T10:25:00.000Z",
     "referencedItemKeys": [
-      "PLAT-748"
+      "PLAT-745"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -10241,13 +10241,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "Closed PLAT-409 — the fix was a one-liner in the end.",
+    "body": "Closed PLAT-410 — the fix was a one-liner in the end.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-04T09:24:00.000Z",
     "postedAt": "2026-07-04T09:24:00.000Z",
     "referencedItemKeys": [
-      "PLAT-409"
+      "PLAT-410"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -10294,13 +10294,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "PLAT-451 is in review, Aisha Bello has it.",
+    "body": "PLAT-453 is in review, Aisha Bello has it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-04T11:24:00.000Z",
     "postedAt": "2026-07-04T11:24:00.000Z",
     "referencedItemKeys": [
-      "PLAT-451"
+      "PLAT-453"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -10313,13 +10313,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "Yesterday: PLAT-483. Today: carrying on with PLAT-483. No blockers.",
+    "body": "Yesterday: PLAT-485. Today: carrying on with PLAT-485. No blockers.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-04T13:33:00.000Z",
     "postedAt": "2026-07-04T13:33:00.000Z",
     "referencedItemKeys": [
-      "PLAT-483"
+      "PLAT-485"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -10461,13 +10461,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "Picking up PLAT-438 this morning.",
+    "body": "Picking up PLAT-439 this morning.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-05T10:42:00.000Z",
     "postedAt": "2026-07-05T10:42:00.000Z",
     "referencedItemKeys": [
-      "PLAT-438"
+      "PLAT-439"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -10480,13 +10480,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "Standup: PLAT-519 slipped a day, I underestimated the migration.",
+    "body": "Standup: PLAT-523 slipped a day, I underestimated the migration.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-05T10:57:00.000Z",
     "postedAt": "2026-07-05T10:57:00.000Z",
     "referencedItemKeys": [
-      "PLAT-519"
+      "PLAT-523"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -10643,13 +10643,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "PLAT-476 is done — merged in #8018.",
+    "body": "PLAT-479 is done — merged in #8018.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-05T17:22:00.000Z",
     "postedAt": "2026-07-05T17:22:00.000Z",
     "referencedItemKeys": [
-      "PLAT-476"
+      "PLAT-479"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -10681,13 +10681,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "PLAT-489 is blocked on the settlement contract, no movement.",
+    "body": "PLAT-492 is blocked on the settlement contract, no movement.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-06T08:45:00.000Z",
     "postedAt": "2026-07-06T08:45:00.000Z",
     "referencedItemKeys": [
-      "PLAT-489"
+      "PLAT-492"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -10700,13 +10700,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "Rebased PLAT-495 onto main, tests are green.",
+    "body": "Rebased PLAT-498 onto main, tests are green.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-06T08:55:00.000Z",
     "postedAt": "2026-07-06T08:55:00.000Z",
     "referencedItemKeys": [
-      "PLAT-495"
+      "PLAT-498"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -10755,13 +10755,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "I am pairing with Marcus Hale on PLAT-447 after the sync.",
+    "body": "I am pairing with Marcus Hale on PLAT-449 after the sync.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-06T11:20:00.000Z",
     "postedAt": "2026-07-06T11:20:00.000Z",
     "referencedItemKeys": [
-      "PLAT-447"
+      "PLAT-449"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -10901,13 +10901,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "PLAT-763 turned out to be two tickets, splitting it.",
+    "body": "PLAT-768 turned out to be two tickets, splitting it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-07T09:50:00.000Z",
     "postedAt": "2026-07-07T09:50:00.000Z",
     "referencedItemKeys": [
-      "PLAT-763"
+      "PLAT-768"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -11030,13 +11030,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "No update on PLAT-508, still waiting on review.",
+    "body": "No update on PLAT-511, still waiting on review.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-07T16:08:00.000Z",
     "postedAt": "2026-07-07T16:08:00.000Z",
     "referencedItemKeys": [
-      "PLAT-508"
+      "PLAT-511"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -11068,13 +11068,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "Closed PLAT-443 — the fix was a one-liner in the end.",
+    "body": "Closed PLAT-444 — the fix was a one-liner in the end.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-07T16:39:00.000Z",
     "postedAt": "2026-07-07T16:39:00.000Z",
     "referencedItemKeys": [
-      "PLAT-443"
+      "PLAT-444"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -11159,13 +11159,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "PLAT-457 is in review, Priya Raman has it.",
+    "body": "PLAT-459 is in review, Priya Raman has it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-08T11:53:00.000Z",
     "postedAt": "2026-07-08T11:53:00.000Z",
     "referencedItemKeys": [
-      "PLAT-457"
+      "PLAT-459"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -11178,13 +11178,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "Picking up PLAT-417 this morning.",
+    "body": "Picking up PLAT-418 this morning.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-08T12:00:00.000Z",
     "postedAt": "2026-07-08T12:00:00.000Z",
     "referencedItemKeys": [
-      "PLAT-417"
+      "PLAT-418"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -11197,13 +11197,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "Yesterday: PLAT-431. Today: carrying on with PLAT-431. No blockers.",
+    "body": "Yesterday: PLAT-432. Today: carrying on with PLAT-432. No blockers.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-08T12:12:00.000Z",
     "postedAt": "2026-07-08T12:12:00.000Z",
     "referencedItemKeys": [
-      "PLAT-431"
+      "PLAT-432"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -11364,13 +11364,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "PLAT-444 is done — merged in #8106.",
+    "body": "PLAT-445 is done — merged in #8106.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-09T10:30:00.000Z",
     "postedAt": "2026-07-09T10:30:00.000Z",
     "referencedItemKeys": [
-      "PLAT-444"
+      "PLAT-445"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -11453,13 +11453,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "PLAT-453 is blocked on the settlement contract, no movement.",
+    "body": "PLAT-455 is blocked on the settlement contract, no movement.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-09T13:52:00.000Z",
     "postedAt": "2026-07-09T13:52:00.000Z",
     "referencedItemKeys": [
-      "PLAT-453"
+      "PLAT-455"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -11622,13 +11622,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "PLAT-451 turned out to be two tickets, splitting it.",
+    "body": "PLAT-453 turned out to be two tickets, splitting it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-10T11:42:00.000Z",
     "postedAt": "2026-07-10T11:42:00.000Z",
     "referencedItemKeys": [
-      "PLAT-451"
+      "PLAT-453"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -11658,13 +11658,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "Rebased PLAT-411 onto main, tests are green.",
+    "body": "Rebased PLAT-412 onto main, tests are green.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-10T13:24:00.000Z",
     "postedAt": "2026-07-10T13:24:00.000Z",
     "referencedItemKeys": [
-      "PLAT-411"
+      "PLAT-412"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -11677,13 +11677,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "I am pairing with Tom Whitfield on PLAT-488 after the sync.",
+    "body": "I am pairing with Tom Whitfield on PLAT-491 after the sync.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-10T13:30:00.000Z",
     "postedAt": "2026-07-10T13:30:00.000Z",
     "referencedItemKeys": [
-      "PLAT-488"
+      "PLAT-491"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -11823,13 +11823,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "No update on PLAT-460, still waiting on review.",
+    "body": "No update on PLAT-462, still waiting on review.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-11T11:46:00.000Z",
     "postedAt": "2026-07-11T11:46:00.000Z",
     "referencedItemKeys": [
-      "PLAT-460"
+      "PLAT-462"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -11842,13 +11842,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "Yesterday: PLAT-426. Today: carrying on with PLAT-426. No blockers.",
+    "body": "Yesterday: PLAT-427. Today: carrying on with PLAT-427. No blockers.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-11T14:05:00.000Z",
     "postedAt": "2026-07-11T14:05:00.000Z",
     "referencedItemKeys": [
-      "PLAT-426"
+      "PLAT-427"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -11914,13 +11914,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "Closed PLAT-472 — the fix was a one-liner in the end.",
+    "body": "Closed PLAT-474 — the fix was a one-liner in the end.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-11T15:56:00.000Z",
     "postedAt": "2026-07-11T15:56:00.000Z",
     "referencedItemKeys": [
-      "PLAT-472"
+      "PLAT-474"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -11969,13 +11969,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "PLAT-749 is in review, Marcus Hale has it.",
+    "body": "PLAT-760 is in review, Marcus Hale has it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-12T08:16:00.000Z",
     "postedAt": "2026-07-12T08:16:00.000Z",
     "referencedItemKeys": [
-      "PLAT-749"
+      "PLAT-760"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -12007,13 +12007,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "Standup: PLAT-471 slipped a day, I underestimated the migration.",
+    "body": "Standup: PLAT-473 slipped a day, I underestimated the migration.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-12T09:23:00.000Z",
     "postedAt": "2026-07-12T09:23:00.000Z",
     "referencedItemKeys": [
-      "PLAT-471"
+      "PLAT-473"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -12045,13 +12045,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "Picking up PLAT-464 this morning.",
+    "body": "Picking up PLAT-466 this morning.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-12T09:25:00.000Z",
     "postedAt": "2026-07-12T09:25:00.000Z",
     "referencedItemKeys": [
-      "PLAT-464"
+      "PLAT-466"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -12064,13 +12064,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "PLAT-425 is done — merged in #8003.",
+    "body": "PLAT-426 is done — merged in #8003.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-12T11:37:00.000Z",
     "postedAt": "2026-07-12T11:37:00.000Z",
     "referencedItemKeys": [
-      "PLAT-425"
+      "PLAT-426"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -12282,13 +12282,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "PLAT-467 is blocked on the settlement contract, no movement.",
+    "body": "PLAT-469 is blocked on the settlement contract, no movement.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-13T11:38:00.000Z",
     "postedAt": "2026-07-13T11:38:00.000Z",
     "referencedItemKeys": [
-      "PLAT-467"
+      "PLAT-469"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -12320,13 +12320,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "I am pairing with Marcus Hale on PLAT-784 after the sync.",
+    "body": "I am pairing with Marcus Hale on PLAT-790 after the sync.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-13T13:03:00.000Z",
     "postedAt": "2026-07-13T13:03:00.000Z",
     "referencedItemKeys": [
-      "PLAT-784"
+      "PLAT-790"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -12449,13 +12449,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "PLAT-513 turned out to be two tickets, splitting it.",
+    "body": "PLAT-516 turned out to be two tickets, splitting it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-14T10:59:00.000Z",
     "postedAt": "2026-07-14T10:59:00.000Z",
     "referencedItemKeys": [
-      "PLAT-513"
+      "PLAT-516"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -12487,13 +12487,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "Rebased PLAT-463 onto main, tests are green.",
+    "body": "Rebased PLAT-465 onto main, tests are green.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-14T13:07:00.000Z",
     "postedAt": "2026-07-14T13:07:00.000Z",
     "referencedItemKeys": [
-      "PLAT-463"
+      "PLAT-465"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -12542,13 +12542,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "No update on PLAT-469, still waiting on review.",
+    "body": "No update on PLAT-471, still waiting on review.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-14T13:45:00.000Z",
     "postedAt": "2026-07-14T13:45:00.000Z",
     "referencedItemKeys": [
-      "PLAT-469"
+      "PLAT-471"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -12633,13 +12633,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "PLAT-769 is in review, Aisha Bello has it.",
+    "body": "PLAT-754 is in review, Aisha Bello has it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-15T10:18:00.000Z",
     "postedAt": "2026-07-15T10:18:00.000Z",
     "referencedItemKeys": [
-      "PLAT-769"
+      "PLAT-754"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -12724,13 +12724,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "Closed PLAT-505 — the fix was a one-liner in the end.",
+    "body": "Closed PLAT-509 — the fix was a one-liner in the end.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-15T15:21:00.000Z",
     "postedAt": "2026-07-15T15:21:00.000Z",
     "referencedItemKeys": [
-      "PLAT-505"
+      "PLAT-509"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -12762,13 +12762,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "Yesterday: PLAT-540. Today: carrying on with PLAT-540. No blockers.",
+    "body": "Yesterday: PLAT-746. Today: carrying on with PLAT-746. No blockers.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-15T16:39:00.000Z",
     "postedAt": "2026-07-15T16:39:00.000Z",
     "referencedItemKeys": [
-      "PLAT-540"
+      "PLAT-746"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -12961,13 +12961,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "Standup: PLAT-406 slipped a day, I underestimated the migration.",
+    "body": "Standup: PLAT-407 slipped a day, I underestimated the migration.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-16T15:09:00.000Z",
     "postedAt": "2026-07-16T15:09:00.000Z",
     "referencedItemKeys": [
-      "PLAT-406"
+      "PLAT-407"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -12997,13 +12997,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "Picking up PLAT-540 this morning.",
+    "body": "Picking up PLAT-746 this morning.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-16T15:57:00.000Z",
     "postedAt": "2026-07-16T15:57:00.000Z",
     "referencedItemKeys": [
-      "PLAT-540"
+      "PLAT-746"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -13016,13 +13016,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "PLAT-459 is done — merged in #8047.",
+    "body": "PLAT-461 is done — merged in #8047.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-16T16:26:00.000Z",
     "postedAt": "2026-07-16T16:26:00.000Z",
     "referencedItemKeys": [
-      "PLAT-459"
+      "PLAT-461"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -13111,13 +13111,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "I am pairing with Elena Sokolova on PLAT-520 after the sync.",
+    "body": "I am pairing with Elena Sokolova on PLAT-524 after the sync.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-17T09:29:00.000Z",
     "postedAt": "2026-07-17T09:29:00.000Z",
     "referencedItemKeys": [
-      "PLAT-520"
+      "PLAT-524"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -13149,13 +13149,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "Rebased PLAT-767 onto main, tests are green.",
+    "body": "Rebased PLAT-772 onto main, tests are green.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-17T10:59:00.000Z",
     "postedAt": "2026-07-17T10:59:00.000Z",
     "referencedItemKeys": [
-      "PLAT-767"
+      "PLAT-772"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -13168,13 +13168,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "PLAT-766 is blocked on the settlement contract, no movement.",
+    "body": "PLAT-771 is blocked on the settlement contract, no movement.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-17T11:41:00.000Z",
     "postedAt": "2026-07-17T11:41:00.000Z",
     "referencedItemKeys": [
-      "PLAT-766"
+      "PLAT-771"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -13295,13 +13295,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "No update on PLAT-449, still waiting on review.",
+    "body": "No update on PLAT-450, still waiting on review.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-18T10:32:00.000Z",
     "postedAt": "2026-07-18T10:32:00.000Z",
     "referencedItemKeys": [
-      "PLAT-449"
+      "PLAT-450"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -13331,13 +13331,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "PLAT-478 turned out to be two tickets, splitting it.",
+    "body": "PLAT-480 turned out to be two tickets, splitting it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-18T13:42:00.000Z",
     "postedAt": "2026-07-18T13:42:00.000Z",
     "referencedItemKeys": [
-      "PLAT-478"
+      "PLAT-480"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -13386,13 +13386,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "Closed PLAT-510 — the fix was a one-liner in the end.",
+    "body": "Closed PLAT-513 — the fix was a one-liner in the end.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-18T14:36:00.000Z",
     "postedAt": "2026-07-18T14:36:00.000Z",
     "referencedItemKeys": [
-      "PLAT-510"
+      "PLAT-513"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -13500,13 +13500,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "Yesterday: PLAT-488. Today: carrying on with PLAT-488. No blockers.",
+    "body": "Yesterday: PLAT-491. Today: carrying on with PLAT-491. No blockers.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-19T09:13:00.000Z",
     "postedAt": "2026-07-19T09:13:00.000Z",
     "referencedItemKeys": [
-      "PLAT-488"
+      "PLAT-491"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -13627,13 +13627,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "Picking up PLAT-750 this morning.",
+    "body": "Picking up PLAT-761 this morning.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-19T14:58:00.000Z",
     "postedAt": "2026-07-19T14:58:00.000Z",
     "referencedItemKeys": [
-      "PLAT-750"
+      "PLAT-761"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -13682,13 +13682,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "PLAT-536 is in review, Tom Whitfield has it.",
+    "body": "PLAT-742 is in review, Tom Whitfield has it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-19T17:00:00.000Z",
     "postedAt": "2026-07-19T17:00:00.000Z",
     "referencedItemKeys": [
-      "PLAT-536"
+      "PLAT-742"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -13758,13 +13758,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "PLAT-520 is blocked on the settlement contract, no movement.",
+    "body": "PLAT-524 is blocked on the settlement contract, no movement.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-20T09:01:00.000Z",
     "postedAt": "2026-07-20T09:01:00.000Z",
     "referencedItemKeys": [
-      "PLAT-520"
+      "PLAT-524"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -13883,13 +13883,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "Standup: PLAT-522 slipped a day, I underestimated the migration.",
+    "body": "Standup: PLAT-526 slipped a day, I underestimated the migration.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-20T16:34:00.000Z",
     "postedAt": "2026-07-20T16:34:00.000Z",
     "referencedItemKeys": [
-      "PLAT-522"
+      "PLAT-526"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -13959,13 +13959,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "PLAT-497 turned out to be two tickets, splitting it.",
+    "body": "PLAT-500 turned out to be two tickets, splitting it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-21T09:42:00.000Z",
     "postedAt": "2026-07-21T09:42:00.000Z",
     "referencedItemKeys": [
-      "PLAT-497"
+      "PLAT-500"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -14016,13 +14016,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "I am pairing with Elena Sokolova on PLAT-525 after the sync.",
+    "body": "I am pairing with Elena Sokolova on PLAT-529 after the sync.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-21T11:06:00.000Z",
     "postedAt": "2026-07-21T11:06:00.000Z",
     "referencedItemKeys": [
-      "PLAT-525"
+      "PLAT-529"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -14124,13 +14124,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "Rebased PLAT-540 onto main, tests are green.",
+    "body": "Rebased PLAT-747 onto main, tests are green.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-21T15:56:00.000Z",
     "postedAt": "2026-07-21T15:56:00.000Z",
     "referencedItemKeys": [
-      "PLAT-540"
+      "PLAT-747"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -14143,13 +14143,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "No update on PLAT-508, still waiting on review.",
+    "body": "No update on PLAT-511, still waiting on review.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-22T08:02:00.000Z",
     "postedAt": "2026-07-22T08:02:00.000Z",
     "referencedItemKeys": [
-      "PLAT-508"
+      "PLAT-511"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -14253,13 +14253,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "Closed PLAT-536 — the fix was a one-liner in the end.",
+    "body": "Closed PLAT-742 — the fix was a one-liner in the end.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-22T15:27:00.000Z",
     "postedAt": "2026-07-22T15:27:00.000Z",
     "referencedItemKeys": [
-      "PLAT-536"
+      "PLAT-742"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -14308,13 +14308,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "Yesterday: PLAT-790. Today: carrying on with PLAT-790. No blockers.",
+    "body": "Yesterday: PLAT-796. Today: carrying on with PLAT-796. No blockers.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-22T17:50:00.000Z",
     "postedAt": "2026-07-22T17:50:00.000Z",
     "referencedItemKeys": [
-      "PLAT-790"
+      "PLAT-796"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -14327,13 +14327,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "PLAT-470 is in review, Elena Sokolova has it.",
+    "body": "PLAT-472 is in review, Elena Sokolova has it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-23T08:54:00.000Z",
     "postedAt": "2026-07-23T08:54:00.000Z",
     "referencedItemKeys": [
-      "PLAT-470"
+      "PLAT-472"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -14382,13 +14382,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "PLAT-447 is done — merged in #8001.",
+    "body": "PLAT-449 is done — merged in #8001.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-23T10:05:00.000Z",
     "postedAt": "2026-07-23T10:05:00.000Z",
     "referencedItemKeys": [
-      "PLAT-447"
+      "PLAT-449"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -14420,13 +14420,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "Picking up PLAT-535 this morning.",
+    "body": "Picking up PLAT-539 this morning.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-23T11:58:00.000Z",
     "postedAt": "2026-07-23T11:58:00.000Z",
     "referencedItemKeys": [
-      "PLAT-535"
+      "PLAT-539"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -14530,13 +14530,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "Standup: PLAT-493 slipped a day, I underestimated the migration.",
+    "body": "Standup: PLAT-496 slipped a day, I underestimated the migration.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-23T16:59:00.000Z",
     "postedAt": "2026-07-23T16:59:00.000Z",
     "referencedItemKeys": [
-      "PLAT-493"
+      "PLAT-496"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -14642,13 +14642,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "I am pairing with Priya Raman on PLAT-466 after the sync.",
+    "body": "I am pairing with Priya Raman on PLAT-469 after the sync.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-24T11:58:00.000Z",
     "postedAt": "2026-07-24T11:58:00.000Z",
     "referencedItemKeys": [
-      "PLAT-466"
+      "PLAT-469"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -14678,13 +14678,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "PLAT-519 is blocked on the settlement contract, no movement.",
+    "body": "PLAT-523 is blocked on the settlement contract, no movement.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-24T13:36:00.000Z",
     "postedAt": "2026-07-24T13:36:00.000Z",
     "referencedItemKeys": [
-      "PLAT-519"
+      "PLAT-523"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -14972,13 +14972,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "Rebased PLAT-473 onto main, tests are green.",
+    "body": "Rebased PLAT-475 onto main, tests are green.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-25T16:00:00.000Z",
     "postedAt": "2026-07-25T16:00:00.000Z",
     "referencedItemKeys": [
-      "PLAT-473"
+      "PLAT-475"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -15065,13 +15065,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "Yesterday: PLAT-510. Today: carrying on with PLAT-510. No blockers.",
+    "body": "Yesterday: PLAT-514. Today: carrying on with PLAT-514. No blockers.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-26T08:26:00.000Z",
     "postedAt": "2026-07-26T08:26:00.000Z",
     "referencedItemKeys": [
-      "PLAT-510"
+      "PLAT-514"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -15122,13 +15122,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "Closed PLAT-533 — the fix was a one-liner in the end.",
+    "body": "Closed PLAT-538 — the fix was a one-liner in the end.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-26T11:48:00.000Z",
     "postedAt": "2026-07-26T11:48:00.000Z",
     "referencedItemKeys": [
-      "PLAT-533"
+      "PLAT-538"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -15141,13 +15141,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "PLAT-751 is in review, Aisha Bello has it.",
+    "body": "PLAT-761 is in review, Aisha Bello has it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-26T12:04:00.000Z",
     "postedAt": "2026-07-26T12:04:00.000Z",
     "referencedItemKeys": [
-      "PLAT-751"
+      "PLAT-761"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -15251,13 +15251,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "Picking up PLAT-473 this morning.",
+    "body": "Picking up PLAT-475 this morning.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-26T16:19:00.000Z",
     "postedAt": "2026-07-26T16:19:00.000Z",
     "referencedItemKeys": [
-      "PLAT-473"
+      "PLAT-475"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -15287,13 +15287,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "PLAT-523 is done — merged in #8002.",
+    "body": "PLAT-527 is done — merged in #8002.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-27T08:37:00.000Z",
     "postedAt": "2026-07-27T08:37:00.000Z",
     "referencedItemKeys": [
-      "PLAT-523"
+      "PLAT-527"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -15488,13 +15488,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "Standup: PLAT-430 slipped a day, I underestimated the migration.",
+    "body": "Standup: PLAT-431 slipped a day, I underestimated the migration.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-27T17:14:00.000Z",
     "postedAt": "2026-07-27T17:14:00.000Z",
     "referencedItemKeys": [
-      "PLAT-430"
+      "PLAT-431"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -15560,13 +15560,13 @@
       "kind": "handle",
       "value": "user-tom-whitfield"
     },
-    "body": "I am pairing with Marcus Hale on PLAT-426 after the sync.",
+    "body": "I am pairing with Marcus Hale on PLAT-427 after the sync.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-28T10:08:00.000Z",
     "postedAt": "2026-07-28T10:08:00.000Z",
     "referencedItemKeys": [
-      "PLAT-426"
+      "PLAT-427"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -15615,13 +15615,13 @@
       "kind": "handle",
       "value": "user-marcus-hale"
     },
-    "body": "Rebased PLAT-505 onto main, tests are green.",
+    "body": "Rebased PLAT-508 onto main, tests are green.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-28T13:37:00.000Z",
     "postedAt": "2026-07-28T13:37:00.000Z",
     "referencedItemKeys": [
-      "PLAT-505"
+      "PLAT-508"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -15691,13 +15691,13 @@
       "kind": "handle",
       "value": "user-priya-raman"
     },
-    "body": "PLAT-506 is blocked on the settlement contract, no movement.",
+    "body": "PLAT-510 is blocked on the settlement contract, no movement.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-28T16:01:00.000Z",
     "postedAt": "2026-07-28T16:01:00.000Z",
     "referencedItemKeys": [
-      "PLAT-506"
+      "PLAT-510"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -15820,13 +15820,13 @@
       "kind": "handle",
       "value": "user-aisha-bello"
     },
-    "body": "PLAT-794 turned out to be two tickets, splitting it.",
+    "body": "PLAT-905 turned out to be two tickets, splitting it.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-29T11:14:00.000Z",
     "postedAt": "2026-07-29T11:14:00.000Z",
     "referencedItemKeys": [
-      "PLAT-794"
+      "PLAT-905"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -15858,13 +15858,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "Closed PLAT-489 — the fix was a one-liner in the end.",
+    "body": "Closed PLAT-492 — the fix was a one-liner in the end.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-29T15:34:00.000Z",
     "postedAt": "2026-07-29T15:34:00.000Z",
     "referencedItemKeys": [
-      "PLAT-489"
+      "PLAT-492"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",
@@ -15932,13 +15932,13 @@
       "kind": "handle",
       "value": "user-elena-sokolova"
     },
-    "body": "No update on PLAT-506, still waiting on review.",
+    "body": "No update on PLAT-509, still waiting on review.",
     "conversationKey": "conversation-platform",
     "conversationName": "platform-standup",
     "occurredAt": "2026-07-29T17:31:00.000Z",
     "postedAt": "2026-07-29T17:31:00.000Z",
     "referencedItemKeys": [
-      "PLAT-506"
+      "PLAT-509"
     ],
     "sourceKey": "team-chat",
     "sourceKind": "chat",

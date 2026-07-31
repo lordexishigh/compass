@@ -43,6 +43,7 @@ describe('base schema convention', () => {
     expect(tableNames).toEqual([
       'absences',
       'audit_log_entries',
+      'auth_tokens',
       'blockers',
       'branch_refs',
       'commits',
@@ -56,7 +57,9 @@ describe('base schema convention', () => {
       'ingest_runs',
       'ingest_source_coverage',
       'manager_memos',
+      'membership_team_scopes',
       'memberships',
+      'narration_traces',
       'objective_links',
       'objective_scope_links',
       'objective_versions',

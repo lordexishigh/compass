@@ -1,5 +1,6 @@
 import { pathToFileURL } from 'node:url';
 
+import { bootstrapOwner, describeBootstrapOwner, type BootstrapOwnerResult } from '@compass/auth';
 import { instantFromIso, type Instant } from '@compass/clock';
 import {
   KnowledgeStore,
@@ -49,6 +50,8 @@ export interface BootstrapResult {
   readonly developerCount: number;
   readonly rosterCreated: number;
   readonly rosterChanged: number;
+  /** The first owner. Without this the deployment could authenticate and nobody could sign in. */
+  readonly owner: BootstrapOwnerResult;
 }
 
 /**
@@ -125,9 +128,19 @@ export async function bootstrap(): Promise<BootstrapResult> {
       at: new Date(bundle.window.start),
     });
 
-    const store = new KnowledgeStore(new ScopedDb(handle.db, orgScope(bundle.organizationId)));
+    const scoped = new ScopedDb(handle.db, orgScope(bundle.organizationId));
+    const store = new KnowledgeStore(scoped);
     const roster = rosterFromFixtures(fixtures, SEED_TIMEZONE, bundle.window.start);
     const provisioned = await provisionRoster(store, roster);
+
+    // The first owner, without which the product could authenticate and nobody could
+    // sign in. Idempotent, so this runs on every boot beside the roster rather than
+    // being a one-off command an operator has to know about.
+    const owner = await bootstrapOwner({
+      scoped,
+      now: bundle.window.start,
+      teamKeys: roster.teams.map((team) => team.key),
+    });
 
     return {
       organizationId: bundle.organizationId,
@@ -136,6 +149,7 @@ export async function bootstrap(): Promise<BootstrapResult> {
       developerCount: roster.developers.length,
       rosterCreated: provisioned.created,
       rosterChanged: provisioned.changed,
+      owner,
     };
   } finally {
     await handle.close();
@@ -152,6 +166,9 @@ if (entryPoint !== undefined && pathToFileURL(entryPoint).href === import.meta.u
           `teams ${result.teamKeys.join(', ')}, ${result.developerCount} developers, ` +
           `${result.rosterCreated} roster rows created and ${result.rosterChanged} changed.`,
       );
+      // Printed separately, and always: it is how an operator knows which address to
+      // sign in with, and whether the password is still the published one.
+      console.info(describeBootstrapOwner(result.owner));
     })
     .catch((error: unknown) => {
       console.error(`[compass] bootstrap failed: ${error instanceof Error ? error.message : String(error)}`);

@@ -10,6 +10,7 @@ import { compareNumbers, compareStable, windowContains, type Instant } from './i
 import {
   assessLadder,
   indexArtifactsByTicket,
+  type CommitGraph,
   type LadderResult,
   type WorkUnitArtifacts,
 } from './ladder.js';
@@ -156,6 +157,14 @@ interface Accumulator {
 
 export interface YesterdayOptions {
   readonly deploySignalAvailable: boolean;
+  /**
+   * The parent-edge graph the R3 and R4 detectors walk.
+   *
+   * Built once per report by the caller rather than per item: a report over the
+   * seeded organization holds a few thousand commits, and rebuilding the index for
+   * each of forty Yesterday lines turned a millisecond of work into a second of it.
+   */
+  readonly graph: CommitGraph;
 }
 
 /**
@@ -289,10 +298,13 @@ function finalise(
       ticket: unit.ticket,
       pullRequests: unit.pullRequests,
       commits: [],
-      releaseTags: unit.releaseTags.length > 0 ? unit.releaseTags : allTags,
+      // Every tag in scope, not only the ones cut inside the window: "is this
+      // merge inside a release?" is answered by walking every tag's ancestry, and
+      // the tag that contains a Wednesday merge is often cut on the Friday.
+      releaseTags: allTags,
       doneAt: unit.doneAt,
     },
-    { deploySignalAvailable: options.deploySignalAvailable },
+    { deploySignalAvailable: options.deploySignalAvailable, graph: options.graph },
   );
 
   return {
@@ -311,12 +323,26 @@ function finalise(
 }
 
 /**
- * The one-line headline for a Yesterday item.
+ * The one-line headline for a Yesterday item, ending in its rung suffix.
  *
  * Names every artifact involved, because "CHK-701 landed" and "CHK-701 landed
- * via #9201" are different claims and only the second one can be checked.
+ * via #9201" are different claims and only the second one can be checked. And it
+ * always ends `— merged, not yet released` or whatever the ladder actually found,
+ * because "landed" on its own is the overloaded word this product exists to stop
+ * using: a manager who reads that a ticket landed and then discovers it is sitting
+ * unreleased on trunk has been misled by one missing clause.
+ *
+ * The suffix is appended here, in the pure layer, rather than by each renderer —
+ * so `tests/report-invariants.test.ts` can assert that no Yesterday line exists
+ * without one, and the web view, the email and the plain-text form cannot
+ * disagree about it.
  */
 export function yesterdayHeadline(item: YesterdayItem): string {
+  return `${yesterdaySubject(item)} — ${item.ladder.rungSuffix}`;
+}
+
+/** The headline without its rung suffix: the artifacts and the title. */
+export function yesterdaySubject(item: YesterdayItem): string {
   const pullRequests = item.artifacts.filter((reference) => reference.kind === 'pull_request');
   const releases = item.artifacts.filter((reference) => reference.kind === 'release');
 

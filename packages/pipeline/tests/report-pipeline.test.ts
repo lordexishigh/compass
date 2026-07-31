@@ -75,6 +75,11 @@ describe('the pipeline runs the layers in order', () => {
       'sync-goals',
       'analyse',
       'render',
+      // Narration runs *after* the deterministic render, so the document a manager
+      // can read already exists before a model is asked for anything. It appears in
+      // the stage list even with no narrator configured, because "narration was
+      // considered and skipped" is a different fact from "there is no such stage".
+      'narrate',
       'persist',
       // After the report rather than during analysis: the analysis core is pure and
       // cannot write the audit trail of its own verdicts.

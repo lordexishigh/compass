@@ -9250,6 +9250,40 @@
   },
   {
     "assigneeIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "account",
+      "value": "acct-tom-whitfield"
+    },
+    "createdAt": "2026-07-14T09:00:00.000Z",
+    "description": "In progress for a fortnight, and committed to yesterday — long-running work, not stalled work.",
+    "estimatePoints": 5,
+    "flaggedBlocked": false,
+    "itemKey": "PLAT-907",
+    "itemType": "Task",
+    "labels": [
+      "platform"
+    ],
+    "occurredAt": "2026-07-15T10:00:00.000Z",
+    "parentItemKey": null,
+    "priority": "Medium",
+    "projectKey": "PLAT",
+    "reporterIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "account",
+      "value": "acct-tom-whitfield"
+    },
+    "resolvedAt": null,
+    "sourceKey": "primary-tracker",
+    "sourceKind": "tracker",
+    "sourceRecordId": "issue-PLAT-907",
+    "sprintRefs": [],
+    "status": "In Progress",
+    "statusCategory": "in_progress",
+    "title": "Collapse the two idempotency caches into one",
+    "updatedAt": "2026-07-15T10:00:00.000Z"
+  },
+  {
+    "assigneeIdentity": {
       "displayName": "Clara Mbeki",
       "kind": "account",
       "value": "acct-clara-mbeki"
@@ -10717,6 +10751,40 @@
   },
   {
     "assigneeIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "account",
+      "value": "acct-tom-whitfield"
+    },
+    "createdAt": "2026-07-20T09:00:00.000Z",
+    "description": "Moved to In Progress and never touched again — no commit, no pull request, no transition.",
+    "estimatePoints": 3,
+    "flaggedBlocked": false,
+    "itemKey": "PLAT-905",
+    "itemType": "Task",
+    "labels": [
+      "platform"
+    ],
+    "occurredAt": "2026-07-22T10:00:00.000Z",
+    "parentItemKey": null,
+    "priority": "Medium",
+    "projectKey": "PLAT",
+    "reporterIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "account",
+      "value": "acct-tom-whitfield"
+    },
+    "resolvedAt": null,
+    "sourceKey": "primary-tracker",
+    "sourceKind": "tracker",
+    "sourceRecordId": "issue-PLAT-905",
+    "sprintRefs": [],
+    "status": "In Progress",
+    "statusCategory": "in_progress",
+    "title": "Split the payout ledger writer from the projector",
+    "updatedAt": "2026-07-22T10:00:00.000Z"
+  },
+  {
+    "assigneeIdentity": {
       "displayName": "Aisha Bello",
       "kind": "account",
       "value": "acct-aisha-bello"
@@ -11701,6 +11769,40 @@
   },
   {
     "assigneeIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "account",
+      "value": "acct-tom-whitfield"
+    },
+    "createdAt": "2026-07-27T09:00:00.000Z",
+    "description": "Estimated at the story level, and estimated again on each of its sub-tasks.",
+    "estimatePoints": 8,
+    "flaggedBlocked": false,
+    "itemKey": "PLAT-901",
+    "itemType": "Story",
+    "labels": [
+      "platform"
+    ],
+    "occurredAt": "2026-07-27T09:00:00.000Z",
+    "parentItemKey": null,
+    "priority": "Medium",
+    "projectKey": "PLAT",
+    "reporterIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "account",
+      "value": "acct-tom-whitfield"
+    },
+    "resolvedAt": null,
+    "sourceKey": "primary-tracker",
+    "sourceKind": "tracker",
+    "sourceRecordId": "issue-PLAT-901",
+    "sprintRefs": [],
+    "status": "To Do",
+    "statusCategory": "todo",
+    "title": "Move the settlement reconciler onto the batch writer",
+    "updatedAt": "2026-07-27T09:00:00.000Z"
+  },
+  {
+    "assigneeIdentity": {
       "displayName": "Elena Sokolova",
       "kind": "account",
       "value": "acct-elena-sokolova"
@@ -11737,6 +11839,40 @@
   },
   {
     "assigneeIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "account",
+      "value": "acct-tom-whitfield"
+    },
+    "createdAt": "2026-07-27T10:00:00.000Z",
+    "description": null,
+    "estimatePoints": 5,
+    "flaggedBlocked": false,
+    "itemKey": "PLAT-902",
+    "itemType": "Sub-task",
+    "labels": [
+      "platform"
+    ],
+    "occurredAt": "2026-07-27T10:00:00.000Z",
+    "parentItemKey": "PLAT-901",
+    "priority": "Medium",
+    "projectKey": "PLAT",
+    "reporterIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "account",
+      "value": "acct-tom-whitfield"
+    },
+    "resolvedAt": null,
+    "sourceKey": "primary-tracker",
+    "sourceKind": "tracker",
+    "sourceRecordId": "issue-PLAT-902",
+    "sprintRefs": [],
+    "status": "To Do",
+    "statusCategory": "todo",
+    "title": "Read the reconciler input through the batch reader",
+    "updatedAt": "2026-07-27T10:00:00.000Z"
+  },
+  {
+    "assigneeIdentity": {
       "displayName": "Aisha Bello",
       "kind": "account",
       "value": "acct-aisha-bello"
@@ -11768,6 +11904,40 @@
     "statusCategory": "done",
     "title": "Batch writer keeps the ingest loop busy in the sandbox environment",
     "updatedAt": "2026-07-27T10:19:00.000Z"
+  },
+  {
+    "assigneeIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "account",
+      "value": "acct-tom-whitfield"
+    },
+    "createdAt": "2026-07-27T11:00:00.000Z",
+    "description": null,
+    "estimatePoints": 3,
+    "flaggedBlocked": false,
+    "itemKey": "PLAT-903",
+    "itemType": "Sub-task",
+    "labels": [
+      "platform"
+    ],
+    "occurredAt": "2026-07-27T11:00:00.000Z",
+    "parentItemKey": "PLAT-901",
+    "priority": "Medium",
+    "projectKey": "PLAT",
+    "reporterIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "account",
+      "value": "acct-tom-whitfield"
+    },
+    "resolvedAt": null,
+    "sourceKey": "primary-tracker",
+    "sourceKind": "tracker",
+    "sourceRecordId": "issue-PLAT-903",
+    "sprintRefs": [],
+    "status": "To Do",
+    "statusCategory": "todo",
+    "title": "Backfill the reconciler ledger for June",
+    "updatedAt": "2026-07-27T11:00:00.000Z"
   },
   {
     "assigneeIdentity": {
@@ -12706,6 +12876,40 @@
     "statusCategory": "in_progress",
     "title": "Guest checkout retries a declined card twice on slow networks",
     "updatedAt": "2026-07-30T08:15:00.000Z"
+  },
+  {
+    "assigneeIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "account",
+      "value": "acct-tom-whitfield"
+    },
+    "createdAt": "2026-07-29T09:00:00.000Z",
+    "description": "Moved into In Progress yesterday, so it has not had time to go stale.",
+    "estimatePoints": 2,
+    "flaggedBlocked": false,
+    "itemKey": "PLAT-906",
+    "itemType": "Task",
+    "labels": [
+      "platform"
+    ],
+    "occurredAt": "2026-07-30T10:00:00.000Z",
+    "parentItemKey": null,
+    "priority": "Medium",
+    "projectKey": "PLAT",
+    "reporterIdentity": {
+      "displayName": "Tom Whitfield",
+      "kind": "account",
+      "value": "acct-tom-whitfield"
+    },
+    "resolvedAt": null,
+    "sourceKey": "primary-tracker",
+    "sourceKind": "tracker",
+    "sourceRecordId": "issue-PLAT-906",
+    "sprintRefs": [],
+    "status": "In Progress",
+    "statusCategory": "in_progress",
+    "title": "Retire the second settlement retry queue",
+    "updatedAt": "2026-07-30T10:00:00.000Z"
   },
   {
     "assigneeIdentity": {

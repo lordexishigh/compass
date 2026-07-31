@@ -1,7 +1,9 @@
 import { pathToFileURL } from 'node:url';
 
+import { describeBootstrapOwner } from '@compass/auth';
 import { SystemClock, formatCivilDate, type Clock } from '@compass/clock';
 import { createDatabase, ingestRunRowId, resolveDatabaseUrl, type CompassDatabase } from '@compass/db';
+import { narratorFromEnvironment, type NarratorPort } from '@compass/narrator';
 import { ensureDailyReport } from '@compass/pipeline';
 import { SeedConnector, resolveSeededRun, type SeededRun } from '@compass/seed-connector';
 
@@ -46,6 +48,14 @@ export interface ColdStartOptions {
   readonly clock?: Clock;
   /** Regenerate even when a report for the day already exists. */
   readonly force?: boolean;
+  /**
+   * The narrator, resolved from the environment when not supplied.
+   *
+   * Injected so a test can drive the cold start with a deterministic narrator, or
+   * with none — the cold-start test must not depend on whether the machine running it
+   * happens to have an Anthropic key exported.
+   */
+  readonly narrator?: NarratorPort | null;
 }
 
 /**
@@ -57,9 +67,15 @@ export interface ColdStartOptions {
 export async function warmDailyReport(
   database: CompassDatabase,
   run: SeededRun,
-  options: { readonly force?: boolean } = {},
+  options: { readonly force?: boolean; readonly narrator?: NarratorPort | null } = {},
 ): Promise<Omit<ColdStartResult, 'bootstrap' | 'elapsedMillis' | 'run'>> {
   const connector = new SeedConnector(run.dataset);
+  // The worker is a process edge, so it resolves the narrator here and hands it down,
+  // exactly as it does the clock and the connector. Warming the day's report without
+  // one would leave a templated report in the row the first request then reads — and
+  // the request path does not regenerate a report that already exists, so the reader
+  // would get template prose on a deployment that paid for narration.
+  const narrator = options.narrator === undefined ? narratorFromEnvironment(process.env) : options.narrator;
 
   const ensured = await ensureDailyReport({
     organizationId: run.organizationId,
@@ -77,6 +93,7 @@ export async function warmDailyReport(
     ),
     connector,
     database,
+    narrator,
     ...(options.force === true ? { force: true } : {}),
   });
 
@@ -100,6 +117,7 @@ export async function coldStart(options: ColdStartOptions = {}): Promise<ColdSta
   try {
     const warmed = await warmDailyReport(handle.db, run, {
       ...(options.force === true ? { force: true } : {}),
+      ...(options.narrator === undefined ? {} : { narrator: options.narrator }),
     });
 
     return {
@@ -131,6 +149,7 @@ if (entryPoint !== undefined && pathToFileURL(entryPoint).href === import.meta.u
     .then((result) => {
       if (result.run.degradation !== null) console.warn(`[compass] ${result.run.degradation}`);
       if (result.run.timeShiftNote !== null) console.info(`[compass] ${result.run.timeShiftNote}`);
+      console.info(describeBootstrapOwner(result.bootstrap.owner));
       console.info(describeColdStart(result));
 
       // Six sections or the container is not ready. A report missing a section

@@ -19,10 +19,20 @@ export type WorkspaceGroup = (typeof WORKSPACE_GROUPS)[number];
  * effective config of every package and fails if the set of packages with the
  * rule enabled differs from this one, so the two cannot drift apart.
  */
-export const CLOCK_GUARDED_PACKAGES = ['clock', 'ingest', 'knowledge-model', 'analysis', 'pipeline'] as const;
+export const CLOCK_GUARDED_PACKAGES = [
+  'clock',
+  // `auth` takes `now: Instant` on every function that cares about time, which is what
+  // lets its session-expiry suites choose instants rather than wait 30 days for an
+  // absolute deadline and 14 for an idle one. One `Date.now()` would make them unwritable.
+  'auth',
+  'ingest',
+  'knowledge-model',
+  'analysis',
+  'pipeline',
+] as const;
 
 /** Layers that must never construct a clock at all — `now` arrives as a parameter. */
-export const CLOCK_INJECTED_PACKAGES = ['ingest', 'knowledge-model', 'analysis', 'pipeline'] as const;
+export const CLOCK_INJECTED_PACKAGES = ['auth', 'ingest', 'knowledge-model', 'analysis', 'pipeline'] as const;
 
 /** Directories that are build output or vendored code, never authored source. */
 const SKIPPED_DIRECTORIES = new Set(['node_modules', 'dist', '.next', 'coverage', '.git', '.turbo', 'drizzle']);

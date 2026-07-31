@@ -2,10 +2,14 @@
  * Architecture rules: the layer order is a dependency fact, not a convention.
  *
  *   clock -> connector-port -> db -> knowledge-model -> ingest
- *                                              -> analysis -> renderers -> pipeline
+ *                                -> analysis -> renderers -> narrator -> pipeline
  *
  * A package may only depend on packages to its left. `analysis` is the strictest
  * case: it may depend on nothing at all, including node builtins and the clock.
+ *
+ * `narrator` sits above `renderers` because the deterministic template renderer is
+ * its fail-closed fallback — it calls `renderReport` rather than reimplementing it —
+ * and below `pipeline` because it writes no rows.
  * Resolution uses tsconfig.tests.json so `@compass/*` maps to each package's
  * `src/`, which means these rules hold on a clean checkout with no build.
  */
@@ -47,19 +51,47 @@ module.exports = {
       severity: 'error',
       comment:
         'Nothing downstream of the port may know a seeded provider exists; connectors are resolved at the edge.',
-      from: { path: '^packages/(ingest|knowledge-model|analysis|pipeline|renderers|db)/src' },
+      from: { path: '^packages/(ingest|knowledge-model|analysis|pipeline|renderers|narrator|db)/src' },
       to: { path: '^packages/seed-connector' },
+    },
+    {
+      name: 'narration-never-persists',
+      severity: 'error',
+      comment:
+        'The narrator writes no rows. NarrationTrace and the Report fallback flag are written by the pipeline, ' +
+        'which is the layer that owns persistence — the same arrangement the alignment audit trail uses.',
+      from: { path: '^packages/narrator/src' },
+      to: { path: '^packages/(db|knowledge-model|ingest)/src' },
+    },
+    // "The Anthropic SDK is imported in exactly one package" is NOT enforced here.
+    // `options.exclude` drops every `node_modules` path out of the graph, so a rule
+    // whose `to` names one can never match and would pass whatever the code did.
+    // It is enforced by a textual scan instead:
+    // `tools/quality-gates/tests/narration-boundary.test.ts`.
+    {
+      name: 'authorization-is-not-a-report-concern',
+      severity: 'error',
+      comment:
+        'Who may read a report is decided at the request edge, above the pipeline. Nothing in the report path may ' +
+        'import @compass/auth — a section that could ask about a role would be a section whose content depended on ' +
+        'who was looking, and the determinism gate could no longer mean anything.',
+      from: { path: '^packages/(knowledge-model|ingest|analysis|renderers|narrator|pipeline|seed-connector)/src' },
+      to: { path: '^packages/auth/src' },
     },
     forbidUpward('clock-depends-on-nothing', 'clock', '(?!clock)[a-z-]+'),
     forbidUpward(
       'connector-port-stays-above-clock-only',
       'connector-port',
-      'db|knowledge-model|ingest|analysis|renderers|pipeline|seed-connector',
+      'db|auth|knowledge-model|ingest|analysis|renderers|pipeline|seed-connector',
     ),
-    forbidUpward('db-stays-below-the-model', 'db', 'knowledge-model|ingest|analysis|renderers|pipeline'),
+    forbidUpward('db-stays-below-the-model', 'db', 'auth|knowledge-model|ingest|analysis|renderers|pipeline'),
+    // `auth` sits directly on top of `db`: it needs the seat and session rows, and
+    // nothing about the knowledge model, the analysis core or the renderers.
+    forbidUpward('auth-stays-beside-the-model', 'auth', 'knowledge-model|ingest|analysis|renderers|narrator|pipeline|seed-connector'),
     forbidUpward('knowledge-model-stays-below-ingest', 'knowledge-model', 'ingest|analysis|renderers|pipeline'),
-    forbidUpward('ingest-stays-below-analysis', 'ingest', 'analysis|renderers|pipeline'),
-    forbidUpward('renderers-stay-below-the-pipeline', 'renderers', 'pipeline|ingest|db'),
+    forbidUpward('ingest-stays-below-analysis', 'ingest', 'analysis|renderers|narrator|pipeline'),
+    forbidUpward('renderers-stay-below-the-narrator', 'renderers', 'narrator|pipeline|ingest|db'),
+    forbidUpward('narrator-stays-below-the-pipeline', 'narrator', 'pipeline'),
     {
       name: 'no-cross-package-relative-imports',
       severity: 'error',

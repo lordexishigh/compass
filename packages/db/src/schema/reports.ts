@@ -53,8 +53,28 @@ export const reports = pgTable(
     payload: jsonb('payload').$type<Record<string, unknown>>().notNull(),
     /** The prose a manager actually read, whole-report. */
     prose: text('prose').notNull(),
-    /** Which renderer produced `prose` — `template` today, `narrated` later. */
+    /** Which renderer produced `prose` — `template` or `narrated`. */
     rendererId: text('renderer_id').notNull(),
+    /**
+     * True when narration was attempted and this report was rendered by the
+     * template renderer instead.
+     *
+     * A separate boolean rather than an inference from `renderer_id`, because the
+     * two answer different questions. `renderer_id = 'template'` is also the
+     * honest value on a deployment with no Anthropic key, where nothing was
+     * attempted and nothing degraded. This column says *narration was supposed to
+     * happen and did not*, which is the number an operator alerts on and the fact
+     * the page discloses above the report.
+     */
+    fallbackRenderer: boolean('fallback_renderer').notNull().default(false),
+    /**
+     * Why, in one sentence, in the product's voice.
+     *
+     * Null exactly when `fallback_renderer` is false. Shown to the reader — a
+     * degraded report that will not say how it was degraded is the "confident
+     * polish" this product exists to refuse.
+     */
+    fallbackReason: text('fallback_reason'),
     /** complete | partial | unavailable. Never inferred from a row count. */
     coverageStatus: text('coverage_status').notNull(),
     /** The ingest run this report was computed against, when there was one. */

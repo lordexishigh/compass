@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url';
 
 import {
   MILLIS_PER_DAY,
+  MILLIS_PER_HOUR,
   addDaysInZone,
   instantFromIso,
   startOfDayInZone,
@@ -147,6 +148,15 @@ interface SeedCommit {
   readonly changedFileCount: number;
   readonly branchName: string;
   readonly parentRevisionIds: readonly string[];
+  readonly occurredAt: string;
+}
+
+interface SeedBranchRef {
+  readonly repositoryKey: string;
+  readonly name: string;
+  readonly revisionId: string;
+  readonly isDefault: boolean;
+  readonly observedAt: string;
   readonly occurredAt: string;
 }
 
@@ -560,6 +570,34 @@ export function buildSeedSnapshot(options: SeedSnapshotOptions = {}): AnalysisSn
     );
   }
 
+  /**
+   * Branch refs, which the R3 detector needs to know where a repository's trunk
+   * is.
+   *
+   * This helper stood in for two layers for a long time without building them at
+   * all, and nothing noticed — because until the Completion Ladder started
+   * deciding R3 by branch topology, no analysis module read a `branch_ref`. The
+   * omission would have been invisible and expensive: every merge would have
+   * fallen back to "newest commit on the default branch", the fallback would have
+   * been right often enough to look fine here, and production — where the ref *is*
+   * ingested — would have been answering a different question.
+   * `packages/ingest/src/model-ingest.ts` is the reference for the field names.
+   */
+  for (const branch of readSeed<SeedBranchRef>('branch_refs.json')) {
+    observe(
+      builder,
+      'branch_ref',
+      `${branch.repositoryKey}:${branch.name}`,
+      {
+        repositoryKey: branch.repositoryKey,
+        name: branch.name,
+        revisionId: branch.revisionId,
+        isDefault: branch.isDefault,
+      },
+      instantFromIso(branch.occurredAt),
+    );
+  }
+
   for (const tag of readSeed<SeedReleaseTag>('release_tags.json')) {
     observe(
       builder,
@@ -831,6 +869,542 @@ export function resequencedTicketSnapshot(): AnalysisSnapshot {
   return sealed(builder, {
     organizationId: SEED_ORGANIZATION_ID,
     scope: { kind: 'team', teamKey: 'flux' },
+    instant: SEED_NOW,
+    window: SEED_WINDOW,
+  });
+}
+
+/**
+ * The seeded organization with the estimation noise taken out.
+ *
+ * The manifest's `estimation-noise-plat` pathology exists to make the seeded team's
+ * points uninformative, and the bulk of the generated backlog reinforces it: point
+ * values are drawn independently of the duration the ticket actually took. That
+ * makes `points_uninformative` the seeded verdict — and it also means a test that
+ * only ever sees the seed cannot tell the difference between "the audit detected an
+ * uninformative correlation" and "the audit always says that".
+ *
+ * So this is the same snapshot with one field rewritten: every completed ticket's
+ * `estimatePoints` becomes its own measured elapsed working days, plus a fixed
+ * two-value wobble so the relationship is strong rather than synthetic-perfect. The
+ * *durations are untouched* — this is a team that estimates the same work well, not
+ * a team that did different work — and `points_uninformative` must clear.
+ */
+export function seedSnapshotWithoutEstimationNoise(options: SeedSnapshotOptions = {}): AnalysisSnapshot {
+  const snapshot = buildSeedSnapshot(options);
+  const instant = options.instant ?? SEED_NOW;
+
+  const transitions = new Map<string, { startedAt: number | null; finishedAt: number | null }>();
+  for (const transition of snapshot.collections.ticketTransitions) {
+    const known = transitions.get(transition.ticketKey) ?? { startedAt: null, finishedAt: null };
+    if (transition.toStatusCategory === 'in_progress' && known.startedAt === null) {
+      known.startedAt = transition.transitionedAt;
+    }
+    if (transition.toStatusCategory === 'done') known.finishedAt = transition.transitionedAt;
+    transitions.set(transition.ticketKey, known);
+  }
+
+  let wobble = 0;
+  const entities = snapshot.collections.entities.map((entity) => {
+    if (entity.kind !== 'ticket') return entity;
+    // Only tickets that already carried an estimate. Adding one where the team gave
+    // none would grow the correlation's sample rather than correct it, and then the
+    // "same n, better correlation" assertion would be comparing two different
+    // populations.
+    const existing = entity.fields['estimatePoints'];
+    if (typeof existing !== 'number' || existing <= 0) return entity;
+
+    const key = typeof entity.fields['itemKey'] === 'string' ? entity.fields['itemKey'] : entity.naturalKey;
+    const history = transitions.get(key);
+    if (history === undefined || history.startedAt === null || history.finishedAt === null) return entity;
+    if (history.finishedAt <= history.startedAt || history.finishedAt > instant) return entity;
+
+    const elapsed = workingDaysBetweenInstants(history.startedAt, history.finishedAt);
+    wobble = (wobble + 1) % 2;
+    return { ...entity, fields: { ...entity.fields, estimatePoints: Math.max(1, elapsed + wobble) } };
+  });
+
+  return { ...snapshot, collections: { ...snapshot.collections, entities } };
+}
+
+/** The same UTC Monday-to-Friday count `@compass/analysis` applies. */
+function workingDaysBetweenInstants(earlier: number, later: number): number {
+  if (later <= earlier) return 0;
+  let working = 0;
+  for (let day = Math.floor(earlier / MILLIS_PER_DAY); day < Math.floor(later / MILLIS_PER_DAY); day += 1) {
+    const weekday = (((day + 4) % 7) + 7) % 7;
+    if (weekday !== 0 && weekday !== 6) working += 1;
+  }
+  return working;
+}
+
+/**
+ * A merged pull request whose merge commit is **not** reachable from the default
+ * branch.
+ *
+ * The case that separates the R3 detector from a merge-state check, and it cannot
+ * be seeded: the generated dataset threads every trunk commit onto one history, so
+ * every merge in it *is* reachable. Here `main` points at `aaa1111`, the feature
+ * branch merged into `release/2.1` at `ccc3333`, and no parent edge connects the
+ * two — which is exactly what happens when a fix is merged to a release branch and
+ * nobody forward-ports it. The tracker says done, the forge says merged, and the
+ * code is not on the branch anyone builds from.
+ */
+export function mergedButUnreachableSnapshot(): AnalysisSnapshot {
+  const builder: Builder = { entities: new Map(), transitions: [], scopeChanges: [] };
+  const declaredAt = instantFromIso('2026-05-18T00:00:00.000Z');
+  const trunkAt = instantFromIso('2026-07-29T09:00:00.000Z');
+  const featureAt = instantFromIso('2026-07-30T09:00:00.000Z');
+  const mergedAt = instantFromIso('2026-07-30T14:00:00.000Z');
+
+  observe(builder, 'developer', 'sasha-ivanov', { displayName: 'Sasha Ivanov', teamKey: 'strand', active: true }, declaredAt);
+  observe(
+    builder,
+    'team',
+    'strand',
+    {
+      name: 'Strand',
+      methodology: 'scrum',
+      projectKey: 'STR',
+      objectiveKey: null,
+      conversationKey: null,
+      timezone: SEED_TIMEZONE,
+    },
+    declaredAt,
+  );
+  observe(
+    builder,
+    'project',
+    'STR',
+    { name: 'Strand', teamKey: 'strand', methodology: 'scrum', defaultBranch: 'main' },
+    declaredAt,
+  );
+  observe(
+    builder,
+    'repository',
+    'strand-api',
+    { name: 'strand-api', projectKey: 'STR', defaultBranch: 'main' },
+    declaredAt,
+  );
+
+  // Trunk: one commit, and the ref that points at it.
+  observe(
+    builder,
+    'commit',
+    'strand-api@aaa1111',
+    {
+      repositoryKey: 'strand-api',
+      revisionId: 'aaa1111',
+      authorDeveloperKey: 'sasha-ivanov',
+      unmatchedIdentityKey: null,
+      authoredAt: trunkAt,
+      message: 'STR-1 raise the connection ceiling',
+      changedFileCount: 2,
+      branchName: 'main',
+      parentRevisionIds: [],
+      ticketKey: 'STR-1',
+    },
+    trunkAt,
+  );
+  observe(
+    builder,
+    'branch_ref',
+    'strand-api:main',
+    { repositoryKey: 'strand-api', name: 'main', revisionId: 'aaa1111', isDefault: true },
+    trunkAt,
+  );
+
+  // The release line: a feature head and a merge commit, connected to each other
+  // and to nothing else.
+  observe(
+    builder,
+    'commit',
+    'strand-api@bbb2222',
+    {
+      repositoryKey: 'strand-api',
+      revisionId: 'bbb2222',
+      authorDeveloperKey: 'sasha-ivanov',
+      unmatchedIdentityKey: null,
+      authoredAt: featureAt,
+      message: 'STR-2 stop the retry storm on a cold pool',
+      changedFileCount: 3,
+      branchName: 'fix/STR-2-retry-storm',
+      parentRevisionIds: [],
+      ticketKey: 'STR-2',
+    },
+    featureAt,
+  );
+  observe(
+    builder,
+    'commit',
+    'strand-api@ccc3333',
+    {
+      repositoryKey: 'strand-api',
+      revisionId: 'ccc3333',
+      authorDeveloperKey: 'sasha-ivanov',
+      unmatchedIdentityKey: null,
+      authoredAt: mergedAt,
+      message: 'STR-2 merge pull request #77 from fix/STR-2-retry-storm',
+      changedFileCount: 3,
+      branchName: 'release/2.1',
+      parentRevisionIds: ['bbb2222'],
+      ticketKey: 'STR-2',
+    },
+    mergedAt,
+  );
+
+  observe(
+    builder,
+    'pull_request',
+    'code:77',
+    {
+      repositoryKey: 'strand-api',
+      displayNumber: 77,
+      title: 'STR-2 stop the retry storm on a cold pool',
+      state: 'merged',
+      authorDeveloperKey: 'sasha-ivanov',
+      createdAt: featureAt,
+      mergedAt,
+      closedAt: mergedAt,
+      sourceBranch: 'fix/STR-2-retry-storm',
+      targetBranch: 'release/2.1',
+      headRevisionId: 'bbb2222',
+      mergeRevisionId: 'ccc3333',
+      linkedItemKeys: ['STR-2'],
+      requestedReviewerKeys: ['sasha-ivanov'],
+    },
+    mergedAt,
+  );
+
+  // A tag on the release line, cut after the merge and containing it — so the test
+  // can also show that R4 is not awarded while R3 is missing.
+  observe(
+    builder,
+    'release_tag',
+    'strand-api:v2.1.1',
+    {
+      repositoryKey: 'strand-api',
+      name: 'v2.1.1',
+      revisionId: 'ccc3333',
+      releasedAt: instantFromIso('2026-07-30T16:00:00.000Z'),
+      description: 'Retry storm patch, on the release line only.',
+    },
+    instantFromIso('2026-07-30T16:00:00.000Z'),
+  );
+
+  observe(
+    builder,
+    'ticket',
+    'STR-2',
+    {
+      projectKey: 'STR',
+      featureKey: null,
+      itemKey: 'STR-2',
+      title: 'Stop the retry storm on a cold pool',
+      status: 'Done',
+      statusCategory: 'done',
+      itemType: 'bug',
+      priority: 'high',
+      estimatePoints: 3,
+      labels: [],
+      assigneeDeveloperKey: 'sasha-ivanov',
+      reporterDeveloperKey: 'sasha-ivanov',
+      sprintKey: null,
+      flaggedBlocked: false,
+      createdAt: featureAt,
+      resolvedAt: mergedAt,
+    },
+    mergedAt,
+  );
+  builder.transitions.push(
+    {
+      ticketKey: 'STR-2',
+      sourceKey: 'tracker',
+      sourceRecordId: 'transition-STR-2-1',
+      fromStatus: 'To Do',
+      toStatus: 'In Progress',
+      fromStatusCategory: 'todo',
+      toStatusCategory: 'in_progress',
+      actorDeveloperKey: 'sasha-ivanov',
+      transitionedAt: featureAt,
+    },
+    {
+      ticketKey: 'STR-2',
+      sourceKey: 'tracker',
+      sourceRecordId: 'transition-STR-2-2',
+      fromStatus: 'In Progress',
+      toStatus: 'Done',
+      fromStatusCategory: 'in_progress',
+      toStatusCategory: 'done',
+      actorDeveloperKey: 'sasha-ivanov',
+      transitionedAt: mergedAt,
+    },
+  );
+
+  return sealed(builder, {
+    organizationId: SEED_ORGANIZATION_ID,
+    scope: { kind: 'team', teamKey: 'strand' },
+    instant: SEED_NOW,
+    window: SEED_WINDOW,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// The well-run team, and the one thing wrong with it
+// ---------------------------------------------------------------------------
+
+/**
+ * What has to be wrong with the team, if anything.
+ *
+ * Every option is off by default, and with all of them off the Process Calibration
+ * Audit must return **no verdicts at all**. That is what makes this fixture worth
+ * having: it is the negative control for five of the six verdicts at once, and it
+ * fails loudly if a threshold is ever mis-signed — a comparison written `<=` where
+ * it should be `<` turns a clean team into a team with four findings, and there is
+ * no seeded dataset in which that mistake is visible.
+ */
+export interface WellRunTeamOptions {
+  /** Completed sprints. One is below T7, which is the `insufficient_history` case. */
+  readonly completedSprints?: number;
+  /** Strip the estimate from three items in four, taking coverage to 25%. */
+  readonly sparseEstimates?: boolean;
+  /** Leave half of each sprint's baseline unfinished at close, finishing it later. */
+  readonly carryover?: boolean;
+  /** Rewrite the last sprint's scope after it started. */
+  readonly churn?: boolean;
+  /** In-progress items with no commit and no pull request behind them. */
+  readonly staleTickets?: number;
+  /** Widen the In Progress dwell past T22's multiple of its own median. */
+  readonly wideDwell?: boolean;
+}
+
+const WELL_RUN_SPRINT_DAYS = 7;
+const WELL_RUN_TICKETS_PER_SPRINT = 4;
+/** Hours in `In Progress`, cycled per ticket. Spread stays well inside T22. */
+const CONSISTENT_DWELL_HOURS = [48, 60, 72, 84] as const;
+/** Spread ÷ median of 2.15, comfortably past T22's 1.5. */
+const INCONSISTENT_DWELL_HOURS = [4, 8, 100, 120] as const;
+
+/**
+ * A team whose data means something: sprints that closed on their commitments,
+ * estimates that tracked the work, statuses that held items for a consistent
+ * length of time, and nothing sitting still.
+ *
+ * Constructed rather than seeded, and that is the point. The seeded organization is
+ * deliberately pathological — it exists to make every detector fire — so it can
+ * only ever demonstrate the positive half of a threshold. A verdict that fires on
+ * the seed and also fires here would be a verdict that fires on everything.
+ *
+ * The sprints end before the report instant and start inside the estimate-coverage
+ * window, so every statistic has a real sample rather than an empty one.
+ */
+export function wellRunTeamSnapshot(options: WellRunTeamOptions = {}): AnalysisSnapshot {
+  const sprintCount = options.completedSprints ?? 3;
+  const dwellHours = options.wideDwell === true ? INCONSISTENT_DWELL_HOURS : CONSISTENT_DWELL_HOURS;
+
+  const builder: Builder = { entities: new Map(), transitions: [], scopeChanges: [] };
+  const declaredAt = instantFromIso('2026-05-18T00:00:00.000Z');
+
+  observe(builder, 'developer', 'lena-ostrom', { displayName: 'Lena Ostrom', teamKey: 'ward', active: true }, declaredAt);
+  observe(
+    builder,
+    'team',
+    'ward',
+    {
+      name: 'Ward',
+      methodology: 'scrum',
+      projectKey: 'WRD',
+      objectiveKey: null,
+      conversationKey: null,
+      timezone: SEED_TIMEZONE,
+    },
+    declaredAt,
+  );
+  observe(
+    builder,
+    'project',
+    'WRD',
+    { name: 'Ward', teamKey: 'ward', methodology: 'scrum', defaultBranch: 'main' },
+    declaredAt,
+  );
+  observe(
+    builder,
+    'repository',
+    'ward-api',
+    { name: 'ward-api', projectKey: 'WRD', defaultBranch: 'main' },
+    declaredAt,
+  );
+
+  // The last sprint closes on 2026-07-27, four days before the report instant, so
+  // every sprint sits inside the trailing-sprint window and every ticket inside the
+  // 28-day estimate-coverage window.
+  const lastSprintEnd = instantFromIso('2026-07-27T09:00:00.000Z');
+  const sprintSpan = WELL_RUN_SPRINT_DAYS * MILLIS_PER_DAY;
+  let ticketNumber = 1;
+
+  for (let index = 0; index < sprintCount; index += 1) {
+    const endAt = lastSprintEnd - (sprintCount - 1 - index) * sprintSpan;
+    const startAt = endAt - sprintSpan;
+    const sprintKey = `tracker:wrd-${index + 1}`;
+    const isLast = index === sprintCount - 1;
+
+    const committedItemKeys: string[] = [];
+    for (let position = 0; position < WELL_RUN_TICKETS_PER_SPRINT; position += 1) {
+      const itemKey = `WRD-${ticketNumber}`;
+      ticketNumber += 1;
+      committedItemKeys.push(itemKey);
+
+      const createdAt = startAt + MILLIS_PER_HOUR;
+      const startedAt = startAt + 2 * MILLIS_PER_HOUR;
+      // Carried items are still in progress when the sprint closes, and finish in
+      // the following week — so they are carryover without also being stale.
+      const carried = options.carryover === true && position < WELL_RUN_TICKETS_PER_SPRINT / 2;
+      const finishedAt = carried
+        ? endAt + MILLIS_PER_DAY
+        : startedAt + (dwellHours[position % dwellHours.length] as number) * MILLIS_PER_HOUR;
+
+      const elapsedWorkingDays = workingDaysBetweenInstants(startedAt, finishedAt);
+      const estimated = options.sparseEstimates !== true || position % WELL_RUN_TICKETS_PER_SPRINT === 0;
+
+      observe(
+        builder,
+        'ticket',
+        itemKey,
+        {
+          projectKey: 'WRD',
+          featureKey: null,
+          itemKey,
+          title: `Ward work item ${itemKey}`,
+          status: 'Done',
+          statusCategory: 'done',
+          itemType: 'task',
+          priority: 'medium',
+          // Points that track the measured duration: the whole reason this team's
+          // correlation clears T12.
+          estimatePoints: estimated ? Math.max(1, elapsedWorkingDays) : null,
+          labels: [],
+          assigneeDeveloperKey: 'lena-ostrom',
+          reporterDeveloperKey: 'lena-ostrom',
+          sprintKey,
+          flaggedBlocked: false,
+          createdAt,
+          resolvedAt: finishedAt,
+        },
+        finishedAt,
+      );
+
+      builder.transitions.push(
+        {
+          ticketKey: itemKey,
+          sourceKey: 'tracker',
+          sourceRecordId: `transition-${itemKey}-1`,
+          fromStatus: 'To Do',
+          toStatus: 'In Progress',
+          fromStatusCategory: 'todo',
+          toStatusCategory: 'in_progress',
+          actorDeveloperKey: 'lena-ostrom',
+          transitionedAt: startedAt,
+        },
+        {
+          ticketKey: itemKey,
+          sourceKey: 'tracker',
+          sourceRecordId: `transition-${itemKey}-2`,
+          fromStatus: 'In Progress',
+          toStatus: 'Done',
+          fromStatusCategory: 'in_progress',
+          toStatusCategory: 'done',
+          actorDeveloperKey: 'lena-ostrom',
+          transitionedAt: finishedAt,
+        },
+      );
+    }
+
+    observe(
+      builder,
+      'sprint',
+      sprintKey,
+      {
+        projectKey: 'WRD',
+        name: `Ward ${index + 1}`,
+        goal: 'Keep the ward boundary honest',
+        state: 'closed',
+        startAt,
+        endAt,
+        completedAt: endAt,
+        committedItemKeys: [...committedItemKeys].sort(),
+      },
+      startAt,
+    );
+
+    // Churn is scoped to the last completed sprint: two items swapped in and one
+    // out after it started, which takes it past T21 without touching carryover.
+    if (isLast && options.churn === true) {
+      const [swappedIn, alsoIn, swappedOut] = committedItemKeys;
+      const changedAt = startAt + 2 * MILLIS_PER_DAY;
+      for (const [ticketKey, change, ordinal] of [
+        [swappedIn, 'added', 1],
+        [alsoIn, 'added', 2],
+        [swappedOut, 'removed', 3],
+      ] as const) {
+        if (ticketKey === undefined) continue;
+        builder.scopeChanges.push({
+          sprintKey,
+          ticketKey,
+          sourceKey: 'tracker',
+          sourceRecordId: `scope-change-${sprintKey}-${ordinal}`,
+          change,
+          actorDeveloperKey: 'lena-ostrom',
+          changedAt,
+          afterSprintStart: true,
+        });
+      }
+    }
+  }
+
+  // Items sitting in an in-progress status with nothing behind them.
+  for (let index = 0; index < (options.staleTickets ?? 0); index += 1) {
+    const itemKey = `WRD-STALE-${index + 1}`;
+    const startedAt = instantFromIso('2026-07-20T10:00:00.000Z');
+    observe(
+      builder,
+      'ticket',
+      itemKey,
+      {
+        projectKey: 'WRD',
+        featureKey: null,
+        itemKey,
+        title: `Ward stalled item ${index + 1}`,
+        status: 'In Progress',
+        statusCategory: 'in_progress',
+        itemType: 'task',
+        priority: 'medium',
+        estimatePoints: 3,
+        labels: [],
+        assigneeDeveloperKey: 'lena-ostrom',
+        reporterDeveloperKey: 'lena-ostrom',
+        sprintKey: null,
+        flaggedBlocked: false,
+        createdAt: instantFromIso('2026-07-17T10:00:00.000Z'),
+        resolvedAt: null,
+      },
+      startedAt,
+    );
+    builder.transitions.push({
+      ticketKey: itemKey,
+      sourceKey: 'tracker',
+      sourceRecordId: `transition-${itemKey}-1`,
+      fromStatus: 'To Do',
+      toStatus: 'In Progress',
+      fromStatusCategory: 'todo',
+      toStatusCategory: 'in_progress',
+      actorDeveloperKey: 'lena-ostrom',
+      transitionedAt: startedAt,
+    });
+  }
+
+  return sealed(builder, {
+    organizationId: SEED_ORGANIZATION_ID,
+    scope: { kind: 'team', teamKey: 'ward' },
     instant: SEED_NOW,
     window: SEED_WINDOW,
   });

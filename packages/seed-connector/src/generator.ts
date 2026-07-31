@@ -164,6 +164,15 @@ interface BuildIssueInput {
   readonly resolvedAt: Instant | null;
   readonly sprint: SprintRef | null;
   readonly flaggedBlocked: boolean;
+  /**
+   * The parent this item is a sub-task of, when the fixtures declare one.
+   *
+   * Almost every generated issue is flat, which is realistic for the bulk of a
+   * backlog — and which left the sub-task double-count statistic with nothing to
+   * measure. The `processHygiene` pathology plants one real parent-and-sub-task
+   * family so the statistic has a case it can be checked against.
+   */
+  readonly parentItemKey?: string | null;
 }
 
 interface TransitionInput {
@@ -358,7 +367,7 @@ export function generateSeed(fixtures: SeedFixtures): GeneratedSeed {
       createdAt: clampToWindow(input.createdAt),
       updatedAt: clampToWindow(input.updatedAt),
       resolvedAt: input.resolvedAt === null ? null : clampToWindow(input.resolvedAt),
-      parentItemKey: null,
+      parentItemKey: input.parentItemKey ?? null,
       sprintRefs: input.sprint === null ? [] : [input.sprint.recordId],
       flaggedBlocked: input.flaggedBlocked,
     };
@@ -866,6 +875,20 @@ export function generateSeed(fixtures: SeedFixtures): GeneratedSeed {
     developerOrFail,
   });
 
+  // ------------------------------------------------------- branch topology
+  //
+  // Run after everything that pushes a commit, and before the dataset is
+  // assembled, so every trunk commit — generated, planted or report-day — is on
+  // the same history.
+  linkDefaultBranchHistory({
+    accumulator,
+    defaultBranchByRepository: new Map(
+      projects.projects.flatMap((project) =>
+        project.repositories.map((repository) => [repository, project.defaultBranch] as const),
+      ),
+    ),
+  });
+
   // ---------------------------------------------------------------- messages
 
   const itemKeysByTeam = new Map<string, string[]>();
@@ -989,6 +1012,107 @@ export function generateSeed(fixtures: SeedFixtures): GeneratedSeed {
 }
 
 // ---------------------------------------------------------------------------
+
+/**
+ * Gives every repository a real default-branch history.
+ *
+ * Until this existed the generated dataset had a shape no code host could return:
+ * each merge commit declared exactly one parent — its own feature head — and the
+ * default `branch_ref` pointed at a revision that was not any commit at all. The
+ * data looked fine in every JSON file and in every record-count assertion, and it
+ * made one question unanswerable: *is this merge on the branch everyone builds
+ * from?* Reachability over that graph is false for every merge, so a Completion
+ * Ladder that decided R3 by branch topology would have refused every unit of work
+ * in the dataset, and a ladder that decided it by merge state instead would have
+ * been the inference the rung exists to forbid.
+ *
+ * So the trunk is threaded here, exactly as git does it:
+ *
+ *  - Commits whose `branchName` is their repository's default branch are the trunk,
+ *    in `occurredAt` order with ties broken by revision id.
+ *  - Each one gains the previous trunk commit as its **first parent**, keeping its
+ *    feature head as the second — which is what makes a merge commit a merge
+ *    commit, and what makes the whole trunk reachable from its tip.
+ *  - The default `branch_ref` is repointed at the final trunk commit.
+ *  - Each release tag is repointed at the newest trunk commit at or before the
+ *    instant it was cut, so "this tag contains that merge" is a walk over parent
+ *    edges rather than a comparison of two timestamps.
+ *
+ * The ordering guarantees the soundness check still holds: a first parent is never
+ * dated after the child that declares it.
+ *
+ * A tag cut before any trunk commit exists keeps its synthetic revision and
+ * therefore contains nothing — the honest answer, and the reason the rewrite is
+ * conditional rather than unconditional.
+ */
+function linkDefaultBranchHistory(input: {
+  readonly accumulator: Accumulator;
+  readonly defaultBranchByRepository: ReadonlyMap<string, string>;
+}): void {
+  const { accumulator, defaultBranchByRepository } = input;
+
+  const trunkByRepository = new Map<string, { index: number; commit: CommitRecord }[]>();
+  accumulator.commits.forEach((commit, index) => {
+    if (commit.branchName !== defaultBranchByRepository.get(commit.repositoryKey)) return;
+    const bucket = trunkByRepository.get(commit.repositoryKey) ?? [];
+    bucket.push({ index, commit });
+    trunkByRepository.set(commit.repositoryKey, bucket);
+  });
+
+  const tips = new Map<string, string>();
+  const trunkTimeline = new Map<string, { at: number; revisionId: string }[]>();
+
+  for (const [repositoryKey, bucket] of [...trunkByRepository.entries()].sort(([left], [right]) =>
+    left < right ? -1 : left > right ? 1 : 0,
+  )) {
+    const ordered = [...bucket].sort(
+      (left, right) =>
+        toEpochMillis(left.commit.occurredAt) - toEpochMillis(right.commit.occurredAt) ||
+        (left.commit.revisionId < right.commit.revisionId ? -1 : left.commit.revisionId > right.commit.revisionId ? 1 : 0),
+    );
+
+    let previous: string | null = null;
+    const timeline: { at: number; revisionId: string }[] = [];
+
+    for (const entry of ordered) {
+      if (previous !== null && previous !== entry.commit.revisionId) {
+        accumulator.commits[entry.index] = {
+          ...entry.commit,
+          parentRevisionIds: [
+            previous,
+            ...entry.commit.parentRevisionIds.filter(
+              (parent) => parent !== previous && parent !== entry.commit.revisionId,
+            ),
+          ],
+        };
+      }
+      previous = entry.commit.revisionId;
+      timeline.push({ at: toEpochMillis(entry.commit.occurredAt), revisionId: entry.commit.revisionId });
+    }
+
+    if (previous !== null) tips.set(repositoryKey, previous);
+    trunkTimeline.set(repositoryKey, timeline);
+  }
+
+  accumulator.branchRefs.forEach((branch, index) => {
+    if (!branch.isDefault) return;
+    const tip = tips.get(branch.repositoryKey);
+    if (tip === undefined) return;
+    accumulator.branchRefs[index] = { ...branch, revisionId: tip };
+  });
+
+  accumulator.releaseTags.forEach((tag, index) => {
+    const timeline = trunkTimeline.get(tag.repositoryKey);
+    if (timeline === undefined) return;
+    const cutAt = toEpochMillis(tag.releasedAt);
+    let contains: string | null = null;
+    for (const entry of timeline) {
+      if (entry.at > cutAt) break;
+      contains = entry.revisionId;
+    }
+    if (contains !== null) accumulator.releaseTags[index] = { ...tag, revisionId: contains };
+  });
+}
 
 interface PlantContext {
   readonly fixtures: SeedFixtures;
@@ -1591,7 +1715,168 @@ function plantPathologies(context: PlantContext): void {
     });
   }
 
-  // ---- 9. commits from addresses that belong to nobody ----------------------
+  // ---- 9. process hygiene: a double-counted parent and a stalled ticket ----
+  //
+  // Both cases the Process Calibration Audit exists to find, and neither of them
+  // occurs by accident in a generated backlog: `buildIssue` produces flat items,
+  // so no parent ever had an estimated sub-task, and the tickets that sit still
+  // are chosen by an RNG rather than planted where a test can name them.
+  //
+  // Nothing here draws from `rng` and nothing here mints a revision id. That is
+  // deliberate: both are sequential streams shared with every record after this
+  // point, so touching either would shift every subsequent message body and every
+  // subsequent revision — a diff of thousands of lines to add three tickets.
+  const hygieneAudit = pathologies.processHygiene;
+  const hygieneAuditProject = projectOrFail(hygieneAudit.projectKey);
+  const hygieneAuditDeveloper = developerOrFail(hygieneAudit.developerKey);
+
+  const parent = hygieneAudit.doubleCountedParent;
+  const parentCreatedAt = instantFromIso(parent.createdAt);
+  context.buildIssue({
+    project: hygieneAuditProject,
+    itemKey: parent.itemKey,
+    title: parent.title,
+    description: 'Estimated at the story level, and estimated again on each of its sub-tasks.',
+    status: 'To Do',
+    statusCategory: 'todo',
+    itemType: 'Story',
+    priority: 'Medium',
+    estimatePoints: parent.points,
+    labels: ['platform'],
+    assignee: hygieneAuditDeveloper,
+    reporter: hygieneAuditDeveloper,
+    createdAt: parentCreatedAt,
+    updatedAt: parentCreatedAt,
+    resolvedAt: null,
+    // No sprint, on purpose: putting this family in a sprint would change that
+    // sprint's committed scope and every completion percentage computed from it,
+    // and the statistic this pathology exists for does not read sprint membership.
+    sprint: null,
+    flaggedBlocked: false,
+  });
+
+  parent.subTasks.forEach((subTask, index) => {
+    const createdAt = addMillis(parentCreatedAt, MILLIS_PER_HOUR * (index + 1));
+    context.buildIssue({
+      project: hygieneAuditProject,
+      itemKey: subTask.itemKey,
+      title: subTask.title,
+      description: null,
+      status: 'To Do',
+      statusCategory: 'todo',
+      itemType: 'Sub-task',
+      priority: 'Medium',
+      estimatePoints: subTask.points,
+      labels: ['platform'],
+      assignee: hygieneAuditDeveloper,
+      reporter: hygieneAuditDeveloper,
+      createdAt,
+      updatedAt: createdAt,
+      resolvedAt: null,
+      sprint: null,
+      flaggedBlocked: false,
+      parentItemKey: parent.itemKey,
+    });
+  });
+
+  const stalled = hygieneAudit.staleTicket;
+  const stalledCreatedAt = instantFromIso(stalled.createdAt);
+  const stalledStartedAt = instantFromIso(stalled.inProgressAt);
+  const stalledIssue = context.buildIssue({
+    project: hygieneAuditProject,
+    itemKey: stalled.itemKey,
+    title: stalled.title,
+    description: 'Moved to In Progress and never touched again — no commit, no pull request, no transition.',
+    status: 'In Progress',
+    statusCategory: 'in_progress',
+    itemType: 'Task',
+    priority: 'Medium',
+    estimatePoints: stalled.points,
+    labels: ['platform'],
+    assignee: hygieneAuditDeveloper,
+    reporter: hygieneAuditDeveloper,
+    createdAt: stalledCreatedAt,
+    updatedAt: stalledStartedAt,
+    resolvedAt: null,
+    sprint: null,
+    flaggedBlocked: false,
+  });
+  context.pushTransitions(stalledIssue, [
+    {
+      fromStatus: 'To Do',
+      toStatus: 'In Progress',
+      fromStatusCategory: 'todo',
+      toStatusCategory: 'in_progress',
+      at: stalledStartedAt,
+    },
+  ]);
+
+  // The two negative controls, one per limb of the stale rule.
+  const inFlightControl = (
+    control: { itemKey: string; title: string; points: number; createdAt: string; inProgressAt: string },
+    description: string,
+  ): WorkingIssue => {
+    const createdAt = instantFromIso(control.createdAt);
+    const startedAt = instantFromIso(control.inProgressAt);
+    const issue = context.buildIssue({
+      project: hygieneAuditProject,
+      itemKey: control.itemKey,
+      title: control.title,
+      description,
+      status: 'In Progress',
+      statusCategory: 'in_progress',
+      itemType: 'Task',
+      priority: 'Medium',
+      estimatePoints: control.points,
+      labels: ['platform'],
+      assignee: hygieneAuditDeveloper,
+      reporter: hygieneAuditDeveloper,
+      createdAt,
+      updatedAt: startedAt,
+      resolvedAt: null,
+      sprint: null,
+      flaggedBlocked: false,
+    });
+    context.pushTransitions(issue, [
+      {
+        fromStatus: 'To Do',
+        toStatus: 'In Progress',
+        fromStatusCategory: 'todo',
+        toStatusCategory: 'in_progress',
+        at: startedAt,
+      },
+    ]);
+    return issue;
+  };
+
+  inFlightControl(hygieneAudit.recentlyMoved, 'Moved into In Progress yesterday, so it has not had time to go stale.');
+
+  const pushed = hygieneAudit.activelyPushed;
+  inFlightControl(pushed, 'In progress for a fortnight, and committed to yesterday — long-running work, not stalled work.');
+  const pushedAt = instantFromIso(pushed.commitAt);
+  context.pushCommit(
+    {
+      ...CODE,
+      sourceRecordId: `commit-${reserveRevision(pushed.revisionId)}`,
+      occurredAt: pushedAt,
+      repositoryKey: pushed.repositoryKey,
+      revisionId: pushed.revisionId,
+      parentRevisionIds: [],
+      authorIdentity: gitIdentity(hygieneAuditDeveloper, 0),
+      committerIdentity: gitIdentity(hygieneAuditDeveloper, 0),
+      authoredAt: pushedAt,
+      message: pushed.subject,
+      changedFileCount: 4,
+      branchName: pushed.branchName,
+    },
+    // The message names a known item key, and that item has no sprint above it and
+    // therefore no goal chain — so the classifier resolves it as `inferred`, not
+    // `structural`. `assertGeneratedSeedIsSound` re-derives this and fails the
+    // generation if the declaration here is wrong.
+    'inferred',
+  );
+
+  // ---- 10. commits from addresses that belong to nobody ---------------------
   const unmatched = pathologies.unmatchedIdentityCommits;
   const unmappedByAddress = new Map(fixtures.people.unmappedGitEmails.map((entry) => [entry.address, entry]));
   for (const planted of unmatched.commits) {

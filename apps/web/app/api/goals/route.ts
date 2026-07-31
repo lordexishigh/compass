@@ -2,6 +2,7 @@ import { instantFromIso } from '@compass/clock';
 import { GoalNodeExistsError } from '@compass/db';
 import { NextResponse } from 'next/server';
 
+import { guard } from '../../../lib/auth/guard';
 import { NO_STORE, failure } from '../../../lib/goal-http';
 import { createGoal, listGoals, nowAtEdge } from '../../../lib/goal-source';
 
@@ -22,8 +23,15 @@ import { createGoal, listGoals, nowAtEdge } from '../../../lib/goal-source';
  * the shared error shape cannot live in one route and be imported by the other.
  */
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function GET(request: Request): Promise<NextResponse> {
+  // The read is public in the demonstration tenant and seated everywhere else; the
+  // write is owner or manager. Both decisions come from the one matrix, so this route
+  // has no access logic of its own to drift.
+  const admitted = await guard({ request, route: '/api/goals', action: 'GET' });
+  if (!admitted.allowed) return admitted.response;
+
   const raw = new URL(request.url).searchParams.get('at');
 
   let at = nowAtEdge();
@@ -49,6 +57,9 @@ export async function GET(request: Request): Promise<NextResponse> {
 }
 
 export async function POST(request: Request): Promise<NextResponse> {
+  const admitted = await guard({ request, route: '/api/goals', action: 'POST' });
+  if (!admitted.allowed) return admitted.response;
+
   let body: unknown;
   try {
     body = await request.json();

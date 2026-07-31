@@ -11,10 +11,12 @@ import type { ConnectorPort, SourceCoverage } from '@compass/connector-port';
 import { ScopedDb, orgScope, type CompassDatabase, type StoredReport } from '@compass/db';
 import { ingestWindowIntoModel, type ModelIngestResult } from '@compass/ingest';
 import { KnowledgeStore, buildKnowledgeSnapshot, type KnowledgeSnapshot } from '@compass/knowledge-model';
+import { narrateReport, type NarrationResult, type NarratorPort } from '@compass/narrator';
 import { renderReport, type RenderedReport } from '@compass/renderers';
+import { recordNarrationTraces } from '@compass/db';
 
 import { loadGoalHierarchyAt, persistObjectiveLinks, syncGoalHierarchy } from './goal-sync.js';
-import { persistReport } from './persist.js';
+import { persistReport, type PersistedNarration } from './persist.js';
 import { definePipelineStage, runStage, type PipelineContext } from './stage.js';
 
 /**
@@ -60,11 +62,28 @@ export interface ReportPipelineRequest {
   /** Skip the ingest stage and analyse what is already in the model. */
   readonly skipIngest?: boolean;
   readonly maxItemsPerSection?: number;
+  /**
+   * The narrator, resolved at the process edge like the connector and the clock.
+   *
+   * Absent or null means no narration stage: the report is the deterministic
+   * render, `fallback_renderer` stays false, and no NarrationTrace rows are
+   * written. That is the documented zero-config state, not a degradation — a
+   * container with no `ANTHROPIC_API_KEY` serves complete six-section reports.
+   */
+  readonly narrator?: NarratorPort | null;
 }
 
 export interface ReportPipelineResult {
   readonly report: StructuredReport;
   readonly rendered: RenderedReport;
+  /**
+   * The narration outcome, or null when no narrator was supplied.
+   *
+   * Non-null with `fallback !== null` is the fail-closed case: narration ran, the
+   * grounding validator rejected it, and `stored.prose` is the template
+   * renderer's. Nothing here is ever ungrounded prose.
+   */
+  readonly narration: NarrationResult | null;
   readonly stored: StoredReport;
   readonly snapshot: KnowledgeSnapshot;
   /** The goal hierarchy this report's alignment verdicts resolved against. */
@@ -182,18 +201,57 @@ export async function runReportPipeline(request: ReportPipelineRequest): Promise
   );
   const rendered = record('render', await runStage(renderStage, report, context));
 
-  // ---- 6. persist ----------------------------------------------------------
+  // ---- 6. narrate ----------------------------------------------------------
+  // The one stage that leaves the process. It is *after* the render on purpose:
+  // the deterministic document already exists by the time a model is asked for
+  // anything, so a narration that fails, refuses, times out or fabricates costs
+  // the reader nothing but plainer wording. `narrateReport` returns either
+  // grounded prose or the template renderer's own sections — there is no third
+  // outcome, which is what makes ungrounded prose unable to reach `persist`.
+  const narrator = request.narrator ?? null;
+  const narrationStage = definePipelineStage<StructuredReport, NarrationResult | null>(
+    'narrate',
+    async (input, _inner) => (narrator === null ? null : narrateReport(input, { narrator, rendered })),
+  );
+  const narration = record('narrate', await runStage(narrationStage, report, context));
+
+  // A narrator that was never configured is not a fallback: `persist` is handed
+  // nothing at all, so the report row records `template` with no fallback flag.
+  const persistedNarration: PersistedNarration | undefined =
+    narration === null
+      ? undefined
+      : {
+          rendererId: narration.rendererId,
+          fallbackReason: narration.fallback?.reason ?? null,
+          sections: narration.sections.map((section) => ({ key: section.key, prose: section.prose })),
+        };
+
+  // ---- 7. persist ----------------------------------------------------------
   const persistStage = definePipelineStage<StructuredReport, StoredReport>('persist', async (input, inner) =>
     persistReport(scoped, {
       report: input,
       rendered,
       generatedAt: inner.now,
       ingestRunId: ingest === null ? null : ingest.runId,
+      narration: persistedNarration,
     }),
   );
   const stored = record('persist', await runStage(persistStage, report, context));
 
-  // ---- 7. the alignment audit trail ----------------------------------------
+  // ---- 8. the narration audit trail ----------------------------------------
+  // One row per attempt, written after the report for the same reason the
+  // objective links are: the narrator cannot reach the database, so the layer
+  // that owns persistence records what it did. Keyed by the report row, so a
+  // replay of the same instant replaces its traces rather than accumulating them.
+  if (narration !== null && narration.traces.length > 0) {
+    const traceStage = definePipelineStage<readonly (typeof narration.traces)[number][], number>(
+      'record-narration-traces',
+      async (input, inner) => recordNarrationTraces(scoped, stored.id, input, inner.now),
+    );
+    record('record-narration-traces', await runStage(traceStage, narration.traces, context));
+  }
+
+  // ---- 9. the alignment audit trail ----------------------------------------
   // Written after the report rather than during analysis, because the analysis core
   // is pure and cannot write anything. One row per resolved subject, keyed by the
   // report instant, so a manager arguing with an OFF-GOAL flag six weeks later can
@@ -203,5 +261,5 @@ export async function runReportPipeline(request: ReportPipelineRequest): Promise
   );
   const objectiveLinkCount = record('record-objective-links', await runStage(linkStage, report, context));
 
-  return { report, rendered, stored, snapshot, ingest, goalHierarchy, objectiveLinkCount, stages };
+  return { report, rendered, narration, stored, snapshot, ingest, goalHierarchy, objectiveLinkCount, stages };
 }

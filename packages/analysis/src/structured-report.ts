@@ -5,6 +5,7 @@ import type {
   AlignmentVerdictKind,
 } from './alignment.js';
 import type { DetectedBlocker } from './blockers.js';
+import { emptyCalibrationAudit, type CalibrationAudit } from './calibration.js';
 import type { ElapsedFactStatement } from './elapsed.js';
 import type { EvidenceRef } from './evidence.js';
 import type { Instant, TimeWindow } from './instant.js';
@@ -148,6 +149,16 @@ export interface AnalysisFindings {
   readonly progress: ProgressAssessment;
   readonly projection: ProjectedCompletion;
   readonly calibration: CalibrationVerdict;
+  /**
+   * The Process Calibration Audit: seven statistics about whether the data behind
+   * this report means anything, and the closed set of verdicts they produced.
+   *
+   * It sits in `findings` rather than in a seventh section because the Six Spine
+   * never grows. Its verdicts reach the reader in two places instead: the
+   * confidence collar under the projected date, which states them in the product's
+   * own voice, and the Risks section, which carries the ones that are risks.
+   */
+  readonly calibrationAudit: CalibrationAudit;
   readonly reviewQueue: ReviewQueue;
   readonly workload: WorkloadDistribution;
   readonly technicalDebt: TechnicalDebtSignal;
@@ -204,9 +215,11 @@ export function emptyFindings(): AnalysisFindings {
       reason: 'insufficient_history',
       threshold: thresholdRef('T7'),
       calibration: emptyCalibration(),
+      selectedByVerdicts: ['insufficient_history'],
       statement: 'There is no history behind this team yet, so Compass will not give you a date.',
     },
     calibration: emptyCalibration(),
+    calibrationAudit: emptyCalibrationAudit(),
     reviewQueue: {
       totalOpen: 0,
       entries: [],
@@ -279,7 +292,7 @@ function emptyCalibration(): CalibrationVerdict {
   return {
     verdict: 'not_enough_data',
     sampleSize: 0,
-    correlationBasisPoints: null,
+    correlation: emptyCalibrationAudit().statistics.pointToElapsed,
     correlationThreshold: thresholdRef('T12'),
     sampleThreshold: thresholdRef('T13'),
     ticketKeys: [],

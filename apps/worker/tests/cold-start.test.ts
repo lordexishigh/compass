@@ -1,6 +1,21 @@
 import { OFF_GOAL_LABEL, SECTIONS } from '@compass/analysis';
+import {
+  DEMO_OWNER_EMAIL,
+  DEMO_OWNER_PASSWORD,
+  OWNER_EMAIL_ENV_VAR,
+  OWNER_PASSWORD_ENV_VAR,
+  RecordingMailer,
+  bootstrapOwner,
+  describeBootstrapOwner,
+  hashPassword,
+  readSeats,
+  requestPasswordReset,
+  verifyLogin,
+  type BootstrapOwnerResult,
+} from '@compass/auth';
 import { instantFromIso } from '@compass/clock';
 import {
+  findUserByEmail,
   listObjectiveLinks,
   loadFreshness,
   loadGoalStore,
@@ -75,6 +90,34 @@ afterAll(async () => {
 const scoped = () => database.scopedFor(run.organizationId);
 
 let warmed: Awaited<ReturnType<typeof warmDailyReport>>;
+
+/**
+ * A bootstrap result as a literal, for the two assertions that are about the *sentence*
+ * rather than about the database.
+ *
+ * Built by hand rather than by running `bootstrapOwner`, so the two log-line tests do not
+ * depend on the ordering of the suites that write rows — and so they can name the
+ * `usingDefaultCredentials` flag on both sides of its one branch.
+ */
+const ownerResult: BootstrapOwnerResult = {
+  user: {
+    id: '00000000-0000-4000-8000-0000000000aa',
+    email: DEMO_OWNER_EMAIL,
+    displayName: 'Demo Owner',
+    passwordHash: '$argon2id$v=19$m=19456,t=2,p=1$c2FsdHNhbHRzYWx0c2E$dGFndGFndGFndGFndGFndGFndGFndGFndGFndGFndGFn',
+  },
+  membership: {
+    id: '00000000-0000-4000-8000-0000000000bb',
+    userId: '00000000-0000-4000-8000-0000000000aa',
+    role: 'owner',
+    status: 'active',
+    createdAt: HOST_NOW,
+    updatedAt: HOST_NOW,
+  },
+  created: false,
+  teamKeys: ['platform'],
+  usingDefaultCredentials: true,
+};
 
 describe('a clean database plus the seed produces a readable report', () => {
   beforeAll(async () => {
@@ -335,6 +378,7 @@ describe('the line an operator reads', () => {
         developerCount: 12,
         rosterCreated: 0,
         rosterChanged: 0,
+        owner: ownerResult,
       },
       run,
       ...warmed,
@@ -346,5 +390,83 @@ describe('the line an operator reads', () => {
     expect(line).toContain(run.teamKey);
     expect(line).toContain('6 sections');
     expect(line).toContain('coverage incomplete — the report says which source is missing');
+  });
+});
+
+/**
+ * The first owner, created at boot.
+ *
+ * Seats are invite-only and the owner role can only be granted by an owner, so an
+ * organization with no owner has no path to its first one. Without this the container
+ * would boot, serve a report, and be impossible to sign in to — which is the exact failure
+ * the first-run bootstrap rule exists to prevent.
+ */
+describe('the boot script leaves an owner who can sign in', () => {
+  it('creates one owner seat, active, scoped to the teams the deployment serves', async () => {
+    const result = await bootstrapOwner({
+      scoped: scoped(),
+      now: run.now,
+      teamKeys: [run.teamKey],
+      env: {},
+    });
+
+    expect(result.created).toBe(true);
+    expect(result.membership.role).toBe('owner');
+    expect(result.membership.status).toBe('active');
+    expect(result.teamKeys).toEqual([run.teamKey]);
+    expect(result.user.email).toBe(DEMO_OWNER_EMAIL);
+
+    // And the password it set actually signs in — the only proof the hash was written.
+    const login = await verifyLogin({
+      scoped: scoped(),
+      email: DEMO_OWNER_EMAIL,
+      password: DEMO_OWNER_PASSWORD,
+    });
+    expect(login.ok).toBe(true);
+  }, 120_000);
+
+  it('is idempotent, so a container restart does not add a second owner', async () => {
+    const again = await bootstrapOwner({ scoped: scoped(), now: run.now, teamKeys: [run.teamKey], env: {} });
+
+    expect(again.created).toBe(false);
+    expect((await readSeats(scoped())).filter((seat) => seat.role === 'owner')).toHaveLength(1);
+  }, 120_000);
+
+  it('never resets a password an operator has changed', async () => {
+    await requestPasswordReset({
+      scoped: scoped(),
+      email: DEMO_OWNER_EMAIL,
+      now: run.now,
+      mailer: new RecordingMailer(),
+      organizationName: 'Compass',
+      baseUrl: 'https://compass.test',
+    });
+
+    // A restart, after the operator set their own password directly.
+    const { setUserPasswordHash } = await import('@compass/db');
+    const owner = await findUserByEmail(scoped(), DEMO_OWNER_EMAIL);
+    await setUserPasswordHash(scoped(), owner?.id ?? '', await hashPassword('the-operators-own-passphrase'), run.now);
+
+    await bootstrapOwner({ scoped: scoped(), now: run.now, teamKeys: [run.teamKey], env: {} });
+
+    expect(
+      (await verifyLogin({ scoped: scoped(), email: DEMO_OWNER_EMAIL, password: 'the-operators-own-passphrase' })).ok,
+      'the boot script overwrote a password the operator had set',
+    ).toBe(true);
+  }, 120_000);
+
+  it('says out loud when the published demonstration credentials are still in use', () => {
+    const line = describeBootstrapOwner({ ...ownerResult, usingDefaultCredentials: true });
+
+    expect(line).toContain(OWNER_EMAIL_ENV_VAR);
+    expect(line).toContain(OWNER_PASSWORD_ENV_VAR);
+    expect(line).toContain('before this deployment holds real data');
+  });
+
+  it('says nothing of the sort once they have been configured', () => {
+    const line = describeBootstrapOwner({ ...ownerResult, usingDefaultCredentials: false });
+
+    expect(line).not.toContain(OWNER_PASSWORD_ENV_VAR);
+    expect(line).toContain('owner seat');
   });
 });
