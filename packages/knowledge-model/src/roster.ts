@@ -2,6 +2,7 @@ import type { Instant } from '@compass/clock';
 import type { EntityKind } from '@compass/db';
 
 import { identityNaturalKey, normalizeIdentityValue, type IdentityKind } from './identity.js';
+import { recordAbsence } from './roster-service.js';
 import type { KnowledgeStore, ObserveOutcome } from './store.js';
 
 /**
@@ -66,6 +67,9 @@ export interface RosterAbsence {
   readonly startAt: Instant;
   readonly endAt: Instant;
   readonly note: string | null;
+  /** Defaults to `manual`: a declared roster is a manager saying so. */
+  readonly source?: 'manual' | 'memo';
+  readonly sourceRef?: string | null;
 }
 
 export interface OrgRoster {
@@ -228,6 +232,11 @@ export async function provisionRoster(
     }
   }
 
+  // Absences go through `recordAbsence` rather than being observed here, because that
+  // function is the *sole* write path for the Absence table — a rule
+  // `tools/quality-gates` enforces by scanning the workspace. Provisioning is one more
+  // caller of the roster API, not a second door into it, so a declared absence is
+  // validated exactly as a manager's or a memo's is.
   for (const absence of [...roster.absences].sort((left, right) =>
     left.developerKey === right.developerKey
       ? left.startAt - right.startAt
@@ -235,20 +244,20 @@ export async function provisionRoster(
         ? -1
         : 1,
   )) {
-    const result = await store.observe({
-      kind: 'absence',
-      naturalKey: `${absence.developerKey}:${absence.startAt}`,
-      fields: {
+    const result = await recordAbsence(
+      store,
+      {
         developerKey: absence.developerKey,
-        absenceKind: absence.kind,
+        kind: absence.kind,
         startAt: absence.startAt,
         endAt: absence.endAt,
         note: absence.note,
+        source: absence.source ?? 'manual',
+        ...(absence.sourceRef === undefined ? {} : { sourceRef: absence.sourceRef }),
       },
-      observedAt: at,
-      evidence: null,
-    });
-    record('absence', result.outcome);
+      at,
+    );
+    record('absence', result.outcome as ObserveOutcome);
   }
 
   return {

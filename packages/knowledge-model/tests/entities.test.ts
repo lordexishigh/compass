@@ -340,8 +340,14 @@ describe('elapsed facts', () => {
 /** A representative value per column, keyed loosely so a new column still gets one. */
 function sampleFor(kind: string, field: string): string | number | boolean | null | readonly string[] | Record<string, unknown> {
   if (/Count$|^displayNumber$|Points$|^version$/.test(field)) return 3;
-  if (/^is[A-Z]|^active$|^flaggedBlocked$|^afterSprintStart$/.test(field)) return true;
-  if (/Keys$|Ids$|^labels$|^artifactKinds$|^witnessRefs$|^sourceKeys$/.test(field)) return ['beta', 'alpha'];
+  if (/^is[A-Z]|^active$|^flaggedBlocked$|^afterSprintStart$|^tracked$/.test(field)) return true;
+  // ISO weekday numbers, so a `working_calendar` probe carries the shape the reader
+  // narrows rather than a string a jsonb column would happily accept and nothing would
+  // ever read back as a weekday.
+  if (field === 'workingWeekdays') return [5, 1] as never;
+  if (/Keys$|Ids$|^labels$|^artifactKinds$|^witnessRefs$|^sourceKeys$|^holidays$/.test(field)) {
+    return ['beta', 'alpha'];
+  }
   if (field === 'evidence') {
     return [{ kind: 'issue', label: 'X-1', sourceKey: 'primary-tracker', sourceRecordId: 'issue-X-1' }] as never;
   }

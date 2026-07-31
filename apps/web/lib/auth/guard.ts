@@ -16,7 +16,7 @@ import { ScopedDb, findOrganization, orgScope } from '@compass/db';
 import { SEEDED_ORGANIZATION_ID, resolveSeededRun } from '@compass/seed-connector';
 import { NextResponse } from 'next/server';
 
-import { database } from '../report-source';
+import { database } from '../database';
 
 import { clearSessionCookie, hasSessionCookie, readSessionCookie } from './cookies';
 import { LinkOriginUnavailableError, UNAVAILABLE_SENTENCE, jsonError } from './http';

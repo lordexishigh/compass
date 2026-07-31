@@ -1,3 +1,12 @@
+import {
+  configurationAt,
+  entitiesAt,
+  projectTrackedAt,
+  repositoryTrackedAt,
+  resolvedBoolean,
+  resolvedText,
+  teamDeveloperKeysAt,
+} from './configuration.js';
 import { compareStable, type Instant, type TimeWindow } from './instant.js';
 
 /**
@@ -181,6 +190,10 @@ export function indexOfKind(snapshot: AnalysisSnapshot, kind: string): ReadonlyM
 
 // ---------------------------------------------------------------------------
 // Scope
+//
+// `configuration.ts` imports nothing from this file's scope section, so the
+// dependency runs one way: readers here, temporal resolution there, and scope
+// composed from both.
 // ---------------------------------------------------------------------------
 
 /**
@@ -194,10 +207,16 @@ export function indexOfKind(snapshot: AnalysisSnapshot, kind: string): ReadonlyM
  * A merged report keeps every project. That is the documented meaning of merged,
  * and the cross-team prioritiser above this layer is what bounds the prose.
  *
- * Scope is deliberately *not* effective-dated here. Which projects a team owns is
- * configuration, and resolving it as of a past instant would need the roster's
- * version history rather than the snapshot's current belief — a real capability,
- * and one that belongs with the time-travel work rather than half-built now.
+ * ## Scope is effective-dated
+ *
+ * This used to resolve the snapshot's *current* belief, with a note saying that doing it
+ * properly needed the roster's version history. It does, and the history is right there in
+ * `collections.entityVersions`, so `configuration.ts` resolves it and this function uses
+ * the answer. Team membership and repository tracking are read as of `snapshot.instant`.
+ *
+ * That is what makes a report for a past instant stable: archiving a repository this
+ * morning does not retroactively empty last Tuesday's Yesterday section, and somebody who
+ * has since left the team is still credited with the work they did while they were on it.
  */
 export interface ResolvedScope {
   readonly kind: 'team' | 'merged';
@@ -209,12 +228,34 @@ export interface ResolvedScope {
   readonly developerKeys: readonly string[];
   /** Projects that exist in the snapshot but sit outside this report's scope. */
   readonly unscopedProjectKeys: readonly string[];
+  /**
+   * Repositories excluded because they were archived at the report's instant.
+   *
+   * Named rather than merely absent, so the masthead can state it. A repository that
+   * silently stopped appearing is the kind of gap a manager notices weeks later and
+   * cannot explain.
+   */
+  readonly archivedRepositoryKeys: readonly string[];
+  readonly archivedProjectKeys: readonly string[];
 }
 
-/** @snapshotAccessor resolves configuration — which projects and repositories a team owns — with no temporal semantics. */
+/**
+ * @snapshotAccessor resolves configuration as of `snapshot.instant`, which is a parameter
+ * of the snapshot rather than a clock read — the same rule every other module here follows.
+ */
 export function resolveScope(snapshot: AnalysisSnapshot): ResolvedScope {
-  const allProjects = entitiesOfKind(snapshot, 'project').map((project) => project.naturalKey);
-  const allRepositories = entitiesOfKind(snapshot, 'repository');
+  const instant = snapshot.instant;
+  const configuration = configurationAt(snapshot, instant);
+
+  // Projects and repositories that *existed* at the instant. A repository configured
+  // after the fact is not part of a report about a day before it was known.
+  const liveProjects = entitiesAt(snapshot, 'project', instant).map((project) => project.naturalKey);
+  const liveRepositories = entitiesAt(snapshot, 'repository', instant);
+
+  const trackedRepositories = liveRepositories.filter((repository) =>
+    repositoryTrackedAt(configuration, repository.naturalKey),
+  );
+  const allProjects = liveProjects.filter((key) => projectTrackedAt(configuration, key));
 
   if (snapshot.scope.kind === 'merged') {
     return {
@@ -223,12 +264,14 @@ export function resolveScope(snapshot: AnalysisSnapshot): ResolvedScope {
       teamName: null,
       methodology: null,
       projectKeys: [...allProjects].sort(compareStable),
-      repositoryKeys: allRepositories.map((repository) => repository.naturalKey).sort(compareStable),
-      developerKeys: entitiesOfKind(snapshot, 'developer')
-        .filter((developer) => booleanField(developer, 'active'))
+      repositoryKeys: trackedRepositories.map((repository) => repository.naturalKey).sort(compareStable),
+      developerKeys: entitiesAt(snapshot, 'developer', instant)
+        .filter((developer) => resolvedBoolean(developer, 'active'))
         .map((developer) => developer.naturalKey)
         .sort(compareStable),
       unscopedProjectKeys: [],
+      archivedRepositoryKeys: configuration.archivedRepositoryKeys,
+      archivedProjectKeys: configuration.archivedProjectKeys,
     };
   }
 
@@ -242,18 +285,18 @@ export function resolveScope(snapshot: AnalysisSnapshot): ResolvedScope {
   const projectKeys = [
     ...new Set(
       [
-        ...entitiesOfKind(snapshot, 'project')
-          .filter((project) => textField(project, 'teamKey') === teamKey)
+        ...entitiesAt(snapshot, 'project', instant)
+          .filter((project) => resolvedText(project, 'teamKey') === teamKey)
           .map((project) => project.naturalKey),
         ...(teamProject === null ? [] : [teamProject]),
-      ].filter((key) => key.length > 0),
+      ].filter((key) => key.length > 0 && projectTrackedAt(configuration, key)),
     ),
   ].sort(compareStable);
 
   const scoped = new Set(projectKeys);
-  const repositoryKeys = allRepositories
+  const repositoryKeys = trackedRepositories
     .filter((repository) => {
-      const projectKey = textField(repository, 'projectKey');
+      const projectKey = resolvedText(repository, 'projectKey');
       // A repository with no declared project is included for a single-project
       // team and excluded otherwise: guessing which of three teams owns it would
       // put someone else's merge in this team's Yesterday.
@@ -269,11 +312,12 @@ export function resolveScope(snapshot: AnalysisSnapshot): ResolvedScope {
     methodology: team === null ? null : textField(team, 'methodology'),
     projectKeys,
     repositoryKeys,
-    developerKeys: entitiesOfKind(snapshot, 'developer')
-      .filter((developer) => textField(developer, 'teamKey') === teamKey && booleanField(developer, 'active'))
-      .map((developer) => developer.naturalKey)
-      .sort(compareStable),
+    // Membership as it stood at the instant, from the roster's own history — so a person
+    // who left last month is still credited with what they did before they did.
+    developerKeys: teamDeveloperKeysAt(snapshot, teamKey, instant),
     unscopedProjectKeys: allProjects.filter((key) => !scoped.has(key)).sort(compareStable),
+    archivedRepositoryKeys: configuration.archivedRepositoryKeys,
+    archivedProjectKeys: configuration.archivedProjectKeys,
   };
 }
 

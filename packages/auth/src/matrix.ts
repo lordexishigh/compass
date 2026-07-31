@@ -40,8 +40,15 @@ export type Principal = 'public' | MembershipRole;
 
 export const PRINCIPALS = ['public', 'owner', 'manager', 'member', 'viewer'] as const satisfies readonly Principal[];
 
-/** Every HTTP verb any Compass route serves. */
-export const ACTIONS = ['GET', 'POST', 'PATCH', 'DELETE'] as const;
+/**
+ * Every HTTP verb any Compass route serves.
+ *
+ * `PUT` earns its place on one route: `/api/roster/teams` sets a team's whole working
+ * calendar, which is a replacement rather than a merge — sending three holidays means the
+ * calendar has three holidays, not that three were added to whatever was there. A `PATCH`
+ * that silently unioned them would make removing a holiday impossible.
+ */
+export const ACTIONS = ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'] as const;
 
 export type Action = (typeof ACTIONS)[number];
 
@@ -75,12 +82,15 @@ export interface RouteRule {
  * What each role can do, stated once in prose so the table below reads as a
  * consequence rather than as a list of arbitrary decisions.
  *
- *  - **owner** — everything. The only role that can move seats, change roles, read
- *    the audit log or change configuration. There is always at least one.
- *  - **manager** — reads the report for the teams they are scoped to, and edits the
- *    goal hierarchy, because a manager who cannot correct the objective their work
- *    is measured against cannot argue with an alignment verdict. Sees the seat list
- *    (who is on the team) but cannot change it.
+ *  - **owner** — everything. The only role that can move seats, change roles or read
+ *    the audit log. There is always at least one.
+ *  - **manager** — reads the report for the teams they are scoped to, and edits both the
+ *    goal hierarchy and the configuration behind it: teams, membership, working calendars,
+ *    tracked repositories and projects, the identity roster and absences. A manager who
+ *    cannot correct the objective their work is measured against cannot argue with an
+ *    alignment verdict, and one who spots a wrong attribution has to be able to fix it
+ *    rather than file a request while the wrong name stays in tomorrow's report. Sees the
+ *    seat list (who is on the team) but cannot change it.
  *  - **member** — reads the report for the teams they are scoped to. Does not edit
  *    goals and does not see seats: an engineer reading the team's report is not an
  *    administrator of it.
@@ -89,7 +99,10 @@ export interface RouteRule {
  */
 export const ROLE_CAPABILITIES: Readonly<Record<MembershipRole, string>> = {
   owner: 'Everything, including seats, roles, the audit log and configuration.',
-  manager: 'Reads their scoped teams’ reports and edits the goal hierarchy. Sees the seat list, read-only.',
+  manager:
+    'Reads their scoped teams’ reports and edits what they are computed from — the goal hierarchy, teams, ' +
+    'membership, working calendars, tracked repositories, the identity roster and absences. Sees the seat list, ' +
+    'read-only.',
   member: 'Reads their scoped teams’ reports.',
   viewer: 'Reads their scoped teams’ reports, and nothing else.',
 };
@@ -215,6 +228,50 @@ export const ROLE_MATRIX: readonly RouteRule[] = [
   },
 
   // -------------------------------------------------------------------------
+  // Configuration and the identity roster.
+  //
+  // Owner *and* manager throughout, which is a deliberate widening: team scoping is the
+  // basis of every aggregate and a bad identity merge corrupts attribution in every
+  // downstream report, so the person who reads the report has to be able to fix the
+  // configuration behind it. Routing that through an owner would mean a manager who spots
+  // a wrong attribution files a request instead of correcting it, and the wrong name stays
+  // in tomorrow's report. Every write is audited with the actor either way.
+  //
+  // Members and viewers are refused: reading a report does not make somebody an editor of
+  // the roster it is computed from.
+  // -------------------------------------------------------------------------
+  {
+    route: '/api/roster',
+    summary: 'The whole configuration: teams, membership, calendars, tracked sources, people, identities, absences.',
+    allow: { GET: ['owner', 'manager'] },
+  },
+  {
+    route: '/api/roster/teams',
+    summary: 'Create or edit a team, change who is on it, set its working calendar.',
+    allow: { POST: ['owner', 'manager'], PATCH: ['owner', 'manager'], PUT: ['owner', 'manager'] },
+  },
+  {
+    route: '/api/roster/sources',
+    summary: 'Track or archive a repository or a project. Archiving keeps every prior row.',
+    allow: { PATCH: ['owner', 'manager'] },
+  },
+  {
+    route: '/api/roster/identities',
+    summary: 'Link an identifier to a person, or unlink it so its artifacts revert to unattributed.',
+    allow: { POST: ['owner', 'manager'], DELETE: ['owner', 'manager'] },
+  },
+  {
+    route: '/api/roster/merges',
+    summary: 'Merge an unmatched identity into a person, and undo a merge exactly.',
+    allow: { POST: ['owner', 'manager'], DELETE: ['owner', 'manager'] },
+  },
+  {
+    route: '/api/roster/absences',
+    summary: 'Mark somebody out for a date range, or end an absence early. The sole write path.',
+    allow: { POST: ['owner', 'manager'], PATCH: ['owner', 'manager'] },
+  },
+
+  // -------------------------------------------------------------------------
   // The audit trail. Owner only, and append-only underneath.
   // -------------------------------------------------------------------------
   {
@@ -254,6 +311,11 @@ export const ROLE_MATRIX: readonly RouteRule[] = [
   {
     route: '/seats',
     summary: 'Seat management. Owners change things here; managers read who is on the team.',
+    allow: { GET: ['owner', 'manager'] },
+  },
+  {
+    route: '/roster',
+    summary: 'Configuration: teams, tracked repositories and projects, the identity roster and absences.',
     allow: { GET: ['owner', 'manager'] },
   },
 ];

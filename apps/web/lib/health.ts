@@ -10,8 +10,8 @@ import {
 } from '@compass/db';
 import { SeedConnector } from '@compass/seed-connector';
 
+import { database } from './database';
 import { resolveProvider, resolveTimezone } from './foundation-report';
-import { database } from './report-source';
 
 /**
  * System readiness, stated honestly.
@@ -36,7 +36,7 @@ export interface ReadinessReport {
 /**
  * The connection both checks below share.
  *
- * The process-wide pool from `report-source`, not a fresh one. The container's
+ * The process-wide pool from `lib/database`, not a fresh one. The container's
  * `HEALTHCHECK` runs every ten seconds, and opening and tearing down a pool per check —
  * two per interval, as this file used to — is real connection churn against Postgres for
  * no information a reused pool does not also give. A missing `DATABASE_URL` is still a

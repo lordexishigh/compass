@@ -1,8 +1,8 @@
+import { absencesAt } from './absence-suppression.js';
 import { basisPoints, compareNumbers, compareStable, type Instant } from './instant.js';
 import { isOpenPullRequest } from './review-queue.js';
 import {
   developerName,
-  instantField,
   isInFlight,
   scopedPullRequests,
   scopedTickets,
@@ -175,23 +175,20 @@ export function assessWorkload(
 /**
  * Developer keys whose Absence covers `instant`.
  *
- * Half-open, matching every other span in the product: an absence ending at
- * 09:00 does not cover 09:00. A null `endAt` is an open-ended absence and covers
- * everything from its start.
+ * Delegates to `absencesAt`, which owns the predicate. This function used to read the
+ * absence rows and compare their bounds itself, and the two implementations had already
+ * drifted: this one treated a null `endAt` as an open-ended absence covering everything from
+ * its start, while the suppression rule ignored such a row entirely. So the same person could
+ * be excluded from workload balancing as absent *and* named by a stalled-work finding in the
+ * same report — the exact contradiction `alpha-configuration-and-identity-roster-004` asks
+ * for one module to make impossible.
+ *
+ * Delegating also makes this effective-dated for free: `absencesAt` resolves each absence
+ * through its version history as of the instant, rather than trusting the current belief, so a
+ * report for a past instant sees who was out *then*.
  */
 export function absentDeveloperKeys(snapshot: AnalysisSnapshot, instant: Instant): ReadonlySet<string> {
-  const absent = new Set<string>();
-  for (const absence of snapshot.collections.entities) {
-    if (absence.kind !== 'absence') continue;
-    const developerKey = textField(absence, 'developerKey');
-    if (developerKey === null) continue;
-    const startAt = instantField(absence, 'startAt');
-    const endAt = instantField(absence, 'endAt');
-    if (startAt === null || instant < startAt) continue;
-    if (endAt !== null && instant >= endAt) continue;
-    absent.add(developerKey);
-  }
-  return absent;
+  return new Set(absencesAt(snapshot, instant).keys());
 }
 
 /** An unordered helper for the recommendation engine: who has the least on. */

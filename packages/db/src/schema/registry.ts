@@ -21,10 +21,14 @@ import {
   reviews,
   risks,
   sprints,
+  teamMemberships,
   teams,
   tickets,
+  trackedProjects,
+  trackedRepositories,
   unmatchedIdentities,
   wins,
+  workingCalendars,
 } from './entities.js';
 // `corrections` is deliberately not imported: a Correction is a contradiction
 // between beliefs, not one entity's version history, so it belongs to no single
@@ -69,9 +73,13 @@ export const ENTITY_KINDS = [
   'risk',
   'sprint',
   'team',
+  'team_membership',
   'ticket',
+  'tracked_project',
+  'tracked_repository',
   'unmatched_identity',
   'win',
+  'working_calendar',
 ] as const;
 
 export type EntityKind = (typeof ENTITY_KINDS)[number];
@@ -155,6 +163,34 @@ export const NAMED_ENTITIES: readonly NamedEntityDefinition[] = [
     'timezone',
   ]),
   define('developer', developers, 'declared', ['displayName', 'teamKey', 'active']),
+  define('team_membership', teamMemberships, 'declared', [
+    'teamKey',
+    'developerKey',
+    'membershipRole',
+    'active',
+  ]),
+  define('working_calendar', workingCalendars, 'declared', [
+    'teamKey',
+    'workingWeekdays',
+    'holidays',
+    'timezone',
+  ]),
+  // The manager's tracking decision, declared, deliberately *not* a field on the
+  // observed Repository/Project it names. See `entities.ts` for why.
+  define(
+    'tracked_repository',
+    trackedRepositories,
+    'declared',
+    ['repositoryKey', 'tracked', 'archivedAt', 'note'],
+    ['archivedAt'],
+  ),
+  define(
+    'tracked_project',
+    trackedProjects,
+    'declared',
+    ['projectKey', 'tracked', 'archivedAt', 'note'],
+    ['archivedAt'],
+  ),
   define('identity_link', identityLinks, 'declared', ['identityKind', 'identityValue', 'developerKey', 'origin']),
   define('unmatched_identity', unmatchedIdentities, 'observed', [
     'identityKind',
@@ -165,10 +201,13 @@ export const NAMED_ENTITIES: readonly NamedEntityDefinition[] = [
     'artifactKinds',
     'sourceKeys',
   ]),
-  define('absence', absences, 'declared', ['developerKey', 'absenceKind', 'startAt', 'endAt', 'note'], [
-    'startAt',
-    'endAt',
-  ]),
+  define(
+    'absence',
+    absences,
+    'declared',
+    ['developerKey', 'absenceKind', 'startAt', 'endAt', 'note', 'source', 'sourceRef'],
+    ['startAt', 'endAt'],
+  ),
   define('project', projects, 'observed', ['name', 'teamKey', 'methodology', 'defaultBranch']),
   define('repository', repositories, 'observed', ['name', 'projectKey', 'defaultBranch']),
   define('feature', features, 'observed', ['projectKey', 'title', 'status', 'statusCategory']),
@@ -215,6 +254,7 @@ export const NAMED_ENTITIES: readonly NamedEntityDefinition[] = [
       'title',
       'state',
       'authorDeveloperKey',
+      'authorIdentityKey',
       'createdAt',
       'mergedAt',
       'closedAt',
@@ -243,6 +283,7 @@ export const NAMED_ENTITIES: readonly NamedEntityDefinition[] = [
       'revisionId',
       'authorDeveloperKey',
       'unmatchedIdentityKey',
+      'authorIdentityKey',
       'authoredAt',
       'message',
       'changedFileCount',

@@ -1,5 +1,11 @@
 import { AuthRequestError, WeakPasswordError } from '@compass/auth';
 import { LastOwnerError, SeatNotFoundError } from '@compass/auth';
+import {
+  IdentityClaimedError,
+  InvalidAbsenceError,
+  InvalidCalendarError,
+  UnmatchedIdentityNotFoundError,
+} from '@compass/knowledge-model';
 import { NextResponse } from 'next/server';
 
 /**
@@ -118,6 +124,33 @@ export class LinkOriginUnavailableError extends Error {
 }
 
 /**
+ * An un-merge named a merge that is not in the audit log.
+ *
+ * Lives here rather than in `lib/roster-source.ts` so `failure()` can recognise it. The
+ * dependency only runs one way: `roster-source.ts` imports `@compass/auth`, and this module
+ * is imported by `guard.ts`, so an import in the other direction would be a cycle. The class
+ * is re-exported from `roster-source.ts`, which is where callers expect to find it.
+ *
+ * A 404 rather than a 503, which is the whole reason it is registered: the request was
+ * well-formed and the *id* is the problem, and the sentence says why a guess is not an
+ * option. Falling through to the generic branch told the caller Compass could not reach its
+ * own records — sending them to look at the database when the fix is the identifier they sent.
+ */
+export class MergeRecordNotFoundError extends Error {
+  readonly detail: string;
+
+  constructor(auditId: string) {
+    const detail =
+      `No merge record \`${auditId}\` is in the audit log for this organization, so there is nothing to undo. ` +
+      'An un-merge restores the attribution the merge itself recorded; without that record it could only guess, ' +
+      'and a guessed restoration is not one.';
+    super(detail);
+    this.name = 'MergeRecordNotFoundError';
+    this.detail = detail;
+  }
+}
+
+/**
  * The one sentence an unexpected failure is allowed to say.
  *
  * A driver or connection error's `message` carries host, port, user and sometimes the
@@ -156,6 +189,39 @@ export function failure(error: unknown): NextResponse {
   }
   if (error instanceof LinkOriginUnavailableError) {
     return jsonError('link_origin_unconfigured', error.detail, 503);
+  }
+  if (error instanceof MergeRecordNotFoundError) {
+    return jsonError('merge_record_not_found', error.detail, 404);
+  }
+
+  /**
+   * The roster service's own refusals.
+   *
+   * Unregistered, each of these fell through to the 503 below, so a caller-fixable request —
+   * an absence ending before it starts, a calendar with no working days, an identifier already
+   * held by somebody else — was reported as Compass being unable to reach its own records.
+   * That is worse than an unhelpful message: it points the reader at the infrastructure and at
+   * `/api/health`, where they would find nothing wrong, while the sentence that names the
+   * actual fix was logged and thrown away. Each class already carries a `detail` written to be
+   * read by the person who sent the request; these branches are what let it reach them.
+   *
+   * The statuses follow the same rule as `LastOwnerError` above. The two validation errors are
+   * 400 — the body is wrong. `IdentityClaimedError` is 409, because the request was well
+   * formed and the *state* is the problem: the identifier is held, and the detail says to
+   * remove the existing link first. `UnmatchedIdentityNotFoundError` is 404 — the queue entry
+   * named does not exist, which is a fact about the id, not about the request's shape.
+   */
+  if (error instanceof InvalidAbsenceError) {
+    return jsonError('invalid_absence', error.detail, 400);
+  }
+  if (error instanceof InvalidCalendarError) {
+    return jsonError('invalid_calendar', error.detail, 400);
+  }
+  if (error instanceof IdentityClaimedError) {
+    return jsonError('identity_claimed', error.detail, 409);
+  }
+  if (error instanceof UnmatchedIdentityNotFoundError) {
+    return jsonError('unmatched_identity_not_found', error.detail, 404);
   }
 
   // Logged, never returned. `no-console` allows `error` for exactly this.

@@ -102,7 +102,7 @@ describe('GET /api/health with no DATABASE_URL', () => {
  */
 describe('a route whose database throws', () => {
   const brokenDatabase = () => {
-    vi.doMock('../lib/report-source', () => ({
+    vi.doMock('../lib/database', () => ({
       database: () => {
         throw new Error('connect ECONNREFUSED 10.0.0.7:5432 — user "compass", database "compass"');
       },
@@ -209,3 +209,4 @@ describe('pageAccess with no DATABASE_URL', () => {
     expect(detail).toContain('nothing was changed');
   });
 });
+

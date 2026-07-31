@@ -176,6 +176,15 @@ export const unmatchedIdentities = pgTable(
   (table) => entityConstraints('unmatched_identities', table),
 );
 
+/**
+ * A person's absence, and the reason a stalled-work finding about them is suppressed.
+ *
+ * `source` records where the absence came from — `manual` for the roster screen,
+ * `memo` for a Manager Memo that stated it. Both go through the same roster service,
+ * which is the sole write path; the field says which door was used, not which code
+ * wrote the row. `packages/analysis/src/absence-suppression.ts` is the only place
+ * that reads these to suppress a finding, and a quality gate asserts it stays that way.
+ */
 export const absences = pgTable(
   'absences',
   {
@@ -186,8 +195,118 @@ export const absences = pgTable(
     startAt: instantColumn('start_at').notNull(),
     endAt: instantColumn('end_at').notNull(),
     note: text('note'),
+    /** `manual` or `memo`. Shown in the roster so a reader can check the claim. */
+    source: text('source').notNull(),
+    /** For `memo`, the ManagerMemo natural key that stated it. Null for `manual`. */
+    sourceRef: text('source_ref'),
   },
   (table) => entityConstraints('absences', table),
+);
+
+/**
+ * Which team a person is on, effective-dated.
+ *
+ * `developers.team_key` also names a team, and the two are not redundant: that field
+ * is the person's *current* home team and is what a roster screen shows first, while
+ * this entity is the append-only record of the membership itself — joined when,
+ * removed when, in what role. A report generated for a past instant resolves
+ * membership from *this* history, which is why removing somebody today does not
+ * rewrite last Tuesday's Yesterday section.
+ *
+ * Removal sets `active` to false rather than deleting: the row is the evidence that
+ * the person was on the team when the work happened.
+ */
+export const teamMemberships = pgTable(
+  'team_memberships',
+  {
+    ...entityBase(),
+    teamKey: text('team_key').notNull(),
+    developerKey: text('developer_key').notNull(),
+    /** `member` or `lead`. Open vocabulary; nothing in analysis branches on it yet. */
+    membershipRole: text('membership_role').notNull(),
+    active: boolean('active').notNull(),
+  },
+  (table) => [
+    ...entityConstraints('team_memberships', table),
+    index('team_memberships_org_team_idx').on(table.organizationId, table.teamKey),
+    index('team_memberships_org_developer_idx').on(table.organizationId, table.developerKey),
+  ],
+);
+
+/**
+ * A team's working days and holidays.
+ *
+ * Every threshold in the product is expressed in *working* days — "has not moved for
+ * 3 working days" — so this is the table those numbers are measured against. Without
+ * it the count is Monday-to-Friday UTC, which is a reasonable default and a wrong
+ * answer for a team that works Sunday to Thursday.
+ *
+ * `workingWeekdays` is a sorted set of ISO weekday numbers (1 = Monday … 7 = Sunday)
+ * rather than a bitmask, because the roster screen renders it and a bitmask would be
+ * one more thing to decode before a human could check it. `holidays` is a sorted set
+ * of `YYYY-MM-DD` civil dates in the team's own zone.
+ */
+export const workingCalendars = pgTable(
+  'working_calendars',
+  {
+    ...entityBase(),
+    teamKey: text('team_key').notNull(),
+    /** ISO weekday numbers, 1 = Monday. Sorted, deduplicated. */
+    workingWeekdays: jsonb('working_weekdays').$type<readonly number[]>().notNull(),
+    /** `YYYY-MM-DD` civil dates in `timezone`. Sorted, deduplicated. */
+    holidays: jsonb('holidays').$type<readonly string[]>().notNull(),
+    /** The zone the holiday dates are civil dates *in*. */
+    timezone: text('timezone').notNull(),
+  },
+  (table) => [
+    ...entityConstraints('working_calendars', table),
+    index('working_calendars_org_team_idx').on(table.organizationId, table.teamKey),
+  ],
+);
+
+/**
+ * The manager's decision about a repository, separate from the repository itself.
+ *
+ * Repository is an *observed* entity — a connector reports it — and whether Compass
+ * tracks it is *declared*. Keeping them apart is what makes archival survive the next
+ * ingest: if `archived` were a tracked field on `repositories`, every ingest would
+ * observe the repo without it and diff it straight back to tracked. The connector
+ * would be silently overruling the manager once a day.
+ *
+ * `naturalKey` is the repository's own natural key, so the join needs no surrogate.
+ * Archiving is append-only like everything else, so "when did we stop tracking this"
+ * is answerable and a past report still resolves the repo as tracked.
+ */
+export const trackedRepositories = pgTable(
+  'tracked_repositories',
+  {
+    ...entityBase(),
+    repositoryKey: text('repository_key').notNull(),
+    /** False once archived. Prior data and prior reports are untouched either way. */
+    tracked: boolean('tracked').notNull(),
+    archivedAt: instantColumn('archived_at'),
+    note: text('note'),
+  },
+  (table) => [
+    ...entityConstraints('tracked_repositories', table),
+    index('tracked_repositories_org_repo_idx').on(table.organizationId, table.repositoryKey),
+  ],
+);
+
+/** The same decision for a project. See `trackedRepositories` for why it is its own table. */
+export const trackedProjects = pgTable(
+  'tracked_projects',
+  {
+    ...entityBase(),
+    projectKey: text('project_key').notNull(),
+    tracked: boolean('tracked').notNull(),
+    archivedAt: instantColumn('archived_at'),
+    note: text('note'),
+  },
+  (table) => [
+    ...entityConstraints('tracked_projects', table),
+    index('tracked_projects_org_project_idx').on(table.organizationId, table.projectKey),
+  ],
 );
 
 // ---------------------------------------------------------------------------
@@ -288,6 +407,17 @@ export const pullRequests = pgTable(
     title: text('title').notNull(),
     state: text('state').notNull(),
     authorDeveloperKey: text('author_developer_key'),
+    /**
+     * The identifier the source itself attributed this to — `email:priya@acme.example`.
+     *
+     * Retained whether or not a link matched, and *that* is the point: attribution is
+     * re-resolved through IdentityLink when a report is generated, so a merge or an
+     * un-merge lands in the next report with no re-ingest, and removing a link makes
+     * the artifact unattributed again instead of leaving a stale name on it. Without
+     * this column the observed identity is lost the moment it matches, and un-merge
+     * could only be approximated.
+     */
+    authorIdentityKey: text('author_identity_key'),
     createdAt: instantColumn('created_at').notNull(),
     mergedAt: instantColumn('merged_at'),
     closedAt: instantColumn('closed_at'),
@@ -327,6 +457,8 @@ export const commits = pgTable(
     authorDeveloperKey: text('author_developer_key'),
     /** Set when the author could not be resolved, so the work is still visible. */
     unmatchedIdentityKey: text('unmatched_identity_key'),
+    /** The identifier the source attributed this to. See `pullRequests.authorIdentityKey`. */
+    authorIdentityKey: text('author_identity_key'),
     authoredAt: instantColumn('authored_at').notNull(),
     message: text('message').notNull(),
     changedFileCount: doublePrecision('changed_file_count').notNull(),

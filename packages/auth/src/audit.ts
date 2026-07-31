@@ -29,6 +29,21 @@ export const AUDIT_ACTIONS = [
   'account.password_changed',
   'account.sessions_revoked',
   'config.changed',
+  // Configuration and roster acts. `identity.merged` and `identity.unmerged` are the
+  // pair the un-merge criterion names: a wrong merge corrupts attribution in every
+  // downstream report, so both halves of the correction are on the record and the merge's
+  // row carries the pre-merge attribution the un-merge replays.
+  'config.team_changed',
+  'config.team_membership_changed',
+  'config.working_calendar_changed',
+  'config.repository_tracking_changed',
+  'config.project_tracking_changed',
+  'identity.link_added',
+  'identity.link_removed',
+  'identity.merged',
+  'identity.unmerged',
+  'absence.recorded',
+  'absence.ended',
   'share_link.revoked',
   'report.exported',
   'data.deleted',
@@ -51,6 +66,17 @@ export const AUDIT_ACTION_LABEL: Readonly<Record<AuditAction, string>> = {
   'account.password_changed': 'changed a password',
   'account.sessions_revoked': 'signed out every device',
   'config.changed': 'changed configuration',
+  'config.team_changed': 'changed a team',
+  'config.team_membership_changed': 'changed who is on a team',
+  'config.working_calendar_changed': 'changed a team’s working calendar',
+  'config.repository_tracking_changed': 'started or stopped tracking a repository',
+  'config.project_tracking_changed': 'started or stopped tracking a project',
+  'identity.link_added': 'linked an identifier to a person',
+  'identity.link_removed': 'unlinked an identifier',
+  'identity.merged': 'merged an unmatched identity into a person',
+  'identity.unmerged': 'undid a merge and restored the prior attribution',
+  'absence.recorded': 'recorded an absence',
+  'absence.ended': 'ended an absence early',
   'share_link.revoked': 'revoked a share link',
   'report.exported': 'exported a report',
   'data.deleted': 'deleted data',
@@ -60,7 +86,23 @@ export interface AuditRecordInput {
   readonly action: AuditAction;
   /** Null when the act was the system's — the boot script provisioning the first owner. */
   readonly actorUserId: string | null;
-  readonly targetKind: 'membership' | 'user' | 'session' | 'source_config' | 'share_link' | 'report';
+  readonly targetKind:
+    | 'membership'
+    | 'user'
+    | 'session'
+    | 'source_config'
+    | 'share_link'
+    | 'report'
+    // Roster and configuration targets. `identity` is the identifier itself
+    // (`email:priya@acme.example`), which is what a merge and an un-merge both act on.
+    | 'team'
+    | 'team_membership'
+    | 'working_calendar'
+    | 'repository'
+    | 'project'
+    | 'developer'
+    | 'identity'
+    | 'absence';
   readonly targetId: string;
   readonly before: Record<string, unknown> | null;
   readonly after: Record<string, unknown> | null;

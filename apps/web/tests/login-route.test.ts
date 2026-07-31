@@ -17,10 +17,16 @@ import { SESSION_COOKIE_NAME } from '../lib/auth/cookies';
  * helper could be perfect and the route could forget to call it.
  *
  * The handler is imported unchanged and reaches a real migrated PostgreSQL 17 through
- * PGlite. The only thing stubbed is `lib/report-source`'s connection pool, because that is
+ * PGlite. The only thing stubbed is `lib/database`'s connection pool, because that is
  * the seam between "this process" and "a database somewhere"; every layer above it —
  * `guard`, `resolveIdentity`, `verifyLogin`, Argon2id, `startSession`, `setSessionCookie` —
  * is the production code path.
+ *
+ * The stub names `lib/database` and not `lib/report-source`, which is where the pool used to
+ * live. `guard` reaches it directly now, so mocking the old module left the guard opening a
+ * real pool and failing on an unset `DATABASE_URL` — a stubbed seam that no longer covered
+ * the seam. `report-source` re-exports the same function from here, so the one mock still
+ * intercepts every caller.
  */
 
 let database: TestDatabase;
@@ -42,7 +48,7 @@ const EMAIL = 'priya@example.com';
 // Hoisted, because `vi.mock` is hoisted above the imports and the factory closes over it.
 const pool = vi.hoisted(() => ({ current: null as CompassDatabase | null }));
 
-vi.mock('../lib/report-source', () => ({
+vi.mock('../lib/database', () => ({
   database: (): CompassDatabase => {
     if (pool.current === null) throw new Error('The test database was not opened.');
     return pool.current;

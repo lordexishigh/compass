@@ -83,6 +83,65 @@ export {
 } from './identity.js';
 
 export {
+  DEFAULT_WORKING_WEEKDAYS,
+  ISO_WEEKDAYS,
+  IdentityClaimedError,
+  InvalidAbsenceError,
+  InvalidCalendarError,
+  UNLINKED_DEVELOPER_KEY,
+  absenceKey,
+  addIdentityLink,
+  attributionImpact,
+  endAbsence,
+  recordAbsence,
+  removeIdentityLink,
+  setProjectTracking,
+  setRepositoryTracking,
+  setTeamMembership,
+  setWorkingCalendar,
+  teamMembershipKey,
+  upsertDeveloper,
+  upsertTeam,
+  type AbsenceInput,
+  type AttributionArtifactRef,
+  type AttributionImpact,
+  type ConfigurationWrite,
+  type DeveloperInput,
+  type IdentityLinkInput,
+  type IdentityLinkResult,
+  type TeamInput,
+  type TeamMembershipInput,
+  type TrackingInput,
+  type WorkingCalendarInput,
+} from './roster-service.js';
+
+export {
+  readRosterView,
+  rosterIdentityKey,
+  type RosterAbsenceView,
+  type RosterCalendarView,
+  type RosterDeveloperView,
+  type RosterIdentityView,
+  type RosterMemberView,
+  type RosterTeamView,
+  type RosterTrackedView,
+  type RosterView,
+  type UnmatchedIdentityView,
+} from './roster-view.js';
+
+export {
+  UnmatchedIdentityNotFoundError,
+  isPreMergeAttribution,
+  mergeUnmatchedIdentity,
+  unmatchedIdentityKeyOf,
+  unmergeIdentity,
+  type MergeResult,
+  type MergeTarget,
+  type PreMergeAttribution,
+  type UnmergeResult,
+} from './identity-merge.js';
+
+export {
   DuplicateIdentityLinkError,
   provisionRoster,
   type OrgRoster,

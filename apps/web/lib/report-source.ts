@@ -1,11 +1,5 @@
 import { SystemClock } from '@compass/clock';
-import {
-  createDatabase,
-  ingestRunRowId,
-  resolveDatabaseUrl,
-  type CompassDatabase,
-  type DatabaseHandle,
-} from '@compass/db';
+import { ingestRunRowId, type CompassDatabase } from '@compass/db';
 import { narratorFromEnvironment } from '@compass/narrator';
 import { ensureDailyReport, loadFreshnessFor, type EnsuredReport } from '@compass/pipeline';
 import { SeedConnector, resolveSeededRun, type SeededRun } from '@compass/seed-connector';
@@ -30,24 +24,16 @@ import { buildReportView, type ReportView } from './view-model';
  */
 
 /**
- * One pool per process, cached across hot reloads.
+ * The pool moved to `lib/database.ts` and is re-exported here.
  *
- * Next.js re-evaluates modules on every edit in development. Without this the
- * dev server opens a new pool per reload and PostgreSQL runs out of connections
- * within a few minutes of ordinary work.
+ * Every existing caller imports `database` from this module, so the name stays; what
+ * changed is that `lib/health.ts` can now reach the same pool without importing the report
+ * path — `/api/health` has to be the lightest route in the app, not the one that loads the
+ * analysis core and the narrator before it can say whether Postgres answered.
  */
-const POOL_KEY = Symbol.for('compass.web.database');
-type PoolGlobal = typeof globalThis & { [POOL_KEY]?: DatabaseHandle };
+import { database } from './database';
 
-export function database(): CompassDatabase {
-  const cache = globalThis as PoolGlobal;
-  const existing = cache[POOL_KEY];
-  if (existing !== undefined) return existing.db;
-
-  const handle = createDatabase(resolveDatabaseUrl('pooled'));
-  cache[POOL_KEY] = handle;
-  return handle.db;
-}
+export { database };
 
 /**
  * Which report this request is about.

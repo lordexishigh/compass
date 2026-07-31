@@ -40,3 +40,11 @@ export {
   type ModelIngestResult,
   type ObservationTally,
 } from './model-ingest.js';
+
+export {
+  ArchivalFilter,
+  NOTHING_ARCHIVED,
+  loadTrackingDecisions,
+  type SkippedByArchival,
+  type TrackingDecisions,
+} from './tracking.js';

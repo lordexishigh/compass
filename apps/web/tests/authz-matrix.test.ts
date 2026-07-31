@@ -103,11 +103,33 @@ const EXPECTED: Readonly<Record<string, Partial<Record<Action, readonly Principa
 
   '/api/audit': { GET: ['owner'] },
 
+  /**
+   * Configuration and the identity roster: owner *and* manager on every verb.
+   *
+   * Restated here as intent rather than copied as fact. The widening to managers is
+   * deliberate — team scoping is the basis of every aggregate and a bad identity merge
+   * corrupts attribution in every downstream report, so the person who reads the report must
+   * be able to fix the configuration behind it rather than filing a request while the wrong
+   * name stays in tomorrow's report. Every write is audited with its actor either way.
+   *
+   * Members and viewers are absent from every row, which is the half worth stating: reading a
+   * report does not make somebody an editor of the roster it is computed from. `public` is
+   * absent too, and unlike `/` and `/api/goals` these rows carry no `demoOnlyPublic` escape —
+   * the demonstration tenant's configuration is not world-writable.
+   */
+  '/api/roster': { GET: ['owner', 'manager'] },
+  '/api/roster/teams': { POST: ['owner', 'manager'], PATCH: ['owner', 'manager'], PUT: ['owner', 'manager'] },
+  '/api/roster/sources': { PATCH: ['owner', 'manager'] },
+  '/api/roster/identities': { POST: ['owner', 'manager'], DELETE: ['owner', 'manager'] },
+  '/api/roster/merges': { POST: ['owner', 'manager'], DELETE: ['owner', 'manager'] },
+  '/api/roster/absences': { POST: ['owner', 'manager'], PATCH: ['owner', 'manager'] },
+
   '/goals': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
   '/account': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
   '/account/invite': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
   '/account/reset': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
   '/seats': { GET: ['owner', 'manager'] },
+  '/roster': { GET: ['owner', 'manager'] },
 };
 
 /**

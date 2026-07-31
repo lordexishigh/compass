@@ -54,10 +54,14 @@ export {
   reviews,
   risks,
   sprints,
+  teamMemberships,
   teams,
   tickets,
+  trackedProjects,
+  trackedRepositories,
   unmatchedIdentities,
   wins,
+  workingCalendars,
 } from './schema/entities.js';
 
 export { objectiveLinks, objectiveScopeLinks, objectiveVersions } from './schema/goals.js';
@@ -71,6 +75,7 @@ export {
   consumeAuthToken,
   ensureMembership,
   ensureUser,
+  findAuditLogEntry,
   findAuthTokenByHash,
   findMembershipById,
   findMembershipByUserId,

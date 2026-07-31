@@ -18,6 +18,7 @@
     "@compass/clock": "workspace:*",
     "@compass/connector-port": "workspace:*",
     "@compass/db": "workspace:*",
+    "@compass/knowledge-model": "workspace:*",
     "@compass/narrator": "workspace:*",
     "@compass/pipeline": "workspace:*",
     "@compass/renderers": "workspace:*",

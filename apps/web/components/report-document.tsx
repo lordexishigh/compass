@@ -133,6 +133,15 @@ export function ReportDocument({ view }: { readonly view: ReportView }) {
             >
               Goal hierarchy
             </a>
+            {/* The configuration behind every aggregate above: which repositories are
+                tracked, who is on the team, whose work each commit is. A manager who
+                reads a wrong attribution needs somewhere to go and fix it. */}
+            <a
+              href="/roster"
+              className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
+            >
+              Roster and configuration
+            </a>
             {/* Reachable, never imposed. `/` gates nothing and never redirects here:
                 the zero-config promise is that a manager reads a report first and
                 decides about accounts afterwards. */}

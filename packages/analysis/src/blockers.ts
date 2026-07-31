@@ -5,6 +5,11 @@ import {
   ticketEvidence,
   type EvidenceRef,
 } from './evidence.js';
+import {
+  absenceIndex,
+  describeSuppression,
+  type SuppressionNote,
+} from './absence-suppression.js';
 import { compareNumbers, compareStable, wholeDaysBetween, workingDaysBetween, type Instant } from './instant.js';
 import { changesRequestedCycles, isOpenPullRequest, latestReview } from './review-queue.js';
 import {
@@ -96,11 +101,55 @@ export interface DetectedBlocker {
  * Ordering is `ageDays` descending then `stableId` ascending, a total order, so
  * the sequence does not depend on which detector ran first.
  */
-export function detectBlockers(
+/**
+ * Signals that are *inferred from silence*, and are therefore the ones an absence
+ * suppresses.
+ *
+ * `tracker_flag` and `blocked_status` are deliberately absent from this list. A ticket the
+ * tracker has flagged as blocked is blocked whether or not its assignee is at their desk —
+ * that is a stated fact about the work, not an inference about a person, and suppressing it
+ * would hide a real impediment behind somebody's holiday. The four below all say some
+ * version of "nothing has happened", and "nothing has happened because they are on leave"
+ * is arithmetic rather than news.
+ */
+const SILENCE_INFERRED_SIGNALS: readonly BlockerSignal[] = [
+  'status_dwell',
+  'no_reviewer',
+  'awaiting_first_review',
+  'changes_requested_stalled',
+];
+
+export interface BlockerDetection {
+  /** The findings to report. Suppressed ones are not here. */
+  readonly blockers: readonly DetectedBlocker[];
+  /**
+   * Findings withheld because the person named is absent, each with its reason.
+   *
+   * Returned rather than dropped: a section that quietly loses three items looks like a
+   * section with nothing to say, and the whole point of the rule is that Compass is seen
+   * to have known.
+   */
+  readonly suppressed: readonly SuppressedBlocker[];
+}
+
+export interface SuppressedBlocker {
+  readonly blocker: DetectedBlocker;
+  readonly note: SuppressionNote;
+}
+
+/**
+ * Every blocker signal, with absences applied.
+ *
+ * The suppression predicate is not implemented here — it is imported from
+ * `absence-suppression.ts`, which is its only implementation in the workspace, asserted by
+ * `tools/quality-gates`. This function decides *which signals* are eligible; that module
+ * decides *whether the person is out*.
+ */
+export function detectBlockersWithSuppression(
   snapshot: AnalysisSnapshot,
   instant: Instant,
   scope: ResolvedScope,
-): readonly DetectedBlocker[] {
+): BlockerDetection {
   const found: DetectedBlocker[] = [
     ...detectTrackerBlockers(snapshot, instant, scope),
     ...detectStatusDwell(snapshot, instant, scope),
@@ -119,9 +168,45 @@ export function detectBlockers(
     }
   }
 
-  return [...bySubject.values()].sort(
+  const ordered = [...bySubject.values()].sort(
     (left, right) => compareNumbers(right.ageDays, left.ageDays) || compareStable(left.stableId, right.stableId),
   );
+
+  const absences = absenceIndex(snapshot, instant);
+  if (!absences.any) return { blockers: ordered, suppressed: [] };
+
+  const blockers: DetectedBlocker[] = [];
+  const suppressed: SuppressedBlocker[] = [];
+
+  for (const blocker of ordered) {
+    const eligible = SILENCE_INFERRED_SIGNALS.includes(blocker.signal);
+    const absence = eligible ? absences.suppressing(blocker.ownerDeveloperKey) : null;
+
+    if (absence === null) {
+      blockers.push(blocker);
+      continue;
+    }
+    suppressed.push({
+      blocker,
+      note: describeSuppression(absence, blocker.ownerName),
+    });
+  }
+
+  return { blockers, suppressed };
+}
+
+/**
+ * The blockers a report states.
+ *
+ * Signature unchanged from before absences existed, so every caller and every existing
+ * test keeps working; a deployment with no absences gets byte-identical output.
+ */
+export function detectBlockers(
+  snapshot: AnalysisSnapshot,
+  instant: Instant,
+  scope: ResolvedScope,
+): readonly DetectedBlocker[] {
+  return detectBlockersWithSuppression(snapshot, instant, scope).blockers;
 }
 
 const signalRank = (signal: BlockerSignal): number => BLOCKER_SIGNALS.indexOf(signal);

@@ -129,6 +129,26 @@ export interface SourceFile {
   readonly text: string;
 }
 
+/**
+ * A source file with its comments removed, for a gate that polices *calls*.
+ *
+ * A gate that greps raw text cannot tell a mutating call from a sentence explaining that the
+ * module never makes one — so the better a module documents its own rule, the more likely it
+ * is to fail the gate enforcing it. That is not hypothetical: `roster-service.ts` states
+ * "there is deliberately no update anywhere in this file and no `db.update()` reachable from
+ * it", and a raw scan for `.update(` matched the prose promising its absence.
+ *
+ * Rewording the comment would have fixed the symptom and left the trap for whoever documents
+ * the next rule. So the scan reads code instead. Block comments go first, then line comments,
+ * with `://` protected so a URL in a string is not treated as the start of one — enough for
+ * TypeScript sources the gate itself owns, and the prose assertions keep using `text`
+ * precisely because what they check *is* the prose.
+ */
+export const codeWithoutComments = (file: SourceFile): string =>
+  file.text
+    .replace(/\/\*[\s\S]*?\*\//g, ' ')
+    .replace(/(^|[^:])\/\/.*$/gm, '$1');
+
 /** Every authored `.ts`/`.tsx` file under `directory`, build output excluded. */
 export function collectSourceFiles(
   directory: string,

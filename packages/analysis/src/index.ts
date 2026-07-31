@@ -102,6 +102,54 @@ export {
 } from './snapshot.js';
 
 export {
+  configurationAt,
+  describeArchival,
+  entitiesAt,
+  fieldsAt,
+  projectTrackedAt,
+  repositoryTrackedAt,
+  resolvedBoolean,
+  resolvedNumber,
+  resolvedNumberList,
+  resolvedText,
+  resolvedTextList,
+  teamDeveloperKeysAt,
+  type ConfigEntity,
+  type ConfigEntityVersion,
+  type ConfigSnapshot,
+  type ConfigurationAtInstant,
+  type FieldsAtInstant,
+  type TeamMembershipAt,
+} from './configuration.js';
+
+export {
+  DEFAULT_WORKING_CALENDAR,
+  DEFAULT_WORKING_WEEKDAYS,
+  calendarFor,
+  civilDateOfDayIndex,
+  describeCalendar,
+  isWorkingDay,
+  isoWeekdayOfDayIndex,
+  workingDaysBetweenOn,
+  type IsoWeekday,
+  type WorkingCalendar,
+} from './working-calendar.js';
+
+export {
+  EMPTY_ABSENCE_INDEX,
+  absenceCoversInstant,
+  absenceIndex,
+  absencesAt,
+  describeSuppression,
+  suppressionLedger,
+  type AbsenceIndex,
+  type AbsenceSource,
+  type ActiveAbsence,
+  type SuppressionLedger,
+  type SuppressionNote,
+} from './absence-suppression.js';
+
+export {
   branchEvidence,
   commitEvidence,
   orderedEvidence,
@@ -210,8 +258,11 @@ export {
   blockerIsResolved,
   blockerTicket,
   detectBlockers,
+  detectBlockersWithSuppression,
+  type BlockerDetection,
   type BlockerSignal,
   type DetectedBlocker,
+  type SuppressedBlocker,
 } from './blockers.js';
 
 export {

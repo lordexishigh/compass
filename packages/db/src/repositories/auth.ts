@@ -1,5 +1,5 @@
 import type { Instant } from '@compass/clock';
-import { and, asc, desc, eq, isNull, or } from 'drizzle-orm';
+import { and, asc, desc, eq, isNull, or, type InferSelectModel } from 'drizzle-orm';
 
 import { deterministicUuid } from '../entity-id.js';
 import { fromDatabaseInstant, fromNullableDatabaseInstant, toDatabaseInstant } from '../schema/columns.js';
@@ -695,6 +695,17 @@ export async function appendAuditLogEntry(scoped: ScopedDb, input: AuditLogInput
   return { ...input, id };
 }
 
+const toAuditLogRow = (row: InferSelectModel<typeof auditLogEntries>): AuditLogRow => ({
+  id: row.id,
+  actorUserId: row.actorUserId,
+  action: row.action,
+  targetKind: row.targetKind,
+  targetId: row.targetId,
+  before: (row.beforeState ?? null) as Record<string, unknown> | null,
+  after: (row.afterState ?? null) as Record<string, unknown> | null,
+  occurredAt: fromDatabaseInstant(row.occurredAt),
+});
+
 /** The audit trail, newest first. Read-only by construction — nothing writes over it. */
 export async function listAuditLogEntries(
   scoped: ScopedDb,
@@ -706,14 +717,25 @@ export async function listAuditLogEntries(
     .orderBy(desc(auditLogEntries.occurredAt), asc(auditLogEntries.action))
     .limit(options.limit ?? 100);
 
-  return rows.map((row) => ({
-    id: row.id,
-    actorUserId: row.actorUserId,
-    action: row.action,
-    targetKind: row.targetKind,
-    targetId: row.targetId,
-    before: (row.beforeState ?? null) as Record<string, unknown> | null,
-    after: (row.afterState ?? null) as Record<string, unknown> | null,
-    occurredAt: fromDatabaseInstant(row.occurredAt),
-  }));
+  return rows.map(toAuditLogRow);
+}
+
+/**
+ * One audit entry by id, or null.
+ *
+ * A keyed lookup rather than a scan of the recent trail, because one caller needs a
+ * *specific* historical row: `undoMerge` restores the attribution a merge recorded in its own
+ * `before` state, and that merge may be arbitrarily old. Finding it by paging through the
+ * newest N entries would make an un-merge silently impossible once the organization had
+ * written N more audit rows — and this log takes a row from every configuration write, every
+ * seat change and every sign-in, so N is reached in ordinary use. The caller would then be
+ * told, wrongly, that no such merge exists.
+ *
+ * Still read-only against an append-only table: this adds a way to *find* a row, not to
+ * change one.
+ */
+export async function findAuditLogEntry(scoped: ScopedDb, id: string): Promise<AuditLogRow | null> {
+  const rows = await scoped.selectFrom(auditLogEntries, eq(auditLogEntries.id, id)).limit(1);
+  const row = rows[0];
+  return row === undefined ? null : toAuditLogRow(row);
 }

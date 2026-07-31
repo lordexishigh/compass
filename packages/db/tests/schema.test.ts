@@ -80,12 +80,16 @@ describe('base schema convention', () => {
       'source_configs',
       'sprint_scope_changes',
       'sprints',
+      'team_memberships',
       'teams',
       'ticket_status_transitions',
       'tickets',
+      'tracked_projects',
+      'tracked_repositories',
       'unmatched_identities',
       'users',
       'wins',
+      'working_calendars',
     ]);
   });
 

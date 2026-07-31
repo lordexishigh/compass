@@ -20,6 +20,7 @@ import {
   detectBlockedButDone,
   detectBlockedButMerged,
   detectDoneButReopened,
+  identityNaturalKey,
   recordContradiction,
   type ContradictionCandidate,
   type EvidenceRef,
@@ -43,6 +44,7 @@ import {
   sprintNaturalKey,
   ticketNaturalKey,
 } from './naming.js';
+import { ArchivalFilter, loadTrackingDecisions, type SkippedByArchival } from './tracking.js';
 
 /**
  * Ingest: one half-open window, from the port into the versioned model.
@@ -98,6 +100,8 @@ export interface ModelIngestResult {
   readonly contradictions: readonly ContradictionCandidate[];
   readonly correctionIds: readonly string[];
   readonly unmatchedIdentityKeys: readonly string[];
+  /** What archival declined to observe. Stated so an empty run is never a mystery. */
+  readonly skippedByArchival: SkippedByArchival;
 }
 
 const EMPTY_TALLY: ObservationTally = { created: 0, changed: 0, unchanged: 0, superseded: 0 };
@@ -180,6 +184,12 @@ export async function ingestWindowIntoModel(
   const resolver = new IdentityResolver(store);
   await resolver.load();
 
+  // Archival is honoured here, at the one boundary where "exclude it from future
+  // windows" can actually be true. Nothing is deleted and no version is appended —
+  // records for an archived repository are simply not observed, and the count of what
+  // was declined is reported so a run that ingested nothing says why.
+  const archival = new ArchivalFilter(await loadTrackingDecisions(store));
+
   const tally = new Tally();
   const unmatched = new Set<string>();
   const contradictions: ContradictionCandidate[] = [];
@@ -197,23 +207,43 @@ export async function ingestWindowIntoModel(
     return result;
   };
 
+  /**
+   * Who an artifact belongs to, and — always — which identifier said so.
+   *
+   * `identityKey` is returned whether or not a link matched, and stored on the
+   * artifact. That is what lets attribution be *re-resolved* when a report is
+   * generated: a merge or an un-merge changes which Developer the identifier maps to,
+   * and the next report follows the new mapping with no re-ingest. Storing only
+   * `developerKey` would freeze the answer at ingest time, and un-merge could then
+   * only approximate the attribution it was meant to restore exactly.
+   */
   const resolveOwner = async (
     identity: ExternalIdentity | null,
     artifactKind: string,
     sourceKey: string,
     sourceRecordId: string,
     observedAt: Instant,
-  ): Promise<{ readonly developerKey: string | null; readonly unmatchedKey: string | null }> => {
-    if (identity === null) return { developerKey: null, unmatchedKey: null };
-    const resolution = await resolver.resolve(actorOf(identity), {
+  ): Promise<{
+    readonly developerKey: string | null;
+    readonly unmatchedKey: string | null;
+    readonly identityKey: string | null;
+  }> => {
+    if (identity === null) return { developerKey: null, unmatchedKey: null, identityKey: null };
+
+    const actor = actorOf(identity);
+    const identityKey = identityNaturalKey(actor.kind, actor.value);
+    const resolution = await resolver.resolve(actor, {
       artifactKind,
       sourceKey,
       sourceRecordId,
       observedAt,
     });
-    if (resolution.matched) return { developerKey: resolution.developerKey, unmatchedKey: null };
+
+    if (resolution.matched) {
+      return { developerKey: resolution.developerKey, unmatchedKey: null, identityKey };
+    }
     unmatched.add(resolution.unmatchedIdentityKey);
-    return { developerKey: null, unmatchedKey: resolution.unmatchedIdentityKey };
+    return { developerKey: null, unmatchedKey: resolution.unmatchedIdentityKey, identityKey };
   };
 
   // ---- sprints first: tickets and scope changes both refer to them -----------
@@ -221,6 +251,7 @@ export async function ingestWindowIntoModel(
   const sprintStartByKey = new Map<string, Instant>();
 
   for (const sprint of sprintRecords as readonly SprintRecord[]) {
+    if (archival.skipsProject(sprint.projectKey)) continue;
     const naturalKey = sprintNaturalKey(sprint.sourceKey, sprint.sourceRecordId);
     sprintStartByKey.set(naturalKey, sprint.startAt);
     await observe(
@@ -247,6 +278,7 @@ export async function ingestWindowIntoModel(
   const issueRecords = recordsFor(batches, 'issues') as readonly IssueRecord[];
 
   for (const issue of issueRecords) {
+    if (archival.skipsProject(issue.projectKey)) continue;
     await observeProject(observe, issue.projectKey, issue.occurredAt);
 
     const evidence: EvidenceRef = {
@@ -390,6 +422,7 @@ export async function ingestWindowIntoModel(
 
   // ---- code artifacts -------------------------------------------------------
   for (const pullRequest of recordsFor(batches, 'pull_requests') as readonly PullRequestRecord[]) {
+    if (archival.skipsRepository(pullRequest.repositoryKey)) continue;
     await observeRepository(observe, pullRequest.repositoryKey, pullRequest.occurredAt);
 
     const evidence: EvidenceRef = {
@@ -415,6 +448,7 @@ export async function ingestWindowIntoModel(
         title: pullRequest.title,
         state: pullRequest.state,
         authorDeveloperKey: author.developerKey,
+        authorIdentityKey: author.identityKey,
         createdAt: pullRequest.createdAt,
         mergedAt: pullRequest.mergedAt,
         closedAt: pullRequest.closedAt,
@@ -456,6 +490,7 @@ export async function ingestWindowIntoModel(
   }
 
   for (const review of recordsFor(batches, 'reviews') as readonly ReviewRecord[]) {
+    if (archival.skipsRepository(review.repositoryKey)) continue;
     await observeRepository(observe, review.repositoryKey, review.occurredAt);
     const reviewer = await resolveOwner(
       review.reviewerIdentity,
@@ -486,6 +521,7 @@ export async function ingestWindowIntoModel(
   }
 
   for (const commit of recordsFor(batches, 'commits') as readonly CommitRecord[]) {
+    if (archival.skipsRepository(commit.repositoryKey)) continue;
     await observeRepository(observe, commit.repositoryKey, commit.occurredAt);
     const author = await resolveOwner(
       commit.authorIdentity,
@@ -503,6 +539,7 @@ export async function ingestWindowIntoModel(
         revisionId: commit.revisionId,
         authorDeveloperKey: author.developerKey,
         unmatchedIdentityKey: author.unmatchedKey,
+        authorIdentityKey: author.identityKey,
         authoredAt: commit.authoredAt,
         message: commit.message,
         changedFileCount: commit.changedFileCount,
@@ -522,6 +559,7 @@ export async function ingestWindowIntoModel(
   }
 
   for (const branch of recordsFor(batches, 'branch_refs') as readonly BranchRefRecord[]) {
+    if (archival.skipsRepository(branch.repositoryKey)) continue;
     await observeRepository(observe, branch.repositoryKey, branch.occurredAt);
     await observe(
       'branch_ref',
@@ -538,6 +576,7 @@ export async function ingestWindowIntoModel(
   }
 
   for (const tag of recordsFor(batches, 'release_tags') as readonly ReleaseTagRecord[]) {
+    if (archival.skipsRepository(tag.repositoryKey)) continue;
     await observeRepository(observe, tag.repositoryKey, tag.occurredAt);
     await observe(
       'release_tag',
@@ -596,6 +635,7 @@ export async function ingestWindowIntoModel(
     contradictions,
     correctionIds,
     unmatchedIdentityKeys: [...unmatched].sort(),
+    skippedByArchival: archival.skipped,
   };
 }
 
