@@ -9,7 +9,9 @@ import {
 } from 'drizzle-orm';
 import type { PgColumn, PgDatabase, PgQueryResultHKT, PgTable, PgUpdateSetSource } from 'drizzle-orm/pg-core';
 
+import { isAppendOnlyTableName } from './schema/history.js';
 import {
+  AppendOnlyTableError,
   CrossOrgWriteError,
   assertOrgScopedTable,
   requireOrgScope,
@@ -82,6 +84,17 @@ export class ScopedDb {
     return predicate;
   }
 
+  /**
+   * The application-layer half of the append-only guarantee. The database
+   * trigger is the other half; neither is trusted to be the only one.
+   */
+  #refuseHistoryMutation(table: OrgScopedTable, operation: 'update' | 'delete'): void {
+    const name = getTableName(table);
+    if (isAppendOnlyTableName(name)) {
+      throw new AppendOnlyTableError(name, operation);
+    }
+  }
+
   #where(table: OrgScopedTable, extra?: SQL): SQL {
     const scoped = this.organizationPredicate(table);
     if (!extra) return scoped;
@@ -115,11 +128,13 @@ export class ScopedDb {
 
   updateIn<TTable extends OrgScopedTable>(table: TTable, values: PgUpdateSetSource<TTable>, where?: SQL) {
     assertOrgScopedTable(table, getTableName(table));
+    this.#refuseHistoryMutation(table, 'update');
     return this.#db.update(table).set(values).where(this.#where(table, where));
   }
 
   deleteFrom<TTable extends OrgScopedTable>(table: TTable, where?: SQL) {
     assertOrgScopedTable(table, getTableName(table));
+    this.#refuseHistoryMutation(table, 'delete');
     // The generic table cannot be proven to have a non-empty selection at this
     // level of abstraction; the runtime guard above is what matters here.
     return this.#db.delete(table as PgTable).where(this.#where(table, where));

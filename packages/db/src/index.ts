@@ -7,7 +7,14 @@
  */
 export * as schema from './schema/index.js';
 export {
+  BELIEF_AT_COLUMN,
+  FIRST_SEEN_AT_COLUMN,
+  LAST_SEEN_AT_COLUMN,
+  NAMED_ENTITY_REQUIRED_COLUMNS,
+  NATURAL_KEY_COLUMN,
   ORGANIZATION_ID_COLUMN,
+  VERSION_COLUMN,
+  entityStateColumns,
   fromDatabaseInstant,
   fromNullableDatabaseInstant,
   organizationId,
@@ -28,6 +35,66 @@ export {
 } from './schema/tables.js';
 
 export {
+  absences,
+  blockers,
+  branchRefs,
+  commits,
+  companies,
+  developers,
+  feedbackEntries,
+  features,
+  identityLinks,
+  managerMemos,
+  objectives,
+  projects,
+  pullRequests,
+  recommendations,
+  releaseTags,
+  repositories,
+  reviews,
+  risks,
+  sprints,
+  teams,
+  tickets,
+  unmatchedIdentities,
+  wins,
+} from './schema/entities.js';
+
+export {
+  APPEND_ONLY_TABLE_NAMES,
+  corrections,
+  entityVersions,
+  isAppendOnlyTableName,
+  sprintScopeChanges,
+  ticketStatusTransitions,
+  type AppendOnlyTableName,
+} from './schema/history.js';
+
+export {
+  ENTITY_KINDS,
+  NAMED_ENTITIES,
+  UnknownEntityKindError,
+  entityTableName,
+  isEntityKind,
+  isNamedEntityTable,
+  namedEntity,
+  type EntityKind,
+  type NamedEntityDefinition,
+  type NamedEntityTable,
+} from './schema/registry.js';
+
+export {
+  COMPASS_UUID_NAMESPACE,
+  correctionRowId,
+  deterministicUuid,
+  entityRowId,
+  entityVersionRowId,
+  historyRowId,
+  ingestRunRowId,
+} from './entity-id.js';
+
+export {
+  AppendOnlyTableError,
   CrossOrgWriteError,
   MissingOrgScopeError,
   UnscopedTableError,
@@ -64,3 +131,26 @@ export {
   type IngestRunInput,
   type StoredIngestRun,
 } from './repositories/ingest-runs.js';
+
+export {
+  appendEntityVersion,
+  appendSprintScopeChange,
+  appendTicketStatusTransition,
+  countEntityRows,
+  findEntityRow,
+  insertCorrection,
+  insertEntityRow,
+  listCorrections,
+  listEntityRows,
+  listEntityVersions,
+  listSprintScopeChanges,
+  listTicketStatusTransitions,
+  patchEntityRow,
+  tableNameOf,
+  type CorrectionInput,
+  type EntityRow,
+  type EntityVersionInput,
+  type RowValues,
+  type SprintScopeChangeInput,
+  type TicketStatusTransitionInput,
+} from './repositories/entity-rows.js';

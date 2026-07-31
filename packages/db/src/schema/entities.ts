@@ -1,0 +1,482 @@
+import {
+  boolean,
+  doublePrecision,
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  text,
+  unique,
+  uuid,
+  type PgColumn,
+} from 'drizzle-orm/pg-core';
+
+import { entityStateColumns, instantColumn, organizationId } from './columns.js';
+import { organizations } from './tables.js';
+
+/**
+ * The named entities of the knowledge model.
+ *
+ * Every table here is one entity family, stored as a first-class row keyed by a
+ * stable natural key, carrying `first_seen_at` / `last_seen_at` / `belief_at` /
+ * `version`, and paired with an append-only history companion (see
+ * `./history.ts` and the registry in `./registry.ts`).
+ *
+ * Two groups sit side by side and it is worth naming the difference:
+ *
+ *  - **Observed** entities are projected from connector records: Project,
+ *    Repository, Feature, Ticket, Sprint, PullRequest, Review, Commit, BranchRef,
+ *    ReleaseTag, and the Blocker/Risk rows that a source states outright.
+ *  - **Declared** entities are configured by a manager and never invented from
+ *    artifacts: Company, Objective, Team, Developer, IdentityLink, Absence,
+ *    WorkingCalendar. The connector port has no roster artifact on purpose —
+ *    guessing that a git email is a person is precisely what `IdentityLink` and
+ *    `UnmatchedIdentity` exist to prevent.
+ *
+ * Tracked fields are real typed columns rather than a jsonb blob, so the analysis
+ * layer can read the model without parsing, and so a column added without a
+ * migration is a compile error rather than a silently absent key.
+ */
+
+/** Every entity row starts with these. */
+const entityBase = () => ({
+  id: uuid('id').primaryKey(),
+  organizationId: organizationId().references(() => organizations.id),
+  ...entityStateColumns(),
+});
+
+type EntityBaseShape = {
+  readonly organizationId: PgColumn;
+  readonly naturalKey: PgColumn;
+  readonly lastSeenAt: PgColumn;
+};
+
+/**
+ * The natural key is unique per organization — that uniqueness *is* the
+ * idempotency guarantee, enforced by the database rather than by a code path
+ * remembering to check first.
+ */
+const entityConstraints = (tableName: string, table: EntityBaseShape) => [
+  unique(`${tableName}_org_natural_key`).on(table.organizationId, table.naturalKey),
+  index(`${tableName}_org_last_seen_idx`).on(table.organizationId, table.lastSeenAt),
+];
+
+// ---------------------------------------------------------------------------
+// Declared entities: the org chart a manager configures.
+// ---------------------------------------------------------------------------
+
+export const companies = pgTable(
+  'companies',
+  {
+    ...entityBase(),
+    name: text('name').notNull(),
+    /** IANA zone the company reports in when a team has no calendar of its own. */
+    timezone: text('timezone').notNull(),
+  },
+  (table) => entityConstraints('companies', table),
+);
+
+/**
+ * An objective, effective-dated. `is_current` is the manager's declaration of
+ * which objective today's work is measured against; alignment verdicts in
+ * `mvp-goals-and-alignment` are computed against the current one only.
+ */
+export const objectives = pgTable(
+  'objectives',
+  {
+    ...entityBase(),
+    objectiveKind: text('objective_kind').notNull(),
+    parentObjectiveKey: text('parent_objective_key'),
+    title: text('title').notNull(),
+    effectiveFrom: instantColumn('effective_from').notNull(),
+    effectiveUntil: instantColumn('effective_until').notNull(),
+    isCurrent: boolean('is_current').notNull(),
+  },
+  (table) => entityConstraints('objectives', table),
+);
+
+export const teams = pgTable(
+  'teams',
+  {
+    ...entityBase(),
+    name: text('name').notNull(),
+    /** `scrum` or `kanban`. Decides which sprint questions are even asked. */
+    methodology: text('methodology').notNull(),
+    projectKey: text('project_key'),
+    objectiveKey: text('objective_key'),
+    conversationKey: text('conversation_key'),
+    timezone: text('timezone').notNull(),
+  },
+  (table) => entityConstraints('teams', table),
+);
+
+export const developers = pgTable(
+  'developers',
+  {
+    ...entityBase(),
+    displayName: text('display_name').notNull(),
+    teamKey: text('team_key'),
+    active: boolean('active').notNull(),
+  },
+  (table) => entityConstraints('developers', table),
+);
+
+/**
+ * One declared mapping from a source's own identifier to a Developer.
+ *
+ * `identity_value` is stored normalised (trimmed, lower-cased) because that is
+ * the form the resolver compares. Nothing else about an identity is used for
+ * matching — in particular never the display name.
+ */
+export const identityLinks = pgTable(
+  'identity_links',
+  {
+    ...entityBase(),
+    identityKind: text('identity_kind').notNull(),
+    identityValue: text('identity_value').notNull(),
+    developerKey: text('developer_key').notNull(),
+    /** How the link came to exist. `declared` is the only MVP value. */
+    origin: text('origin').notNull(),
+  },
+  (table) => [
+    ...entityConstraints('identity_links', table),
+    index('identity_links_org_lookup_idx').on(table.organizationId, table.identityKind, table.identityValue),
+  ],
+);
+
+/**
+ * An actor no IdentityLink covers.
+ *
+ * The row exists so the artifact is neither dropped nor guessed at. A manager can
+ * see "six commits from an address Compass cannot place" and fix the roster,
+ * instead of wondering where the work went.
+ *
+ * The occurrence count is the size of `witness_refs`, a sorted set of
+ * `sourceKey:sourceRecordId` strings, rather than a counter that gets incremented.
+ * That distinction matters: a counter would grow every time the same window was
+ * re-ingested, and "ingest the same window three times and nothing changes" is a
+ * property this model has to keep. A set union is idempotent under replay and
+ * still monotone under an overlapping window, so the count only rises when a
+ * genuinely new artifact is seen.
+ */
+export const unmatchedIdentities = pgTable(
+  'unmatched_identities',
+  {
+    ...entityBase(),
+    identityKind: text('identity_kind').notNull(),
+    identityValue: text('identity_value').notNull(),
+    /** Recorded for display only. Never used to match. */
+    displayName: text('display_name'),
+    /** Always `witness_refs.length`. Stored so it is queryable without parsing. */
+    occurrenceCount: integer('occurrence_count').notNull(),
+    witnessRefs: jsonb('witness_refs').$type<readonly string[]>().notNull(),
+    artifactKinds: jsonb('artifact_kinds').$type<readonly string[]>().notNull(),
+    sourceKeys: jsonb('source_keys').$type<readonly string[]>().notNull(),
+  },
+  (table) => entityConstraints('unmatched_identities', table),
+);
+
+export const absences = pgTable(
+  'absences',
+  {
+    ...entityBase(),
+    developerKey: text('developer_key').notNull(),
+    /** `leave`, `holiday`, `on_call` — open vocabulary, stated verbatim. */
+    absenceKind: text('absence_kind').notNull(),
+    startAt: instantColumn('start_at').notNull(),
+    endAt: instantColumn('end_at').notNull(),
+    note: text('note'),
+  },
+  (table) => entityConstraints('absences', table),
+);
+
+// ---------------------------------------------------------------------------
+// Observed entities: projected from connector records.
+// ---------------------------------------------------------------------------
+
+export const projects = pgTable(
+  'projects',
+  {
+    ...entityBase(),
+    name: text('name').notNull(),
+    teamKey: text('team_key'),
+    methodology: text('methodology'),
+    defaultBranch: text('default_branch'),
+  },
+  (table) => entityConstraints('projects', table),
+);
+
+export const repositories = pgTable(
+  'repositories',
+  {
+    ...entityBase(),
+    name: text('name').notNull(),
+    projectKey: text('project_key'),
+    defaultBranch: text('default_branch'),
+  },
+  (table) => entityConstraints('repositories', table),
+);
+
+/**
+ * A Feature is a parent work item — the thing a manager calls "the work" —
+ * holding its Project and gathering child Tickets through `tickets.feature_key`.
+ */
+export const features = pgTable(
+  'features',
+  {
+    ...entityBase(),
+    projectKey: text('project_key').notNull(),
+    title: text('title').notNull(),
+    status: text('status'),
+    statusCategory: text('status_category'),
+  },
+  (table) => [...entityConstraints('features', table), index('features_org_project_idx').on(table.organizationId, table.projectKey)],
+);
+
+export const tickets = pgTable(
+  'tickets',
+  {
+    ...entityBase(),
+    projectKey: text('project_key').notNull(),
+    /** The parent Feature's natural key, or null for unparented work. */
+    featureKey: text('feature_key'),
+    itemKey: text('item_key').notNull(),
+    title: text('title').notNull(),
+    status: text('status').notNull(),
+    statusCategory: text('status_category').notNull(),
+    itemType: text('item_type').notNull(),
+    priority: text('priority'),
+    estimatePoints: doublePrecision('estimate_points'),
+    labels: jsonb('labels').$type<readonly string[]>().notNull(),
+    assigneeDeveloperKey: text('assignee_developer_key'),
+    reporterDeveloperKey: text('reporter_developer_key'),
+    sprintKey: text('sprint_key'),
+    /** The tracker's own blocked marker, carried through verbatim. */
+    flaggedBlocked: boolean('flagged_blocked').notNull(),
+    createdAt: instantColumn('created_at').notNull(),
+    resolvedAt: instantColumn('resolved_at'),
+  },
+  (table) => [
+    ...entityConstraints('tickets', table),
+    index('tickets_org_feature_idx').on(table.organizationId, table.featureKey),
+    index('tickets_org_sprint_idx').on(table.organizationId, table.sprintKey),
+  ],
+);
+
+export const sprints = pgTable(
+  'sprints',
+  {
+    ...entityBase(),
+    projectKey: text('project_key').notNull(),
+    name: text('name').notNull(),
+    goal: text('goal'),
+    state: text('state').notNull(),
+    startAt: instantColumn('start_at').notNull(),
+    endAt: instantColumn('end_at').notNull(),
+    completedAt: instantColumn('completed_at'),
+    committedItemKeys: jsonb('committed_item_keys').$type<readonly string[]>().notNull(),
+  },
+  (table) => entityConstraints('sprints', table),
+);
+
+export const pullRequests = pgTable(
+  'pull_requests',
+  {
+    ...entityBase(),
+    repositoryKey: text('repository_key').notNull(),
+    displayNumber: doublePrecision('display_number').notNull(),
+    title: text('title').notNull(),
+    state: text('state').notNull(),
+    authorDeveloperKey: text('author_developer_key'),
+    createdAt: instantColumn('created_at').notNull(),
+    mergedAt: instantColumn('merged_at'),
+    closedAt: instantColumn('closed_at'),
+    sourceBranch: text('source_branch').notNull(),
+    targetBranch: text('target_branch').notNull(),
+    headRevisionId: text('head_revision_id').notNull(),
+    mergeRevisionId: text('merge_revision_id'),
+    linkedItemKeys: jsonb('linked_item_keys').$type<readonly string[]>().notNull(),
+    requestedReviewerKeys: jsonb('requested_reviewer_keys').$type<readonly string[]>().notNull(),
+  },
+  (table) => entityConstraints('pull_requests', table),
+);
+
+export const reviews = pgTable(
+  'reviews',
+  {
+    ...entityBase(),
+    pullRequestKey: text('pull_request_key').notNull(),
+    reviewerDeveloperKey: text('reviewer_developer_key'),
+    verdict: text('verdict').notNull(),
+    submittedAt: instantColumn('submitted_at').notNull(),
+    commentCount: doublePrecision('comment_count').notNull(),
+  },
+  (table) => [
+    ...entityConstraints('reviews', table),
+    index('reviews_org_pull_request_idx').on(table.organizationId, table.pullRequestKey),
+  ],
+);
+
+export const commits = pgTable(
+  'commits',
+  {
+    ...entityBase(),
+    repositoryKey: text('repository_key').notNull(),
+    revisionId: text('revision_id').notNull(),
+    /** Null when no IdentityLink matched. Never a name-similarity guess. */
+    authorDeveloperKey: text('author_developer_key'),
+    /** Set when the author could not be resolved, so the work is still visible. */
+    unmatchedIdentityKey: text('unmatched_identity_key'),
+    authoredAt: instantColumn('authored_at').notNull(),
+    message: text('message').notNull(),
+    changedFileCount: doublePrecision('changed_file_count').notNull(),
+    branchName: text('branch_name'),
+    parentRevisionIds: jsonb('parent_revision_ids').$type<readonly string[]>().notNull(),
+    /** The ticket key named in the commit message, if any. Never inferred. */
+    ticketKey: text('ticket_key'),
+  },
+  (table) => [
+    ...entityConstraints('commits', table),
+    index('commits_org_author_idx').on(table.organizationId, table.authorDeveloperKey),
+  ],
+);
+
+export const branchRefs = pgTable(
+  'branch_refs',
+  {
+    ...entityBase(),
+    repositoryKey: text('repository_key').notNull(),
+    name: text('name').notNull(),
+    revisionId: text('revision_id').notNull(),
+    isDefault: boolean('is_default').notNull(),
+  },
+  (table) => entityConstraints('branch_refs', table),
+);
+
+export const releaseTags = pgTable(
+  'release_tags',
+  {
+    ...entityBase(),
+    repositoryKey: text('repository_key').notNull(),
+    name: text('name').notNull(),
+    revisionId: text('revision_id').notNull(),
+    releasedAt: instantColumn('released_at').notNull(),
+    description: text('description'),
+  },
+  (table) => entityConstraints('release_tags', table),
+);
+
+// ---------------------------------------------------------------------------
+// The four judgement families the report is made of.
+// ---------------------------------------------------------------------------
+
+/**
+ * The shape shared by Blocker, Risk, Recommendation and Win.
+ *
+ * `subject_kind` / `subject_key` point at the entity the judgement is about, and
+ * together with the cause they form the natural key — never the report id and
+ * never the run id. That is what makes the same condition on consecutive days one
+ * row with a growing `last_seen_at`, which is what "day 6" is counted from.
+ */
+const judgementColumns = () => ({
+  subjectKind: text('subject_kind').notNull(),
+  subjectKey: text('subject_key').notNull(),
+  teamKey: text('team_key'),
+  summary: text('summary').notNull(),
+  /** `open` or `resolved`. A resolved row is kept; history is never deleted. */
+  state: text('state').notNull(),
+  detectedAt: instantColumn('detected_at').notNull(),
+  resolvedAt: instantColumn('resolved_at'),
+  evidence: jsonb('evidence').$type<readonly Record<string, string>[]>().notNull(),
+});
+
+export const blockers = pgTable(
+  'blockers',
+  {
+    ...entityBase(),
+    ...judgementColumns(),
+    /** Why Compass believes it is blocked, e.g. `tracker_flag`. */
+    cause: text('cause').notNull(),
+  },
+  (table) => entityConstraints('blockers', table),
+);
+
+export const risks = pgTable(
+  'risks',
+  {
+    ...entityBase(),
+    ...judgementColumns(),
+    cause: text('cause').notNull(),
+    /** `low` | `medium` | `high`, carried as text so it is readable in psql. */
+    severity: text('severity').notNull(),
+  },
+  (table) => entityConstraints('risks', table),
+);
+
+export const recommendations = pgTable(
+  'recommendations',
+  {
+    ...entityBase(),
+    ...judgementColumns(),
+    cause: text('cause').notNull(),
+    /** The single action, written as an imperative sentence. */
+    action: text('action').notNull(),
+  },
+  (table) => entityConstraints('recommendations', table),
+);
+
+export const wins = pgTable(
+  'wins',
+  {
+    ...entityBase(),
+    ...judgementColumns(),
+    cause: text('cause').notNull(),
+  },
+  (table) => entityConstraints('wins', table),
+);
+
+// ---------------------------------------------------------------------------
+// The manager's own hand.
+// ---------------------------------------------------------------------------
+
+/**
+ * A Manager Memo as submitted. The closed five-kind extraction schema and its
+ * grounding validator arrive with `mvp-manager-memos`; this table holds the raw
+ * submission and the kind it was classified into, so the record of what a manager
+ * said is never lost to a later parser change.
+ */
+export const managerMemos = pgTable(
+  'manager_memos',
+  {
+    ...entityBase(),
+    authorUserId: uuid('author_user_id'),
+    submittedAt: instantColumn('submitted_at').notNull(),
+    rawText: text('raw_text').notNull(),
+    /** Null until extraction has run. Never guessed at ingest time. */
+    memoKind: text('memo_kind'),
+    status: text('status').notNull(),
+    extracted: jsonb('extracted'),
+  },
+  (table) => entityConstraints('manager_memos', table),
+);
+
+/**
+ * A manager's verdict on one report item, keyed by the item's stable id so the
+ * verdict survives the next report.
+ */
+export const feedbackEntries = pgTable(
+  'feedback_entries',
+  {
+    ...entityBase(),
+    reportItemStableId: text('report_item_stable_id').notNull(),
+    authorUserId: uuid('author_user_id'),
+    /** `useful` | `not_useful` | `dismissed` | `wrong`. */
+    verdict: text('verdict').notNull(),
+    note: text('note'),
+    submittedAt: instantColumn('submitted_at').notNull(),
+  },
+  (table) => [
+    ...entityConstraints('feedback_entries', table),
+    index('feedback_entries_org_item_idx').on(table.organizationId, table.reportItemStableId),
+  ],
+);

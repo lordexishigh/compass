@@ -1,21 +1,46 @@
 import { instantFromIso, timeWindow } from '@compass/clock';
 import { completeCoverage, unavailableCoverage } from '@compass/connector-port';
+import { is } from 'drizzle-orm';
+import { PgTable, getTableConfig } from 'drizzle-orm/pg-core';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import {
+  APPEND_ONLY_TABLE_NAMES,
+  AppendOnlyTableError,
+  NAMED_ENTITIES,
   ORGANIZATION_ID_COLUMN,
   ScopedDb,
+  appendEntityVersion,
+  corrections,
+  entityRowId,
+  entityTableName,
+  entityVersionRowId,
+  entityVersions,
   insertIngestRun,
   listRecentIngestRuns,
   orgScope,
   organizations,
+  schema,
+  sprintScopeChanges,
+  ticketStatusTransitions,
+  tickets,
   users,
 } from '@compass/db';
 
 import { createTestDatabase, type TestDatabase } from './helpers/pglite.js';
 
+/** Every declared table, paired with its name, for the schema-vs-migration check. */
+const SCHEMA_TABLES: readonly (readonly [string, PgTable])[] = Object.values(
+  schema as Record<string, unknown>,
+)
+  .filter((value): value is PgTable => is(value, PgTable))
+  .map((table) => [getTableConfig(table).name, table] as const)
+  .sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0));
+
 const ORG_A = '11111111-1111-4111-8111-111111111111';
 const ORG_B = '22222222-2222-4222-8222-222222222222';
+/** Its own tenant, so the append-only probe cannot collide with the two above. */
+const ORG_PROBE = '99999999-9999-4999-8999-999999999999';
 const at = (iso: string) => instantFromIso(iso);
 const asDate = (iso: string) => new Date(Date.parse(iso));
 
@@ -66,6 +91,111 @@ describe('pnpm db:migrate', () => {
       expect(columns.rows.length, `${tableName} has no ${ORGANIZATION_ID_COLUMN} column`).toBe(1);
       expect(columns.rows[0]?.is_nullable, `${tableName}.${ORGANIZATION_ID_COLUMN} must be NOT NULL`).toBe('NO');
     }
+  });
+
+  /**
+   * The drift tripwire.
+   *
+   * Everything else in this file checks the migrated database, and `schema.test.ts`
+   * checks the drizzle declarations, but nothing compared the two — so a column
+   * dropped from `src/schema/*.ts` and left behind in `drizzle/*.sql` typechecked,
+   * migrated, and then failed at runtime with a NOT NULL violation on the first
+   * INSERT. This asserts the two agree, in both directions, for every table.
+   */
+  it.each(SCHEMA_TABLES)('%s has exactly the columns the drizzle schema declares', async (name, table) => {
+    const found = await database.client.query<{ column_name: string }>(
+      `select column_name from information_schema.columns
+        where table_schema = 'public' and table_name = $1`,
+      [name],
+    );
+
+    const inDatabase = found.rows.map((row) => row.column_name).sort();
+    const declared = getTableConfig(table).columns.map((column) => column.name).sort();
+
+    expect(inDatabase, `${name} exists in the schema but not in the migration`).not.toEqual([]);
+    // One assertion rather than two set-differences: the diff vitest prints on
+    // failure names the offending column directly.
+    expect(inDatabase).toEqual(declared);
+  });
+
+  it('creates a natural-key uniqueness constraint for every entity table', async () => {
+    for (const definition of NAMED_ENTITIES) {
+      const table = entityTableName(definition.kind);
+      const found = await database.client.query<{ constraint_name: string }>(
+        `select constraint_name from information_schema.table_constraints
+          where table_schema = 'public' and table_name = $1 and constraint_type = 'UNIQUE'`,
+        [table],
+      );
+
+      expect(found.rows.map((row) => row.constraint_name), `${table} lost its natural-key constraint`).toContain(
+        `${table}_org_natural_key`,
+      );
+    }
+  });
+
+  it('refuses an UPDATE or a DELETE on every append-only table, in the database itself', async () => {
+    for (const table of APPEND_ONLY_TABLE_NAMES) {
+      await expect(
+        database.client.query(`update "${table}" set organization_id = organization_id`),
+        `${table} accepted an UPDATE`,
+      ).rejects.toThrow(/append-only/i);
+
+      await expect(
+        database.client.query(`delete from "${table}"`),
+        `${table} accepted a DELETE`,
+      ).rejects.toThrow(/append-only/i);
+
+      await expect(
+        database.client.query(`truncate table "${table}"`),
+        `${table} accepted a TRUNCATE`,
+      ).rejects.toThrow(/append-only/i);
+    }
+  });
+
+  it('still accepts an INSERT on those same tables — appending is the whole point', async () => {
+    const scoped = new ScopedDb(database.db, orgScope(ORG_PROBE));
+    await database.db
+      .insert(organizations)
+      .values({
+        id: ORG_PROBE,
+        organizationId: ORG_PROBE,
+        name: 'Append Only Probe',
+        slug: 'append-only-probe',
+        timezone: 'UTC',
+        createdAt: asDate('2026-07-01T00:00:00Z'),
+        updatedAt: asDate('2026-07-01T00:00:00Z'),
+      })
+      .onConflictDoNothing()
+      .execute();
+
+    await appendEntityVersion(scoped, {
+      id: entityVersionRowId(ORG_PROBE, 'ticket', 'DEV-1', 1),
+      entityKind: 'ticket',
+      entityNaturalKey: 'DEV-1',
+      entityId: entityRowId(ORG_PROBE, 'ticket', 'DEV-1'),
+      version: 1,
+      trackedFields: { status: 'Blocked' },
+      changedFields: ['status'],
+      observedAt: asDate('2026-07-30T08:15:00Z'),
+      evidenceSourceKey: 'primary-tracker',
+      evidenceSourceRecordId: 'issue-1',
+    });
+
+    const rows = await database.client.query<{ count: string }>(
+      'select count(*)::text as count from entity_versions',
+    );
+    expect(Number.parseInt(rows.rows[0]?.count ?? '0', 10)).toBe(1);
+  });
+
+  it('refuses the same mutation one layer up, so neither guard is the only one', () => {
+    const scoped = new ScopedDb(database.db, orgScope(ORG_PROBE));
+
+    expect(() => scoped.updateIn(entityVersions, { version: 2 })).toThrow(AppendOnlyTableError);
+    expect(() => scoped.deleteFrom(corrections)).toThrow(AppendOnlyTableError);
+    expect(() => scoped.updateIn(ticketStatusTransitions, { toStatus: 'Done' })).toThrow(AppendOnlyTableError);
+    expect(() => scoped.deleteFrom(sprintScopeChanges)).toThrow(AppendOnlyTableError);
+    // Entity rows are the current belief and are meant to move.
+    expect(() => scoped.updateIn(tickets, { status: 'Done' })).not.toThrow();
   });
 
   it('holds the tenant root to its own check constraint', async () => {

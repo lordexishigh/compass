@@ -8,6 +8,13 @@
       "when": 1785456620769,
       "tag": "0000_foundation_schema",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1785467763647,
+      "tag": "0001_knowledge_model",
+      "breakpoints": true
     }
   ]
 }

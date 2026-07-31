@@ -34,6 +34,24 @@ export class CrossOrgWriteError extends Error {
   }
 }
 
+/**
+ * Thrown when something tries to rewrite history.
+ *
+ * The elapsed facts the product is built on — "still blocked, day 6", "reported
+ * blocked yesterday, actually merged" — are only true if the record of what
+ * Compass believed yesterday is still there. An UPDATE on a history table would
+ * make every such sentence unfalsifiable, so it fails here rather than quietly
+ * succeeding. A matching database trigger refuses the same thing one layer down.
+ */
+export class AppendOnlyTableError extends Error {
+  constructor(tableName: string, operation: 'update' | 'delete') {
+    super(
+      `Table \`${tableName}\` is append-only: ${operation} is not permitted. Append a new row instead — history is what elapsed facts are computed from.`,
+    );
+    this.name = 'AppendOnlyTableError';
+  }
+}
+
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**

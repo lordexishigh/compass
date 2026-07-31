@@ -24,6 +24,7 @@
       "@compass/connector-port/testkit": ["packages/connector-port/src/testkit/index.ts"],
       "@compass/connector-port": ["packages/connector-port/src/index.ts"],
       "@compass/seed-connector": ["packages/seed-connector/src/index.ts"],
+      "@compass/db/testing": ["packages/db/src/testing/pglite.ts"],
       "@compass/db": ["packages/db/src/index.ts"],
       "@compass/knowledge-model": ["packages/knowledge-model/src/index.ts"],
       "@compass/ingest": ["packages/ingest/src/index.ts"],
