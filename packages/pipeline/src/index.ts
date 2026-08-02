@@ -35,6 +35,12 @@ export {
 } from './persist.js';
 
 export {
+  feedbackRecordFrom,
+  loadFeedbackLedger,
+  loadPriorReportState,
+} from './feedback-state.js';
+
+export {
   goalNodeInputsFromSnapshot,
   loadGoalHierarchyAt,
   objectiveLinkInputsFrom,

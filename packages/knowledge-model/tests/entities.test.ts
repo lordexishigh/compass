@@ -184,10 +184,12 @@ describe('every entity family', () => {
       const fields = Object.fromEntries(
         definition.trackedFields.map((field) => {
           if (definition.instantFields.includes(field)) {
-            // One instant for every instant column, with one exception: a memo's effective
-            // window is CHECK-constrained to cover at least one instant, so its end cannot be
-            // the same instant as its start the way every other pair here can be.
-            return [field, field === 'effectiveUntil' ? at('2026-06-16T12:34:56Z') : at('2026-06-15T12:34:56Z')];
+            // One instant for every instant column, with two exceptions. A memo's effective window
+            // and a snooze's end are both CHECK-constrained to cover at least one instant, so
+            // neither can be the same instant as its start the way every other pair here can be —
+            // a snooze that expired before it began would be a suppression that never suppressed.
+            const laterEnd = field === 'effectiveUntil' || field === 'snoozeUntil';
+            return [field, laterEnd ? at('2026-06-16T12:34:56Z') : at('2026-06-15T12:34:56Z')];
           }
           return [field, sampleFor(kind, field)];
         }),
@@ -344,7 +346,7 @@ describe('elapsed facts', () => {
 
 /** A representative value per column, keyed loosely so a new column still gets one. */
 function sampleFor(kind: string, field: string): string | number | boolean | null | readonly string[] | Record<string, unknown> {
-  if (/Count$|^displayNumber$|Points$|^version$/.test(field)) return 3;
+  if (/Count$|^displayNumber$|Points$|Score$|ScoreAtVerdict$|^version$/.test(field)) return 3;
   if (/^is[A-Z]|^active$|^flaggedBlocked$|^afterSprintStart$|^tracked$/.test(field)) return true;
   // ISO weekday numbers, so a `working_calendar` probe carries the shape the reader
   // narrows rather than a string a jsonb column would happily accept and nothing would
@@ -375,6 +377,19 @@ function sampleFor(kind: string, field: string): string | number | boolean | nul
   if (field === 'subjectCandidates') {
     return [{ subjectKind: 'developer', subjectKey: 'beta', label: 'Beta', reason: 'probe' }] as never;
   }
+
+  // ---- feedback: the columns the database constrains ---------------------------
+  //
+  // The same reasoning as the memo above. `action` is CHECK-constrained to the closed six, and it
+  // is `snooze` here rather than any of the others because a second constraint pairs it with the
+  // end date: `snooze_until IS NOT NULL` must equal `action = 'snooze'`, and `snoozeUntil` is an
+  // instant column that the probe fills automatically. Claiming `dismiss_risk` with an end date
+  // would be a snooze wearing a dismissal's name, which is exactly what that constraint refuses.
+  if (field === 'action') return 'snooze';
+  // Nullable, and a uuid: a generic `feedback.reportId` string would not parse as one. Null is also
+  // the honest value — feedback outlives the report it was given on, so the column is not a
+  // foreign key and a probe row belongs to no report.
+  if (field === 'reportId') return null;
 
   return `${kind}.${field}`;
 }

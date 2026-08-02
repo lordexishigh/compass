@@ -229,7 +229,7 @@ describe('the scoped-query layer has no unscoped door', () => {
    *
    * Most synchronous helpers here *are* scoped — the id derivations take
    * `organizationId` first, because an id not namespaced by the tenant would collide
-   * across them. These four take nothing, and each has a reason that has to survive
+   * across them. These five take nothing, and each has a reason that has to survive
    * being written down:
    *
    *  - `normalizeEmail(email)` — lower-cases and trims a string.
@@ -237,8 +237,12 @@ describe('the scoped-query layer has no unscoped door', () => {
    *  - `scopeLinkKey(nodeId, kind, key)` — joins three strings with `|`.
    *  - `narrationTraceRowId(reportId, …)` — namespaced by the report id, which is itself
    *    derived from `(organizationId, scope, instant)`, so the tenant is already in it.
+   *  - `feedbackNaturalKey({action, cause…})` — a natural key, and a natural key is by
+   *    definition the part of an identity that is *not* the tenant. `recordItemFeedback`
+   *    passes it through `entityRowId(scoped.organizationId, …)`, which is where the tenant
+   *    enters, exactly as every other entity's natural key works.
    *
-   * Enumerated rather than pattern-matched, so a fifth one is a visible edit here.
+   * Enumerated rather than pattern-matched, so a sixth one is a visible edit here.
    */
   it('names every function that takes no organization at all', () => {
     const unscoped = EVERY_EXPORTED_FUNCTION.filter(
@@ -251,6 +255,7 @@ describe('the scoped-query layer has no unscoped door', () => {
     expect(unscoped.map((entry) => `${entry.file}:${entry.name}`).sort()).toEqual([
       'auth.ts:normalizeEmail',
       'entity-rows.ts:tableNameOf',
+      'feedback.ts:feedbackNaturalKey',
       'goals.ts:scopeLinkKey',
       'narration.ts:narrationTraceRowId',
     ]);

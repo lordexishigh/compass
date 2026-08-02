@@ -9,10 +9,13 @@ import {
   compareStable,
   detectYesterdayItems,
   entitiesOfKind,
+  entityRef,
   indexCommitGraph,
   instantField,
+  isStableItemId,
   resolveScope,
   scopedPullRequests,
+  stableItemId,
   textField,
   windowContains,
   type AnalysisSnapshot,
@@ -155,8 +158,20 @@ describe('ordering is stable and documented', () => {
   });
 
   it('gives every item a stable id derived from the unit of work alone', () => {
+    // Asserted through the shared derivation rather than against a string template. That is the
+    // stronger statement: it proves the detector mints its id via `stableItemId` — the one place an
+    // item id comes from, and the one every feedback action is keyed on — rather than that it
+    // happens to build a string of the same shape. Two identity schemes, with feedback recorded
+    // against one and items rendered under the other, is exactly the failure this replaced.
     for (const item of items) {
-      expect(item.stableId).toBe(`yesterday:${item.unitOfWork}`);
+      expect(item.stableId).toBe(
+        stableItemId({
+          organizationId: checkout.organizationId,
+          entityRef: entityRef('unit_of_work', item.unitOfWork),
+          causeKind: 'completed',
+        }),
+      );
+      expect(isStableItemId(item.stableId)).toBe(true);
     }
     expect(new Set(items.map((item) => item.stableId)).size).toBe(items.length);
   });

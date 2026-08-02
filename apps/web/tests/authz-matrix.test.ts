@@ -116,6 +116,28 @@ const EXPECTED: Readonly<Record<string, Partial<Record<Action, readonly Principa
   '/api/share/[token]': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
 
   /**
+   * Feedback, and why two of the three are `public` at the matrix level.
+   *
+   * `/api/feedback` is the web view's own POST, so it is owner and manager: a viewer reads the
+   * daily and does not get to change what tomorrow's says. `member` is excluded for the same
+   * reason it is excluded from the goal hierarchy — a verdict on a finding is a management act.
+   *
+   * The other two arrive from clients with **no cookies to send** — a mail client following a
+   * link, Slack posting an interaction — so requiring a session here would mean the feature could
+   * not exist. They are authorised inside the handler by something *narrower* than a session: a
+   * signed token scoped to exactly one item and one action, or Slack's v0 signature plus a stored
+   * (Slack user → seat) mapping the role matrix then approves. Neither can read a report, and
+   * neither establishes a session — `feedback-routes.test.ts` asserts the absence of `Set-Cookie`
+   * on the link route directly, because that is the convenience somebody adds later in good faith.
+   */
+  '/api/feedback': { POST: ['owner', 'manager'] },
+  '/api/feedback/link/[token]': {
+    GET: ['public', 'owner', 'manager', 'member', 'viewer'],
+    POST: ['public', 'owner', 'manager', 'member', 'viewer'],
+  },
+  '/api/slack/actions': { POST: ['public', 'owner', 'manager', 'member', 'viewer'] },
+
+  /**
    * Configuration and the identity roster: owner *and* manager on every verb.
    *
    * Restated here as intent rather than copied as fact. The widening to managers is
@@ -142,6 +164,10 @@ const EXPECTED: Readonly<Record<string, Partial<Record<Action, readonly Principa
   '/account/reset': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
   '/seats': { GET: ['owner', 'manager'] },
   '/roster': { GET: ['owner', 'manager'] },
+  // What a manager has told Compass to stop saying. Owner and manager, exactly like the roster:
+  // a suppression a manager cannot find is indistinguishable from a detector that broke, so the
+  // people whose verdicts these are must be able to read them back.
+  '/corrections': { GET: ['owner', 'manager'] },
 };
 
 /**
@@ -407,6 +433,12 @@ describe('team scoping', () => {
   it('only applies the scope check to routes that are about one team', () => {
     const teamScoped = ROLE_MATRIX.filter((rule) => rule.teamScoped === true).map((rule) => rule.route);
 
-    expect(teamScoped).toEqual(['/api/reports/[teamKey]']);
+    // Enumerated, so adding a team-scoped route is a visible edit here rather than a quiet widening.
+    //
+    // `/api/feedback` is one because a verdict is about a *finding in one team's report*: a manager
+    // scoped to `platform` must not be able to dismiss a risk on the checkout team's report, and the
+    // scope check is the only thing that stops them. It is also why the Slack handler asks this same
+    // matrix with this same route rather than deciding for itself.
+    expect(teamScoped).toEqual(['/api/reports/[teamKey]', '/api/feedback']);
   });
 });

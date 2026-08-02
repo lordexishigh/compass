@@ -10,6 +10,7 @@ import {
   describeSuppression,
   type SuppressionNote,
 } from './absence-suppression.js';
+import { entityRef, stableItemId } from './identity.js';
 import { compareNumbers, compareStable, wholeDaysBetween, workingDaysBetween, type Instant } from './instant.js';
 import { changesRequestedCycles, isOpenPullRequest, latestReview } from './review-queue.js';
 import {
@@ -238,7 +239,11 @@ function detectTrackerBlockers(
       const owner = textField(ticket, 'assigneeDeveloperKey');
 
       return {
-        stableId: `blocker:ticket:${key}:${signal}`,
+        stableId: stableItemId({
+          organizationId: snapshot.organizationId,
+          entityRef: entityRef('ticket', key),
+          causeKind: signal,
+        }),
         signal,
         threshold: thresholdRef('T0'),
         measured: { value: ageDays, unit: 'days' as const },
@@ -289,7 +294,11 @@ function detectStatusDwell(
 
     const owner = textField(ticket, 'assigneeDeveloperKey');
     found.push({
-      stableId: `blocker:ticket:${key}:status_dwell`,
+      stableId: stableItemId({
+        organizationId: snapshot.organizationId,
+        entityRef: entityRef('ticket', key),
+        causeKind: 'status_dwell',
+      }),
       signal: 'status_dwell',
       threshold: thresholdRef('T1'),
       measured: { value: dwellWorkingDays, unit: 'working_days' },
@@ -331,7 +340,11 @@ function detectReviewBlockers(
       const waiting = workingDaysBetween(createdAt, instant);
       if (waiting >= THRESHOLDS.T2.value) {
         found.push({
-          stableId: `blocker:pull_request:${pullRequest.naturalKey}:no_reviewer`,
+          stableId: stableItemId({
+            organizationId: snapshot.organizationId,
+            entityRef: entityRef('pull_request', pullRequest.naturalKey),
+            causeKind: 'no_reviewer',
+          }),
           signal: 'no_reviewer',
           threshold: thresholdRef('T2'),
           measured: { value: waiting, unit: 'working_days' },
@@ -357,7 +370,11 @@ function detectReviewBlockers(
           .map((key) => developerName(snapshot, key) ?? key)
           .join(', ');
         found.push({
-          stableId: `blocker:pull_request:${pullRequest.naturalKey}:awaiting_first_review`,
+          stableId: stableItemId({
+            organizationId: snapshot.organizationId,
+            entityRef: entityRef('pull_request', pullRequest.naturalKey),
+            causeKind: 'awaiting_first_review',
+          }),
           signal: 'awaiting_first_review',
           threshold: thresholdRef('T4'),
           measured: { value: waiting, unit: 'working_days' },
@@ -378,7 +395,11 @@ function detectReviewBlockers(
       const stalled = workingDaysBetween(last.at, instant);
       if (stalled >= THRESHOLDS.T3.value) {
         found.push({
-          stableId: `blocker:pull_request:${pullRequest.naturalKey}:changes_requested_stalled`,
+          stableId: stableItemId({
+            organizationId: snapshot.organizationId,
+            entityRef: entityRef('pull_request', pullRequest.naturalKey),
+            causeKind: 'changes_requested_stalled',
+          }),
           signal: 'changes_requested_stalled',
           threshold: thresholdRef('T3'),
           measured: { value: stalled, unit: 'working_days' },

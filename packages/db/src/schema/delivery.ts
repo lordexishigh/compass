@@ -1,4 +1,15 @@
-import { boolean, index, integer, pgEnum, pgTable, text, unique, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  index,
+  integer,
+  pgEnum,
+  pgTable,
+  primaryKey,
+  text,
+  unique,
+  uniqueIndex,
+  uuid,
+} from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
 import { instantColumn, organizationId, recordTimestamps } from './columns.js';
@@ -86,6 +97,17 @@ export const subscriptions = pgTable(
     channel: deliveryChannel('channel').notNull(),
     /** Email address, Slack user id for a DM, or `#channel`. */
     target: text('target').notNull(),
+    /**
+     * The Slack user this subscriber *is* — the mapping an interactive action is authorized by.
+     *
+     * `target` cannot serve: a Slack subscription usually targets a channel, and a channel is
+     * not a person. When a manager clicks a feedback button, Slack sends the acting user's id and
+     * nothing else, so Compass needs a stored (slack user id → Compass user) pair before it will
+     * mutate anything. Null means "not mapped", which is refused with an ephemeral reply rather
+     * than guessed at — an unmapped click that silently dismissed somebody else's risk would be
+     * the worst possible outcome of a convenience feature.
+     */
+    slackUserId: text('slack_user_id'),
     scope: deliveryScope('scope').notNull(),
     /** `HH:MM`, 24-hour, in `timezone`. Never a UTC time. */
     sendTime: text('send_time').notNull(),
@@ -268,5 +290,43 @@ export const shareLinkAccess = pgTable(
   (table) => [
     index('share_link_access_org_link_idx').on(table.organizationId, table.shareLinkId),
     index('share_link_access_org_accessed_idx').on(table.organizationId, table.accessedAt),
+  ],
+);
+
+/**
+ * One row per consumed email feedback link — what makes a state-changing link single-use.
+ *
+ * ## Why single-use needs a table
+ *
+ * A signed link is a bearer capability with a 30-day life, and it lands in an inbox, in a mail
+ * client's prefetch cache, in a corporate scanner and in a forwarded thread. Without this table,
+ * "dismiss this risk" would be replayable by anything that ever saw the URL, for a month.
+ *
+ * The row is the token's **digest**, never the token: the same rule `auth_tokens`, `share_links`
+ * and `subscriptions` follow, so a stolen backup yields nothing usable. The primary key is
+ * `(organization_id, token_digest)` and the insert is a plain insert, so the *database* is what
+ * refuses the second click — a read-then-write check would let two concurrent prefetches both
+ * pass.
+ *
+ * Read-only feedback links are not recorded here and stay replayable, deliberately: a link that
+ * only *shows* something has nothing to spend, and burning it on a mail scanner's prefetch would
+ * mean the manager's own click landed on an error page.
+ */
+export const feedbackLinkUses = pgTable(
+  'feedback_link_uses',
+  {
+    organizationId: organizationId().references(() => organizations.id),
+    /** SHA-256 hex of the signed token. The token itself is never stored. */
+    tokenDigest: text('token_digest').notNull(),
+    /** The item and action the token was scoped to, for the audit trail. */
+    reportItemStableId: text('report_item_stable_id').notNull(),
+    action: text('action').notNull(),
+    usedAt: instantColumn('used_at').notNull(),
+  },
+  (table) => [
+    primaryKey({
+      name: 'feedback_link_uses_pkey',
+      columns: [table.organizationId, table.tokenDigest],
+    }),
   ],
 );

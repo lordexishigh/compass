@@ -73,6 +73,11 @@ describe('the pipeline runs the layers in order', () => {
       // manager's edit — which lives only in the store — is what the next report
       // resolves against.
       'sync-goals',
+      // The prior report for this scope and the manager's feedback ledger, loaded together and
+      // immediately before the analysis that is *told* about them. The analysis core reads no
+      // database, so change-awareness and suppression cannot be queries it makes; they have to be
+      // values handed in, and this is the stage that turns rows into those values.
+      'load-change-history',
       'analyse',
       'render',
       // Narration runs *after* the deterministic render, so the document a manager

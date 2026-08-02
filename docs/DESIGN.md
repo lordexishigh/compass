@@ -58,6 +58,96 @@ These are the distinctive, repeatable elements that make this product recognisab
 
 Motion exists to preserve identity and to acknowledge input, nothing else. Standard transition is 180ms cubic-bezier(0.2, 0, 0, 1); 150ms for hover and focus, 240ms for the evidence gutter and bottom sheet, which slide 8px and fade rather than scaling. Sections streaming in during generation fade up 6px, staggered 40ms in fixed order. The one expressive moment is the time-travel scrubber: as 'now' steps, items with a persisting stable ID translate to their new position over 220ms and cross-fade only their changed clause, so continuity is visually asserted; items that genuinely appear or leave fade over 160ms without movement. Feedback actions animate the item to 60% opacity with a strikethrough hairline over 180ms before it settles into its dismissed state, giving an undo window. No parallax, no looping shimmer, no animated numbers counting up, no gradient movement. All of it respects prefers-reduced-motion by collapsing to opacity-only transitions at 120ms.
 
+## Change-awareness, feedback and the material-worsening threshold
+
+Nothing in a report repeats unchanged, and everything that makes that true rests on one number
+plus one derivation.
+
+### The stable item id
+
+Every item id is derived from **(organization, entity ref, cause kind, cause discriminator)** and
+from nothing else — no report id, no run id, no instant, no counter. `packages/analysis/src/identity.ts`
+is the only place it is computed; `tools/quality-gates/tests/item-identity.test.ts` fails the build
+if a detector writes its own. Ids are prefixed `v1:`, so a deliberate org-wide identity reset is one
+line and is *visible*.
+
+Feedback is recorded against the three coordinates, never against the derived digest, so a version
+bump does not orphan a manager's dismissals.
+
+### The five change tags
+
+Every item carries exactly one, computed against the prior report for that scope:
+
+| tag | meaning |
+| --- | --- |
+| `new` | no item with this id was in the prior report |
+| `unchanged` | present before at the same severity score — rendered with its age in days from `first_seen_at` |
+| `worsened` / `improved` | present before, severity score risen / fallen |
+| `resolved` | a completion (a Yesterday line, a Win); intrinsic, never overwritten |
+
+Movement leads: a section lists what moved before what carried over. When every item is `unchanged`
+and nothing departed, the report states **"Nothing material changed since yesterday."** rather than
+re-listing yesterday's items as though they were news.
+
+The comparison uses one ordered quantity per item, `severityScore`, and **higher is always worse** —
+which is why a sprint at 62% complete scores 38. A per-family direction flag would be a rule every
+consumer has to honour, and the first one that did not would report an improving sprint as worsening.
+
+### The material-worsening threshold: **100 severity points**
+
+`MATERIAL_WORSENING_DELTA = 100`, in `packages/analysis/src/feedback.ts`. A dismissed risk stays
+dismissed **indefinitely**; it returns only when its severity score has risen by at least this much
+since the moment of dismissal, and when it returns it carries a sentence naming what worsened and by
+how much.
+
+A risk's severity score is `band + excess`, where the band is `low 100 / medium 200 / high 300` and
+the excess is how far past its own threshold the measurement sits, as a percentage capped at 99
+(`riskSeverityScore` in `packages/analysis/src/risks.ts`). So 100 points is exactly **one whole
+severity band**, or an equivalent doubling of the measurement against the threshold that made it a
+risk at all.
+
+That is the smallest change a manager could not reasonably have anticipated when they dismissed it.
+A review queue one day over T5 that is now two days over is the same finding, and telling them again
+is the nagging this rule exists to prevent; a queue that has gone from medium to high is a different
+fact about their sprint. `packages/analysis/tests/feedback.test.ts` imports the constant rather than
+restating the number, so the threshold cannot be changed in one place only.
+
+### The six feedback actions
+
+| action | effect on future reports |
+| --- | --- |
+| `reject_recommendation` | never suggested again for that entity and cause. Permanent. |
+| `accept_recommendation` | rendered as accepted with its date, not re-suggested — until the condition lapses and returns |
+| `blocker_already_resolved` | omitted until the condition *re-onsets*, which is a new triggering signal |
+| `dismiss_risk` | suppressed indefinitely unless severity worsens by 100 points |
+| `off_goal_flag_wrong` | suppressed permanently, and a Correction row records the manager's verdict against Compass's |
+| `snooze` | suppressed until the injected clock passes the snooze end, then rendered again |
+
+Records are evaluated newest-first and the first one with something to say wins, so a dismissal
+under a lapsed snooze still holds. Suppression is applied **once**, over the assembled sections
+(`applyFeedback`), never inside the five producers — and `findings` keeps everything, because the
+audit trail a manager argues with has to contain the thing they dismissed.
+
+Nothing disappears silently: every suppression becomes a row on `/corrections`, with the reason in
+the manager's own words. A suppression a manager cannot find is indistinguishable from a detector
+that broke.
+
+### Feedback is one click from all three channels
+
+- **Web** — a teal verb under each actionable claim, posting to `/api/feedback`. Teal because it is
+  the manager's own authorship; emerald means verified positive fact, and dismissing a risk is not a
+  win.
+- **Email** — a signed link scoped to one item and one action, expiring after 30 days
+  (`FEEDBACK_LINK_TTL_DAYS`), single-use for anything that changes state, and it never establishes a
+  session. With no `COMPASS_FEEDBACK_LINK_SECRET` the email carries no action links at all rather
+  than links signed under a default key.
+- **Slack** — Block Kit buttons, verified by the v0 signature inside a five-minute timestamp window
+  over the *raw* body, then mapped from the Slack user to a Compass seat the role matrix permits. An
+  unmapped or unauthorized click gets an ephemeral "you don't have access" and mutates nothing.
+
+The *set* of actions an item offers is decided once, in `feedbackOffersFor`, so the three channels
+cannot disagree about what a manager may say about a given finding.
+
 ## Craft references
 
 - Stripe annual letter / Stripe Press — serif prose set with authority, data inline and typographically disciplined

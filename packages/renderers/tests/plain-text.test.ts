@@ -4,6 +4,8 @@ import { describe, expect, it } from 'vitest';
 
 import { renderCoverageLine, renderPlainTextReport } from '@compass/renderers';
 
+import { fixtureItem } from './helpers/reports.js';
+
 const base = (): StructuredReport =>
   createEmptyStructuredReport({
     organizationId: '11111111-1111-4111-8111-111111111111',
@@ -26,7 +28,7 @@ const withItem = (): StructuredReport => {
         ? {
             ...section,
             items: [
-              {
+              fixtureItem({
                 stableId: 'yesterday:DEV-501:merged',
                 headline: 'DEV-501 merged as #883',
                 detail: 'Priya Raman merged the batch writer at 11:41.',
@@ -36,7 +38,7 @@ const withItem = (): StructuredReport => {
                   { kind: 'issue' as const, label: 'DEV-501', sourceKey: 'primary-tracker', sourceRecordId: 'issue-1' },
                   { kind: 'pull_request' as const, label: '#883', sourceKey: 'primary-code', sourceRecordId: 'pr-883' },
                 ],
-              },
+              }),
             ],
           }
         : section,

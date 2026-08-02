@@ -1,8 +1,9 @@
 import {
-  PROGRESS_ITEM_IDS,
+  PROGRESS_CAUSE_KINDS,
   createEmptyStructuredReport,
   thresholdRef,
   type Instant,
+  type ItemCause,
   type ReportItem,
   type SectionKey,
   type StructuredReport,
@@ -33,6 +34,39 @@ export const RAW_BRANCH_NAME = 'feature/PLAT-742-rebase-of-PLAT-742';
 
 /** A goal title the semantic tier compared against. Also raw text. */
 export const RAW_COMPARED_GOAL = 'Migrate every merchant off the legacy billing client';
+
+/** Six days before the report instant, so a carried-over item has a plausible age. */
+export const FIRST_SEEN_AT: Instant = instantFromIso('2026-07-25T08:12:00Z');
+
+/**
+ * One fixture item, with the change-awareness fields filled in.
+ *
+ * A builder, so the narration payload projection is exercised against items shaped exactly as the
+ * analysis core emits them. cause matters here for the same reason searchedText does: the
+ * payload is a field-by-field projection, and a fixture missing a field cannot prove the projection
+ * drops or keeps it.
+ */
+export function fixtureItem(
+  spec: Omit<ReportItem, 'cause' | 'firstSeenAt' | 'severityScore' | 'signalOnsetAt'> & {
+    readonly cause?: ItemCause;
+    readonly severityScore?: number;
+  },
+): ReportItem {
+  return {
+    firstSeenAt: FIRST_SEEN_AT,
+    severityScore: spec.severityScore ?? 0,
+    signalOnsetAt: FIRST_SEEN_AT,
+    cause: spec.cause ?? { entityRef: `fixture:${spec.stableId}`, causeKind: 'fixture', causeDiscriminator: '' },
+    ...spec,
+  };
+}
+
+/** The cause of one Progress figure, which is what the renderer keys its clause on. */
+const progressCause = (causeKind: string, entityKey = 'process'): ItemCause => ({
+  entityRef: `progress:${entityKey}`,
+  causeKind,
+  causeDiscriminator: '',
+});
 
 export function emptyReport(): StructuredReport {
   return createEmptyStructuredReport({
@@ -65,7 +99,7 @@ export function withItems(
 export function fullReport(): StructuredReport {
   const base = emptyReport();
 
-  const yesterdayItem: ReportItem = {
+  const yesterdayItem: ReportItem = fixtureItem({
     stableId: 'yesterday:DEV-501:merged',
     headline: 'DEV-501 merged as #883, the batch writer',
     detail: 'Reached R2 merged.',
@@ -114,18 +148,19 @@ export function fullReport(): StructuredReport {
       deploySignalAvailable: false,
       rungSuffix: 'merged, not yet released',
     },
-  };
+  });
 
-  const sprintItem: ReportItem = {
-    stableId: PROGRESS_ITEM_IDS.sprint('primary-tracker:sprint-43'),
+  const sprintItem: ReportItem = fixtureItem({
+    stableId: 'v1:0000000000000001',
+    cause: progressCause(PROGRESS_CAUSE_KINDS.sprint, 'primary-tracker:sprint-43'),
     headline: 'Sprint 43 is 62% complete, 24 of 39 points',
     detail: '32 items were committed at the start and 4 were added since.',
     changeTag: 'unchanged',
     ageDays: 6,
     evidence: [{ kind: 'sprint', label: 'Sprint 43', sourceKey: 'primary-tracker', sourceRecordId: 'sprint-43' }],
-  };
+  });
 
-  const blockerItem: ReportItem = {
+  const blockerItem: ReportItem = fixtureItem({
     stableId: 'blocker:ticket:CHK-701:no_movement',
     headline: 'CHK-701 has not moved in 6 working days',
     detail: 'Last transition to In Progress on 2026-07-21.',
@@ -133,10 +168,10 @@ export function fullReport(): StructuredReport {
     ageDays: 6,
     changeClause: 'reviewer added, age unchanged',
     evidence: [{ kind: 'issue', label: 'CHK-701', sourceKey: 'primary-tracker', sourceRecordId: 'issue-701' }],
-  };
+  });
 
   /** The item whose alignment evidence holds the raw commit message. */
-  const riskItem: ReportItem = {
+  const riskItem: ReportItem = fixtureItem({
     stableId: 'alignment:off_goal:OBJ-Q2-BILL',
     headline: 'OFF-GOAL — 1 commit serves OBJ-Q2-BILL, which is not a current objective',
     detail: 'PLAT-742 matches OBJ-Q2-BILL more closely than the chain it sits on.',
@@ -166,9 +201,9 @@ export function fullReport(): StructuredReport {
         searchedText: RAW_COMMIT_MESSAGE,
       },
     },
-  };
+  });
 
-  const recommendationItem: ReportItem = {
+  const recommendationItem: ReportItem = fixtureItem({
     stableId: 'recommendation:review:CHK-701',
     headline: 'Priya Raman: ask Dev Patel to review #883 today',
     detail: 'It has been open 6 days with no first review.',
@@ -176,16 +211,16 @@ export function fullReport(): StructuredReport {
     ageDays: 0,
     changeClause: 'today',
     evidence: [{ kind: 'pull_request', label: '#883', sourceKey: 'primary-code', sourceRecordId: 'pr-883' }],
-  };
+  });
 
-  const winItem: ReportItem = {
+  const winItem: ReportItem = fixtureItem({
     stableId: 'win:ticket:DEV-501',
     headline: 'DEV-501 landed the batch writer, 8 points',
     detail: 'Merged on 2026-07-30.',
     changeTag: 'resolved',
     ageDays: 1,
     evidence: [{ kind: 'issue', label: 'DEV-501', sourceKey: 'primary-tracker', sourceRecordId: 'issue-1' }],
-  };
+  });
 
   const report = withItems(base, {
     yesterday: [yesterdayItem],

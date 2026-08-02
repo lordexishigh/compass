@@ -116,6 +116,30 @@ export interface TeamCadence {
  * late, rather than skipped forever. A replay costs nothing because the instant — and therefore the
  * row — is the same.
  */
+/**
+ * A team's generation time, or null when it cannot be scheduled.
+ *
+ * The single place the guard lives, so the team loop and the merged-report branch cannot disagree
+ * about what a valid cadence is. An absent value falls back to the default; a *malformed* one does
+ * not, because the two mean different things: nothing configured is the ordinary case, and a
+ * configured value that is not `HH:MM` is somebody's mistake that a silent fallback would hide.
+ */
+export function schedulableGenerationTime(team: TeamCadence): string | null {
+  const generationTime = team.generationTime ?? DEFAULT_GENERATION_LOCAL_TIME;
+  return LOCAL_TIME_PATTERN.test(generationTime) ? generationTime : null;
+}
+
+/** The first team whose cadence can actually be scheduled — the merged report's clock. */
+export function firstSchedulableTeam(
+  teams: readonly TeamCadence[],
+): { readonly team: TeamCadence; readonly generationTime: string } | null {
+  for (const team of teams) {
+    const generationTime = schedulableGenerationTime(team);
+    if (generationTime !== null) return { team, generationTime };
+  }
+  return null;
+}
+
 export function generationJobsDue(
   teams: readonly TeamCadence[],
   now: Instant,
@@ -126,8 +150,8 @@ export function generationJobsDue(
   const due: GeneratePayload[] = [];
 
   for (const team of teams) {
-    const generationTime = team.generationTime ?? DEFAULT_GENERATION_LOCAL_TIME;
-    if (!LOCAL_TIME_PATTERN.test(generationTime)) continue;
+    const generationTime = schedulableGenerationTime(team);
+    if (generationTime === null) continue;
 
     const today = formatCivilDate(now, team.timezone);
 
@@ -147,11 +171,24 @@ export function generationJobsDue(
     }
   }
 
-  // The merged report, once, on the first team's zone and cadence. It is one report about every
-  // team, so it cannot have a zone of its own; using the first team's keeps it deterministic.
-  const first = teams[0];
-  if (options.mergedReport === true && first !== undefined) {
-    const generationTime = first.generationTime ?? DEFAULT_GENERATION_LOCAL_TIME;
+  /**
+   * The merged report, once, on the first *schedulable* team's zone and cadence.
+   *
+   * It is one report about every team, so it cannot have a zone of its own; borrowing a team's keeps
+   * it deterministic. "First schedulable" rather than "first" is the fix for a real bug: this branch
+   * used to read `first.generationTime` without the guard the team loop applies, so a malformed
+   * configured value flowed straight into a payload that `GeneratePayloadSchema` then rejected — the
+   * merged report burned all five attempts on `InvalidGenerationPayloadError` instead of being
+   * generated, and the team loop had already skipped that same team silently.
+   *
+   * Deriving from the first team that *is* schedulable keeps one rule for both branches: a malformed
+   * cadence disqualifies that team from being the merged report's clock, exactly as it disqualifies
+   * its own report, and the merged report still goes out on the next team's cadence. With no
+   * schedulable team at all there is nothing to merge, so nothing is enqueued.
+   */
+  const mergedClock = options.mergedReport === true ? firstSchedulableTeam(teams) : null;
+  if (mergedClock !== null) {
+    const { team: first, generationTime } = mergedClock;
     const today = formatCivilDate(now, first.timezone);
 
     for (let back = lookback; back >= 0; back -= 1) {

@@ -93,6 +93,22 @@ export function ReportDocument({ view }: { readonly view: ReportView }) {
           <NarrationFallbackNote view={view} />
 
           <FreshnessPanel freshness={view.freshness} />
+
+          {/*
+            What moved since the previous report — the last thing in the masthead and the first
+            sentence of the read. Set in the body serif rather than as a note, because on a quiet
+            morning "Nothing material changed since yesterday" *is* the report: a manager who has
+            that sentence in the first screenful does not scroll six sections to discover it, and a
+            page that made them do so would be re-listing yesterday's three blockers in yesterday's
+            voice — the failure the whole change-awareness pass exists to prevent.
+
+            Empty means the report predates change-awareness. Rendered as nothing rather than as
+            "nothing changed": those are different facts, and Compass does not state the second when
+            it only knows the first.
+          */}
+          {view.changeLine.length > 0 && (
+            <p className="prose-narration mt-6 text-[17px] text-ink-strong">{view.changeLine}</p>
+          )}
         </header>
 
         <div className="mt-10 space-y-10">

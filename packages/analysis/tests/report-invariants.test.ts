@@ -51,10 +51,16 @@ const EVIDENCE: EvidenceRef = {
 
 const item = (overrides: Partial<ReportItem> = {}): ReportItem => ({
   stableId: 'blocker:ticket:DEV-522:tracker_flag',
+  cause: { entityRef: 'ticket:DEV-522', causeKind: 'tracker_flag', causeDiscriminator: '' },
   headline: 'DEV-522 is blocked, day 6',
   detail: 'The tracker said so.',
   changeTag: 'unchanged',
   ageDays: 6,
+  // Six days before `AT.instant`: the age the day sigil prints is counted from here, and a zero
+  // would render as day 20,000 rather than failing an assertion anybody would notice.
+  firstSeenAt: instantFromIso('2026-07-25T07:30:00Z'),
+  severityScore: 0,
+  signalOnsetAt: instantFromIso('2026-07-25T07:30:00Z'),
   evidence: [EVIDENCE],
   ...overrides,
 });
@@ -65,9 +71,18 @@ const AT = {
   windowEnd: instantFromIso('2026-07-30T23:00:00Z'),
 } as const;
 
+/**
+ * The tenant every derived item id is scoped to.
+ *
+ * `offGoalVerdict` takes it because a stable item id is derived from the organization as well as
+ * the condition — two tenants with the same off-goal objective are two different items, and one
+ * manager's dismissal must not suppress the other's.
+ */
+const ORGANIZATION = '00000000-0000-4000-8000-000000000001';
+
 const emptyReport = (): StructuredReport =>
   createEmptyStructuredReport({
-    organizationId: '00000000-0000-4000-8000-000000000001',
+    organizationId: ORGANIZATION,
     scope: { kind: 'team', teamKey: 'platform' },
     instant: AT.instant,
     timezone: 'Europe/London',
@@ -273,7 +288,7 @@ describe('no low-confidence or unattributed input can produce an OFF-GOAL label'
     overrides: Partial<OffGoalCandidate>,
     isCurrent: boolean | null = false,
   ): AlignmentVerdict | null =>
-    offGoalVerdict(candidate(overrides), SUBJECTS, REFS, 0, 'semantic', isCurrent);
+    offGoalVerdict(ORGANIZATION, candidate(overrides), SUBJECTS, REFS, 0, 'semantic', isCurrent);
 
   /**
    * Every confidence at or below the threshold, plus the values that are not
@@ -377,7 +392,7 @@ describe('no low-confidence or unattributed input can produce an OFF-GOAL label'
   });
 
   it('refuses to emit a label with no subject to point at', () => {
-    expect(offGoalVerdict(candidate(), [], REFS, 0, 'semantic', false)).toBeNull();
+    expect(offGoalVerdict(ORGANIZATION, candidate(), [], REFS, 0, 'semantic', false)).toBeNull();
   });
 
   it('fails the report rather than shipping a label the gate would not have made', () => {

@@ -40,6 +40,11 @@ export function renderedReport(overrides: Partial<RenderedReport> = {}): Rendere
     rendererId: RENDERER_ID as RenderedReport['rendererId'],
     masthead: overrides.masthead ?? 'Compass — platform — 2026-08-03',
     freshness: overrides.freshness ?? 'Every source answered for the window.',
+    // A moving morning by default, so the email and Slack tests exercise the line rather than the
+    // empty-string branch. A quiet morning is asserted explicitly where it matters.
+    changeLine:
+      overrides.changeLine ??
+      'Since the previous report 1 item worsened and 2 items carried over unchanged — which is what moved since the previous report, and the rest is carried over.',
     sections,
     prose: overrides.prose ?? sections.map((entry) => entry.prose).join('\n\n'),
     text:

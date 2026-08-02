@@ -3,6 +3,7 @@ import {
   assertSixSectionsInOrder,
   type EvidenceRef,
   type ReportItem,
+  type ReportScope,
   type ReportSection,
   type StructuredReport,
 } from '@compass/analysis';
@@ -72,12 +73,23 @@ export interface PersistedNarration {
   readonly sections: readonly { readonly key: string; readonly prose: string }[];
 }
 
-/** `team` / `platform`, or `merged` / `*`. Never a nullable key. */
-export function scopeColumns(report: StructuredReport): { scopeKind: string; scopeKey: string } {
-  return report.scope.kind === 'team'
-    ? { scopeKind: 'team', scopeKey: report.scope.teamKey }
+export type ScopeColumns = { readonly scopeKind: string; readonly scopeKey: string };
+
+/**
+ * `team` / `platform`, or `merged` / `*`. Never a nullable key.
+ *
+ * Declared here rather than beside the report-reading path, because three callers now need it
+ * *before* a report exists: the prior-report lookup, the idempotency check and the row write. A
+ * second spelling of the same mapping is how a lookup ends up scoped to `merged` / `null` and
+ * quietly finds no prior report ever again.
+ */
+export function scopeColumnsFor(scope: ReportScope): ScopeColumns {
+  return scope.kind === 'team'
+    ? { scopeKind: 'team', scopeKey: scope.teamKey }
     : { scopeKind: 'merged', scopeKey: SCOPE_KEY_FOR_MERGED };
 }
+
+export const scopeColumns = (report: StructuredReport): ScopeColumns => scopeColumnsFor(report.scope);
 
 /**
  * The worst coverage status across the sources, or `unavailable` when nothing was
@@ -137,11 +149,21 @@ const numberInLabel = (label: string): number | null => {
 function itemRow(item: ReportItem, prose: string): ReportItemInput {
   return {
     stableId: item.stableId,
+    // The three coordinates as typed columns, not only inside the payload: a feedback click
+    // arrives with an item id and the handler has to turn it into the cause a verdict is
+    // recorded against. Reading that out of a jsonb blob works until the payload shape moves.
+    causeEntityRef: item.cause.entityRef,
+    causeKind: item.cause.causeKind,
+    causeDiscriminator: item.cause.causeDiscriminator,
     headline: item.headline,
     detail: item.detail,
     prose,
     changeTag: item.changeTag,
     ageDays: item.ageDays,
+    firstSeenAt: item.firstSeenAt,
+    severityScore: item.severityScore,
+    signalOnsetAt: item.signalOnsetAt,
+    feedbackState: item.feedback?.state ?? null,
     changeClause: item.changeClause ?? null,
     ladder: item.ladder === undefined ? null : (JSON.parse(canonicalJson(item.ladder)) as Record<string, unknown>),
     payload: JSON.parse(canonicalJson(item)) as Record<string, unknown>,
@@ -219,6 +241,10 @@ export function reportRows(input: PersistReportInput): ReportInput {
     payloadJson: canonicalJson(report),
     payload: JSON.parse(canonicalJson(report)) as Record<string, unknown>,
     prose: documentProse(rendered, narration),
+    // Never narrated. Narration replaces *section bodies*; the change line is a computed fact about
+    // the report as a whole, and a model asked to reword "nothing material changed since yesterday"
+    // could only make it less true.
+    changeLine: rendered.changeLine,
     rendererId: narration?.rendererId ?? rendered.rendererId,
     // True only when narration was *attempted* and did not survive grounding.
     // A build with no narrator at all reports `false` with a null reason: nothing

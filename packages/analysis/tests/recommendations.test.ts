@@ -7,6 +7,7 @@ import {
   RecommendationShapeError,
   assertRecommendationWellFormed,
   generateStructuredReport,
+  isStableItemId,
   type Recommendation,
 } from '@compass/analysis';
 
@@ -39,6 +40,9 @@ const allRecommendations: readonly Recommendation[] = reports.flatMap(
 /** A well-formed recommendation, used as the base for the rejection cases. */
 const wellFormed = (): Recommendation => ({
   stableId: 'recommendation:blocker:PLAT-746',
+  // The coordinates a rejection is keyed on. The discriminator is the blocker signal, which is why
+  // the detector emits the cause rather than letting a later layer rebuild it.
+  cause: { entityRef: 'ticket:PLAT-746', causeKind: 'recommend_blocker', causeDiscriminator: 'status_dwell' },
   source: 'blocker',
   actor: { kind: 'developer', key: 'marcus-hale', displayName: 'Marcus Hale' },
   object: { kind: 'ticket', key: 'PLAT-746', label: 'PLAT-746' },
@@ -199,7 +203,10 @@ describe('recommendations reach the rendered section', () => {
 
       for (const item of section?.items ?? []) {
         expect(item.headline.length).toBeGreaterThan(0);
-        expect(item.stableId).toMatch(/^recommendation:/);
+        // A derived id rather than a `recommendation:`-prefixed string. The prefix carried no
+        // information a reader used; what matters is that the id comes from the one derivation every
+        // feedback action is keyed on, which `isStableItemId` is the check for.
+        expect(isStableItemId(item.stableId), item.stableId).toBe(true);
       }
     }
   });

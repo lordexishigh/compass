@@ -1,5 +1,6 @@
 import { orderedEvidence, pullRequestEvidence, pullRequestLabel, type EvidenceRef } from './evidence.js';
 import { compareNumbers, compareStable, wholeDaysBetween, workingDaysBetween, type Instant } from './instant.js';
+import { entityRef, stableItemId } from './identity.js';
 import {
   developerName,
   instantField,
@@ -196,7 +197,11 @@ function buildEntry(
   const reviewerKeys = [...new Set(textListField(pullRequest, 'requestedReviewerKeys'))].sort(compareStable);
 
   return {
-    stableId: `review_queue:${pullRequest.naturalKey}`,
+    stableId: stableItemId({
+        organizationId: snapshot.organizationId,
+        entityRef: entityRef('pull_request', pullRequest.naturalKey),
+        causeKind: 'review_queue',
+      }),
     pullRequestKey: pullRequest.naturalKey,
     pullRequestNumber: pullRequestLabel(pullRequest),
     title: textField(pullRequest, 'title') ?? '',

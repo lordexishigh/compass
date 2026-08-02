@@ -1,5 +1,6 @@
 import { orderedEvidence, type EvidenceRef } from './evidence.js';
 import { compareNumbers, compareStable, workingDaysBetween, type Instant } from './instant.js';
+import { entityRef, stableItemId } from './identity.js';
 import { rungAtOrAbove, type HighestRung, type LadderRungId } from './ladder.js';
 import { developerName, instantField, numberField, textField, type AnalysisSnapshot } from './snapshot.js';
 import { THRESHOLDS, thresholdRef, type ThresholdRef } from './thresholds.js';
@@ -114,7 +115,11 @@ export function detectWins(
     const rungLabel = `${item.ladder.highestContiguous} ${qualifying?.label ?? ''}`.trim();
 
     wins.push({
-      stableId: `win:${item.unitOfWork}`,
+      stableId: stableItemId({
+        organizationId: snapshot.organizationId,
+        entityRef: entityRef('unit_of_work', item.unitOfWork),
+        causeKind: 'win',
+      }),
       ticketKey: item.ticketKey,
       unitOfWork: item.unitOfWork,
       title: item.title,

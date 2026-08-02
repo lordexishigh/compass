@@ -299,6 +299,34 @@ export const ROLE_MATRIX: readonly RouteRule[] = [
   },
 
   // -------------------------------------------------------------------------
+  // Feedback: the manager's verdict on a finding, from three channels.
+  //
+  // `/api/feedback` is the web view's own POST and requires a seat that may act — a viewer
+  // reads the report and does not get to change what tomorrow's says. The other two are
+  // `ANYONE` at the matrix level and authorised *inside* the handler by something stronger
+  // than a session: a signed single-purpose token in the mail case, and Slack's v0 signature
+  // plus a stored (slack user → seat) mapping in the Slack case. Both arrive from clients that
+  // have no cookies to send, so requiring a session here would mean the feature could not
+  // exist; both are narrower than a session once admitted, because a feedback token authorises
+  // exactly one action on exactly one item and nothing else.
+  {
+    route: '/api/feedback',
+    summary: "A manager's verdict on one finding: dismiss, reject, accept, already resolved, snooze.",
+    allow: { POST: ['owner', 'manager'] },
+    teamScoped: true,
+  },
+  {
+    route: '/api/feedback/link/[token]',
+    summary: 'Spends a signed, single-purpose feedback link from an email. Never starts a session.',
+    allow: { GET: ANYONE, POST: ANYONE },
+  },
+  {
+    route: '/api/slack/actions',
+    summary: 'Slack Block Kit interactions. Verified by v0 signature, then mapped to a seat.',
+    allow: { POST: ANYONE },
+  },
+
+  // -------------------------------------------------------------------------
   // The audit trail. Owner only, and append-only underneath.
   // -------------------------------------------------------------------------
   {
@@ -343,6 +371,11 @@ export const ROLE_MATRIX: readonly RouteRule[] = [
   {
     route: '/roster',
     summary: 'Configuration: teams, tracked repositories and projects, the identity roster and absences.',
+    allow: { GET: ['owner', 'manager'] },
+  },
+  {
+    route: '/corrections',
+    summary: 'What a manager has corrected: suppressed findings, corrected off-goal flags, live snoozes.',
     allow: { GET: ['owner', 'manager'] },
   },
 ];

@@ -19,6 +19,7 @@ import {
   type GoalNodeRevision,
 } from './goal-hierarchy.js';
 import { compareNumbers, compareStable, wholeDaysBetween, windowContains, type Instant, type TimeWindow } from './instant.js';
+import { entityRef, stableItemId } from './identity.js';
 import {
   entitiesOfKind,
   instantField,
@@ -370,9 +371,9 @@ export function assessAlignment(
 
   // Off-goal first, then the question. The order is the order a manager should
   // read them: what Compass is confident about, then what it is asking.
-  const unattributed = unattributedVerdict(resolutions);
+  const unattributed = unattributedVerdict(snapshot.organizationId, resolutions);
   const verdicts: readonly AlignmentVerdict[] = [
-    ...offGoalVerdicts(resolutions, instant),
+    ...offGoalVerdicts(snapshot.organizationId, resolutions, instant),
     ...(unattributed === null ? [] : [unattributed]),
   ];
 
@@ -774,6 +775,7 @@ function offGoalCandidateFor(
  * on: enumerate inputs the gate must refuse, and no label can exist.
  */
 export function offGoalVerdict(
+  organizationId: string,
   candidate: OffGoalCandidate,
   subjects: readonly AlignmentVerdictSubject[],
   evidenceRefs: readonly EvidenceRef[],
@@ -799,7 +801,11 @@ export function offGoalVerdict(
   ].filter((part): part is string => part !== null);
 
   return {
-    stableId: `alignment:off_goal:${candidate.objectiveNodeId}`,
+    stableId: stableItemId({
+      organizationId,
+      entityRef: entityRef('objective', candidate.objectiveNodeId),
+      causeKind: 'off_goal',
+    }),
     kind: 'off_goal',
     label: OFF_GOAL_LABEL,
     headline: `${OFF_GOAL_LABEL} — ${parts.join(' and ')} serve ${candidate.objectiveNodeId}, "${candidate.objectiveTitle}", which is not a current objective`,
@@ -837,7 +843,11 @@ export function offGoalVerdict(
  * the fact once, names the objective rather than the person, and gives the manager
  * the whole stream to talk about.
  */
-function offGoalVerdicts(resolutions: readonly AlignmentResolution[], instant: Instant): readonly AlignmentVerdict[] {
+function offGoalVerdicts(
+  organizationId: string,
+  resolutions: readonly AlignmentResolution[],
+  instant: Instant,
+): readonly AlignmentVerdict[] {
   const groups = new Map<string, AlignmentResolution[]>();
   for (const resolution of resolutions) {
     const candidate = resolution.offGoalCandidate;
@@ -876,6 +886,7 @@ function offGoalVerdicts(resolutions: readonly AlignmentResolution[], instant: I
 
     const earliest = Math.min(...group.map((resolution) => resolution.at));
     const verdict = offGoalVerdict(
+      organizationId,
       candidate,
       subjects,
       orderedEvidence(group.flatMap((resolution) => resolution.evidenceRefs)),
@@ -911,7 +922,10 @@ function offGoalVerdicts(resolutions: readonly AlignmentResolution[], instant: I
  * so "day 6 of the unattributed bucket" would be an elapsed fact about a set that
  * has no continuous identity to age.
  */
-function unattributedVerdict(resolutions: readonly AlignmentResolution[]): AlignmentVerdict | null {
+function unattributedVerdict(
+  organizationId: string,
+  resolutions: readonly AlignmentResolution[],
+): AlignmentVerdict | null {
   const orphans = resolutions.filter(
     (resolution) => resolution.subjectKind === 'commit' && resolution.alignmentClass === 'unattributed',
   );
@@ -929,7 +943,11 @@ function unattributedVerdict(resolutions: readonly AlignmentResolution[]): Align
   const question = `What were ${orphans.length === 1 ? 'this commit' : `these ${orphans.length} commits`} for?`;
 
   return {
-    stableId: 'alignment:unattributed:commits',
+    stableId: stableItemId({
+      organizationId,
+      entityRef: entityRef('commit', 'unattributed'),
+      causeKind: 'unattributed',
+    }),
     kind: 'unattributed',
     label: null,
     headline: `${orphans.length} ${noun} could not be tied to a sprint objective`,

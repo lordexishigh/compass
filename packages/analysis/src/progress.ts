@@ -231,20 +231,45 @@ export type ProgressAssessment =
     };
 
 /**
- * The stable ids of the Progress section's items.
+ * The cause kinds of the Progress section's items.
  *
  * Declared here rather than spelled out at each use site because two layers need
  * to agree about them: `generate.ts` writes them onto the items, and the
  * deterministic renderer reads them back to decide which interpretation clause a
  * figure gets — a completion percentage is read against the schedule, a velocity
  * is not. A literal in both places would be a coupling nothing checked.
+ *
+ * ## Why these are cause kinds and no longer ids
+ *
+ * They used to be `PROGRESS_ITEM_IDS` — a frozen map of `progress:velocity`-shaped
+ * strings written straight onto `stableId`. That was the last identity scheme in the
+ * analysis core that did not go through `stableItemId`, and it carried no tenant, so
+ * two organizations' velocity items shared one id and a dismissal of one would have
+ * suppressed the other's. Now the strings name the *cause*, the tenant comes from
+ * the snapshot, and the id is derived like every other item's.
+ *
+ * The renderer matches on `item.cause.causeKind` rather than on a magic id, which is
+ * also the more honest join: it is asking "what kind of figure is this", and that is
+ * exactly what a cause kind answers.
  */
-export const PROGRESS_ITEM_IDS = Object.freeze({
-  sprint: (sprintKey: string): string => `progress:sprint:${sprintKey}`,
-  projection: 'progress:projection',
-  velocity: 'progress:velocity',
-  kanbanFlow: 'progress:kanban:flow',
-});
+export const PROGRESS_CAUSE_KINDS = Object.freeze({
+  sprint: 'sprint_completion',
+  projection: 'projected_completion',
+  velocity: 'velocity',
+  kanbanFlow: 'kanban_flow',
+} as const);
+
+export type ProgressCauseKind = (typeof PROGRESS_CAUSE_KINDS)[keyof typeof PROGRESS_CAUSE_KINDS];
+
+/**
+ * The entity a Progress item is about.
+ *
+ * The sprint item names its sprint; the other three are about the team's own process
+ * and have no artifact to point at, so they name the scope itself. `progress` is a
+ * deliberate pseudo-kind: it keeps the four ids distinct from any ticket, sprint or
+ * repository, and it reads correctly in a log line.
+ */
+export const PROGRESS_ENTITY_KEY = 'process';
 
 const EMPTY_LINE: ScopeLine = { tickets: 0, points: 0, ticketKeys: [] };
 

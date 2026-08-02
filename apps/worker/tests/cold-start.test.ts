@@ -1,4 +1,4 @@
-import { OFF_GOAL_LABEL, SECTIONS } from '@compass/analysis';
+import { OFF_GOAL_LABEL, SECTIONS, entityRef, isStableItemId, stableItemId } from '@compass/analysis';
 import {
   DEMO_OWNER_EMAIL,
   DEMO_OWNER_PASSWORD,
@@ -294,7 +294,18 @@ describe('the seeded off-goal stream survives the whole pipeline', () => {
     expect(offGoal).toHaveLength(1);
     expect(offGoal[0]?.headline).toContain('OBJ-Q2-BILL');
     expect(offGoal[0]?.headline).toContain('Migrate every merchant off the legacy billing client');
-    expect(offGoal[0]?.stableId).toBe('alignment:off_goal:OBJ-Q2-BILL');
+    // The id now comes from the shared derivation, so it is a digest rather than a readable
+    // template. Asserted through `stableItemId` rather than against a literal: that proves the whole
+    // pipeline — analysis, persistence, reload — carries the id the *detector* minted, which is what
+    // a dismissal recorded against this verdict will later have to match.
+    expect(offGoal[0]?.stableId).toBe(
+      stableItemId({
+        organizationId: run.organizationId,
+        entityRef: entityRef('objective', 'OBJ-Q2-BILL'),
+        causeKind: 'off_goal',
+      }),
+    );
+    expect(isStableItemId(offGoal[0]?.stableId ?? '')).toBe(true);
   });
 
   it('carries the resolution path on the item, so both renderers can show it', async () => {

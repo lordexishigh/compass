@@ -1,3 +1,9 @@
+import {
+  feedbackOffersFor,
+  isActionableSection,
+  type FeedbackOffer,
+  type SectionKey,
+} from '@compass/analysis';
 import type { Instant } from '@compass/clock';
 import {
   findSubscriptionById,
@@ -10,12 +16,16 @@ import {
 import {
   deliveryIdempotencyKey,
   dueDeliveries,
+  feedbackLinkUrl,
+  mintFeedbackToken,
   renderEmail,
   renderSlackMessages,
   scopesFor,
   type DeliveryOutcome,
+  type EmailItemActions,
   type EmailTransport,
   type ScheduledDelivery,
+  type SlackItemActions,
   type SlackTransport,
 } from '@compass/delivery';
 import type { RenderedReport } from '@compass/renderers';
@@ -98,6 +108,14 @@ export interface DeliveryDependencies {
   readonly baseUrl: string;
   /** Builds the one-click unsubscribe URL from the subscription's own token digest. */
   readonly unsubscribeUrlFor: (subscription: StoredSubscription) => string;
+  /**
+   * The HMAC secret the email's feedback links are signed under, or undefined.
+   *
+   * Undefined is a supported state, not a misconfiguration to be worked around: the email then
+   * carries no action links at all. Signing with a default key would put forgeable dismissal links
+   * in every inbox, which is strictly worse than a report with no buttons.
+   */
+  readonly feedbackLinkSecret?: string | undefined;
   readonly newId: () => string;
   readonly logger: Pick<Console, 'info' | 'warn' | 'error'>;
 }
@@ -231,7 +249,7 @@ export async function handleReportDeliver(
     return { status: 'deferred', detail };
   }
 
-  const outcome = await sendThrough(dependencies, subscription, bundle, delivery);
+  const outcome = await sendThrough(dependencies, subscription, bundle, delivery, now);
 
   await record(outcome.status === 'sent' ? 'sent' : outcome.status === 'skipped' ? 'skipped' : 'failed', {
     reportId: bundle.report.id,
@@ -255,12 +273,92 @@ export async function handleReportDeliver(
   return { status: 'sent', detail: outcome.detail };
 }
 
+/**
+ * The feedback affordances one stored report offers, per item.
+ *
+ * The *set* of actions comes from `feedbackOffersFor` in the analysis core, so the email, Slack and
+ * the web page cannot disagree about what a manager may say about a given finding. What differs per
+ * channel is only how the action is carried: a signed single-purpose URL in mail, a Block Kit button
+ * value in Slack, a form POST on the page.
+ */
+export function itemOffersFor(
+  bundle: StoredReportBundle,
+): readonly {
+  readonly itemStableId: string;
+  readonly headline: string;
+  readonly offers: readonly FeedbackOffer[];
+}[] {
+  const entries: { itemStableId: string; headline: string; offers: readonly FeedbackOffer[] }[] = [];
+
+  for (const section of bundle.sections) {
+    if (!isActionableSection(section.sectionKey as SectionKey)) continue;
+    for (const item of section.items) {
+      const offers = feedbackOffersFor(section.sectionKey as SectionKey, {
+        entityRef: item.causeEntityRef,
+        causeKind: item.causeKind,
+        causeDiscriminator: item.causeDiscriminator,
+      });
+      if (offers.length === 0) continue;
+      entries.push({ itemStableId: item.stableId, headline: item.headline, offers });
+    }
+  }
+
+  return entries;
+}
+
+/**
+ * The email's signed action links, or none at all.
+ *
+ * Returns an empty list when `COMPASS_FEEDBACK_LINK_SECRET` is unset, and that is the whole
+ * fail-closed posture: Compass will not sign a dismissal link with a default key, because an HMAC
+ * under a known secret is not a signature and the link would let anyone dismiss anyone's risk. The
+ * email then simply carries no buttons — the report itself still arrives in full.
+ */
+export function emailItemActionsFor(
+  bundle: StoredReportBundle,
+  input: { readonly baseUrl: string; readonly now: Instant; readonly secret: string | undefined },
+): readonly EmailItemActions[] {
+  if (input.secret === undefined || input.secret.length === 0) return [];
+
+  return itemOffersFor(bundle).map((entry) => ({
+    itemStableId: entry.itemStableId,
+    headline: entry.headline,
+    actions: entry.offers.map((offer) => ({
+      action: offer.action,
+      label: offer.label,
+      url: feedbackLinkUrl(
+        input.baseUrl,
+        mintFeedbackToken(
+          {
+            organizationId: bundle.report.organizationId,
+            itemStableId: entry.itemStableId,
+            action: offer.action,
+          },
+          input.now,
+          input.secret,
+        ).token,
+      ),
+    })),
+  }));
+}
+
+/** The same offers as Slack buttons. No secret needed: a Slack action is authorized by signature. */
+export function slackItemActionsFor(bundle: StoredReportBundle): readonly SlackItemActions[] {
+  return itemOffersFor(bundle).map((entry) => ({
+    itemStableId: entry.itemStableId,
+    headline: entry.headline,
+    actions: entry.offers.map((offer) => ({ action: offer.action, label: offer.label })),
+  }));
+}
+
 /** Renders for the subscription's channel and hands it to that channel's transport. */
 async function sendThrough(
   dependencies: DeliveryDependencies,
   subscription: StoredSubscription,
   bundle: StoredReportBundle,
   delivery: ScheduledDelivery,
+  /** The job's own instant, from the worker's one clock. The link's 30 days start here. */
+  now: Instant,
 ): Promise<DeliveryOutcome> {
   const report = dependencies.renderStored(bundle);
   const reportUrl = `${dependencies.baseUrl.replace(/\/+$/, '')}/`;
@@ -270,11 +368,16 @@ async function sendThrough(
       reportUrl,
       unsubscribeUrl: dependencies.unsubscribeUrlFor(subscription),
       recipient: subscription.target,
+      itemActions: emailItemActionsFor(bundle, {
+        baseUrl: dependencies.baseUrl,
+        now,
+        secret: dependencies.feedbackLinkSecret,
+      }),
     });
     return dependencies.email.send({ to: subscription.target, rendered, delivery });
   }
 
-  const messages = renderSlackMessages(report, { reportUrl, feedbackActions: true });
+  const messages = renderSlackMessages(report, { reportUrl, itemActions: slackItemActionsFor(bundle) });
   return dependencies.slack.send({ target: subscription.target }, messages);
 }
 

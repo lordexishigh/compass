@@ -71,6 +71,13 @@
       "when": 1785512040000,
       "tag": "0010_manager_memo_constraints",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1785519600000,
+      "tag": "0011_item_feedback_and_change_awareness",
+      "breakpoints": true
     }
   ]
 }

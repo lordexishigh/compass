@@ -39,6 +39,9 @@ export function storedReportToRendered(bundle: StoredReportBundle): RenderedRepo
     // The same masthead shape the web page and the deterministic renderer use.
     masthead: `Compass — ${report.scopeKind === 'merged' ? 'all teams' : report.scopeKey} — ${report.reportDate}`,
     freshness: freshnessSentence(report.coverageStatus),
+    // Off the row, like every other sentence here. Re-deriving it would let the inbox and the page
+    // disagree about the one line that decides how the rest of the report is read.
+    changeLine: report.changeLine,
     sections: rendered,
     prose: report.prose,
     text: rendered.map((section) => `${section.numeral} ${section.title.toUpperCase()}\n\n${section.prose}`).join('\n\n'),

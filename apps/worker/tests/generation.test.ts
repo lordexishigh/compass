@@ -4,11 +4,14 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   DEFAULT_GENERATION_LOCAL_TIME,
   GENERATION_RETRY_LIMIT,
+  GeneratePayloadSchema,
   InvalidGenerationPayloadError,
+  firstSchedulableTeam,
   generationJobOptions,
   generationJobsDue,
   handleReportGenerate,
   reportInstantFor,
+  schedulableGenerationTime,
   shiftCivilDate,
   type GenerationDependencies,
   type TeamCadence,
@@ -167,6 +170,57 @@ describe('which teams are due', () => {
     );
 
     expect(due.map((job) => job.scopeKey)).toEqual(['fine']);
+  });
+
+  it('never enqueues a merged report its own schema would reject', () => {
+    // The bug this guards: the merged branch read `first.generationTime` without the guard the team
+    // loop applies, so a malformed value flowed into a payload `GeneratePayloadSchema` rejects — the
+    // merged report burned all five attempts on InvalidGenerationPayloadError while the team loop had
+    // already skipped that same team silently.
+    const due = generationJobsDue(
+      [team({ teamKey: 'broken', generationTime: '6:00' }), team({ teamKey: 'fine' })],
+      at('2026-08-03T06:00:00Z'),
+      // A real uuid, because the assertion below runs the payload through its own schema and
+      // `organizationId` is `z.uuid()`. The other cases here pass a placeholder and never validate.
+      '11111111-1111-4111-8111-111111111111',
+      { lookbackDays: 0, mergedReport: true },
+    );
+
+    // Every payload passes its own schema — the property that actually matters.
+    for (const job of due) {
+      expect(GeneratePayloadSchema.safeParse(job).success, JSON.stringify(job)).toBe(true);
+    }
+
+    const merged = due.find((job) => job.scopeKind === 'merged');
+    expect(merged, 'the merged report is still generated').toBeDefined();
+    // Borrowed from the first *schedulable* team, not the malformed one.
+    expect(merged?.generationTime).toBe(DEFAULT_GENERATION_LOCAL_TIME);
+    expect(due.map((job) => `${job.scopeKind}:${job.scopeKey}`)).toEqual(['team:fine', 'merged:*']);
+  });
+
+  it('enqueues no merged report when no team can be scheduled at all', () => {
+    // Nothing to merge, and no valid clock to merge on. Silence beats an invalid payload.
+    const due = generationJobsDue(
+      [team({ generationTime: '6:00' })],
+      at('2026-08-03T06:00:00Z'),
+      'org',
+      { lookbackDays: 0, mergedReport: true },
+    );
+
+    expect(due).toEqual([]);
+  });
+
+  it('applies one rule to both branches', () => {
+    expect(schedulableGenerationTime(team({ generationTime: '07:30' }))).toBe('07:30');
+    // Absent falls back; malformed does not — the two mean different things.
+    expect(schedulableGenerationTime(team({ generationTime: undefined }))).toBe(DEFAULT_GENERATION_LOCAL_TIME);
+    expect(schedulableGenerationTime(team({ generationTime: '6:00' }))).toBeNull();
+    expect(schedulableGenerationTime(team({ generationTime: '25:00' }))).toBeNull();
+
+    expect(firstSchedulableTeam([team({ teamKey: 'bad', generationTime: '6:00' }), team({ teamKey: 'ok' })])?.team.teamKey).toBe(
+      'ok',
+    );
+    expect(firstSchedulableTeam([team({ generationTime: '6:00' })])).toBeNull();
   });
 
   it('defaults the generation time when a team has none', () => {

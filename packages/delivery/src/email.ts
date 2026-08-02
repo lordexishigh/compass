@@ -33,6 +33,14 @@ const INK_MUTED = '#52525b';
 const INK_FAINT = '#71717a';
 const RULE = '#e4e4e7';
 const VERIFIED = '#059669';
+/**
+ * Teal — the manager's own authorship.
+ *
+ * The design's second and only other meaning for colour: emerald marks a verified positive fact,
+ * teal marks the manager's own hand. A feedback link is an invitation to author something, so it
+ * carries teal and not emerald — dismissing a risk is not a win.
+ */
+const ACCENT = '#14b8a6';
 
 /**
  * A header value with every CR and LF removed.
@@ -60,6 +68,22 @@ export interface EmailRenderOptions {
   readonly unsubscribeUrl: string;
   /** The address the report was addressed to, for the footer's own statement. */
   readonly recipient: string;
+  /**
+   * One entry per actionable claim: the signed, single-purpose links its buttons point at.
+   *
+   * Absent means the deployment has no `COMPASS_FEEDBACK_LINK_SECRET`, in which case the email
+   * carries no action links and the footer says so. That is the honest degradation: Compass will
+   * not sign a dismissal link with a default key, because an HMAC under a known secret is not a
+   * signature and the link would let anybody dismiss anybody's risk.
+   */
+  readonly itemActions?: readonly EmailItemActions[];
+}
+
+/** One claim's feedback links, already signed and scoped by the caller. */
+export interface EmailItemActions {
+  readonly itemStableId: string;
+  readonly headline: string;
+  readonly actions: readonly { readonly action: string; readonly label: string; readonly url: string }[];
 }
 
 export interface RenderedEmail {
@@ -105,6 +129,7 @@ const TRAILER_STYLE = `margin:0 0 12px;font-family:Georgia,'Times New Roman',ser
  */
 export function renderEmail(report: RenderedReport, options: EmailRenderOptions): RenderedEmail {
   const sections = orderedSections(report);
+  const actionsByItem = new Map((options.itemActions ?? []).map((entry) => [entry.itemStableId, entry]));
 
   const html: string[] = [
     `<div style="margin:0;padding:24px 16px;background:#ffffff;">`,
@@ -120,6 +145,17 @@ export function renderEmail(report: RenderedReport, options: EmailRenderOptions)
 
   const text: string[] = [report.masthead, '', report.freshness, ''];
 
+  // The change line, above the six sections in both parts. On a morning when nothing moved it is
+  // the whole report, and a reader who has that sentence at the top does not scroll to find it out.
+  if (report.changeLine.length > 0) {
+    html.push(
+      `<p style="margin:0 0 24px;font-family:Georgia,'Times New Roman',serif;font-size:16px;line-height:1.65;color:${INK};">${escapeHtml(
+        report.changeLine,
+      )}</p>`,
+    );
+    text.push(renderProseText(report.changeLine), '');
+  }
+
   for (const section of sections) {
     html.push(
       `<div style="border-top:1px solid ${RULE};padding-top:16px;margin-top:24px;">`,
@@ -132,6 +168,24 @@ export function renderEmail(report: RenderedReport, options: EmailRenderOptions)
 
     for (const claim of section.claims) {
       html.push(paragraph(claim.prose, BODY_STYLE));
+
+      // The links sit directly under the claim they act on. A row of verbs collected at the foot of
+      // the email would be a row of verbs a manager cannot map back onto four different blockers.
+      const entry = actionsByItem.get(claim.stableId);
+      if (entry !== undefined && entry.actions.length > 0) {
+        html.push(
+          `<p style="margin:0 0 16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:${INK_FAINT};">` +
+            entry.actions
+              .map(
+                (action) =>
+                  `<a href="${escapeHtml(action.url)}" style="color:${ACCENT};text-decoration:none;border-bottom:1px solid ${RULE};">${escapeHtml(
+                    action.label,
+                  )}</a>`,
+              )
+              .join(' &nbsp;·&nbsp; ') +
+            '</p>',
+        );
+      }
     }
     if (section.trailer !== null) {
       html.push(paragraph(section.trailer, TRAILER_STYLE));
@@ -139,6 +193,18 @@ export function renderEmail(report: RenderedReport, options: EmailRenderOptions)
     html.push('</div>');
 
     text.push(`${section.numeral} ${section.title.toUpperCase()}`, '', renderProseText(section.prose), '');
+
+    // The text part gets the same links, listed after the section, because a plain-text reader is
+    // owed the same affordances and a bare label with no URL would be a dead button.
+    for (const claim of section.claims) {
+      const entry = actionsByItem.get(claim.stableId);
+      if (entry === undefined || entry.actions.length === 0) continue;
+      text.push(
+        renderProseText(entry.headline),
+        ...entry.actions.map((action) => `  ${action.label}: ${action.url}`),
+        '',
+      );
+    }
   }
 
   html.push(

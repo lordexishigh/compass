@@ -12,7 +12,7 @@ import {
   type StoredReportBundle,
 } from '@compass/db';
 
-import { SCOPE_KEY_FOR_MERGED } from './persist.js';
+import { SCOPE_KEY_FOR_MERGED, scopeColumnsFor, type ScopeColumns } from './persist.js';
 import { runReportPipeline, type ReportPipelineRequest, type ReportPipelineResult } from './report-pipeline.js';
 
 /**
@@ -30,13 +30,9 @@ import { runReportPipeline, type ReportPipelineRequest, type ReportPipelineResul
  * it. There is no "generating…" state to get stuck in.
  */
 
-export type ScopeColumns = { readonly scopeKind: string; readonly scopeKey: string };
-
-export function scopeColumnsFor(scope: ReportScope): ScopeColumns {
-  return scope.kind === 'team'
-    ? { scopeKind: 'team', scopeKey: scope.teamKey }
-    : { scopeKind: 'merged', scopeKey: SCOPE_KEY_FOR_MERGED };
-}
+// Re-exported from `persist.ts`, where the mapping now lives: the pipeline needs it before a
+// report exists, and `ensure-report.ts` sits above `report-pipeline.ts` in the import order.
+export { SCOPE_KEY_FOR_MERGED, scopeColumnsFor, type ScopeColumns };
 
 export interface EnsureReportRequest extends Omit<ReportPipelineRequest, 'window'> {
   /** The report window. Defaults to the team's previous civil day from `now`. */

@@ -7,25 +7,36 @@ import {
 } from './alignment.js';
 import { detectBlockers, type DetectedBlocker } from './blockers.js';
 import { auditProcessCalibration } from './calibration.js';
+import { applyChangeAwareness, type PriorReportState } from './change-awareness.js';
 import { computeElapsedFacts, type ElapsedFactStatement } from './elapsed.js';
 import { orderedEvidence, type EvidenceRef } from './evidence.js';
+import { EMPTY_FEEDBACK_LEDGER, applyFeedback, type FeedbackLedger } from './feedback.js';
 import type { GoalHierarchy } from './goal-hierarchy.js';
-import { compareStable, wholeDaysBetween, windowContains, type Instant } from './instant.js';
+import { entityRef, identifyItem, stableItemId, type IdentifiedItem } from './identity.js';
+import { MILLIS_PER_DAY, compareStable, wholeDaysBetween, windowContains, type Instant } from './instant.js';
 import { indexCommitGraph } from './ladder.js';
-import { PROGRESS_ITEM_IDS, assessProgress, type ProgressAssessment } from './progress.js';
+import {
+  PROGRESS_CAUSE_KINDS,
+  PROGRESS_ENTITY_KEY,
+  assessProgress,
+  type ProgressAssessment,
+} from './progress.js';
 import { calibrationVerdictFrom, projectCompletion } from './projection.js';
 import { assertNoIndividualRanking } from './ranking-guard.js';
 import { generateRecommendations, type Recommendation } from './recommendations.js';
 import { aggregateReviewQueue, type ReviewQueue } from './review-queue.js';
-import { detectRisks, type DetectedRisk } from './risks.js';
+import { detectRisks, riskSeverityScore, type DetectedRisk } from './risks.js';
 import { SECTIONS, type SectionKey } from './sections.js';
 import { resolveScope, type AnalysisSnapshot, type ResolvedScope } from './snapshot.js';
 import {
   REPORT_SCHEMA_VERSION,
   assertEveryClaimHasEvidence,
+  assertItemIdsMatchTheirCause,
+  assertOneChangeTagPerItem,
   assertSixSectionsInOrder,
   assertWholeDayAges,
   type AnalysisFindings,
+  type ItemCause,
   type ReportCoverageNote,
   type ReportItem,
   type ReportSection,
@@ -75,6 +86,23 @@ export interface AnalysisConfig {
   readonly goalHierarchy?: GoalHierarchy;
   /** Overrides T17, so a manager can tune their own tolerance for a verdict. */
   readonly alignmentThreshold?: number;
+  /**
+   * The previous report for this scope, reduced to the three fields the comparison
+   * needs.
+   *
+   * Absent means "no earlier report", which the change summary states as its own
+   * fact — not as "nothing changed". The caller that owns persistence loads it;
+   * analysis stays pure and is simply told.
+   */
+  readonly priorReport?: PriorReportState;
+  /**
+   * The manager's feedback, already loaded.
+   *
+   * Applied once, over the assembled sections, rather than inside each detector. Data
+   * in, no lookup: the ledger is a value, so the ten-day simulation in
+   * `tests/feedback.test.ts` can chain reports with no database at all.
+   */
+  readonly feedback?: FeedbackLedger;
 }
 
 export const DEFAULT_ANALYSIS_CONFIG: AnalysisConfig = Object.freeze({
@@ -154,6 +182,30 @@ export function generateStructuredReport(
     alignment,
   };
 
+  // ---- the three passes over the assembled sections ------------------------
+  //
+  // Order is load-bearing and each step depends on the one before it.
+  //
+  //  1. **Suppression.** A dismissed, rejected or snoozed item leaves before anything
+  //     else looks at it, so it cannot be tagged, cannot lead the section and — the
+  //     point — cannot consume one of the section's slots. `findings` keeps it: the
+  //     audit trail a manager argues with must contain the thing they dismissed.
+  //  2. **Change awareness.** Every survivor is tagged against its own prior self and
+  //     the movement is led with. Running this *after* suppression is what makes a
+  //     resurfaced risk read as movement rather than as an item that was there all
+  //     along.
+  //  3. **The cap.** Last, so truncation drops the least interesting items rather
+  //     than whichever ones a detector happened to emit first.
+  const priorReport = config.priorReport ?? null;
+  const priorStableIds = new Set((priorReport?.items ?? []).map((item) => item.stableId));
+
+  const suppression = applyFeedback(
+    buildSections(snapshot.organizationId, instant, scope, findings),
+    config.feedback ?? EMPTY_FEEDBACK_LEDGER,
+    { instant, priorInstant: priorReport?.instant ?? null, priorStableIds },
+  );
+  const changes = applyChangeAwareness(suppression.sections, priorReport, instant);
+
   const report: StructuredReport = {
     schemaVersion: REPORT_SCHEMA_VERSION,
     organizationId: snapshot.organizationId,
@@ -161,13 +213,20 @@ export function generateStructuredReport(
     instant,
     timezone: snapshot.timezone,
     window: snapshot.window,
-    sections: buildSections(instant, scope, findings, config),
+    sections: changes.sections.map((section) => ({
+      ...section,
+      items: section.items.slice(0, config.maxItemsPerSection),
+    })),
     coverage: [...config.coverage],
     findings,
+    changeSummary: changes.summary,
+    suppressed: suppression.suppressed,
   };
 
   assertSixSectionsInOrder(report);
   assertWholeDayAges(report);
+  assertOneChangeTagPerItem(report);
+  assertItemIdsMatchTheirCause(report);
   assertEveryClaimHasEvidence(report);
   assertNoIndividualRanking(report);
   // The two alignment guards. The first refuses an OFF-GOAL label the gate would
@@ -183,25 +242,64 @@ export function generateStructuredReport(
 // The prose spine
 // ---------------------------------------------------------------------------
 
+/**
+ * The severity score, family by family — the one ordered quantity an item is compared
+ * against its own prior self on.
+ *
+ * **Higher is always worse**, for every family. That is why a sprint at 62% scores 38: a
+ * per-family direction flag is a rule every consumer would have to honour, and the first one
+ * that did not would report an improving sprint as worsening.
+ *
+ * Terminal families score zero. A Yesterday completion and a Win are facts about work that
+ * already happened; there is nothing for them to be twice as bad as, and they are never
+ * compared because their tag is intrinsic.
+ */
+const SEVERITY_SCORE = Object.freeze({
+  terminal: 0,
+  /** Working or whole days the condition has held. One day worse per day stuck. */
+  blocker: (blocker: DetectedBlocker): number => Math.max(0, Math.round(blocker.measured.value)),
+  /** Ten points per subject: more work serving a dead objective is a bigger problem. */
+  alignment: (subjects: number): number => subjects * 10,
+  /** Urgency, and nothing else. A step for today outranks one for this week. */
+  recommendation: (urgency: string): number => (urgency === 'today' ? 200 : 100),
+  /** The distance still to go, so a sprint that advances improves. */
+  sprint: (completionPercent: number): number => Math.min(100, Math.max(0, 100 - Math.round(completionPercent))),
+  velocity: (trend: string): number => (trend === 'falling' ? 200 : trend === 'rising' ? 0 : 100),
+});
+
+/** `instant` minus a whole number of days, for a family that carries an age but no onset. */
+const onsetFromAge = (instant: Instant, ageDays: number): Instant =>
+  (instant - Math.max(0, Math.round(ageDays)) * MILLIS_PER_DAY) as Instant;
+
+/** The Progress section's items are about the team's own process, not an artifact. */
+const progressCause = (causeKind: string, entityKey: string = PROGRESS_ENTITY_KEY): ItemCause => ({
+  entityRef: entityRef('progress', entityKey),
+  causeKind,
+  causeDiscriminator: '',
+});
+
 function buildSections(
+  organizationId: string,
   instant: Instant,
   scope: ResolvedScope,
   findings: AnalysisFindings,
-  config: AnalysisConfig,
 ): readonly ReportSection[] {
   const factsByEntity = indexElapsedFacts(findings.elapsedFacts);
 
   const items: Readonly<Record<SectionKey, readonly ReportItem[]>> = {
     yesterday: findings.yesterday.map((item) => yesterdayItem(instant, item)),
-    progress: progressItems(findings),
-    blockers: findings.blockers.map((blocker) => blockerItem(blocker, factsByEntity)),
+    progress: progressItems(organizationId, instant, findings),
+    blockers: findings.blockers.map((blocker) => blockerItem(instant, blocker, factsByEntity)),
     // Alignment lives in Risks, and after the measured risks rather than before
     // them: work serving an objective the organization stopped funding is a risk to
     // the sprint goal, and the unattributed question is a risk to the alignment
     // claim itself. The Six Spine never grows a seventh section for a new finding.
-    risks: [...findings.risks.map(riskItem), ...findings.alignment.verdicts.map(alignmentItem)],
-    recommendations: findings.recommendations.map(recommendationItem),
-    wins: findings.wins.map(winItem),
+    risks: [
+      ...findings.risks.map((risk) => riskItem(instant, risk)),
+      ...findings.alignment.verdicts.map((verdict) => alignmentItem(instant, verdict)),
+    ],
+    recommendations: findings.recommendations.map((recommendation) => recommendationItem(instant, recommendation)),
+    wins: findings.wins.map((win) => winItem(instant, win)),
   };
 
   const summaries: Readonly<Record<SectionKey, string | undefined>> = {
@@ -216,8 +314,10 @@ function buildSections(
     wins: findings.wins.length === 0 ? undefined : `${findings.wins.length} piece${findings.wins.length === 1 ? '' : 's'} of substantial work landed.`,
   };
 
+  // Uncapped: `generateStructuredReport` applies the cap after suppression and tagging, so a
+  // dismissed item does not consume a slot and the movement leads before anything is dropped.
   return SECTIONS.map((definition) => {
-    const sectionItems = items[definition.key].slice(0, config.maxItemsPerSection);
+    const sectionItems = items[definition.key];
     const summary = summaries[definition.key];
     return {
       key: definition.key,
@@ -265,20 +365,27 @@ function yesterdayItem(instant: Instant, item: YesterdayItem): ReportItem {
 
   return {
     stableId: item.stableId,
+    cause: { entityRef: entityRef('unit_of_work', item.unitOfWork), causeKind: 'completed', causeDiscriminator: '' },
     headline: yesterdayHeadline(item),
     detail: `Reached ${ladder.highestCrossed} ${ladder.highestCrossedLabel ?? ''} — evidence: ${artifacts}.${gap}`.replace(
       /\s+—/,
       ' —',
     ),
+    // Intrinsic, and the tagging pass leaves it alone: a completion is resolved whatever
+    // yesterday's report said about it.
     changeTag: 'resolved',
     ageDays: wholeDaysBetween(item.completedAt as Instant, instant),
+    firstSeenAt: instant,
+    severityScore: SEVERITY_SCORE.terminal,
+    signalOnsetAt: item.completedAt as Instant,
     evidence: item.artifacts,
     ladder,
   };
 }
 
-function progressItems(findings: AnalysisFindings): readonly ReportItem[] {
+function progressItems(organizationId: string, instant: Instant, findings: AnalysisFindings): readonly ReportItem[] {
   const progress = findings.progress;
+  const identified = (cause: ItemCause): IdentifiedItem => identifyItem(organizationId, cause);
 
   if (progress.mode === 'no_signal') return [];
 
@@ -286,11 +393,14 @@ function progressItems(findings: AnalysisFindings): readonly ReportItem[] {
     const flow = progress.flow;
     return [
       {
-        stableId: PROGRESS_ITEM_IDS.kanbanFlow,
+        ...identified(progressCause(PROGRESS_CAUSE_KINDS.kanbanFlow)),
         headline: flow.statement,
         detail: progress.statement,
         changeTag: 'unchanged',
         ageDays: 0,
+        firstSeenAt: instant,
+        severityScore: SEVERITY_SCORE.terminal,
+        signalOnsetAt: instant,
         evidence: flow.evidence,
       },
       // A team with no sprints still gets the projection line, and on this path it
@@ -298,7 +408,7 @@ function progressItems(findings: AnalysisFindings): readonly ReportItem[] {
       // because fewer than two sprints have completed" is the honest answer for a
       // Kanban or brand-new team, and omitting the line entirely would leave the
       // reader to assume Compass simply had not got round to it.
-      projectionItem(findings, flow.evidence),
+      projectionItem(organizationId, instant, findings, flow.evidence),
     ];
   }
 
@@ -309,7 +419,7 @@ function progressItems(findings: AnalysisFindings): readonly ReportItem[] {
 
   const items: ReportItem[] = [
     {
-      stableId: PROGRESS_ITEM_IDS.sprint(sprint.sprintKey),
+      ...identified(progressCause(PROGRESS_CAUSE_KINDS.sprint, sprint.sprintKey)),
       headline: `${sprint.sprintName} is ${sprint.completionPercent}% complete — ${done} of ${total} ${unit}${sprint.goal === null ? '' : `, against "${sprint.goal}"`}`,
       detail: `${sprint.committed.tickets} items were committed at the start and ${sprint.addedMidSprint.tickets} were added since, so the denominator is ${sprint.currentScope.tickets}. Measured in ${unit} because ${
         sprint.basis === 'story_points'
@@ -318,6 +428,11 @@ function progressItems(findings: AnalysisFindings): readonly ReportItem[] {
       }. Completed: ${sprint.completed.ticketKeys.join(', ') || 'nothing yet'}. Remaining: ${sprint.remaining.ticketKeys.join(', ') || 'nothing'}.`,
       changeTag: 'unchanged',
       ageDays: sprint.elapsedWorkingDays,
+      firstSeenAt: instant,
+      // The distance still to go. A sprint that advances therefore *improves* against
+      // yesterday, which is the only reading of a completion percentage that is not backwards.
+      severityScore: SEVERITY_SCORE.sprint(sprint.completionPercent),
+      signalOnsetAt: sprint.startAt as Instant,
       evidence: sprint.evidence,
     },
   ];
@@ -326,17 +441,22 @@ function progressItems(findings: AnalysisFindings): readonly ReportItem[] {
   // is what a reader following the marker should land on. A date with no way back
   // to the board behind it is exactly the kind of unfalsifiable claim the
   // evidence rule exists to forbid.
-  items.push(projectionItem(findings, sprint.evidence));
+  items.push(projectionItem(organizationId, instant, findings, sprint.evidence));
 
   if (progress.velocity.kind === 'measured') {
     items.push({
-      stableId: PROGRESS_ITEM_IDS.velocity,
+      ...identified(progressCause(PROGRESS_CAUSE_KINDS.velocity)),
       headline: progress.velocity.statement,
       detail: progress.velocity.samples
         .map((sample) => `${sample.sprintName}: ${sample.points} points across ${sample.tickets} items`)
         .join('; '),
-      changeTag: progress.velocity.trend === 'falling' ? 'worsened' : progress.velocity.trend === 'rising' ? 'improved' : 'unchanged',
+      // Provisional: the trend is measured against trailing sprints, not against yesterday's
+      // report, and the tagging pass replaces it with the comparison that is.
+      changeTag: 'unchanged',
       ageDays: 0,
+      firstSeenAt: instant,
+      severityScore: SEVERITY_SCORE.velocity(progress.velocity.trend),
+      signalOnsetAt: instant,
       // The sprints the mean was taken over, not the one in flight: a reader
       // checking a pace claim needs the sprints that produced it.
       evidence: orderedEvidence(progress.velocity.samples.flatMap((sample) => sample.evidence)),
@@ -356,10 +476,29 @@ function progressItems(findings: AnalysisFindings): readonly ReportItem[] {
  * "No completion date" with no reason attached reads as a bug in Compass; "no
  * completion date, because two sprints have not completed" reads as an answer.
  */
-function projectionItem(findings: AnalysisFindings, evidence: readonly EvidenceRef[]): ReportItem {
+function projectionItem(
+  organizationId: string,
+  instant: Instant,
+  findings: AnalysisFindings,
+  evidence: readonly EvidenceRef[],
+): ReportItem {
   const projection = findings.projection;
   const audit = findings.calibrationAudit;
   const verdicts = projection.selectedByVerdicts;
+  const cause = progressCause(PROGRESS_CAUSE_KINDS.projection);
+  // The projected date is not a severity: a date moving out is not the same kind of fact as a
+  // blocker deepening, and scoring it would make the change tag say something the collar
+  // underneath it says better. So it is terminal, and it reads as unchanged while it persists.
+  const common = {
+    stableId: stableItemId({ organizationId, ...cause }),
+    cause,
+    changeTag: 'unchanged' as const,
+    ageDays: 0,
+    firstSeenAt: instant,
+    severityScore: SEVERITY_SCORE.terminal,
+    signalOnsetAt: instant,
+    evidence,
+  };
   const because =
     verdicts.length === 0
       ? ''
@@ -367,22 +506,16 @@ function projectionItem(findings: AnalysisFindings, evidence: readonly EvidenceR
 
   if (projection.kind === 'projected') {
     return {
-      stableId: PROGRESS_ITEM_IDS.projection,
+      ...common,
       headline: `Projected completion ${projection.utcDate}`,
       detail: `${projection.statement} ${projection.calibration.statement} Computed by ${projection.reasoning.method === 'cycle_time' ? 'measured cycle time' : 'trailing velocity'} at ${projection.band.confidence} confidence — ${projection.reasoning.formula}.${because} ${audit.statement}`,
-      changeTag: 'unchanged',
-      ageDays: 0,
-      evidence,
     };
   }
 
   return {
-    stableId: PROGRESS_ITEM_IDS.projection,
+    ...common,
     headline: 'No completion date',
     detail: `${projection.statement}${because} ${audit.statement}`,
-    changeTag: 'unchanged',
-    ageDays: 0,
-    evidence,
   };
 }
 
@@ -395,6 +528,7 @@ function progressSummary(progress: ProgressAssessment): string | undefined {
 }
 
 function blockerItem(
+  instant: Instant,
   blocker: DetectedBlocker,
   factsByEntity: ReadonlyMap<string, readonly ElapsedFactStatement[]>,
 ): ReportItem {
@@ -403,16 +537,30 @@ function blockerItem(
 
   return {
     stableId: blocker.stableId,
+    // The signal *is* the cause kind, which is what the detector derived the id from. Spelling
+    // it again here rather than re-deriving keeps one source: `assertItemIdsMatchTheirCause`
+    // would fail the report if the two ever disagreed.
+    cause: {
+      entityRef: entityRef(blocker.subject.kind, blocker.subject.key),
+      causeKind: blocker.signal,
+      causeDiscriminator: '',
+    },
     headline: blocker.headline,
     detail: blocker.detail,
-    changeTag: blocker.ageDays === 0 ? 'new' : 'unchanged',
+    // Provisional. `blocker.ageDays === 0` means "detected today", which is a fact about the
+    // condition and not about the report — a blocker Compass has been listing for a week is
+    // not new because its clock happened to restart. The tagging pass decides.
+    changeTag: 'unchanged',
     ageDays: blocker.ageDays,
+    firstSeenAt: instant,
+    severityScore: SEVERITY_SCORE.blocker(blocker),
+    signalOnsetAt: blocker.detectedAt as Instant,
     evidence: blocker.evidence,
     ...(clause.length === 0 ? {} : { changeClause: clause }),
   };
 }
 
-function riskItem(risk: DetectedRisk): ReportItem {
+function riskItem(instant: Instant, risk: DetectedRisk): ReportItem {
   const prior =
     risk.priorValue === null
       ? 'no comparable prior measurement'
@@ -420,34 +568,55 @@ function riskItem(risk: DetectedRisk): ReportItem {
 
   return {
     stableId: risk.stableId,
+    cause: {
+      entityRef: entityRef(risk.subject.kind, risk.subject.key),
+      causeKind: risk.cause,
+      causeDiscriminator: '',
+    },
     headline: risk.headline,
     detail: risk.detail,
-    changeTag: risk.trend === 'improving' ? 'improved' : risk.trend === 'worsened' ? 'worsened' : risk.trend === 'new' ? 'new' : 'unchanged',
+    // Provisional: `risk.trend` is measured against the start of *this window*, which is a
+    // different comparison from "against the report you read yesterday". The tagging pass
+    // overwrites it, and the window trend survives in the clause below where it belongs.
+    changeTag: 'unchanged',
     ageDays: risk.ageDays,
+    firstSeenAt: instant,
+    severityScore: riskSeverityScore(risk),
+    signalOnsetAt: onsetFromAge(instant, risk.ageDays),
     evidence: risk.evidence,
     changeClause: `${risk.severity} severity, ${risk.trend} — against ${prior}`,
   };
 }
 
-function recommendationItem(recommendation: Recommendation): ReportItem {
+function recommendationItem(instant: Instant, recommendation: Recommendation): ReportItem {
   return {
     stableId: recommendation.stableId,
+    // From the detector, never rebuilt here: a blocker-derived recommendation's discriminator is
+    // the blocker signal, which this item has no other way of knowing.
+    cause: recommendation.cause,
     headline: `${recommendation.actor.displayName} — ${recommendation.step}`,
     detail: recommendation.rationale,
-    changeTag: 'new',
+    changeTag: 'unchanged',
     ageDays: 0,
+    firstSeenAt: instant,
+    severityScore: SEVERITY_SCORE.recommendation(recommendation.urgency),
+    signalOnsetAt: instant,
     evidence: recommendation.evidence,
     changeClause: recommendation.urgency === 'today' ? 'today' : 'this week',
   };
 }
 
-function winItem(win: DetectedWin): ReportItem {
+function winItem(instant: Instant, win: DetectedWin): ReportItem {
   return {
     stableId: win.stableId,
+    cause: { entityRef: entityRef('unit_of_work', win.unitOfWork), causeKind: 'win', causeDiscriminator: '' },
     headline: win.headline,
     detail: win.detail,
     changeTag: 'resolved',
     ageDays: win.ageWorkingDays,
+    firstSeenAt: instant,
+    severityScore: SEVERITY_SCORE.terminal,
+    signalOnsetAt: instant,
     evidence: win.evidence,
   };
 }
@@ -477,15 +646,31 @@ function riskSectionSummary(findings: AnalysisFindings): string | undefined {
  * `findings` — which is what makes the one-click affordance impossible to ship in
  * only one of the two renderers.
  */
-function alignmentItem(verdict: AlignmentVerdict): ReportItem {
+function alignmentItem(instant: Instant, verdict: AlignmentVerdict): ReportItem {
+  // `off_goal` is keyed on the objective the work serves; the unattributed question is keyed on
+  // the bucket itself, which has no objective. Both spellings match what `alignment.ts` derived
+  // its id from, and `assertItemIdsMatchTheirCause` is what proves that rather than this comment.
+  const cause: ItemCause =
+    verdict.kind === 'off_goal'
+      ? {
+          entityRef: entityRef('objective', verdict.objectiveNodeId ?? ''),
+          causeKind: 'off_goal',
+          causeDiscriminator: '',
+        }
+      : { entityRef: entityRef('commit', 'unattributed'), causeKind: 'unattributed', causeDiscriminator: '' };
+
   return {
     stableId: verdict.stableId,
+    cause,
     headline: verdict.headline,
     detail: verdict.detail,
-    // An unattributed item is never `new`: "NEW" on a question would read as an
-    // escalation of something Compass has not decided.
-    changeTag: verdict.kind === 'off_goal' ? 'new' : 'unchanged',
+    changeTag: 'unchanged',
     ageDays: verdict.ageDays,
+    firstSeenAt: instant,
+    // Ten points per subject: more work serving an objective the organization stopped funding is
+    // a bigger problem than one commit, and that is the only direction this can be read in.
+    severityScore: SEVERITY_SCORE.alignment(verdict.subjects.length),
+    signalOnsetAt: onsetFromAge(instant, verdict.ageDays),
     evidence: verdict.evidenceRefs,
     alignment: {
       kind: verdict.kind,

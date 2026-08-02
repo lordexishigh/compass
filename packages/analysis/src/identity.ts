@@ -88,7 +88,7 @@ export function itemCauseKey(identity: ItemIdentity): string {
  * Exported so a test can assert what does and does not reach the hash, which is the only way to
  * prove "no report id, no run id, no timestamp" about a function whose output is opaque.
  *
- * **Each field is length-prefixed** — `4:v1|36:1111…|16:ticket:PLAT-742|…` — rather than joined
+ * **Each field is length-prefixed** — `2:v1|36:1111…|16:ticket:PLAT-742|…` — rather than joined
  * on a separator. A natural key legitimately contains colons (`checkout-web:9201`) and could
  * contain a space or almost anything else a tracker permits, so any separator would eventually
  * be ambiguous: `a:b` + `c` and `a` + `b:c` must never canonicalise to the same bytes, or two
@@ -118,14 +118,60 @@ const SIXTY_FOUR_BITS = 0xffff_ffff_ffff_ffffn;
  * Written out rather than imported because this package may not import `node:crypto` (see the
  * module note). BigInt rather than a two-word 32-bit split: the multiply is exact, the code says
  * what the specification says, and this runs a few dozen times per report — not a hot path.
+ *
+ * ## Why the UTF-8 encoding is also written out
+ *
+ * `new TextEncoder()` used to stand here and it did not compile. This package sets `types: []` on
+ * purpose — the same zero-dependency stance that bans `node:crypto` — so `TextEncoder` is as
+ * undeclared as `Buffer` is, and the build failed with `TS2304: Cannot find name 'TextEncoder'`.
+ * That one error broke `pnpm build:packages` for the whole monorepo while lint, arch and every test
+ * suite stayed green, because vitest resolves sources and Node happens to expose the global at
+ * runtime. Encoding the code points here keeps the package honestly dependency-free.
+ *
+ * The bytes are identical to `TextEncoder`'s for every input, which matters because ids already
+ * minted must not move: ASCII is one byte per character, a surrogate pair becomes the four-byte
+ * form of its code point, and an *unpaired* surrogate becomes U+FFFD exactly as the encoding
+ * standard requires. `tests/identity.test.ts` pins that equivalence.
  */
 function fnv1a64(value: string): bigint {
-  const bytes = new TextEncoder().encode(value);
   let hash = FNV_OFFSET_BASIS;
 
-  for (const byte of bytes) {
+  const mix = (byte: number): void => {
     hash ^= BigInt(byte);
     hash = (hash * FNV_PRIME) & SIXTY_FOUR_BITS;
+  };
+
+  for (let index = 0; index < value.length; index += 1) {
+    let codePoint = value.charCodeAt(index);
+
+    if (codePoint >= 0xd800 && codePoint <= 0xdbff) {
+      const low = index + 1 < value.length ? value.charCodeAt(index + 1) : 0;
+      if (low >= 0xdc00 && low <= 0xdfff) {
+        codePoint = (codePoint - 0xd800) * 0x400 + (low - 0xdc00) + 0x10000;
+        index += 1;
+      } else {
+        // A high surrogate with no low one is not a character. The standard replaces it.
+        codePoint = 0xfffd;
+      }
+    } else if (codePoint >= 0xdc00 && codePoint <= 0xdfff) {
+      codePoint = 0xfffd;
+    }
+
+    if (codePoint < 0x80) {
+      mix(codePoint);
+    } else if (codePoint < 0x800) {
+      mix(0xc0 | (codePoint >> 6));
+      mix(0x80 | (codePoint & 0x3f));
+    } else if (codePoint < 0x1_0000) {
+      mix(0xe0 | (codePoint >> 12));
+      mix(0x80 | ((codePoint >> 6) & 0x3f));
+      mix(0x80 | (codePoint & 0x3f));
+    } else {
+      mix(0xf0 | (codePoint >> 18));
+      mix(0x80 | ((codePoint >> 12) & 0x3f));
+      mix(0x80 | ((codePoint >> 6) & 0x3f));
+      mix(0x80 | (codePoint & 0x3f));
+    }
   }
 
   return hash;
@@ -139,12 +185,47 @@ function fnv1a64(value: string): bigint {
  * one id across ten generated reports.
  */
 export function stableItemId(identity: ItemIdentity): string {
+  // Three of the four coordinates are mandatory, and a missing one is refused rather than hashed.
+  // A degenerate id is unusually expensive to discover later: dismissals, snoozes and corrections
+  // are all keyed on it, so an item whose `entityRef` was empty would quietly share one id with
+  // every other such item and one manager's dismissal would suppress unrelated findings. Only
+  // `causeDiscriminator` may be empty — that is its documented common case.
+  for (const [field, value] of [
+    ['organizationId', identity.organizationId],
+    ['entityRef', identity.entityRef],
+    ['causeKind', identity.causeKind],
+  ] as const) {
+    if (value.length === 0) {
+      throw new DegenerateItemIdentityError(field);
+    }
+  }
+
   const digest = fnv1a64(canonicalIdentityString(identity)).toString(16).padStart(16, '0');
   return `${STABLE_ID_VERSION}:${digest}`;
 }
 
-/** The shape a stable id always has. Used by the report invariant gate. */
-export const STABLE_ID_PATTERN = /^v1:[0-9a-f]{16}$/;
+export class DegenerateItemIdentityError extends Error {
+  readonly detail: string;
+
+  constructor(field: 'organizationId' | 'entityRef' | 'causeKind') {
+    const detail =
+      `A report item's \`${field}\` is empty, so no stable id can be derived for it. Every feedback ` +
+      'action — dismiss, snooze, correction — is keyed on that id, and a degenerate one would make ' +
+      'unrelated findings share it.';
+    super(detail);
+    this.name = 'DegenerateItemIdentityError';
+    this.detail = detail;
+  }
+}
+
+/**
+ * The shape a stable id always has. Used by the report invariant gate.
+ *
+ * Built from `STABLE_ID_VERSION` rather than spelling `v1` a second time, so the module's claim
+ * that a reset is "bumped in one place" is actually true. Hard-coding the literal here meant a
+ * version bump would leave this pattern rejecting every id the same file had just minted.
+ */
+export const STABLE_ID_PATTERN = new RegExp(`^${STABLE_ID_VERSION}:[0-9a-f]{16}$`);
 
 export const isStableItemId = (value: string): boolean => STABLE_ID_PATTERN.test(value);
 
@@ -155,3 +236,40 @@ export const isStableItemId = (value: string): boolean => STABLE_ID_PATTERN.test
  * across two dozen call sites — the separator is decided here and nowhere else.
  */
 export const entityRef = (kind: string, naturalKey: string): string => `${kind}:${naturalKey}`;
+
+/**
+ * The three tenant-independent coordinates, as a value a detector can carry.
+ *
+ * Identical to `ItemIdentity` minus the organization, and that omission is the point: the
+ * tenant belongs to the *report*, while these three belong to the *condition*. A feedback
+ * record is keyed on exactly these — never on the derived digest — so a dismissal survives a
+ * deliberate `STABLE_ID_VERSION` bump instead of being orphaned by it.
+ *
+ * `causeDiscriminator` is required here rather than optional, unlike on `ItemIdentity`. A
+ * value that travels through a database column, a URL and an HMAC payload cannot afford an
+ * `undefined` that one layer spells as absent and another as the empty string: the two would
+ * hash differently and a manager's dismissal would stop matching its own item.
+ */
+export interface ItemCause {
+  readonly entityRef: string;
+  readonly causeKind: string;
+  readonly causeDiscriminator: string;
+}
+
+/** The pair every report item carries: the derived id, and what it was derived from. */
+export interface IdentifiedItem {
+  readonly stableId: string;
+  readonly cause: ItemCause;
+}
+
+/**
+ * A cause, and the id it derives to, in one call.
+ *
+ * Detectors spread this rather than assigning `stableId` and `cause` separately, so the two
+ * physically cannot disagree — and `assertItemIdsMatchTheirCause` re-checks it over the whole
+ * report for the paths that still build the pair by hand.
+ */
+export const identifyItem = (organizationId: string, cause: ItemCause): IdentifiedItem => ({
+  stableId: stableItemId({ organizationId, ...cause }),
+  cause,
+});

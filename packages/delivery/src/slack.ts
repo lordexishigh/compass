@@ -1,5 +1,6 @@
 import { renderProseText, type RenderedReport } from '@compass/renderers';
 
+import { slackActionId } from './slack-actions.js';
 import { orderedSections } from './spine.js';
 
 /**
@@ -38,12 +39,36 @@ export interface SlackBlock {
   readonly type: string;
   readonly text?: { readonly type: string; readonly text: string };
   readonly elements?: readonly unknown[];
+  /** Present on an actions block: `compass_item:<stableId>`. */
+  readonly block_id?: string;
+}
+
+/**
+ * One item's feedback buttons, as the caller decided them.
+ *
+ * The renderer is handed the offers rather than deriving them, because *which* actions an item
+ * offers is a product rule that lives in `@compass/analysis` (`feedbackOffersFor`) and must be the
+ * same in the web view, the email and here. A renderer that decided for itself would be a fourth
+ * opinion, and the first one to drift would leave a manager able to reject a step in Slack that the
+ * page does not let them reject.
+ */
+export interface SlackItemActions {
+  readonly itemStableId: string;
+  /** The claim these buttons belong to, so the block reads as being about something. */
+  readonly headline: string;
+  readonly actions: readonly { readonly action: string; readonly label: string }[];
 }
 
 export interface SlackRenderOptions {
   readonly reportUrl: string;
-  /** Attached to the last message so a manager can act without leaving Slack. */
-  readonly feedbackActions?: boolean;
+  /**
+   * Per-item buttons, in report order.
+   *
+   * Rendered immediately beneath the section they belong to rather than collected at the end of
+   * the message: a button four screens away from the claim it acts on is a button a manager will
+   * not trust, and Slack gives no way to point one at a paragraph.
+   */
+  readonly itemActions?: readonly SlackItemActions[];
 }
 
 export interface SlackMessage {
@@ -127,7 +152,14 @@ const context = (text: string): SlackBlock => ({
  */
 export function renderSlackBlocks(report: RenderedReport, options: SlackRenderOptions): readonly SlackBlock[] {
   const sections = orderedSections(report);
+  const actionsByItem = new Map((options.itemActions ?? []).map((entry) => [entry.itemStableId, entry]));
   const blocks: SlackBlock[] = [header(report.masthead), context(report.freshness)];
+
+  // The change line, directly under the freshness note and above the six sections — the same
+  // position it holds in the email and on the page. "Nothing material changed since yesterday" is
+  // the whole report on a quiet morning, and a reader who has that sentence in the first screenful
+  // does not scroll six sections to discover it.
+  if (report.changeLine.length > 0) blocks.push(context(renderProseText(report.changeLine)));
 
   for (const section of sections) {
     blocks.push({ type: 'divider' });
@@ -137,6 +169,28 @@ export function renderSlackBlocks(report: RenderedReport, options: SlackRenderOp
     for (const chunk of slackTextChunks(renderProseText(section.prose))) {
       blocks.push(body(chunk));
     }
+
+    for (const claim of section.claims) {
+      const entry = actionsByItem.get(claim.stableId);
+      if (entry === undefined || entry.actions.length === 0) continue;
+      // The headline in a context block above the buttons, so a row of verbs is never ambiguous
+      // about which of four blockers it would act on.
+      blocks.push(context(`*${renderProseText(entry.headline)}*`));
+      blocks.push({
+        type: 'actions',
+        // `block_id` carries the item, so an interaction payload identifies its claim even if
+        // Slack ever stopped echoing the button's own value.
+        block_id: `compass_item:${claim.stableId}`,
+        elements: entry.actions.map((action) => ({
+          type: 'button',
+          text: { type: 'plain_text', text: action.label },
+          action_id: slackActionId(action.action),
+          // The item id travels in `value`: `action_id` must be unique within a message, and a
+          // report with two dismissible risks would collide on the first one otherwise.
+          value: claim.stableId,
+        })),
+      });
+    }
   }
 
   blocks.push({ type: 'divider' });
@@ -145,17 +199,6 @@ export function renderSlackBlocks(report: RenderedReport, options: SlackRenderOp
       `The full report is above. <${options.reportUrl}|Open it in Compass> to follow the evidence for any claim.`,
     ),
   );
-
-  if (options.feedbackActions === true) {
-    blocks.push({
-      type: 'actions',
-      elements: [
-        { type: 'button', text: { type: 'plain_text', text: 'Useful' }, action_id: 'compass_feedback_useful' },
-        { type: 'button', text: { type: 'plain_text', text: 'Not useful' }, action_id: 'compass_feedback_not_useful' },
-        { type: 'button', text: { type: 'plain_text', text: 'Wrong' }, action_id: 'compass_feedback_wrong' },
-      ],
-    });
-  }
 
   return blocks;
 }

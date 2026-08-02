@@ -39,6 +39,14 @@ export interface SubscriptionInput {
   readonly timezone: string;
   /** SHA-256 of the one-click unsubscribe secret. Never the secret. */
   readonly unsubscribeTokenHash: string;
+  /**
+   * The Slack user this subscriber *is*, when it has been mapped.
+   *
+   * Not the same thing as `target`: a Slack subscription usually targets a channel, and a channel
+   * is not a person. This is the mapping an interactive feedback action is authorized by, and null
+   * — "not mapped" — is refused with an ephemeral reply rather than guessed at.
+   */
+  readonly slackUserId?: string | null;
 }
 
 export interface StoredSubscription extends SubscriptionInput {
@@ -61,9 +69,34 @@ const toStoredSubscription = (row: SubscriptionRow): StoredSubscription => ({
   timezone: row.timezone,
   active: row.active,
   unsubscribeTokenHash: row.unsubscribeTokenHash,
+  slackUserId: row.slackUserId,
   createdAt: fromDatabaseInstant(row.createdAt),
   updatedAt: fromDatabaseInstant(row.updatedAt),
 });
+
+/**
+ * The subscription that claims a Slack user id — the (Slack user → Compass seat) mapping.
+ *
+ * Returns the row whether or not it is active, and the caller decides. An inactive subscription
+ * still identifies who its owner is, and a manager who switched their Slack daily off has not
+ * stopped being themselves; refusing their feedback for that reason would be a puzzle rather than a
+ * permission decision.
+ *
+ * Two subscriptions claiming one Slack user id is a configuration mistake rather than an attack —
+ * somebody entered a colleague's id — so the oldest is returned and the choice is deterministic.
+ * Acting on an arbitrary one would make the same click authorize as different people on different
+ * days.
+ */
+export async function findSubscriptionBySlackUserId(
+  scoped: ScopedDb,
+  slackUserId: string,
+): Promise<StoredSubscription | null> {
+  const [row] = await scoped
+    .selectFrom(subscriptions, eq(subscriptions.slackUserId, slackUserId))
+    .orderBy(asc(subscriptions.createdAt), asc(subscriptions.id))
+    .limit(1);
+  return row === undefined ? null : toStoredSubscription(row);
+}
 
 /**
  * Creates or replaces a person's subscription for one channel.
@@ -91,6 +124,7 @@ export async function upsertSubscription(
       timezone: input.timezone,
       active: true,
       unsubscribeTokenHash: input.unsubscribeTokenHash,
+      slackUserId: input.slackUserId ?? null,
       createdAt: recordedAt,
       updatedAt: recordedAt,
     })
@@ -103,6 +137,9 @@ export async function upsertSubscription(
         timezone: input.timezone,
         active: true,
         unsubscribeTokenHash: input.unsubscribeTokenHash,
+        // `undefined` leaves the stored mapping alone; an explicit null clears it. A caller that
+        // only changes the send time must not silently unmap somebody's Slack identity.
+        ...(input.slackUserId === undefined ? {} : { slackUserId: input.slackUserId }),
         updatedAt: recordedAt,
       },
     })

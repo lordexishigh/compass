@@ -1,5 +1,6 @@
 import { orderedEvidence, pullRequestEvidence, ticketEvidence, type EvidenceRef } from './evidence.js';
 import { compareNumbers, compareStable, wholeDaysBetween, windowContains, type Instant } from './instant.js';
+import { entityRef, stableItemId } from './identity.js';
 import { isOpenPullRequest } from './review-queue.js';
 import {
   instantField,
@@ -127,7 +128,11 @@ function blockedFacts(
       const dayCount = wholeDaysBetween(since, instant);
 
       return {
-        stableId: `elapsed:still_blocked:${key}`,
+        stableId: stableItemId({
+        organizationId: snapshot.organizationId,
+        entityRef: entityRef('ticket', key),
+        causeKind: 'still_blocked',
+      }),
         kind: 'still_blocked' as const,
         entityId: key,
         entityKind: 'ticket' as const,
@@ -162,7 +167,11 @@ function inFlightFacts(
       const dayCount = wholeDaysBetween(startedAt, instant);
 
       return {
-        stableId: `elapsed:still_in_flight:${key}`,
+        stableId: stableItemId({
+        organizationId: snapshot.organizationId,
+        entityRef: entityRef('ticket', key),
+        causeKind: 'still_in_flight',
+      }),
         kind: 'still_in_flight' as const,
         entityId: key,
         entityKind: 'ticket' as const,
@@ -191,7 +200,11 @@ function reviewFacts(
       const label = typeof displayNumber === 'number' ? `#${displayNumber}` : pullRequest.naturalKey;
 
       return {
-        stableId: `elapsed:awaiting_review:${pullRequest.naturalKey}`,
+        stableId: stableItemId({
+        organizationId: snapshot.organizationId,
+        entityRef: entityRef('pull_request', pullRequest.naturalKey),
+        causeKind: 'awaiting_review',
+      }),
         kind: 'awaiting_review' as const,
         entityId: pullRequest.naturalKey,
         entityKind: 'pull_request' as const,
@@ -239,7 +252,11 @@ function resequencingFacts(
     .map(([ticketKey, value]) => {
       const ticket = tickets.get(ticketKey);
       return {
-        stableId: `elapsed:resequenced:${ticketKey}`,
+        stableId: stableItemId({
+        organizationId: snapshot.organizationId,
+        entityRef: entityRef('ticket', ticketKey),
+        causeKind: 'resequenced',
+      }),
         kind: 'resequenced' as const,
         entityId: ticketKey,
         entityKind: 'ticket' as const,
@@ -272,7 +289,11 @@ function reopenedFacts(
 
       const since = reopenings[0].transitionedAt as Instant;
       return {
-        stableId: `elapsed:reopened:${key}`,
+        stableId: stableItemId({
+        organizationId: snapshot.organizationId,
+        entityRef: entityRef('ticket', key),
+        causeKind: 'reopened',
+      }),
         kind: 'reopened' as const,
         entityId: key,
         entityKind: 'ticket' as const,
@@ -298,7 +319,12 @@ function contradictionFacts(snapshot: AnalysisSnapshot, instant: Instant): reado
   return snapshot.collections.corrections
     .filter((correction) => correction.subjectKind === 'ticket')
     .map((correction) => ({
-      stableId: `elapsed:contradicted:${correction.subjectKey}:${correction.contradiction}`,
+      stableId: stableItemId({
+        organizationId: snapshot.organizationId,
+        entityRef: entityRef('ticket', correction.subjectKey),
+        causeKind: 'contradicted',
+        causeDiscriminator: correction.contradiction,
+      }),
       kind: 'contradicted' as const,
       entityId: correction.subjectKey,
       entityKind: 'ticket' as const,

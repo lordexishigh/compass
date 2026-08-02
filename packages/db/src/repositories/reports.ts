@@ -1,5 +1,5 @@
 import type { Instant, TimeWindow } from '@compass/clock';
-import { and, asc, desc, eq, type InferSelectModel } from 'drizzle-orm';
+import { and, asc, desc, eq, lt, type InferSelectModel } from 'drizzle-orm';
 
 import { fromDatabaseInstant, toDatabaseInstant } from '../schema/columns.js';
 import { narrationTraces } from '../schema/narration.js';
@@ -57,12 +57,23 @@ export interface ReportEvidenceInput {
 
 export interface ReportItemInput {
   readonly stableId: string;
+  /** The coordinates `stableId` was derived from — what a feedback row is keyed on. */
+  readonly causeEntityRef: string;
+  readonly causeKind: string;
+  readonly causeDiscriminator: string;
   readonly headline: string;
   readonly detail: string;
   /** This claim's own rendered sentences. Never reconstructed from the section. */
   readonly prose: string;
   readonly changeTag: string;
   readonly ageDays: number;
+  /** The first report that carried this id. Read back by tomorrow's comparison. */
+  readonly firstSeenAt: Instant;
+  /** The ordered quantity tomorrow compares against. Higher is worse. */
+  readonly severityScore: number;
+  readonly signalOnsetAt: Instant;
+  /** `accepted` | `resurfaced` | null. */
+  readonly feedbackState: string | null;
   readonly changeClause: string | null;
   readonly ladder: Record<string, unknown> | null;
   readonly payload: Record<string, unknown>;
@@ -92,6 +103,8 @@ export interface ReportInput {
   readonly payloadJson: string;
   readonly payload: Record<string, unknown>;
   readonly prose: string;
+  /** The change line as rendered. Empty for a report written before change-awareness. */
+  readonly changeLine: string;
   readonly rendererId: string;
   /** True only when narration was attempted and the template renderer answered. */
   readonly fallbackRenderer: boolean;
@@ -118,6 +131,8 @@ export interface StoredReport {
   readonly payloadJson: string;
   readonly payload: Record<string, unknown>;
   readonly prose: string;
+  /** The change line as rendered. Empty for a report written before change-awareness. */
+  readonly changeLine: string;
   readonly rendererId: string;
   readonly fallbackRenderer: boolean;
   readonly fallbackReason: string | null;
@@ -143,11 +158,18 @@ export interface StoredReportItem {
   readonly id: string;
   readonly ordinal: number;
   readonly stableId: string;
+  readonly causeEntityRef: string;
+  readonly causeKind: string;
+  readonly causeDiscriminator: string;
   readonly headline: string;
   readonly detail: string;
   readonly prose: string;
   readonly changeTag: string;
   readonly ageDays: number;
+  readonly firstSeenAt: Instant;
+  readonly severityScore: number;
+  readonly signalOnsetAt: Instant;
+  readonly feedbackState: string | null;
   readonly changeClause: string | null;
   readonly ladder: Record<string, unknown> | null;
   readonly payload: Record<string, unknown>;
@@ -214,6 +236,7 @@ export async function saveReport(scoped: ScopedDb, input: ReportInput): Promise<
     payloadJson: input.payloadJson,
     payload: input.payload,
     prose: input.prose,
+    changeLine: input.changeLine,
     rendererId: input.rendererId,
     fallbackRenderer: input.fallbackRenderer,
     // Normalised rather than trusted: a reason with no flag would render a
@@ -248,11 +271,18 @@ export async function saveReport(scoped: ScopedDb, input: ReportInput): Promise<
         reportSectionId: sectionId,
         ordinal: index + 1,
         stableId: item.stableId,
+        causeEntityRef: item.causeEntityRef,
+        causeKind: item.causeKind,
+        causeDiscriminator: item.causeDiscriminator,
         headline: item.headline,
         detail: item.detail,
         prose: item.prose,
         changeTag: item.changeTag,
         ageDays: item.ageDays,
+        firstSeenAt: toDatabaseInstant(item.firstSeenAt),
+        severityScore: item.severityScore,
+        signalOnsetAt: toDatabaseInstant(item.signalOnsetAt),
+        feedbackState: item.feedbackState,
         changeClause: item.changeClause,
         ladder: item.ladder,
         hasLadder: item.ladder !== null,
@@ -322,6 +352,7 @@ const toStoredReport = (row: ReportRow): StoredReport => ({
   payloadJson: row.payloadJson,
   payload: row.payload,
   prose: row.prose,
+  changeLine: row.changeLine,
   rendererId: row.rendererId,
   fallbackRenderer: row.fallbackRenderer,
   fallbackReason: row.fallbackReason,
@@ -429,11 +460,18 @@ export async function loadReportBundle(scoped: ScopedDb, reportId: string): Prom
       id: row.id,
       ordinal: row.ordinal,
       stableId: row.stableId,
+      causeEntityRef: row.causeEntityRef,
+      causeKind: row.causeKind,
+      causeDiscriminator: row.causeDiscriminator,
       headline: row.headline,
       detail: row.detail,
       prose: row.prose,
       changeTag: row.changeTag,
       ageDays: row.ageDays,
+      firstSeenAt: fromDatabaseInstant(row.firstSeenAt),
+      severityScore: row.severityScore,
+      signalOnsetAt: fromDatabaseInstant(row.signalOnsetAt),
+      feedbackState: row.feedbackState,
       changeClause: row.changeClause,
       ladder: row.ladder,
       payload: row.payload,
@@ -456,6 +494,125 @@ export async function loadReportBundle(scoped: ScopedDb, reportId: string): Prom
       summary: row.summary,
       items: itemsBySection.get(row.id) ?? [],
     })),
+  };
+}
+
+/**
+ * One item's state as a prior report left it — three fields and nothing else.
+ *
+ * Deliberately not `StoredReportItem`. The change comparison must not be able to reach for a
+ * prior item's headline or prose: an item's *text* changing is not the item changing, and a
+ * comparison that could see the text would eventually be tempted to diff it.
+ */
+export interface PriorReportItemState {
+  readonly stableId: string;
+  readonly firstSeenAt: Instant;
+  readonly severityScore: number;
+}
+
+export interface PriorReportSnapshot {
+  readonly reportId: string;
+  readonly reportInstant: Instant;
+  readonly items: readonly PriorReportItemState[];
+}
+
+/**
+ * The most recent report for a scope *strictly before* an instant, reduced to what the change
+ * comparison needs.
+ *
+ * `<` and not `<=`, which is the whole correctness of it. A replay regenerates the report for an
+ * instant it has already covered — a backfill arrived, a Correction landed, a cold start re-ran
+ * today — and a `<=` lookup would find *that same report* and compare it against itself. Every
+ * item would come back `unchanged` with the age it already had, and the second generation of any
+ * day would silently lose a morning's movement.
+ */
+export async function findPriorReportState(
+  scoped: ScopedDb,
+  scope: { readonly scopeKind: string; readonly scopeKey: string },
+  before: Instant,
+): Promise<PriorReportSnapshot | null> {
+  const [row] = await scoped
+    .selectFrom(
+      reports,
+      and(
+        eq(reports.scopeKind, scope.scopeKind),
+        eq(reports.scopeKey, scope.scopeKey),
+        lt(reports.reportInstant, toDatabaseInstant(before)),
+      ),
+    )
+    .orderBy(desc(reports.reportInstant))
+    .limit(1);
+
+  if (row === undefined) return null;
+
+  const itemRows = await scoped
+    .selectFrom(reportItems, eq(reportItems.reportId, row.id))
+    .orderBy(asc(reportItems.stableId));
+
+  return {
+    reportId: row.id,
+    reportInstant: fromDatabaseInstant(row.reportInstant),
+    items: itemRows.map((item) => ({
+      stableId: item.stableId,
+      firstSeenAt: fromDatabaseInstant(item.firstSeenAt),
+      severityScore: item.severityScore,
+    })),
+  };
+}
+
+/** One item as it was persisted, found by its stable id — what a feedback click resolves. */
+export interface ReportItemLocator {
+  readonly reportId: string;
+  readonly sectionKey: string;
+  readonly stableId: string;
+  readonly causeEntityRef: string;
+  readonly causeKind: string;
+  readonly causeDiscriminator: string;
+  readonly headline: string;
+  readonly severityScore: number;
+}
+
+/**
+ * The newest occurrence of one item id in this organization's reports.
+ *
+ * A feedback click supplies an item id and nothing else, and the handler needs the coordinates a
+ * verdict is keyed on plus the severity score that becomes a dismissal's baseline. Newest first,
+ * because the manager is acting on the report in front of them, and the same condition measured
+ * three days ago is not the number their dismissal is about.
+ */
+export async function findReportItemByStableId(
+  scoped: ScopedDb,
+  stableId: string,
+): Promise<ReportItemLocator | null> {
+  const rows = await scoped.selectFrom(reportItems, eq(reportItems.stableId, stableId));
+  if (rows.length === 0) return null;
+
+  const reportInstants = new Map<string, number>();
+  for (const reportId of new Set(rows.map((row) => row.reportId))) {
+    const [report] = await scoped.selectFrom(reports, eq(reports.id, reportId)).limit(1);
+    if (report !== undefined) reportInstants.set(reportId, report.reportInstant.getTime());
+  }
+
+  const newest = [...rows].sort(
+    (left, right) =>
+      (reportInstants.get(right.reportId) ?? 0) - (reportInstants.get(left.reportId) ?? 0) ||
+      compareText(left.id, right.id),
+  )[0];
+  if (newest === undefined) return null;
+
+  const [section] = await scoped
+    .selectFrom(reportSections, eq(reportSections.id, newest.reportSectionId))
+    .limit(1);
+
+  return {
+    reportId: newest.reportId,
+    sectionKey: section?.sectionKey ?? '',
+    stableId: newest.stableId,
+    causeEntityRef: newest.causeEntityRef,
+    causeKind: newest.causeKind,
+    causeDiscriminator: newest.causeDiscriminator,
+    headline: newest.headline,
+    severityScore: newest.severityScore,
   };
 }
 

@@ -7,6 +7,11 @@ import type {
 import type { DetectedBlocker } from './blockers.js';
 import { emptyCalibrationAudit, type CalibrationAudit } from './calibration.js';
 import type { ElapsedFactStatement } from './elapsed.js';
+// The vocabulary only, from a leaf that imports nothing. `feedback.ts` names `ReportItem` and this
+// module has to name a feedback action, which together would be a cycle — so the closed set of
+// verdicts lives on its own, below both.
+import type { FeedbackAction } from './feedback-actions.js';
+import { stableItemId, type ItemCause } from './identity.js';
 import type { EvidenceRef } from './evidence.js';
 import type { Instant, TimeWindow } from './instant.js';
 import type { LadderResult } from './ladder.js';
@@ -51,17 +56,76 @@ export type ReportScope = { readonly kind: 'team'; readonly teamKey: string } | 
 
 export type ChangeTag = 'new' | 'unchanged' | 'worsened' | 'improved' | 'resolved';
 
+/**
+ * The three coordinates a report item's identity is derived from.
+ *
+ * Declared in `identity.ts` beside the derivation itself and re-exported here, because the
+ * item carrying them is what makes a feedback record keyable on the *condition* rather than
+ * on the digest. `stableId` and `cause` are therefore not two facts but one, stated twice for
+ * two different readers: the id is what a row, a URL and a lookup use, and the cause is what a
+ * verdict is recorded against. `assertItemIdsMatchTheirCause` proves they cannot disagree.
+ */
+export type { ItemCause };
+
+/** A manager's verdict, as it reaches the page. Never a badge. */
+export interface ReportItemFeedback {
+  /**
+   * `accepted` — the manager took this step and Compass is not re-suggesting it.
+   * `resurfaced` — a dismissed risk whose evidence materially worsened.
+   */
+  readonly state: 'accepted' | 'resurfaced';
+  readonly action: string;
+  /** When the verdict was recorded. */
+  readonly at: Instant;
+  /** The run-in clause the renderer prints. */
+  readonly clause: string;
+}
+
 export interface ReportItem {
   /**
    * Derived from the underlying entity and cause — never from the report or the
    * run — so the same condition on consecutive days is one item with a history.
    */
   readonly stableId: string;
+  /** The coordinates `stableId` was derived from, and feedback is recorded against. */
+  readonly cause: ItemCause;
   readonly headline: string;
   readonly detail: string;
   readonly changeTag: ChangeTag;
-  /** Days this item has been continuously present, from its first sighting. */
+  /**
+   * The age of the *condition*, in whole days, from the knowledge model's own
+   * history. A ticket that had already been stalled for six days when Compass was
+   * installed was stalled for six days, and this is that number.
+   */
   readonly ageDays: number;
+  /**
+   * The first report that carried this item id.
+   *
+   * A different fact from `ageDays`, and the product states both: this is what
+   * "unchanged since Compass first reported it — day 6 of it" is counted from, and
+   * what a manager's sense of "you keep telling me this" is actually about. On a
+   * `new` item it is the report's own instant.
+   */
+  readonly firstSeenAt: Instant;
+  /**
+   * The one ordered quantity this item is compared against its own prior self on.
+   *
+   * **Higher is always worse**, for every family, which is why a sprint at 62%
+   * scores 38 rather than 62. The alternative — a per-family direction flag — is a
+   * rule every consumer has to honour and one of them eventually will not, at which
+   * point the page reports an improving sprint as worsening. `generate.ts`
+   * documents the mapping family by family.
+   */
+  readonly severityScore: number;
+  /**
+   * When the underlying condition began.
+   *
+   * This is what makes "already resolved" a durable verdict rather than a one-day
+   * reprieve: a blocker's age grows every morning, so a suppression keyed on
+   * severity would lapse immediately, while one keyed on onset holds for as long as
+   * it is the same episode and lets a genuinely new one through.
+   */
+  readonly signalOnsetAt: Instant;
   readonly evidence: readonly EvidenceRef[];
   /**
    * The five-notch completion meter. Present on Yesterday and Wins items, absent
@@ -85,6 +149,14 @@ export interface ReportItem {
    * the only arrangement in which the two renderers cannot diverge.
    */
   readonly alignment?: ReportItemAlignment;
+  /**
+   * The manager's own verdict on this item, when there is one.
+   *
+   * Absent is the common case. Present means the item is not a fresh finding: it is
+   * a step they already accepted, or a risk they dismissed which has come back
+   * because its evidence materially worsened.
+   */
+  readonly feedback?: ReportItemFeedback;
 }
 
 /**
@@ -177,6 +249,49 @@ export interface AnalysisFindings {
   readonly alignment: AlignmentAssessment;
 }
 
+/**
+ * What the change-awareness pass concluded about the report as a whole.
+ *
+ * Declared here, with the contract it is a field of, rather than beside the pass that computes it:
+ * every renderer reads it, and `applyChangeAwareness` is one of several things that could
+ * legitimately produce it (a time-travel replay produces one too).
+ */
+export interface ReportChangeSummary {
+  readonly hasPriorReport: boolean;
+  /** The prior report's instant, so the page can say what "since yesterday" means. */
+  readonly priorInstant: Instant | null;
+  /**
+   * True only when every item present is `unchanged` *and* nothing departed.
+   *
+   * The second half matters as much as the first: a blocker resolved overnight leaves the report
+   * entirely, and a summary that looked only at the items still present would call that morning
+   * quiet.
+   */
+  readonly nothingMaterialChanged: boolean;
+  readonly statement: string;
+  readonly counts: Readonly<Record<ChangeTag, number>>;
+  /** Ids present in the prior report and absent now — conditions that stopped holding. */
+  readonly departedStableIds: readonly string[];
+}
+
+/**
+ * One item a manager's feedback removed from this report, and why.
+ *
+ * Carried on the report rather than dropped, because a suppression a manager cannot find is
+ * indistinguishable from a detector that broke.
+ */
+export interface SuppressedItemNote {
+  readonly sectionKey: SectionKey;
+  readonly stableId: string;
+  readonly cause: ItemCause;
+  readonly action: FeedbackAction;
+  readonly headline: string;
+  /** One sentence, in the product's voice, for the corrections screen and the audit. */
+  readonly statement: string;
+  /** When the manager's verdict was recorded. */
+  readonly at: Instant;
+}
+
 export interface StructuredReport {
   readonly schemaVersion: number;
   readonly organizationId: string;
@@ -188,6 +303,23 @@ export interface StructuredReport {
   readonly sections: readonly ReportSection[];
   readonly coverage: readonly ReportCoverageNote[];
   readonly findings: AnalysisFindings;
+  /**
+   * What moved since the previous report for this scope, and the plain statement
+   * that nothing did.
+   *
+   * Required, never optional. A report with no prior to compare against says so in
+   * its own sentence, which is a different fact from "nothing changed" and must not
+   * be rendered as one.
+   */
+  readonly changeSummary: ReportChangeSummary;
+  /**
+   * Everything a manager's feedback removed from this report, and why.
+   *
+   * Carried on the report rather than dropped, because a suppression a manager
+   * cannot find is indistinguishable from a detector that broke. The corrections
+   * screen lists these; the six sections do not.
+   */
+  readonly suppressed: readonly SuppressedItemNote[];
 }
 
 export interface EmptyReportInput {
@@ -321,6 +453,18 @@ export function createEmptyStructuredReport(input: EmptyReportInput): Structured
     })),
     coverage: input.coverage ?? [],
     findings: emptyFindings(),
+    // An organization Compass knows nothing about has no prior report and no items, so
+    // neither "nothing changed" nor a count of movement would be true. It says what it is.
+    changeSummary: {
+      hasPriorReport: false,
+      priorInstant: null,
+      nothingMaterialChanged: false,
+      statement:
+        'Compass has generated no earlier report for this scope, so there is nothing to compare this one against yet.',
+      counts: { new: 0, unchanged: 0, worsened: 0, improved: 0, resolved: 0 },
+      departedStableIds: [],
+    },
+    suppressed: [],
   };
 }
 
@@ -398,6 +542,90 @@ export function assertEveryClaimHasEvidence(report: StructuredReport): void {
           `\`${section.key}/${item.stableId}\` carries no evidence: "${item.headline}". ` +
             'Every claim in a Compass report resolves to an artifact a reader can open — a commit SHA, a pull ' +
             'request number or a tracker key. A claim that cannot be checked must not be made.',
+        );
+      }
+    }
+  }
+}
+
+export class ItemCauseMismatchError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ItemCauseMismatchError';
+  }
+}
+
+/**
+ * Every item's id is the derivation of the cause printed beside it.
+ *
+ * This is the assertion that makes carrying both fields safe. A feedback record is keyed on the
+ * cause and matched against the item by id; if a detector's id came from one set of coordinates
+ * and the cause it advertises came from another, a manager's dismissal would be recorded against
+ * a condition that no item will ever match. Nothing would throw, nothing would look wrong, and
+ * every button on the page would silently do nothing — which is precisely the "feedback that
+ * visibly doesn't stick" failure this task exists to prevent.
+ *
+ * So the report fails to generate instead, in the pure layer, naming the item.
+ */
+export function assertItemIdsMatchTheirCause(report: StructuredReport): void {
+  for (const section of report.sections) {
+    for (const item of section.items) {
+      const derived = stableItemId({ organizationId: report.organizationId, ...item.cause });
+      if (derived !== item.stableId) {
+        throw new ItemCauseMismatchError(
+          `\`${section.key}\` carries an item with id \`${item.stableId}\` whose advertised cause ` +
+            `(${item.cause.entityRef} / ${item.cause.causeKind} / "${item.cause.causeDiscriminator}") derives to ` +
+            `\`${derived}\`. Feedback is recorded against the cause and matched by the id, so a mismatch means ` +
+            'every dismissal, snooze and correction for this item would be written and then never found again.',
+        );
+      }
+    }
+  }
+}
+
+export class ChangeTagError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ChangeTagError';
+  }
+}
+
+/**
+ * Every item carries exactly one change tag from the closed set, and a `firstSeenAt`
+ * that is not in the future.
+ *
+ * "Exactly one" is structural — the field is singular — so what this actually proves
+ * is that the value is one of the five and that the tagging pass ran at all. An item
+ * that reached a page with a producer's provisional tag and a `firstSeenAt` of zero
+ * would render as day 20,000 of a blocker, and the number would be interpreted by
+ * the renderer as a grounded fact.
+ *
+ * It throws in the pure layer, naming the item, rather than letting either reach a
+ * reader — the same posture as the age and evidence assertions beside it.
+ */
+export function assertOneChangeTagPerItem(report: StructuredReport): void {
+  const permitted: readonly ChangeTag[] = ['new', 'unchanged', 'worsened', 'improved', 'resolved'];
+
+  for (const section of report.sections) {
+    for (const item of section.items) {
+      if (!permitted.includes(item.changeTag)) {
+        throw new ChangeTagError(
+          `\`${section.key}/${item.stableId}\` carries the change tag \`${item.changeTag}\`, which is not one of ` +
+            `${permitted.join(', ')}. Every item carries exactly one, computed against the prior report for this scope.`,
+        );
+      }
+      if (!Number.isFinite(item.firstSeenAt) || item.firstSeenAt > report.instant) {
+        throw new ChangeTagError(
+          `\`${section.key}/${item.stableId}\` was first seen at ${item.firstSeenAt}, which is after this report's ` +
+            `instant ${report.instant}. An item cannot have been reported before Compass generated the report ` +
+            'reporting it, and the age the page prints is counted from this field.',
+        );
+      }
+      if (!Number.isInteger(item.severityScore)) {
+        throw new ChangeTagError(
+          `\`${section.key}/${item.stableId}\` has a severity score of ${item.severityScore}. The score is the one ` +
+            'ordered quantity an item is compared against its own prior self on, and a fractional one would make ' +
+            'the same condition read as worsened on a rounding difference.',
         );
       }
     }

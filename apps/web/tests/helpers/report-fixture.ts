@@ -22,6 +22,19 @@ export const TIMEZONE = 'Europe/London';
 export const REPORT_INSTANT: Instant = instantFromIso('2026-07-31T07:30:00Z');
 export const WINDOW = timeWindow(instantFromIso('2026-07-29T23:00:00Z'), instantFromIso('2026-07-30T23:00:00Z'));
 
+/**
+ * When a fixture item was first reported, derived from its own condition age.
+ *
+ * The two agree here on purpose, and it is the realistic case rather than a convenience: on the
+ * first report that carries an item, Compass has been showing it for exactly as long as the
+ * condition has been true. Pinning one instant for every item instead would make a one-day
+ * completion render as "day 6", which is a sentence about a different fact.
+ *
+ * A real instant either way — zero renders as day 20,000 and makes every age assertion meaningless.
+ */
+const firstSeenFor = (ageDays: number): Instant =>
+  (REPORT_INSTANT - Math.max(0, ageDays) * 86_400_000) as Instant;
+
 let evidenceCounter = 0;
 
 function evidence(
@@ -66,15 +79,26 @@ interface ItemSpec {
 
 function item(spec: ItemSpec, ordinal: number): StoredReportItem {
   const id = `item-${spec.stableId}`;
+  const firstSeenAt = firstSeenFor(spec.ageDays ?? 0);
   return {
     id,
     ordinal,
     stableId: spec.stableId,
+    // The coordinates the id was derived from. A fixture's `stableId` is a readable label rather
+    // than a real digest, so the cause is a matching label: what these tests exercise is the view,
+    // and an item whose cause and id agree in shape is what the view is handed in production.
+    causeEntityRef: `ticket:${spec.stableId}`,
+    causeKind: 'fixture',
+    causeDiscriminator: '',
     headline: spec.headline,
     detail: spec.detail,
     prose: spec.prose,
     changeTag: 'unchanged',
     ageDays: spec.ageDays ?? 0,
+    firstSeenAt,
+    severityScore: 0,
+    signalOnsetAt: firstSeenAt,
+    feedbackState: null,
     changeClause: spec.changeClause ?? null,
     ladder:
       spec.withLadder === true
@@ -398,6 +422,7 @@ export function storedBundle(): StoredReportBundle {
       // testing the fallback instead of the object.
       payload: { findings: COLLAR_FINDINGS },
       prose: 'the whole report',
+      changeLine: 'Since the previous report 1 item worsened and 2 items carried over unchanged.',
       rendererId: 'template',
       fallbackRenderer: false,
       fallbackReason: null,

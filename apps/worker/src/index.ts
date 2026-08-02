@@ -28,6 +28,7 @@ import { KnowledgeStore, readRosterView } from '@compass/knowledge-model';
 import { narratorFromEnvironment } from '@compass/narrator';
 import { ensureDailyReport } from '@compass/pipeline';
 import {
+  FEEDBACK_LINK_SECRET_ENV_VAR,
   RESEND_API_KEY_ENV_VAR,
   RESEND_FROM_ENV_VAR,
   ResendEmailTransport,
@@ -228,6 +229,10 @@ export function createDeliveryDependencies(clock: Clock, db: CompassDatabase): D
     // it directly. The secret itself was shown once, when the subscription was created.
     unsubscribeUrlFor: (subscription) =>
       `${baseUrl}/api/delivery/unsubscribe?token=${encodeURIComponent(subscription.unsubscribeTokenHash)}`,
+    // Resolved at the process edge like every other secret. Absent is a supported state: the email
+    // then carries no feedback links, which is the honest degradation — signing with a default key
+    // would put forgeable dismissal links in every inbox.
+    feedbackLinkSecret: process.env[FEEDBACK_LINK_SECRET_ENV_VAR],
     newId: () => randomUUID(),
     logger: console,
   };

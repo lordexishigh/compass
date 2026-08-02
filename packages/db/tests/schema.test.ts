@@ -54,6 +54,11 @@ describe('base schema convention', () => {
       'entity_versions',
       'features',
       'feedback_entries',
+      // One row per consumed email feedback link, keyed on the token's digest. What makes a
+      // state-changing link single-use, and it has to be a table: a signed link with a 30-day life
+      // lands in an inbox, a prefetch cache and a forwarded thread, and the primary key is the only
+      // thing that refuses the second click under genuine concurrency.
+      'feedback_link_uses',
       'identity_links',
       'ingest_runs',
       'ingest_source_coverage',

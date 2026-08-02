@@ -7,6 +7,7 @@ import {
   type EvidenceRef,
 } from './evidence.js';
 import { compareNumbers, compareStable, windowContains, type Instant } from './instant.js';
+import { entityRef, stableItemId } from './identity.js';
 import {
   assessLadder,
   indexArtifactsByTicket,
@@ -281,7 +282,7 @@ export function detectYesterdayItems(
   const allTags = scopedReleaseTags(snapshot, scope);
 
   return [...units.values()]
-    .map((unit) => finalise(unit, allTags, options))
+    .map((unit) => finalise(snapshot.organizationId, unit, allTags, options))
     .sort(
       (left, right) =>
         compareNumbers(left.completedAt, right.completedAt) || compareStable(left.unitOfWork, right.unitOfWork),
@@ -289,6 +290,7 @@ export function detectYesterdayItems(
 }
 
 function finalise(
+  organizationId: string,
   unit: Accumulator,
   allTags: readonly AnalysisEntity[],
   options: YesterdayOptions,
@@ -308,7 +310,11 @@ function finalise(
   );
 
   return {
-    stableId: `yesterday:${unit.unitOfWork}`,
+    stableId: stableItemId({
+      organizationId,
+      entityRef: entityRef('unit_of_work', unit.unitOfWork),
+      causeKind: 'completed',
+    }),
     unitOfWork: unit.unitOfWork,
     ticketKey: unit.ticketKey,
     title: unit.title,

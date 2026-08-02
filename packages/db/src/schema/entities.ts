@@ -662,15 +662,65 @@ export const feedbackEntries = pgTable(
   'feedback_entries',
   {
     ...entityBase(),
+    /**
+     * The derived id of the item the verdict was given on.
+     *
+     * Kept for the lookup — it is what a URL, a Slack button value and an index all use — but it
+     * is **not** what the verdict is keyed on. The three `cause_*` columns are. A digest is a
+     * function of `STABLE_ID_VERSION`, and that tag exists precisely so identity can be reset
+     * deliberately; keying dismissals on the digest would silently orphan every one of them the
+     * day it moved, which is the opposite of a reset a manager notices.
+     */
     reportItemStableId: text('report_item_stable_id').notNull(),
+    /** `kind:naturalKey` — `ticket:PLAT-742`. The condition's own coordinates. */
+    causeEntityRef: text('cause_entity_ref').notNull(),
+    causeKind: text('cause_kind').notNull(),
+    /** `''` when the cause needs none. Never null: the key has to be total. */
+    causeDiscriminator: text('cause_discriminator').notNull(),
     authorUserId: uuid('author_user_id'),
-    /** `useful` | `not_useful` | `dismissed` | `wrong`. */
-    verdict: text('verdict').notNull(),
+    /**
+     * The closed vocabulary: `dismiss_risk` | `off_goal_flag_wrong` | `accept_recommendation` |
+     * `reject_recommendation` | `blocker_already_resolved` | `snooze`.
+     *
+     * Constrained in the database as well as in `@compass/analysis`, so a sixth value cannot be
+     * written by any path — a verdict the pipeline does not understand would be a row that
+     * silently suppressed nothing.
+     */
+    action: text('action').notNull(),
+    /** The manager's own words. Required by the UI for a dismissal; nullable here. */
+    reason: text('reason'),
     note: text('note'),
+    /** Non-null only for `snooze`. Half-open: the item returns at this instant. */
+    snoozeUntil: instantColumn('snooze_until'),
+    /**
+     * The severity score at the moment of the verdict.
+     *
+     * The baseline a dismissed risk's return is measured against. Null means "no baseline", which
+     * suppresses indefinitely rather than resurfacing on the first measurement — a baseline of
+     * zero would make every dismissal last exactly one day.
+     */
+    severityScoreAtVerdict: integer('severity_score_at_verdict'),
+    /** `web` | `email` | `slack`. Where the click came from, for the audit. */
+    sourceChannel: text('source_channel').notNull(),
+    /**
+     * The report the manager was reading, recorded but deliberately **not** a foreign key.
+     *
+     * `saveReport` deletes and rewrites the report row on every replay — a backfill, a
+     * Correction, a cold start re-running today — so a real reference would either break the
+     * replay with a constraint violation or force the replay to delete the feedback. Feedback
+     * outlives the page it was given on: that is the whole point of it.
+     */
+    reportId: uuid('report_id'),
     submittedAt: instantColumn('submitted_at').notNull(),
   },
   (table) => [
     ...entityConstraints('feedback_entries', table),
     index('feedback_entries_org_item_idx').on(table.organizationId, table.reportItemStableId),
+    index('feedback_entries_org_cause_idx').on(
+      table.organizationId,
+      table.causeEntityRef,
+      table.causeKind,
+      table.causeDiscriminator,
+    ),
   ],
 );

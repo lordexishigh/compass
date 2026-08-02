@@ -1,7 +1,9 @@
 import {
   DEFAULT_ANALYSIS_CONFIG,
   generateStructuredReport,
+  type FeedbackLedger,
   type GoalHierarchy,
+  type PriorReportState,
   type ReportCoverageNote,
   type ReportScope,
   type StructuredReport,
@@ -15,8 +17,9 @@ import { narrateReport, type NarrationResult, type NarratorPort } from '@compass
 import { renderReport, type RenderedReport } from '@compass/renderers';
 import { recordNarrationTraces } from '@compass/db';
 
+import { loadFeedbackLedger, loadPriorReportState } from './feedback-state.js';
 import { loadGoalHierarchyAt, persistObjectiveLinks, syncGoalHierarchy } from './goal-sync.js';
-import { persistReport, type PersistedNarration } from './persist.js';
+import { persistReport, scopeColumnsFor, type PersistedNarration, type ScopeColumns } from './persist.js';
 import { definePipelineStage, runStage, type PipelineContext } from './stage.js';
 
 /**
@@ -177,10 +180,31 @@ export async function runReportPipeline(request: ReportPipelineRequest): Promise
   });
   const goalHierarchy = record('sync-goals', await runStage(goalStage, null, context));
 
-  // ---- 4. analysis ---------------------------------------------------------
-  // The one pure stage. It is handed the materialized snapshot and the instant,
-  // and it reaches for nothing else — which is why the report it returns is
-  // reproducible from those two arguments alone.
+  // ---- 4. the two pieces of history analysis is told about ------------------
+  // The prior report for this scope, and the manager's feedback. Both are *values* handed to a
+  // pure function rather than queries it makes: the analysis core reads no database, so
+  // change-awareness and suppression have to be loaded here or they could not exist at all.
+  //
+  // They are loaded in one stage because they answer one question — "what has already happened
+  // between Compass and this manager" — and because a report generated with one and not the
+  // other would be subtly wrong in a way nothing would flag: an item suppressed by feedback but
+  // compared against a prior report that still contains it would depart and come back forever.
+  const historyStage = definePipelineStage<
+    ScopeColumns,
+    { readonly prior: PriorReportState | null; readonly feedback: FeedbackLedger }
+  >('load-change-history', async (scopeColumns, inner) => ({
+    prior: await loadPriorReportState(scoped, scopeColumns, inner.now),
+    feedback: await loadFeedbackLedger(scoped),
+  }));
+  const history = record(
+    'load-change-history',
+    await runStage(historyStage, scopeColumnsFor(request.scope), context),
+  );
+
+  // ---- 5. analysis ---------------------------------------------------------
+  // The one pure stage. It is handed the materialized snapshot, the instant and the history
+  // above, and it reaches for nothing else — which is why the report it returns is reproducible
+  // from those arguments alone.
   const analysisStage = definePipelineStage<KnowledgeSnapshot, StructuredReport>(
     'analyse',
     (input, inner) =>
@@ -191,6 +215,8 @@ export async function runReportPipeline(request: ReportPipelineRequest): Promise
         coverage: ingest === null ? [] : coverageNotesFrom(ingest.summary.coverage),
         maxItemsPerSection: request.maxItemsPerSection ?? DEFAULT_ANALYSIS_CONFIG.maxItemsPerSection,
         goalHierarchy,
+        ...(history.prior === null ? {} : { priorReport: history.prior }),
+        feedback: history.feedback,
       }),
   );
   const report = record('analyse', await runStage(analysisStage, snapshot, context));

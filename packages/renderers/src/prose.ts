@@ -1,8 +1,10 @@
 import {
-  PROGRESS_ITEM_IDS,
+  MATERIAL_WORSENING_DELTA,
+  PROGRESS_CAUSE_KINDS,
   SECTIONS,
   assertSixSectionsInOrder,
   extractNumericTokens,
+  itemPresenceDays,
   sentencesWithNumbers,
   splitSentences,
   workingDaysBetween,
@@ -125,6 +127,17 @@ export interface RenderedReport {
   readonly masthead: string;
   /** What was ingested and what was not, in one or more sentences. */
   readonly freshness: string;
+  /**
+   * What moved since the previous report — the second line of the document, always.
+   *
+   * It sits above the six sections because it is what decides how the rest of the page is
+   * read: "nothing material changed since yesterday" is the whole report on a quiet morning,
+   * and a manager who has that sentence does not need to re-read six sections to discover it.
+   * That is the failure this line exists to prevent — a page that re-lists yesterday's three
+   * blockers in yesterday's voice and lets the reader work out for themselves that nothing
+   * happened.
+   */
+  readonly changeLine: string;
   readonly sections: readonly RenderedSection[];
   /** Every sentence the renderer wrote. The interpretation rule holds here. */
   readonly prose: string;
@@ -270,19 +283,28 @@ function paceVerdict(completionPercent: number, elapsedWorkingDays: number, star
   return 'level with';
 }
 
+/**
+ * The clause a Progress figure gets, chosen by the item's *cause kind*.
+ *
+ * Matched on `item.cause.causeKind` rather than on a magic id string. That is the more honest
+ * join — the question being asked is "what kind of figure is this", which is exactly what a
+ * cause kind answers — and it survives the Progress ids becoming tenant-scoped digests, which
+ * a comparison against `progress:velocity` did not.
+ */
 function progressClause(report: StructuredReport, item: ReportItem): InterpretationClause | null {
   const progress = report.findings.progress;
   const projection = report.findings.projection;
+  const causeKind = item.cause.causeKind;
 
-  if (item.stableId === PROGRESS_ITEM_IDS.projection) {
+  if (causeKind === PROGRESS_CAUSE_KINDS.projection) {
     return projection.kind === 'projected'
       ? interpretation.collar(projection.band.confidence, projection.method)
       : interpretation.threshold(projection.threshold.id, false);
   }
-  if (item.stableId === PROGRESS_ITEM_IDS.velocity || item.stableId === PROGRESS_ITEM_IDS.kanbanFlow) {
+  if (causeKind === PROGRESS_CAUSE_KINDS.velocity || causeKind === PROGRESS_CAUSE_KINDS.kanbanFlow) {
     return interpretation.rate();
   }
-  if (progress.mode === 'sprint' && item.stableId === PROGRESS_ITEM_IDS.sprint(progress.sprint.sprintKey)) {
+  if (progress.mode === 'sprint' && causeKind === PROGRESS_CAUSE_KINDS.sprint) {
     const sprint = progress.sprint;
     return interpretation.pace(
       paceVerdict(
@@ -394,6 +416,45 @@ function leadSentence(section: ReportSection): string {
   return groundedSentence(`${section.title} carries what follows`, clause);
 }
 
+/**
+ * The clause that interprets an item's run-in change sentence.
+ *
+ * The order is deliberate. A manager's own verdict outranks Compass's arithmetic — an accepted
+ * step is their decision and a resurfaced risk is a direct answer to something they did, and
+ * neither should be explained as "day 6 of it". Below that, an item that has been carried over
+ * is interpreted by how long it has been carried, from `firstSeenAt`: that is the sentence which
+ * stops the same finding reading as news on the sixth morning.
+ */
+function changeSentenceClause(report: StructuredReport, item: ReportItem): InterpretationClause {
+  const feedback = item.feedback;
+  if (feedback !== undefined) {
+    return feedback.state === 'accepted'
+      ? interpretation.accepted(new Date(feedback.at).toISOString().slice(0, 10))
+      : interpretation.resurfaced(resurfacedDelta(item), MATERIAL_WORSENING_DELTA);
+  }
+
+  // The age of the item, counted from the first report that carried it — not the age of the
+  // condition. "You have been reading this for six mornings" is the fact the reader is owed.
+  const presenceDays = itemPresenceDays(item, report.instant);
+  if (item.changeTag === 'unchanged' && presenceDays > 0) return interpretation.elapsed(presenceDays);
+  if (item.ageDays > 0) return interpretation.elapsed(item.ageDays);
+  return interpretation.change(item.changeTag);
+}
+
+/**
+ * The severity movement a resurfacing clause states, read back out of the item's own sentence.
+ *
+ * The renderer is handed the clause `feedback.ts` wrote and must interpret the numbers already in
+ * it; recomputing a delta from a baseline it does not hold would let the interpretation state a
+ * different figure from the sentence beside it. Falling back to the threshold itself keeps the
+ * clause true — a resurfacing happened, so the movement was at least that — rather than printing
+ * a zero that the prose would then contradict.
+ */
+function resurfacedDelta(item: ReportItem): number {
+  const stated = /(\d+) more, against the/.exec(item.feedback?.clause ?? '');
+  return stated === null ? MATERIAL_WORSENING_DELTA : Number.parseInt(stated[1] ?? '', 10);
+}
+
 /** One item: the claim, what changed since yesterday, and the evidence. */
 function itemSentences(report: StructuredReport, sectionKey: SectionKey, item: ReportItem): readonly string[] {
   const claimClause = clauseFor(report, sectionKey, item);
@@ -406,16 +467,10 @@ function itemSentences(report: StructuredReport, sectionKey: SectionKey, item: R
     changeClause !== undefined && claimClause.text.toLowerCase().includes(changeClause.trim().toLowerCase());
 
   if (!alreadySaid && changeClause !== undefined && changeClause.length > 0) {
-    // The run-in clause is about persistence, so it is always paired with the
-    // elapsed fact — "day 6" — rather than only when the clause happens to carry
-    // a number of its own. Change since yesterday is stated as a clause, never as
-    // a badge saying NEW, so a first sighting gets the change tag instead.
-    sentences.push(
-      groundedSentence(
-        capitalize(flatten(changeClause)),
-        item.ageDays > 0 ? interpretation.elapsed(item.ageDays) : interpretation.change(item.changeTag),
-      ),
-    );
+    // The run-in clause is about persistence, so it is always paired with an interpretation of
+    // *why it persists* rather than only when the clause happens to carry a number of its own.
+    // Change since yesterday is stated as a clause, never as a badge saying NEW.
+    sentences.push(groundedSentence(capitalize(flatten(changeClause)), changeSentenceClause(report, item)));
   }
   if (item.evidence.length > 0) {
     sentences.push(
@@ -489,11 +544,31 @@ export function renderSectionProse(report: StructuredReport, section: ReportSect
 // The whole report
 // ---------------------------------------------------------------------------
 
+/**
+ * The change line: what moved since the previous report, or the plain statement that nothing
+ * did.
+ *
+ * `statedSentence` on the quiet path and a grounded one when there are counts, which is not a
+ * detail: "Nothing material changed since yesterday." carries no quantity, and appending a
+ * clause explaining what its numbers mean would append an explanation of nothing. The counting
+ * path always carries digits, so it always carries the clause.
+ */
+export function renderChangeLine(report: StructuredReport): string {
+  const summary = report.changeSummary;
+  const statement = summary.statement;
+  if (statement.length === 0) return '';
+
+  return extractNumericTokens(statement).length > 0
+    ? groundedSentence(statement, interpretation.movement())
+    : statedSentence(statement, interpretation.movement());
+}
+
 export function renderReport(report: StructuredReport): RenderedReport {
   assertSixSectionsInOrder(report);
 
   const masthead = renderMasthead(report);
   const freshness = renderFreshness(report);
+  const changeLine = renderChangeLine(report);
 
   const sections: RenderedSection[] = report.sections.map((section, position) => {
     const definition = SECTIONS[position];
@@ -513,7 +588,9 @@ export function renderReport(report: StructuredReport): RenderedReport {
     };
   });
 
-  const prose = [freshness, ...sections.map((section) => section.prose)].join('\n\n');
+  const prose = [freshness, changeLine, ...sections.map((section) => section.prose)]
+    .filter((paragraph) => paragraph.length > 0)
+    .join('\n\n');
   assertEveryQuantityInterpreted(prose);
 
   const text = [
@@ -521,10 +598,11 @@ export function renderReport(report: StructuredReport): RenderedReport {
     '',
     freshness,
     '',
+    ...(changeLine.length === 0 ? [] : [changeLine, '']),
     ...sections.flatMap((section) => [`${section.numeral} ${section.title.toUpperCase()}`, '', section.prose, '']),
   ]
     .join('\n')
     .trimEnd();
 
-  return { rendererId: RENDERER_ID, masthead, freshness, sections, prose, text: `${text}\n` };
+  return { rendererId: RENDERER_ID, masthead, freshness, changeLine, sections, prose, text: `${text}\n` };
 }

@@ -53,6 +53,17 @@ export const reports = pgTable(
     payload: jsonb('payload').$type<Record<string, unknown>>().notNull(),
     /** The prose a manager actually read, whole-report. */
     prose: text('prose').notNull(),
+    /**
+     * The change line, as it was rendered: what moved since the previous report.
+     *
+     * Its own column rather than re-derived by each channel, because the email and Slack read the
+     * *stored* report rather than re-rendering it — that is what stops the page and the inbox
+     * disagreeing about what Compass said. Deriving the line again in the delivery path would
+     * reintroduce exactly that divergence for the one sentence that decides how the rest of the
+     * report is read. Defaults to empty, which is the honest value for a report written before
+     * change-awareness existed.
+     */
+    changeLine: text('change_line').notNull().default(''),
     /** Which renderer produced `prose` — `template` or `narrated`. */
     rendererId: text('renderer_id').notNull(),
     /**
@@ -166,9 +177,42 @@ export const reportItems = pgTable(
      * paragraph that was not an item.
      */
     prose: text('prose').notNull(),
+    /**
+     * The three coordinates `stable_id` was derived from.
+     *
+     * Stored as typed columns rather than left inside `payload`, because they are what a
+     * *feedback row* is keyed on: a manager clicking "dismiss" gives Compass an item id, and
+     * the handler has to turn that into the coordinates a verdict is recorded against. Reading
+     * them out of a jsonb blob would work until the payload shape moved; a column will not.
+     */
+    causeEntityRef: text('cause_entity_ref').notNull(),
+    causeKind: text('cause_kind').notNull(),
+    /** `''` when the cause needs no further distinction — never null, so the key is total. */
+    causeDiscriminator: text('cause_discriminator').notNull(),
     /** new | unchanged | worsened | improved | resolved. */
     changeTag: text('change_tag').notNull(),
+    /** The age of the *condition*, from the knowledge model's own history. */
     ageDays: integer('age_days').notNull(),
+    /**
+     * The first report that carried this item id.
+     *
+     * A different fact from `age_days`, and the column tomorrow's report reads back: the change
+     * tag is computed against these rows, so the age a persisting item accrues is carried
+     * forward here rather than recomputed from a condition's own clock.
+     */
+    firstSeenAt: instantColumn('first_seen_at').notNull(),
+    /**
+     * The one ordered quantity the next report compares this item against. Higher is worse.
+     *
+     * Persisted because the comparison is between *reports*, not between snapshots: tomorrow's
+     * run reads this number to decide whether the same condition worsened, and re-deriving it
+     * from a snapshot that has since moved would compare today against today.
+     */
+    severityScore: integer('severity_score').notNull(),
+    /** When the underlying condition began — what an "already resolved" verdict is keyed on. */
+    signalOnsetAt: instantColumn('signal_onset_at').notNull(),
+    /** `accepted` | `resurfaced`, when a manager's own verdict is on this item. */
+    feedbackState: text('feedback_state'),
     /** The run-in italic clause. Never a badge saying NEW. */
     changeClause: text('change_clause'),
     /** The five-notch completion meter, on Yesterday and Wins items only. */

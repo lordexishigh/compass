@@ -3,6 +3,7 @@ import type { ClaimView, SectionView } from '../lib/view-model';
 import { AlignmentEvidence } from './alignment-evidence';
 import { CompletionLadder } from './completion-ladder';
 import { EvidenceChain, EvidenceMarkers } from './evidence-markers';
+import { FeedbackActions } from './feedback-actions';
 import { ProseBlock } from './prose-block';
 
 /**
@@ -68,14 +69,53 @@ export function ReportSectionBlock({ section }: { readonly section: SectionView 
  *
  * Shared by both voices so "day 6" is one object with one spelling, rather than a
  * span that drifted between two branches of the same component.
+ *
+ * ## Which age it prints, and only which
+ *
+ * `seenDays` — the item's own age, counted from the first report that carried this id. "day 6" next
+ * to a blocker therefore means "this is the sixth morning I have told you about this", which is a
+ * fact about the report a manager can act on.
+ *
+ * It does **not** fall back to `ageDays`. The two are deliberately different facts everywhere else
+ * in the codebase — `ageDays` is the condition's age from the tracker's own history, which is why a
+ * blocker can arrive at "day 6" on the first morning Compass ever mentions it — and printing one
+ * under a label defined as the other is the kind of quiet substitution that makes a manager distrust
+ * every number on the page. On a first sighting there is no pill, which is correct: nothing has
+ * recurred yet, and the condition's age is already stated in the prose beside it.
  */
-function DayPill({ ageDays }: { readonly ageDays: number }) {
-  if (ageDays <= 0) return null;
+function DayPill({ item }: { readonly item: ClaimView }) {
+  const days = item.seenDays;
+  if (days <= 0) return null;
 
   return (
     <span className="ml-2 inline-flex items-baseline rounded-[4px] border border-rule-strong px-1.5 py-px font-mono text-[11px] not-italic tabular-nums text-ink-muted">
-      day {ageDays}
+      day {days}
     </span>
+  );
+}
+
+/**
+ * The run-in italic clause: what changed about this item since the previous report.
+ *
+ * "—— reviewer added, age unchanged", set as a serif italic clause rather than a badge saying
+ * WORSENED, because the brief is explicit that change is *stated* and never colour-coded or
+ * pill-shaped.
+ *
+ * It exists as its own component because the two voices need it in different places and for
+ * different reasons. In the templated voice the renderer has already written the clause into the
+ * claim's own sentences, so printing it again here would say one thing twice. Under **narrated**
+ * prose there are no per-claim sentences to have carried it, and without this the only change signal
+ * on a worsened item would be the report-level line at the top of the page — which is a fact about
+ * the morning, not about this blocker.
+ */
+function ChangeClause({ clause }: { readonly clause: string | null }) {
+  if (clause === null || clause.length === 0) return null;
+
+  return (
+    <p className="mt-1 font-serif text-[15px] italic leading-snug text-ink-muted">
+      <span aria-hidden="true">—— </span>
+      {clause}
+    </p>
   );
 }
 
@@ -88,6 +128,10 @@ function DayPill({ ageDays }: { readonly ageDays: number }) {
  * everything a reader needs to *check* the claim, and the accessible name keeps the
  * row identifiable to a screen reader, which cannot see that the paragraph above
  * mentioned this ticket.
+ *
+ * The one sentence it does carry is the change clause. A model is free to reorder and merge items,
+ * so it cannot be relied on to have said what moved about *this* one — and "what moved" is the whole
+ * reason the page is worth re-reading rather than skimming.
  */
 function ClaimReceipts({ item }: { readonly item: ClaimView }) {
   return (
@@ -99,12 +143,22 @@ function ClaimReceipts({ item }: { readonly item: ClaimView }) {
       <p className="flex flex-wrap items-baseline gap-x-1 text-[13px] text-ink-faint">
         <span className="sr-only">{item.headline}</span>
         <EvidenceMarkers evidence={item.evidence} />
-        <DayPill ageDays={item.ageDays} />
+        <DayPill item={item} />
       </p>
+
+      {/* Suppressed once the manager's own verdict is on the item: `FeedbackActions` prints that
+          instead, and their decision outranks Compass's arithmetic about what moved. */}
+      {item.feedback === null && <ChangeClause clause={item.changeClause} />}
 
       {item.ladder !== null && <CompletionLadder ladder={item.ladder} />}
       <EvidenceChain evidence={item.evidence} />
       {item.alignment !== null && <AlignmentEvidence alignment={item.alignment} />}
+      <FeedbackActions
+        stableId={item.stableId}
+        headline={item.headline}
+        offers={item.feedbackOffers}
+        existing={item.feedback}
+      />
     </article>
   );
 }
@@ -130,7 +184,7 @@ function ReportClaim({ item }: { readonly item: ClaimView }) {
       <p className="prose-narration">
         {sentences}
         <EvidenceMarkers evidence={item.evidence} />
-        <DayPill ageDays={item.ageDays} />
+        <DayPill item={item} />
       </p>
 
       {item.alignment?.question !== null && item.alignment?.question !== undefined && (
@@ -140,6 +194,12 @@ function ReportClaim({ item }: { readonly item: ClaimView }) {
       {item.ladder !== null && <CompletionLadder ladder={item.ladder} />}
       <EvidenceChain evidence={item.evidence} />
       {item.alignment !== null && <AlignmentEvidence alignment={item.alignment} />}
+      <FeedbackActions
+        stableId={item.stableId}
+        headline={item.headline}
+        offers={item.feedbackOffers}
+        existing={item.feedback}
+      />
     </article>
   );
 }

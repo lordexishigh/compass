@@ -25,6 +25,7 @@ export {
   RENDERER_ID,
   UngroundedNumberError,
   assertEveryQuantityInterpreted,
+  renderChangeLine,
   renderFreshness,
   renderMasthead,
   renderReport,

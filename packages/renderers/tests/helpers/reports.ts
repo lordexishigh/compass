@@ -1,10 +1,11 @@
 import {
-  PROGRESS_ITEM_IDS,
+  PROGRESS_CAUSE_KINDS,
   createEmptyStructuredReport,
   emptyCalibrationAudit,
   thresholdRef,
   type CalibrationVerdict,
   type Instant,
+  type ItemCause,
   type ReportItem,
   type SectionKey,
   type StructuredReport,
@@ -46,6 +47,41 @@ const CALIBRATION_VERDICT: CalibrationVerdict = {
 };
 export const WINDOW = timeWindow(instantFromIso('2026-07-29T23:00:00Z'), instantFromIso('2026-07-30T23:00:00Z'));
 
+/** Six days before the report instant, so an "unchanged since" age renders as a real number. */
+export const FIRST_SEEN_AT: Instant = instantFromIso('2026-07-25T08:12:00Z');
+
+/**
+ * One fixture item, with the change-awareness fields filled in.
+ *
+ * A builder rather than a literal so the renderer tests exercise items shaped exactly as the
+ * analysis core emits them: `cause` in particular is not decoration here — `progressClause` chooses
+ * a figure's interpretation template by `cause.causeKind`, so a fixture with the wrong cause would
+ * silently fall through to the change-tag fallback and the pace, collar and rate clauses would
+ * never be tested.
+ */
+export function fixtureItem(
+  spec: Omit<ReportItem, 'cause' | 'firstSeenAt' | 'severityScore' | 'signalOnsetAt'> & {
+    readonly cause?: ItemCause;
+    readonly firstSeenAt?: Instant;
+    readonly severityScore?: number;
+  },
+): ReportItem {
+  return {
+    firstSeenAt: spec.firstSeenAt ?? FIRST_SEEN_AT,
+    severityScore: spec.severityScore ?? 0,
+    signalOnsetAt: spec.firstSeenAt ?? FIRST_SEEN_AT,
+    cause: spec.cause ?? { entityRef: `fixture:${spec.stableId}`, causeKind: 'fixture', causeDiscriminator: '' },
+    ...spec,
+  };
+}
+
+/** The cause of one Progress figure, which is what the renderer keys its clause on. */
+const progressCause = (causeKind: string, entityKey = 'process'): ItemCause => ({
+  entityRef: `progress:${entityKey}`,
+  causeKind,
+  causeDiscriminator: '',
+});
+
 export function emptyReport(): StructuredReport {
   return createEmptyStructuredReport({
     organizationId: '11111111-1111-4111-8111-111111111111',
@@ -84,7 +120,7 @@ export function withItems(
 export function fullReport(): StructuredReport {
   const base = emptyReport();
 
-  const yesterdayItem: ReportItem = {
+  const yesterdayItem: ReportItem = fixtureItem({
     stableId: 'yesterday:DEV-501:merged',
     headline: 'DEV-501 merged as #883, the batch writer',
     detail: 'Reached R2 merged. Evidence: DEV-501, #883.',
@@ -103,36 +139,39 @@ export function fullReport(): StructuredReport {
       deploySignalAvailable: false,
       rungSuffix: 'merged, not yet integrated',
     },
-  };
+  });
 
-  const sprintItem: ReportItem = {
-    stableId: PROGRESS_ITEM_IDS.sprint('primary-tracker:sprint-43'),
+  const sprintItem: ReportItem = fixtureItem({
+    stableId: 'v1:0000000000000001',
+    cause: progressCause(PROGRESS_CAUSE_KINDS.sprint, 'primary-tracker:sprint-43'),
     headline: 'Sprint 43 is 62% complete, 24 of 39 points, against "Cut checkout latency"',
     detail: '32 items were committed at the start and 4 were added since.',
     changeTag: 'unchanged',
     ageDays: 6,
     evidence: [{ kind: 'sprint', label: 'Sprint 43', sourceKey: 'primary-tracker', sourceRecordId: 'sprint-43' }],
-  };
+  });
 
-  const projectionItem: ReportItem = {
-    stableId: PROGRESS_ITEM_IDS.projection,
+  const projectionItem: ReportItem = fixtureItem({
+    stableId: 'v1:0000000000000002',
+    cause: progressCause(PROGRESS_CAUSE_KINDS.projection),
     headline: 'Projected completion 2026-08-14',
     detail: 'Between 2026-08-11 and 2026-08-19.',
     changeTag: 'unchanged',
     ageDays: 0,
     evidence: [],
-  };
+  });
 
-  const velocityItem: ReportItem = {
-    stableId: PROGRESS_ITEM_IDS.velocity,
+  const velocityItem: ReportItem = fixtureItem({
+    stableId: 'v1:0000000000000003',
+    cause: progressCause(PROGRESS_CAUSE_KINDS.velocity),
     headline: 'Velocity averages 31 points across the last 3 completed sprints',
     detail: 'Sprint 40: 28 points; Sprint 41: 33 points; Sprint 42: 32 points.',
     changeTag: 'improved',
     ageDays: 0,
     evidence: [],
-  };
+  });
 
-  const blockerItem: ReportItem = {
+  const blockerItem: ReportItem = fixtureItem({
     stableId: 'blocker:ticket:CHK-701:no_movement',
     headline: 'CHK-701 has not moved in 6 working days',
     detail: 'Last transition to In Progress on 2026-07-21.',
@@ -140,9 +179,9 @@ export function fullReport(): StructuredReport {
     ageDays: 6,
     changeClause: 'reviewer added, age unchanged',
     evidence: [{ kind: 'issue', label: 'CHK-701', sourceKey: 'primary-tracker', sourceRecordId: 'issue-701' }],
-  };
+  });
 
-  const riskItem: ReportItem = {
+  const riskItem: ReportItem = fixtureItem({
     stableId: 'risk:sprint:sprint-43:scope_added_after_start',
     headline: '4 items entered Sprint 43 after it started',
     detail: 'CHK-880, CHK-881, CHK-882, CHK-883.',
@@ -150,9 +189,9 @@ export function fullReport(): StructuredReport {
     ageDays: 3,
     changeClause: 'high severity, worsened, against 2 at the start of this window',
     evidence: [{ kind: 'sprint', label: 'Sprint 43', sourceKey: 'primary-tracker', sourceRecordId: 'sprint-43' }],
-  };
+  });
 
-  const recommendationItem: ReportItem = {
+  const recommendationItem: ReportItem = fixtureItem({
     stableId: 'recommendation:review:CHK-701',
     headline: 'Priya Raman: ask Dev Patel to review #883 today',
     detail: 'It has been open 6 days with no first review.',
@@ -160,16 +199,16 @@ export function fullReport(): StructuredReport {
     ageDays: 0,
     changeClause: 'today',
     evidence: [{ kind: 'pull_request', label: '#883', sourceKey: 'primary-code', sourceRecordId: 'pr-883' }],
-  };
+  });
 
-  const winItem: ReportItem = {
+  const winItem: ReportItem = fixtureItem({
     stableId: 'win:ticket:DEV-501',
     headline: 'DEV-501 landed the batch writer, 8 points',
     detail: 'Merged and released in v2.14.',
     changeTag: 'resolved',
     ageDays: 1,
     evidence: [{ kind: 'release', label: 'v2.14', sourceKey: 'primary-code', sourceRecordId: 'tag-214' }],
-  };
+  });
 
   const report = withItems(base, {
     yesterday: [yesterdayItem],
@@ -287,6 +326,9 @@ export function fullReport(): StructuredReport {
       recommendations: [
         {
           stableId: recommendationItem.stableId,
+          // The same cause the section item carries, so the finding and the item agree — which is
+          // the join a rejection is keyed on.
+          cause: recommendationItem.cause,
           source: 'review_bottleneck',
           actor: { kind: 'developer', key: 'priya', displayName: 'Priya Raman' },
           object: { kind: 'pull_request', key: 'primary-code:pr-883', label: '#883' },

@@ -19,6 +19,7 @@ export {
   listUnsubscribeHeaders,
   renderEmail,
   safeHeaderValue,
+  type EmailItemActions,
   type EmailRenderOptions,
   type RenderedEmail,
 } from './email.js';
@@ -30,9 +31,55 @@ export {
   renderSlackMessages,
   slackTextChunks,
   type SlackBlock,
+  type SlackItemActions,
   type SlackMessage,
   type SlackRenderOptions,
 } from './slack.js';
+
+export {
+  FEEDBACK_LINK_ACTIONS,
+  FEEDBACK_LINK_SECRET_ENV_VAR,
+  FEEDBACK_LINK_TTL_DAYS,
+  FEEDBACK_LINK_TTL_MILLIS,
+  FEEDBACK_NONCE_BYTES,
+  FEEDBACK_TOKEN_SENTENCE,
+  FEEDBACK_TOKEN_VERSION,
+  FeedbackLinkSecretMissingError,
+  feedbackLinkExpiry,
+  feedbackLinkIsStateChanging,
+  feedbackLinkUrl,
+  feedbackTokenPayload,
+  hashFeedbackToken,
+  isFeedbackLinkAction,
+  mintFeedbackToken,
+  verifyFeedbackToken,
+  type FeedbackLinkAction,
+  type FeedbackTokenClaims,
+  type FeedbackTokenVerdict,
+  type FeedbackTokenVerification,
+  type MintedFeedbackToken,
+} from './feedback-link.js';
+
+export {
+  SLACK_ACTION_PREFIX,
+  SLACK_NO_ACCESS_MESSAGE,
+  SLACK_SIGNATURE_HEADER,
+  SLACK_SIGNATURE_SENTENCE,
+  SLACK_SIGNATURE_VERSION,
+  SLACK_SIGNING_SECRET_ENV_VAR,
+  SLACK_TIMESTAMP_HEADER,
+  SLACK_TIMESTAMP_WINDOW_MILLIS,
+  SLACK_TIMESTAMP_WINDOW_SECONDS,
+  parseSlackInteraction,
+  slackActionId,
+  slackAppliedMessage,
+  slackSignatureFor,
+  verifySlackSignature,
+  type SlackFeedbackAction,
+  type SlackInteraction,
+  type SlackSignatureInput,
+  type SlackSignatureVerdict,
+} from './slack-actions.js';
 
 export {
   SHARE_EXPIRY_CHOICES,

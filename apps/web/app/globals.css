@@ -511,6 +511,140 @@
     line-height: 1.55;
     color: var(--ink-muted);
   }
+
+  /* ---------------------------------------------------------------------
+     Feedback: the manager's own authorship, so teal and never emerald.
+     Emerald means "verified positive fact"; dismissing a risk is not a win.
+     --------------------------------------------------------------------- */
+
+  .feedback-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 12px;
+    margin-top: 8px;
+  }
+
+  /*
+   * A verb, not a button-shaped object. The reading column is the product, and a row of
+   * filled buttons under every claim would turn a document into a control panel. It is
+   * still a real control: 44px of vertical target on a phone, a visible focus ring, and a
+   * hover that commits rather than shimmers.
+   */
+  .feedback-action {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 2px 0;
+    border: 0;
+    border-bottom: 1px solid transparent;
+    background: none;
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    letter-spacing: 0.01em;
+    color: var(--authored-text);
+    cursor: pointer;
+    transition:
+      color var(--motion-quick) var(--motion-ease),
+      border-color var(--motion-quick) var(--motion-ease),
+      opacity var(--motion-quick) var(--motion-ease);
+  }
+
+  @media (max-width: 640px) {
+    .feedback-action {
+      min-height: 44px;
+    }
+  }
+
+  .feedback-action:hover:not(:disabled) {
+    border-bottom-color: var(--authored);
+  }
+
+  .feedback-action:focus-visible {
+    outline: 2px solid var(--authored);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  .feedback-action:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  /*
+   * The undo window the design brief asks for: the item settles to 60% opacity behind a
+   * strikethrough hairline over 180ms before it is gone. Applied to the claim, not to the
+   * button, because what the manager needs to see is the *item* leaving.
+   */
+  .feedback-settled {
+    position: relative;
+    opacity: 0.6;
+    transition: opacity var(--motion-standard) var(--motion-ease);
+  }
+
+  .feedback-settled::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1px;
+    background-color: var(--rule-strong);
+    pointer-events: none;
+  }
+
+  /* What Compass will do differently tomorrow, in the product's own voice. */
+  .feedback-outcome {
+    margin-top: 6px;
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: var(--authored-text);
+  }
+
+  .feedback-outcome[data-state='refused'] {
+    color: var(--ink-muted);
+  }
+
+  /* The manager's own mark on an item Compass is still showing. */
+  .feedback-mark {
+    display: inline-flex;
+    align-items: baseline;
+    margin-left: 8px;
+    padding: 1px 6px;
+    border: 1px solid var(--authored);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--authored-text);
+    white-space: nowrap;
+  }
+
+  .feedback-reason {
+    display: block;
+    width: 100%;
+    max-width: 28rem;
+    margin-top: 6px;
+    padding: 6px 8px;
+    border: 1px solid var(--rule-strong);
+    border-radius: 8px;
+    background-color: var(--surface);
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    color: var(--ink);
+    transition: border-color var(--motion-quick) var(--motion-ease);
+  }
+
+  .feedback-reason:hover {
+    border-color: var(--authored);
+  }
+
+  .feedback-reason:focus-visible {
+    outline: none;
+    border-color: var(--authored);
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--authored) 30%, transparent);
+  }
 }
 
 /* Motion exists to preserve identity and acknowledge input, nothing else. */

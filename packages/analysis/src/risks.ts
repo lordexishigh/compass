@@ -16,6 +16,7 @@ import {
   type Instant,
   type TimeWindow,
 } from './instant.js';
+import { entityRef, stableItemId } from './identity.js';
 import type { ProgressAssessment } from './progress.js';
 import type { CalibrationVerdict } from './projection.js';
 import { isOpenPullRequest } from './review-queue.js';
@@ -107,6 +108,48 @@ export interface DetectedRisk {
   readonly evidence: readonly EvidenceRef[];
 }
 
+/**
+ * The severity bands, in points — the coarse half of a risk's severity score.
+ *
+ * A hundred points apart on purpose: one band is exactly the material-worsening threshold in
+ * `feedback.ts`, so "a dismissed risk returns when it crosses a severity band" and "a dismissed
+ * risk returns after 100 points" are the same rule stated twice rather than two rules that
+ * happen to agree today.
+ */
+export const SEVERITY_BAND_POINTS: Readonly<Record<RiskSeverity, number>> = Object.freeze({
+  low: 100,
+  medium: 200,
+  high: 300,
+});
+
+/** How far past its own threshold a measurement may count, in points. */
+export const MAX_THRESHOLD_EXCESS_POINTS = 99;
+
+/**
+ * One risk as a single ordered quantity: **higher is worse**, always.
+ *
+ * `band + excess`, where the excess is how far past its own threshold the measurement sits, as a
+ * percentage capped at 99. So a `medium` risk at exactly its threshold scores 200, the same risk
+ * at twice its threshold scores 299, and one more point of severity would have to come from the
+ * band moving — which is what keeps the score monotone in the thing a manager cares about.
+ *
+ * The cap is what makes the arithmetic honest rather than merely convenient: without it a risk
+ * measured at forty times its threshold would score above a `high` one, and "high severity" would
+ * stop being the strongest statement Compass can make about a risk. A threshold of zero or less
+ * contributes no excess rather than dividing by it.
+ *
+ * This is the number a dismissal's baseline is compared against, so it must be a pure function of
+ * the risk and of nothing else — no clock, no window, no report.
+ */
+export function riskSeverityScore(risk: DetectedRisk): number {
+  const band = SEVERITY_BAND_POINTS[risk.severity];
+  const limit = risk.threshold.value;
+  if (limit <= 0) return band;
+
+  const excess = Math.round((risk.measured.value / limit) * 100) - 100;
+  return band + Math.min(MAX_THRESHOLD_EXCESS_POINTS, Math.max(0, excess));
+}
+
 export interface RiskInputs {
   readonly progress: ProgressAssessment;
   readonly reviewQueue: ReviewQueue;
@@ -144,7 +187,7 @@ export function detectRisks(
     workConcentrationRisk(snapshot, instant, scope, inputs.workload),
     estimationNoiseRisk(snapshot, scope, inputs.calibration),
     technicalDebtRisk(snapshot, instant, scope, inputs.technicalDebt),
-    ...hygieneRisks(instant, inputs.yesterday),
+    ...hygieneRisks(snapshot.organizationId, instant, inputs.yesterday),
   ];
 
   const severityRank: Readonly<Record<RiskSeverity, number>> = { high: 0, medium: 1, low: 2 };
@@ -217,7 +260,11 @@ function scopeCreepRisk(
   const addedKeys = [...new Set(changes.map((change) => change.ticketKey))].sort(compareStable);
 
   return {
-    stableId: `risk:sprint:${sprintKey}:scope_added_after_start`,
+    stableId: stableItemId({
+      organizationId: snapshot.organizationId,
+      entityRef: entityRef('sprint', sprintKey),
+      causeKind: 'scope_added_after_start',
+    }),
     cause: 'scope_added_after_start',
     severity: severityFor(value, THRESHOLDS.T6.value),
     trend: trendFor(value, priorValue),
@@ -276,7 +323,11 @@ function reviewBottleneckRisk(
   );
 
   return {
-    stableId: `risk:developer:${reviewerKey}:review_bottleneck`,
+    stableId: stableItemId({
+      organizationId: snapshot.organizationId,
+      entityRef: entityRef('developer', reviewerKey),
+      causeKind: 'review_bottleneck',
+    }),
     cause: 'review_bottleneck',
     severity: severityFor(value, THRESHOLDS.T5.value),
     trend: trendFor(value, priorValue),
@@ -335,7 +386,11 @@ function unreleasedWorkRisk(
   const oldestItemKeys = [...textListField(oldest.pullRequest, 'linkedItemKeys')].sort(compareStable);
 
   return {
-    stableId: `risk:repository:${repositoryKey ?? 'unknown'}:unreleased_merged_work`,
+    stableId: stableItemId({
+      organizationId: snapshot.organizationId,
+      entityRef: entityRef('repository', repositoryKey ?? 'unknown'),
+      causeKind: 'unreleased_merged_work',
+    }),
     cause: 'unreleased_merged_work',
     severity: severityFor(unreleased.length, THRESHOLDS.T16.value),
     trend: trendFor(unreleased.length, priorValue),
@@ -406,7 +461,11 @@ function workConcentrationRisk(
   );
 
   return {
-    stableId: `risk:developer:${developerKey}:work_concentration`,
+    stableId: stableItemId({
+      organizationId: snapshot.organizationId,
+      entityRef: entityRef('developer', developerKey),
+      causeKind: 'work_concentration',
+    }),
     cause: 'work_concentration',
     severity: severityFor(value, THRESHOLDS.T14.value),
     trend: trendFor(value, prior),
@@ -454,7 +513,11 @@ function estimationNoiseRisk(
   });
 
   return {
-    stableId: 'risk:team:estimation_noise',
+    stableId: stableItemId({
+      organizationId: snapshot.organizationId,
+      entityRef: entityRef('team', 'calibration'),
+      causeKind: 'estimation_noise',
+    }),
     cause: 'estimation_noise',
     severity: value <= 0 ? 'high' : 'medium',
     trend: 'new',
@@ -516,7 +579,11 @@ function technicalDebtRisk(
   const series = (complete.length >= 2 ? complete : debt.openedPerSprint).slice(-4);
 
   return {
-    stableId: 'risk:team:technical_debt_growth',
+    stableId: stableItemId({
+      organizationId: snapshot.organizationId,
+      entityRef: entityRef('team', 'technical_debt'),
+      causeKind: 'technical_debt_growth',
+    }),
     cause: 'technical_debt_growth',
     severity: severityFor(value, THRESHOLDS.T9.value),
     trend: trendFor(value, prior),
@@ -559,7 +626,11 @@ function technicalDebtRisk(
  * an aggregate count is something a manager can read and do nothing about, and the
  * fix here is always "go and ask about this specific item".
  */
-function hygieneRisks(instant: Instant, yesterday: readonly YesterdayItem[]): readonly DetectedRisk[] {
+function hygieneRisks(
+  organizationId: string,
+  instant: Instant,
+  yesterday: readonly YesterdayItem[],
+): readonly DetectedRisk[] {
   const mismatched = yesterday.filter((item) => {
     const accepted = item.ladder.notches.find((notch) => notch.rung === 'R1')?.crossed === true;
     const merged = item.ladder.notches.find((notch) => notch.rung === 'R2')?.crossed === true;
@@ -571,7 +642,11 @@ function hygieneRisks(instant: Instant, yesterday: readonly YesterdayItem[]): re
       const subject = item.ticketKey ?? item.unitOfWork;
       const ageDays = wholeDaysBetween(item.completedAt as Instant, instant);
       return {
-        stableId: `risk:ticket:${subject}:done_without_pull_request`,
+        stableId: stableItemId({
+          organizationId,
+          entityRef: entityRef('ticket', subject),
+          causeKind: 'done_without_pull_request',
+        }),
         cause: 'done_without_pull_request',
         // Every mismatch is the same size: one item that cannot be traced. There
         // is nothing to be twice as far past, so the severity is not derived from a

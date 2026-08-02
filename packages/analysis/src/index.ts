@@ -66,11 +66,62 @@ export {
   STABLE_ID_VERSION,
   canonicalIdentityString,
   entityRef,
+  identifyItem,
   isStableItemId,
   itemCauseKey,
   stableItemId,
+  type IdentifiedItem,
+  type ItemCause,
   type ItemIdentity,
 } from './identity.js';
+
+export {
+  ACTIONABLE_SECTION_KEYS,
+  CHANGE_TAGS,
+  FIRST_REPORT_STATEMENT,
+  MOVED_CHANGE_TAGS,
+  NOTHING_MATERIAL_CHANGED_STATEMENT,
+  applyChangeAwareness,
+  changeClauseFor,
+  isActionableSection,
+  isChangeTag,
+  itemPresenceDays,
+  movedFirst,
+  priorStateOf,
+  tagItemChange,
+  type ChangeAwarenessResult,
+  type PriorItemState,
+  type PriorReportState,
+} from './change-awareness.js';
+
+export {
+  DEFAULT_SNOOZE_DAYS,
+  EMPTY_FEEDBACK_LEDGER,
+  FEEDBACK_ACTIONS,
+  MATERIAL_WORSENING_DELTA,
+  OFF_GOAL_CAUSE_KIND,
+  TERMINAL_FEEDBACK_ACTIONS,
+  UNATTRIBUTED_CAUSE_KIND,
+  applyFeedback,
+  correctedOffGoalFlags,
+  feedbackActionIsOffered,
+  feedbackKey,
+  feedbackOffersFor,
+  feedbackTargetId,
+  feedbackVerdictFor,
+  isFeedbackAction,
+  offGoalFlagCause,
+  recordsFor,
+  resurfacingClause,
+  verdictFromRecord,
+  type FeedbackAction,
+  type FeedbackApplication,
+  type FeedbackLedger,
+  type FeedbackOffer,
+  type FeedbackRecord,
+  type FeedbackSubject,
+  type FeedbackVerdict,
+} from './feedback.js';
 
 export {
   BLOCKED_STATUS_PATTERN,
@@ -232,7 +283,8 @@ export {
 
 export {
   CYCLE_TIME_TRAILING_DAYS,
-  PROGRESS_ITEM_IDS,
+  PROGRESS_CAUSE_KINDS,
+  PROGRESS_ENTITY_KEY,
   VELOCITY_TRAILING_SPRINTS,
   assessKanbanFlow,
   assessProgress,
@@ -243,6 +295,7 @@ export {
   type CompletionBasis,
   type KanbanFlow,
   type ProgressAssessment,
+  type ProgressCauseKind,
   type ReconciliationRow,
   type ScopeLine,
   type SprintCompletion,
@@ -296,8 +349,11 @@ export {
 } from './workload.js';
 
 export {
+  MAX_THRESHOLD_EXCESS_POINTS,
   RISK_CAUSES,
+  SEVERITY_BAND_POINTS,
   detectRisks,
+  riskSeverityScore,
   severityFor,
   statusCategoryAt,
   trendFor,
@@ -419,11 +475,15 @@ export {
 } from './determinism.js';
 
 export {
+  ChangeTagError,
   ItemAgeError,
+  ItemCauseMismatchError,
   REPORT_SCHEMA_VERSION,
   SectionOrderError,
   UnevidencedClaimError,
   assertEveryClaimHasEvidence,
+  assertItemIdsMatchTheirCause,
+  assertOneChangeTagPerItem,
   assertSixSectionsInOrder,
   assertWholeDayAges,
   createEmptyStructuredReport,
@@ -434,11 +494,14 @@ export {
   type AnalysisFindings,
   type ChangeTag,
   type EmptyReportInput,
+  type ReportChangeSummary,
   type ReportCoverageNote,
   type ReportItem,
+  type ReportItemFeedback,
   type ReportScope,
   type ReportSection,
   type StructuredReport,
+  type SuppressedItemNote,
 } from './structured-report.js';
 
 export {

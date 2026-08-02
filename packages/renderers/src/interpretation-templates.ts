@@ -47,6 +47,9 @@ export const INTERPRETATION_TEMPLATE_IDS = [
   'alignment',
   'unattributed',
   'calibration',
+  'movement',
+  'accepted',
+  'resurfaced',
 ] as const;
 
 export type InterpretationTemplateId = (typeof INTERPRETATION_TEMPLATE_IDS)[number];
@@ -197,6 +200,27 @@ export const INTERPRETATION_TEMPLATES: readonly InterpretationTemplateDefinition
     pattern:
       /\bwhich is a measurement of the data behind this report, and it (?:reached [a-z_, ]+|found nothing worth withholding a number for)\b/,
   },
+  {
+    id: 'movement',
+    purpose:
+      "The report's own change line. Turns the counts of what moved into the only thing they are for: telling a manager which part of this page is worth re-reading, and which part they have already read.",
+    example: 'which is what moved since the previous report, and the rest is carried over',
+    pattern: /\bwhich is what moved since the previous report, and the rest is carried over\b/,
+  },
+  {
+    id: 'accepted',
+    purpose:
+      "A step the manager already took. The date is the receipt: it says Compass is showing the item as their decision rather than re-suggesting something they have acted on.",
+    example: 'and Compass is showing your own decision of 2026-07-30 rather than suggesting it again',
+    pattern: /\band Compass is showing your own decision of \d{4}-\d{2}-\d{2} rather than suggesting it again\b/,
+  },
+  {
+    id: 'resurfaced',
+    purpose:
+      'A dismissed risk that has come back. Names the severity movement in points against the documented threshold, because "back because it got worse" is a sentence a manager cannot argue with and every claim in Compass has to be arguable.',
+    example: 'because its severity rose 120 points against the 100 a return requires',
+    pattern: /\bbecause its severity rose \d+ points against the \d+ a return requires\b/,
+  },
 ]);
 
 const BY_ID: ReadonlyMap<InterpretationTemplateId, InterpretationTemplateDefinition> = new Map(
@@ -326,4 +350,16 @@ export const interpretation = {
           : `reached ${[...verdicts].join(', ')}`
       }`,
     ),
+
+  /** The change line's clause: what these counts are *for*. */
+  movement: (): InterpretationClause =>
+    clause('movement', 'which is what moved since the previous report, and the rest is carried over'),
+
+  /** A step the manager already accepted, dated. Their decision, not a fresh suggestion. */
+  accepted: (isoDate: string): InterpretationClause =>
+    clause('accepted', `and Compass is showing your own decision of ${isoDate} rather than suggesting it again`),
+
+  /** A dismissed risk that crossed the material-worsening threshold, in points. */
+  resurfaced: (delta: number, threshold: number): InterpretationClause =>
+    clause('resurfaced', `because its severity rose ${delta} points against the ${threshold} a return requires`),
 } as const;

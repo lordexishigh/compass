@@ -3,9 +3,11 @@ import { describe, expect, it } from 'vitest';
 import {
   ELAPSED_FACT_KINDS,
   ELAPSED_FACT_MINIMUM_DAYS,
+  MILLIS_PER_DAY,
   compareStable,
   computeElapsedFacts,
   countWord,
+  isStableItemId,
   resolveScope,
   wholeDaysBetween,
   type ElapsedFactStatement,
@@ -153,13 +155,44 @@ describe('ordering is total, so two runs agree', () => {
   });
 
   it('gives every fact a stable id derived from its kind and its subject alone', () => {
+    // The ids now come from the shared derivation, so they are opaque digests rather than a
+    // readable template. That makes the *property* the assertion, which is what the title always
+    // meant: an id derived from the condition alone is one that does not move when the report does.
     for (const fact of allFacts) {
-      expect(fact.stableId).toBe(`elapsed:${fact.kind}:${fact.entityId}`);
+      expect(isStableItemId(fact.stableId), fact.stableId).toBe(true);
     }
+
     // Unique within a team, so "day 6" counts one thing rather than two.
     for (const { teamKey, facts } of seeded) {
       const ids = facts.map((fact) => fact.stableId);
       expect(new Set(ids).size, teamKey).toBe(ids.length);
+    }
+  });
+
+  it('derives those ids from the condition, not from the run or the instant', () => {
+    // Recomputed over the same snapshot at a *later* instant: the elapsed counts move, the ids do
+    // not. An instant or a run id leaking into the derivation would make every fact new every
+    // morning, which is the failure the whole identity scheme exists to prevent.
+    const [first] = seeded;
+    const laterFacts = computeElapsedFacts(
+      first.snapshot,
+      (SEED_NOW + MILLIS_PER_DAY) as Instant,
+      resolveScope(first.snapshot),
+    );
+
+    const idsAt = (facts: readonly { readonly stableId: string }[]) => facts.map((fact) => fact.stableId).sort();
+    expect(idsAt(laterFacts)).toEqual(idsAt(first.facts));
+  });
+
+  it('scopes those ids to the tenant, so two organizations never share one', () => {
+    // One manager's dismissal must not suppress another organization's finding.
+    const [first] = seeded;
+    const otherTenant = { ...first.snapshot, organizationId: '99999999-9999-4999-8999-999999999999' };
+    const otherFacts = computeElapsedFacts(otherTenant, SEED_NOW, resolveScope(otherTenant));
+
+    const shared = new Set(first.facts.map((fact) => fact.stableId));
+    for (const fact of otherFacts) {
+      expect(shared.has(fact.stableId), fact.stableId).toBe(false);
     }
   });
 });

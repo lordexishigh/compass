@@ -2,6 +2,7 @@ import type { DetectedBlocker } from './blockers.js';
 import { blockerTicket } from './blockers.js';
 import { orderedEvidence, ticketEvidence, type EvidenceRef } from './evidence.js';
 import { compareNumbers, compareStable, type Instant } from './instant.js';
+import { entityRef, identifyItem, type ItemCause } from './identity.js';
 import type { ProgressAssessment } from './progress.js';
 import type { ReviewQueue } from './review-queue.js';
 import type { DetectedRisk } from './risks.js';
@@ -58,6 +59,16 @@ export interface RecommendationObject {
 
 export interface Recommendation {
   readonly stableId: string;
+  /**
+   * The coordinates `stableId` was derived from, carried so a rejection can be keyed on them.
+   *
+   * Emitted by the detector rather than reconstructed by `generate.ts`, and that is not
+   * tidiness: a blocker-derived recommendation's discriminator is the *blocker signal*, which
+   * the `Recommendation` did not otherwise carry. Rebuilding the cause downstream would have
+   * silently dropped it, so `recommend_blocker` on a stalled review and `recommend_blocker` on a
+   * dwelling ticket would key to one record and a single rejection would have suppressed both.
+   */
+  readonly cause: ItemCause;
   readonly source: RecommendationSource;
   readonly actor: RecommendationActor;
   readonly object: RecommendationObject;
@@ -130,7 +141,7 @@ export function generateRecommendations(
     ...fromReviewBottleneck(snapshot, inputs),
     ...fromBlockers(snapshot, inputs),
     ...fromUnassignedWork(snapshot, inputs),
-    ...fromUnreleasedWork(inputs),
+    ...fromUnreleasedWork(snapshot.organizationId, inputs),
   ];
 
   // One recommendation per object. Two suggestions about the same pull request
@@ -184,7 +195,11 @@ function fromReviewBottleneck(snapshot: AnalysisSnapshot, inputs: Recommendation
 
   return [
     {
-      stableId: `recommendation:review_bottleneck:${oldest.pullRequestKey}`,
+      ...identifyItem(snapshot.organizationId, {
+        entityRef: entityRef('pull_request', oldest.pullRequestKey),
+        causeKind: 'recommend_review_bottleneck',
+        causeDiscriminator: '',
+      }),
       source: 'review_bottleneck',
       actor: { kind: 'developer', key: concentration.developerKey, displayName: reviewerName },
       object: { kind: 'pull_request', key: oldest.pullRequestKey, label: oldest.pullRequestNumber },
@@ -219,7 +234,13 @@ function fromBlockers(snapshot: AnalysisSnapshot, inputs: RecommendationInputs):
         : { kind: 'ticket', key: blocker.subject.key, label: blocker.subject.label };
 
     return {
-      stableId: `recommendation:${blocker.signal}:${blocker.subject.key}`,
+      ...identifyItem(snapshot.organizationId, {
+        entityRef: entityRef(blocker.subject.kind, blocker.subject.key),
+        causeKind: 'recommend_blocker',
+        // The signal, so two recommendations about the same ticket for two different reasons
+        // are two records a manager can reject independently.
+        causeDiscriminator: blocker.signal,
+      }),
       source: 'blocker' as const,
       actor,
       object,
@@ -261,7 +282,11 @@ function fromUnassignedWork(snapshot: AnalysisSnapshot, inputs: RecommendationIn
 
   return [
     {
-      stableId: `recommendation:unassigned_work:${first}`,
+      ...identifyItem(snapshot.organizationId, {
+        entityRef: entityRef('ticket', first),
+        causeKind: 'recommend_unassigned_work',
+        causeDiscriminator: '',
+      }),
       source: 'unassigned_work',
       actor: REPORT_READER,
       object: { kind: 'ticket', key: first, label: first },
@@ -277,7 +302,10 @@ function fromUnassignedWork(snapshot: AnalysisSnapshot, inputs: RecommendationIn
 }
 
 /** Merged work that nobody has shipped. Addressed to the manager. */
-function fromUnreleasedWork(inputs: RecommendationInputs): readonly Recommendation[] {
+function fromUnreleasedWork(
+  organizationId: string,
+  inputs: RecommendationInputs,
+): readonly Recommendation[] {
   const risk = inputs.risks.find((candidate) => candidate.cause === 'unreleased_merged_work');
   if (risk === undefined) return [];
 
@@ -286,7 +314,11 @@ function fromUnreleasedWork(inputs: RecommendationInputs): readonly Recommendati
 
   return [
     {
-      stableId: `recommendation:unreleased_work:${pullRequest.sourceRecordId}`,
+      ...identifyItem(organizationId, {
+        entityRef: entityRef('pull_request', pullRequest.sourceRecordId),
+        causeKind: 'recommend_unreleased_work',
+        causeDiscriminator: '',
+      }),
       source: 'unreleased_work',
       actor: REPORT_READER,
       object: { kind: 'pull_request', key: pullRequest.sourceRecordId, label: pullRequest.label },

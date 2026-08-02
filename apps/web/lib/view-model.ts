@@ -1,4 +1,4 @@
-import { SECTIONS } from '@compass/analysis';
+import { SECTIONS, feedbackOffersFor, wholeDaysBetween, type SectionKey } from '@compass/analysis';
 import { formatCivilDateTime, type TimeWindow } from '@compass/clock';
 import type { FreshnessReport, SourceFreshness, StoredReportBundle } from '@compass/db';
 import { artifactHref } from '@compass/pipeline';
@@ -170,6 +170,12 @@ export interface AlignmentView {
   readonly panelId: string;
 }
 
+/** One feedback verb offered on one claim, as the page renders it. */
+export interface FeedbackOfferView {
+  readonly action: string;
+  readonly label: string;
+}
+
 export interface ClaimView {
   readonly stableId: string;
   readonly headline: string;
@@ -183,13 +189,33 @@ export interface ClaimView {
    * clause stripped off.
    */
   readonly prose: string;
+  /** The age of the *condition*, from the knowledge model's own history. */
   readonly ageDays: number;
+  /**
+   * The age of the *item*: whole days since the first report that carried it.
+   *
+   * What the "day 6" sigil prints on a carried-over claim, and a different fact from `ageDays`. A
+   * blocker that had already been stuck for six days when Compass was installed shows `ageDays: 6`
+   * from its first morning; `seenDays` is what a manager's sense of "you keep telling me this" is
+   * actually about, and it starts at zero.
+   */
+  readonly seenDays: number;
   readonly changeClause: string | null;
   readonly changeTag: string;
   readonly ladder: LadderView | null;
   readonly evidence: readonly EvidenceLinkView[];
   /** Present on alignment claims only. Null everywhere else. */
   readonly alignment: AlignmentView | null;
+  /**
+   * The feedback verbs this claim offers, decided by the analysis core.
+   *
+   * Empty on a Yesterday completion, a Win and a Progress figure: those are statements of fact about
+   * work that already happened, and a "dismiss" under one would invite a manager to argue with their
+   * own team's merge history.
+   */
+  readonly feedbackOffers: readonly FeedbackOfferView[];
+  /** A verdict the manager already gave on this item, as the page marks it. Null when there is none. */
+  readonly feedback: { readonly state: string; readonly clause: string } | null;
 }
 
 export interface SectionView {
@@ -258,6 +284,15 @@ export interface ReportView {
   readonly windowLabel: string;
   readonly generatedAtLabel: string;
   readonly rendererId: string;
+  /**
+   * What moved since the previous report, as it was rendered.
+   *
+   * Read off the stored row rather than re-derived, so the page, the inbox and Slack cannot disagree
+   * about the one sentence that decides how the rest of the report is read. Empty for a report
+   * generated before change-awareness existed, which the page treats as "no line" rather than as
+   * "nothing changed" — those are different facts.
+   */
+  readonly changeLine: string;
   /** True when a model wrote this report's sections and grounding accepted them. */
   readonly narrated: boolean;
   /**
@@ -647,6 +682,7 @@ export function buildReportView(input: BuildReportViewInput): ReportView {
     windowLabel: windowLabel(report.window, timezone),
     generatedAtLabel: formatCivilDateTime(report.generatedAt, timezone),
     rendererId: report.rendererId,
+    changeLine: report.changeLine,
     narrated: report.rendererId === 'narrated',
     fallbackRenderer: report.fallbackRenderer,
     // Read defensively together: a flag with no reason would print an empty
@@ -668,6 +704,19 @@ export function buildReportView(input: BuildReportViewInput): ReportView {
       emptyStatement: section.emptyStatement,
       items: section.items.map((item) => ({
         stableId: item.stableId,
+        // Decided in the analysis core, not here: the web view, the email and Slack must offer the
+        // same verdicts on the same finding, and a page that decided for itself would be a fourth
+        // opinion whose first drift lets a manager reject a step in Slack that the page will not.
+        feedbackOffers: feedbackOffersFor(section.sectionKey as SectionKey, {
+          entityRef: item.causeEntityRef,
+          causeKind: item.causeKind,
+          causeDiscriminator: item.causeDiscriminator,
+        }).map((offer) => ({ action: offer.action, label: offer.label })),
+        feedback:
+          item.feedbackState === null
+            ? null
+            : { state: item.feedbackState, clause: item.changeClause ?? item.feedbackState },
+        seenDays: Math.max(0, wholeDaysBetween(item.firstSeenAt, report.reportInstant)),
         // Collapsed because these two reach the page *outside* a paragraph — as an
         // accessible name and as the fallback when a claim has no prose — and a
         // ticket titled `fine\r\nBcc: …` would otherwise carry a bare CR into an
