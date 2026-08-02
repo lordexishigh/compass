@@ -67,4 +67,24 @@ export {
   type ScopeColumns,
 } from './ensure-report.js';
 
+export {
+  DEFAULT_GENERATION_LOCAL_TIME,
+  GENERATION_LOCAL_TIME_ENV_VAR,
+  reportInstantForDate,
+  resolveGenerationLocalTime,
+} from './generation-time.js';
+
+export {
+  MergedReportUnavailableError,
+  ensureMergedReport,
+  ensureWeeklyDigest,
+  mergeStoredReports,
+  structuredReportFrom,
+  type EnsureMergedReportRequest,
+  type EnsureWeeklyDigestRequest,
+  type EnsuredMergedReport,
+  type EnsuredTeamReport,
+  type EnsuredWeeklyDigest,
+} from './merged-report.js';
+
 export { ARTIFACT_ROUTE_KINDS, artifactHref, isArtifactRouteKind, type ArtifactRouteKind } from './artifact-route.js';

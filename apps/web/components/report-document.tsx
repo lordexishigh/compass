@@ -140,6 +140,31 @@ export function ReportDocument({ view }: { readonly view: ReportView }) {
             Every figure above carries a link to the artifact it came from.
           </p>
           <p className="mt-2 flex flex-wrap gap-x-5 gap-y-1">
+            {/*
+              The three other reads of the same data, first in the list because they are the only ones a
+              manager reaches *habitually* — the rest of this footer is configuration you visit when
+              something is wrong. A manager of two or three teams opens the merged report every morning
+              instead of this page, and a page they cannot find from here is a page they will not find.
+            */}
+            <a
+              href="/merged"
+              className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
+            >
+              All teams
+            </a>
+            <a
+              href="/weekly"
+              className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
+            >
+              Weekly digest
+            </a>
+            {/* Every past report, permalinked — how a manager points a skip-level at last Tuesday's. */}
+            <a
+              href="/archive"
+              className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
+            >
+              Archive
+            </a>
             {/* The goal hierarchy is reachable from the report because every
                 alignment verdict above resolves against it, and a manager who
                 disagrees with one needs somewhere to go and say so. */}

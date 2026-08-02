@@ -621,6 +621,71 @@
     white-space: nowrap;
   }
 
+  /* ---------------------------------------------------------------------
+     Time travel. Zinc, not teal: stepping the clock is navigation, not the
+     manager's authorship of a verdict, and the two colours mean two things.
+     --------------------------------------------------------------------- */
+
+  .time-step {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 44px;
+    padding: 0 12px;
+    border: 1px solid var(--rule-strong);
+    border-radius: 8px;
+    background-color: var(--surface);
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    color: var(--ink);
+    cursor: pointer;
+    transition:
+      border-color var(--motion-quick) var(--motion-ease),
+      color var(--motion-quick) var(--motion-ease),
+      opacity var(--motion-quick) var(--motion-ease);
+  }
+
+  .time-step:hover:not(:disabled) {
+    border-color: var(--rule-severe);
+    color: var(--ink-strong);
+  }
+
+  .time-step:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  .time-step:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .time-date {
+    min-height: 44px;
+    padding: 0 10px;
+    border: 1px solid var(--rule-strong);
+    border-radius: 8px;
+    background-color: var(--surface);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-strong);
+    transition: border-color var(--motion-quick) var(--motion-ease);
+  }
+
+  .time-date:hover:not(:disabled) {
+    border-color: var(--rule-severe);
+  }
+
+  .time-date:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  .time-date:disabled {
+    opacity: 0.45;
+  }
+
   .feedback-reason {
     display: block;
     width: 100%;

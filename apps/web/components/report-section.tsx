@@ -42,7 +42,10 @@ export function ReportSectionBlock({ section }: { readonly section: SectionView 
           <ProseBlock paragraphs={section.paragraphs} className="mt-3 space-y-4" />
           <ul className="mt-5 space-y-4">
             {section.items.map((item) => (
-              <li key={item.stableId}>
+              // The anchor the merged report links down to. `item-<stableId>` rather than the bare id,
+              // because a stable id begins `v1:` and a fragment must be a valid identifier — and because
+              // prefixing it says what kind of thing the anchor names.
+              <li key={item.stableId} id={`item-${item.stableId}`} className="scroll-mt-24">
                 <ClaimReceipts item={item} />
               </li>
             ))}
@@ -53,7 +56,10 @@ export function ReportSectionBlock({ section }: { readonly section: SectionView 
           <p className="prose-narration mt-3 text-ink-muted">{section.summary ?? section.title}</p>
           <ul className="mt-5 space-y-6">
             {section.items.map((item) => (
-              <li key={item.stableId}>
+              // The anchor the merged report links down to. `item-<stableId>` rather than the bare id,
+              // because a stable id begins `v1:` and a fragment must be a valid identifier — and because
+              // prefixing it says what kind of thing the anchor names.
+              <li key={item.stableId} id={`item-${item.stableId}`} className="scroll-mt-24">
                 <ReportClaim item={item} />
               </li>
             ))}

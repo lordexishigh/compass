@@ -512,16 +512,22 @@ function estimationNoiseRisk(
     return itemKey !== null && sampled.has(itemKey);
   });
 
+  // The *team's* own calibration, keyed on the team. A literal `calibration` key here gave every team in
+  // one organization the same stable id — so a manager dismissing platform's estimation-noise risk
+  // dismissed checkout's and insights' too, and the merged report could not say which team an item
+  // belonged to. `merged` is the honest key for an org-wide report, which genuinely has one.
+  const calibrationSubject = scope.teamKey ?? 'merged';
+
   return {
     stableId: stableItemId({
       organizationId: snapshot.organizationId,
-      entityRef: entityRef('team', 'calibration'),
+      entityRef: entityRef('team', calibrationSubject),
       causeKind: 'estimation_noise',
     }),
     cause: 'estimation_noise',
     severity: value <= 0 ? 'high' : 'medium',
     trend: 'new',
-    subject: { kind: 'team', key: 'calibration', label: 'estimation calibration' },
+    subject: { kind: 'team', key: calibrationSubject, label: 'estimation calibration' },
     measured: { value, unit: 'basis_points' },
     priorValue: null,
     priorAt: null,
@@ -578,16 +584,21 @@ function technicalDebtRisk(
   const complete = debt.openedPerSprint.filter((point) => point.complete);
   const series = (complete.length >= 2 ? complete : debt.openedPerSprint).slice(-4);
 
+  // Keyed on the team, for the same reason `estimationNoiseRisk` is: a literal `technical_debt` key gave
+  // every team in one organization one stable id, so a dismissal crossed teams and the merged report had
+  // no way to attribute the item to the team whose debt it was.
+  const debtSubject = scope.teamKey ?? 'merged';
+
   return {
     stableId: stableItemId({
       organizationId: snapshot.organizationId,
-      entityRef: entityRef('team', 'technical_debt'),
+      entityRef: entityRef('team', debtSubject),
       causeKind: 'technical_debt_growth',
     }),
     cause: 'technical_debt_growth',
     severity: severityFor(value, THRESHOLDS.T9.value),
     trend: trendFor(value, prior),
-    subject: { kind: 'team', key: 'technical_debt', label: 'technical debt' },
+    subject: { kind: 'team', key: debtSubject, label: 'technical debt' },
     measured: { value, unit: 'count' },
     priorValue: prior,
     priorAt: observedPrior ? earlierWindow.end : null,

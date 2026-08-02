@@ -131,6 +131,19 @@ const EXPECTED: Readonly<Record<string, Partial<Record<Action, readonly Principa
    * on the link route directly, because that is the convenience somebody adds later in good faith.
    */
   '/api/feedback': { POST: ['owner', 'manager'] },
+
+  /**
+   * The time-travel control: owner and manager, because it *writes*.
+   *
+   * Stepping to a day nobody has generated runs the whole pipeline for that instant and persists the
+   * report. A viewer reads the archive; they do not get to add rows to it. `member` is excluded on the
+   * same reasoning as `/api/feedback` — regenerating a report is a management act.
+   *
+   * The matrix is only half the gate. `apps/web/tests/time-travel.test.ts` asserts the other half: the
+   * handler refuses any organization not on the simulated clock, so an authorised manager of a live org
+   * still cannot move its `now`.
+   */
+  '/api/time-travel': { POST: ['owner', 'manager'] },
   '/api/feedback/link/[token]': {
     GET: ['public', 'owner', 'manager', 'member', 'viewer'],
     POST: ['public', 'owner', 'manager', 'member', 'viewer'],
@@ -168,6 +181,43 @@ const EXPECTED: Readonly<Record<string, Partial<Record<Action, readonly Principa
   // a suppression a manager cannot find is indistinguishable from a detector that broke, so the
   // people whose verdicts these are must be able to read them back.
   '/corrections': { GET: ['owner', 'manager'] },
+
+  /**
+   * The archive and the two cross-cutting reads, on the same terms as `/`.
+   *
+   * `ANYONE` with `demoOnlyPublic`: a past report is the same organization data as today's, so it gets the
+   * same posture — readable without a session on the demonstration tenant, closed the moment Compass holds
+   * somebody's actual blockers. A skip-level pointed at last Tuesday's report must not need a seat, which
+   * is the entire use case for the archive existing.
+   *
+   * ## Why these are *not* `teamScoped`, when `/api/reports/[teamKey]` is
+   *
+   * Deliberate, and worth stating because it grants a read that route refuses. Three of these are org-level
+   * documents by construction:
+   *
+   * - `/merged` and `/archive/merged/[reportDate]` rank findings *across* teams. Team-scoping them would
+   *   mean a manager of two teams sees a "merged" report over one, which is the per-team report with a worse
+   *   layout — the page says so and sends them to `/` instead.
+   * - `/archive` is an index of dates. It lists which reports exist, which is metadata about the
+   *   organization's own cadence rather than any team's findings.
+   *
+   * `/archive/[reportId]` is the one genuinely per-team read here, and it is the one to revisit first if this
+   * posture is ever tightened: an id names one team's report, so it *could* carry a scope check. It does not
+   * today because the id is unguessable-by-accident but not a capability — it is derived from
+   * `(organization, scope, instant)` — so a scope check there would be real defence rather than theatre. The
+   * reason it is not yet enforced is that the archive's whole purpose is a link somebody sends to a
+   * skip-level who may hold no seat at all, and on a real tenant that reader already needs a session; the
+   * remaining gap is a *seated* reader of one team opening another team's archived report.
+   *
+   * `/weekly` is per-team and *is* enforced, in the page rather than the matrix: it filters the team list to
+   * the caller's own scopes before resolving `?team=`, because the team is a query parameter the matrix
+   * never sees. A seat scoped to no existing team is told so rather than shown another team's week.
+   */
+  '/archive': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
+  '/archive/[reportId]': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
+  '/archive/merged/[reportDate]': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
+  '/merged': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
+  '/weekly': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
 };
 
 /**
@@ -352,8 +402,22 @@ describe('the seeded demo report route stays publicly readable', () => {
   it('marks every route whose public grant is demo-only', () => {
     const demoOnly = ROLE_MATRIX.filter((rule) => rule.demoOnlyPublic === true).map((rule) => rule.route);
 
-    // Exactly the routes that carry organizational data and are readable without a seat.
-    expect(demoOnly.sort()).toEqual(['/', '/api/goals', '/api/goals/[nodeId]', '/api/reports/[teamKey]', '/goals']);
+    // Exactly the routes that carry organizational data and are readable without a seat. The archive and
+    // the two cross-cutting reads join them for the reason the archive exists at all: a skip-level pointed
+    // at last Tuesday's report must not need a seat, and a past report is the same data as today's — so it
+    // gets the same posture, and closes on a real tenant along with everything else here.
+    expect(demoOnly.sort()).toEqual([
+      '/',
+      '/api/goals',
+      '/api/goals/[nodeId]',
+      '/api/reports/[teamKey]',
+      '/archive',
+      '/archive/[reportId]',
+      '/archive/merged/[reportDate]',
+      '/goals',
+      '/merged',
+      '/weekly',
+    ]);
   });
 
   it('keeps `/api/health` public in every tenant, because the container calls it', () => {
@@ -439,6 +503,8 @@ describe('team scoping', () => {
     // scoped to `platform` must not be able to dismiss a risk on the checkout team's report, and the
     // scope check is the only thing that stops them. It is also why the Slack handler asks this same
     // matrix with this same route rather than deciding for itself.
-    expect(teamScoped).toEqual(['/api/reports/[teamKey]', '/api/feedback']);
+    // `/api/time-travel` joins them because it regenerates *one team's* report: a manager scoped to
+    // `platform` must not be able to rewrite the checkout team's daily by naming it in the body.
+    expect(teamScoped).toEqual(['/api/reports/[teamKey]', '/api/feedback', '/api/time-travel']);
   });
 });

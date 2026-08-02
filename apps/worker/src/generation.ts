@@ -6,6 +6,7 @@ import {
   toIso,
   type Instant,
 } from '@compass/clock';
+import { DEFAULT_GENERATION_LOCAL_TIME } from '@compass/pipeline';
 import { z } from 'zod';
 
 /**
@@ -46,13 +47,17 @@ import { z } from 'zod';
  */
 
 /**
- * 06:00 in the team's own zone.
+ * 06:00 in the team's own zone, from `@compass/pipeline`.
  *
- * Early enough to precede a delivery: the subscription default is 07:30 local, so generation has
- * finished before the first daily goes out, which is the ordering the delivery job also enforces
- * for itself by deferring when no report exists.
+ * Re-exported rather than declared, because the web app's time-travel control has to derive the *same*
+ * report instant to land on the same row and cannot import from `apps/worker`. It previously grew its
+ * own version, which copied the UTC hour off the host clock — so the two paths disagreed about which
+ * instant a civil date names, and the web one produced a different instant on every request. One
+ * declaration in the package both processes already depend on is what makes that impossible.
+ *
+ * The name and the export stay here so every existing caller and test is unaffected.
  */
-export const DEFAULT_GENERATION_LOCAL_TIME = '06:00';
+export { DEFAULT_GENERATION_LOCAL_TIME };
 
 /** Five attempts with backoff, matching delivery. Documented in `docs/DEVELOPMENT.md`. */
 export const GENERATION_RETRY_LIMIT = 5;

@@ -65,6 +65,23 @@ const UNAUTHENTICATED_PAGES: readonly {
   { route: '/goals', file: ['app', 'goals', 'page.tsx'], showsCredentials: false },
   { route: '/account/invite', file: ['app', 'account', 'invite', 'page.tsx'], showsCredentials: false },
   { route: '/account/reset', file: ['app', 'account', 'reset', 'page.tsx'], showsCredentials: false },
+  /**
+   * The archive and the two cross-cutting reads.
+   *
+   * `showsCredentials: false` for the same reason `/` is: a reader who arrives at last Tuesday's report has
+   * what they came for, and a sign-in block on a document they can already read would be noise. Each of
+   * these does carry a `/account` link — the assertion below is what holds them to it — so somebody who
+   * needs a seat has one click to find out how.
+   */
+  { route: '/archive', file: ['app', 'archive', 'page.tsx'], showsCredentials: false },
+  { route: '/archive/[reportId]', file: ['app', 'archive', '[reportId]', 'page.tsx'], showsCredentials: false },
+  {
+    route: '/archive/merged/[reportDate]',
+    file: ['app', 'archive', 'merged', '[reportDate]', 'page.tsx'],
+    showsCredentials: false,
+  },
+  { route: '/merged', file: ['app', 'merged', 'page.tsx'], showsCredentials: false },
+  { route: '/weekly', file: ['app', 'weekly', 'page.tsx'], showsCredentials: false },
 ];
 
 describe('the published demonstration credentials are shown where they are needed', () => {

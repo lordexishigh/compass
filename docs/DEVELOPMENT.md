@@ -93,6 +93,44 @@ rather than a stale report going out.
 `apps/worker/tests/pipeline-ordering.test.ts` drives the whole sequence — delivery first, then
 generation, then delivery again — and asserts exactly one message.
 
+## Narration and grounding
+
+The Anthropic API is used for exactly two things: narrating an **already-computed** structured report,
+and extracting Manager Memos into the closed five-kind schema. It never decides what a report says.
+By the time a model is asked for anything, the deterministic document already exists — narration runs
+*after* the render — so a narration that fails, refuses, times out or fabricates costs the reader
+nothing but plainer wording.
+
+### Retries
+
+**N is 3.** `NARRATION_MAX_ATTEMPTS` in `packages/narrator/src/narrate.ts`. Three is chosen against
+what the failures actually are: a transient 429 or 529 usually clears on the next attempt, and a
+model that has produced ungrounded prose twice will not produce grounded prose on the fifth try —
+it will just delay the report. After the third attempt the template renderer answers, which is a
+complete six-section report rather than a degraded one.
+
+### Fail closed, and say so
+
+Every narrated section passes the grounding validator before it can reach a page: every number, date,
+tracker key, pull-request number and person's name in the prose must appear in the structured payload
+the model was shown. A section that states anything the payload does not contain is discarded whole —
+not patched, not partially accepted — and the template renderer's own sentences are used instead.
+
+Two columns on `reports` record what happened, and they answer different questions:
+
+- `fallback_renderer` — true only when narration was **attempted** and the template renderer answered
+  instead. It is deliberately not inferred from `renderer_id`, because `renderer_id = 'template'` is
+  also the honest value on a deployment with no `ANTHROPIC_API_KEY`, where nothing was attempted and
+  nothing degraded. This is the number an operator alerts on.
+- `fallback_reason` — why, in one sentence, in the product's voice. Null exactly when
+  `fallback_renderer` is false, and shown to the reader above the report: a degraded report that will
+  not say how it was degraded is the "confident polish" this product exists to refuse.
+
+One `narration_traces` row is written per attempt, carrying the pinned model id and prompt version, so
+a disputed sentence can be traced to the exact request that produced it. Narration output is never
+compared for equality in tests — only validated for grounding — so a model change cannot break the
+determinism gate.
+
 ## Delivery
 
 The daily arrives by email and Slack as a pg-boss job (`report.deliver`) in the same

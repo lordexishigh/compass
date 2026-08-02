@@ -42,8 +42,8 @@ import {
 /**
  * The deterministic seed generator.
  *
- * Given the checked-in fixtures it expands them into the full dataset â€” around
- * three thousand records â€” with no randomness the machine can see: no host
+ * Given the checked-in fixtures it expands them into the full dataset — around
+ * three thousand records — with no randomness the machine can see: no host
  * clock, no `Math.random`, no locale-sensitive comparison, no dependence on
  * object iteration order beyond the fixed order this file writes. Run it twice
  * and the bytes are identical; that is the property `pnpm seed:generate`
@@ -78,7 +78,7 @@ export interface GeneratedSeed {
   readonly dataset: SeedDataset;
   readonly organizationId: string;
   readonly companyName: string;
-  /** The whole span the fixtures cover â€” the window the contract suite uses. */
+  /** The whole span the fixtures cover — the window the contract suite uses. */
   readonly datasetWindow: TimeWindow;
   /** Yesterday relative to `now`: the window one daily report covers. */
   readonly reportWindow: TimeWindow;
@@ -506,7 +506,7 @@ export function generateSeed(fixtures: SeedFixtures): GeneratedSeed {
       }
       if (isDone && resolvedAt !== null) {
         // The review window is a fraction of the interval the ticket was open,
-        // not a fixed number of hours before it closed â€” long-lived tickets keep
+        // not a fixed number of hours before it closed — long-lived tickets keep
         // the original spread, one-day tickets degrade to a few hours.
         const openHours = Math.max(
           1,
@@ -585,7 +585,7 @@ export function generateSeed(fixtures: SeedFixtures): GeneratedSeed {
       // is laid out inside the interval the ticket was open rather than at a
       // fixed day per commit. A four-commit branch on a one-day ticket would
       // otherwise run past its own merge, and the merge commit would be dated
-      // before the head commit it declares as its only parent â€” a child that
+      // before the head commit it declares as its only parent — a child that
       // precedes its parent, which no code host could return. Same technique as
       // the issue transitions above; `assertGeneratedSeedIsSound` checks it over
       // the emitted dataset.
@@ -703,7 +703,7 @@ export function generateSeed(fixtures: SeedFixtures): GeneratedSeed {
       // A merged pull request's reviews are spread across the interval it was
       // actually open, so the approval that gated a merge is never dated after
       // it. An open pull request has no upper bound to respect, so it keeps the
-      // wider spread â€” that is what makes the review-latency tail readable.
+      // wider spread — that is what makes the review-latency tail readable.
       const reviewCount = rng.between(1, 3);
       const reviewSpanMillis =
         mergedAt === null ? null : toEpochMillis(clampToWindow(mergedAt)) - toEpochMillis(createdAt);
@@ -1360,7 +1360,7 @@ function plantPathologies(context: PlantContext): void {
       body:
         day === slipDays
           ? `${slip.releaseTagName} is tagged and out. Five days later than we said.`
-          : `${slip.releaseTagName} is not going out today either â€” ${slip.trackingItemKey} still has an open item.`,
+          : `${slip.releaseTagName} is not going out today either — ${slip.trackingItemKey} still has an open item.`,
       threadRef: day === 0 ? null : 'message-release-slip-1',
       referencedItemKeys: [slip.trackingItemKey],
       postedAt: clampToWindow(postedAt),
@@ -1487,7 +1487,7 @@ function plantPathologies(context: PlantContext): void {
     conversationKey: 'conversation-checkout',
     conversationName: 'checkout-standup',
     authorIdentity: chatIdentity(blockedDeveloper),
-    body: `${blocked.itemKey} is blocked â€” I cannot reproduce the decline without the merchant sandbox.`,
+    body: `${blocked.itemKey} is blocked — I cannot reproduce the decline without the merchant sandbox.`,
     threadRef: null,
     referencedItemKeys: [blocked.itemKey],
     postedAt: instantFromIso(blocked.chatClaimAt),
@@ -2026,7 +2026,7 @@ function plantReportDayCommits(input: {
  * The order a transition was pushed in, recovered from its record id.
  *
  * `pushTransitions` names each row `transition-<itemKey>-<n>`, and the emitted
- * dataset is sorted by instant â€” so the authored order is only readable back off
+ * dataset is sorted by instant — so the authored order is only readable back off
  * the id. It is the authored order the history has to be non-decreasing in.
  */
 function transitionOrdinal(transition: IssueTransitionRecord): number {
@@ -2071,7 +2071,7 @@ function assertGeneratedSeedIsSound(
     const resolved = classifyCommitTraceability(commit, context).traceabilityClass;
     if (resolved !== intended) {
       problems.push(
-        `commits: \`${commit.revisionId}\` was authored as ${intended} but classifies as ${resolved} â€” message ${JSON.stringify(commit.message)} on branch ${JSON.stringify(commit.branchName)}`,
+        `commits: \`${commit.revisionId}\` was authored as ${intended} but classifies as ${resolved} — message ${JSON.stringify(commit.message)} on branch ${JSON.stringify(commit.branchName)}`,
       );
     }
   }
@@ -2104,7 +2104,7 @@ function assertGeneratedSeedIsSound(
       if (!previous || !current) continue;
       if (toEpochMillis(current.transitionedAt) < toEpochMillis(previous.transitionedAt)) {
         problems.push(
-          `issue_transitions: ${itemKey} reads ${previous.toStatus} at ${toIso(previous.transitionedAt)} then ${current.toStatus} at ${toIso(current.transitionedAt)} â€” the history runs backwards`,
+          `issue_transitions: ${itemKey} reads ${previous.toStatus} at ${toIso(previous.transitionedAt)} then ${current.toStatus} at ${toIso(current.transitionedAt)} — the history runs backwards`,
         );
       }
     }

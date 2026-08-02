@@ -371,7 +371,7 @@ export function assessAlignment(
 
   // Off-goal first, then the question. The order is the order a manager should
   // read them: what Compass is confident about, then what it is asking.
-  const unattributed = unattributedVerdict(snapshot.organizationId, resolutions);
+  const unattributed = unattributedVerdict(snapshot.organizationId, scope.teamKey ?? 'merged', resolutions);
   const verdicts: readonly AlignmentVerdict[] = [
     ...offGoalVerdicts(snapshot.organizationId, resolutions, instant),
     ...(unattributed === null ? [] : [unattributed]),
@@ -924,6 +924,7 @@ function offGoalVerdicts(
  */
 function unattributedVerdict(
   organizationId: string,
+  scopeKey: string,
   resolutions: readonly AlignmentResolution[],
 ): AlignmentVerdict | null {
   const orphans = resolutions.filter(
@@ -945,7 +946,10 @@ function unattributedVerdict(
   return {
     stableId: stableItemId({
       organizationId,
-      entityRef: entityRef('commit', 'unattributed'),
+      // Keyed on the *scope*, not on the literal unattributed. The bucket is one team's unplaced work,
+      // so a literal key gave every team in one organization the same id — a dismissal on one team's
+      // question suppressed the others', and the merged report could not attribute it.
+      entityRef: entityRef('commit', `unattributed:${scopeKey}`),
       causeKind: 'unattributed',
     }),
     kind: 'unattributed',

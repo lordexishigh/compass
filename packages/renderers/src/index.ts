@@ -40,6 +40,25 @@ export {
 export { renderCoverageLine, renderPlainTextReport, type PlainTextOptions } from './plain-text.js';
 
 export {
+  MERGED_RENDERER_ID,
+  MERGED_REPORT_WORD_BUDGET,
+  renderMergedLine,
+  renderMergedReport,
+  renderTeamLine,
+  type RenderedMergedLine,
+  type RenderedMergedReport,
+  type RenderedMergedSection,
+} from './merged.js';
+
+export {
+  WEEKLY_RENDERER_ID,
+  renderWeeklyDigest,
+  renderWeeklyTopic,
+  type RenderedWeeklyDigest,
+  type RenderedWeeklyTopic,
+} from './weekly.js';
+
+export {
   PROSE_TOKEN_TYPES,
   collapseWhitespace,
   escapeHtml,

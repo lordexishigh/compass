@@ -326,6 +326,26 @@ export const ROLE_MATRIX: readonly RouteRule[] = [
     allow: { POST: ANYONE },
   },
 
+  /**
+   * The simulated-clock time-travel control.
+   *
+   * Owner and manager, and team-scoped, because it *writes*: stepping to a day nobody has generated
+   * runs the whole pipeline for that instant and persists the report. A viewer reads the archive; they
+   * do not get to add rows to it.
+   *
+   * The matrix is only half the gate. Time travel is meaningful — and harmless — exactly on the
+   * simulated clock, so the handler additionally refuses any organization that is not running on the
+   * seeded substrate. That check is server-side on purpose: a live organization's `now` is the actual
+   * present, and a client-only guard would let a crafted POST regenerate its daily for a day that has
+   * not happened.
+   */
+  {
+    route: '/api/time-travel',
+    summary: 'Steps `now` across the seeded history and regenerates through the real pipeline.',
+    allow: { POST: ['owner', 'manager'] },
+    teamScoped: true,
+  },
+
   // -------------------------------------------------------------------------
   // The audit trail. Owner only, and append-only underneath.
   // -------------------------------------------------------------------------
@@ -377,6 +397,44 @@ export const ROLE_MATRIX: readonly RouteRule[] = [
     route: '/corrections',
     summary: 'What a manager has corrected: suppressed findings, corrected off-goal flags, live snoozes.',
     allow: { GET: ['owner', 'manager'] },
+  },
+  /**
+   * The archive and the two cross-cutting reads, on the same terms as the report itself.
+   *
+   * `ANYONE` with `demoOnlyPublic`, exactly like `/`: a past report is the same organization data as
+   * today's, so it gets the same posture — readable without a session on the demonstration tenant, and
+   * closed the moment Compass is holding somebody's actual blockers. A skip-level pointed at last
+   * Tuesday's report must not need a seat to read it, which is the entire use case.
+   */
+  {
+    route: '/archive',
+    summary: 'Every stored report by date and team. Renders rows, never a regeneration.',
+    allow: { GET: ANYONE },
+    demoOnlyPublic: true,
+  },
+  {
+    route: '/archive/[reportId]',
+    summary: 'One archived report, permalinked, rendered exactly as stored including its fallback flag.',
+    allow: { GET: ANYONE },
+    demoOnlyPublic: true,
+  },
+  {
+    route: '/archive/merged/[reportDate]',
+    summary: "One date's merged cross-team view, re-derived from that date's stored per-team reports.",
+    allow: { GET: ANYONE },
+    demoOnlyPublic: true,
+  },
+  {
+    route: '/merged',
+    summary: "Today's merged cross-team report: ranked by action impact, inside a 400-word budget.",
+    allow: { GET: ANYONE },
+    demoOnlyPublic: true,
+  },
+  {
+    route: '/weekly',
+    summary: 'The weekly digest: six topics, prose only, undefined topics stated rather than zeroed.',
+    allow: { GET: ANYONE },
+    demoOnlyPublic: true,
   },
 ];
 

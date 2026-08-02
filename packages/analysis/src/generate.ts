@@ -271,9 +271,17 @@ const SEVERITY_SCORE = Object.freeze({
 const onsetFromAge = (instant: Instant, ageDays: number): Instant =>
   (instant - Math.max(0, Math.round(ageDays)) * MILLIS_PER_DAY) as Instant;
 
-/** The Progress section's items are about the team's own process, not an artifact. */
-const progressCause = (causeKind: string, entityKey: string = PROGRESS_ENTITY_KEY): ItemCause => ({
-  entityRef: entityRef('progress', entityKey),
+/**
+ * The Progress section's items are about a team's own process, not an artifact.
+ *
+ * The entity key is therefore the **scope** — the team, or `merged` for an org-wide report — and not a
+ * literal. A literal `process` key gave every team in one organization the same projection, velocity and
+ * flow ids, which broke three things at once: a manager dismissing platform's velocity item dismissed
+ * every team's, the merged report could not attribute an item to the team whose process it described, and
+ * its link down was ambiguous. The sprint item already keyed on its sprint and was never affected.
+ */
+const progressCause = (scope: ResolvedScope, causeKind: string, entityKey?: string): ItemCause => ({
+  entityRef: entityRef('progress', entityKey ?? scope.teamKey ?? PROGRESS_ENTITY_KEY),
   causeKind,
   causeDiscriminator: '',
 });
@@ -288,7 +296,7 @@ function buildSections(
 
   const items: Readonly<Record<SectionKey, readonly ReportItem[]>> = {
     yesterday: findings.yesterday.map((item) => yesterdayItem(instant, item)),
-    progress: progressItems(organizationId, instant, findings),
+    progress: progressItems(organizationId, instant, scope, findings),
     blockers: findings.blockers.map((blocker) => blockerItem(instant, blocker, factsByEntity)),
     // Alignment lives in Risks, and after the measured risks rather than before
     // them: work serving an objective the organization stopped funding is a risk to
@@ -296,7 +304,7 @@ function buildSections(
     // claim itself. The Six Spine never grows a seventh section for a new finding.
     risks: [
       ...findings.risks.map((risk) => riskItem(instant, risk)),
-      ...findings.alignment.verdicts.map((verdict) => alignmentItem(instant, verdict)),
+      ...findings.alignment.verdicts.map((verdict) => alignmentItem(instant, scope, verdict)),
     ],
     recommendations: findings.recommendations.map((recommendation) => recommendationItem(instant, recommendation)),
     wins: findings.wins.map((win) => winItem(instant, win)),
@@ -383,7 +391,12 @@ function yesterdayItem(instant: Instant, item: YesterdayItem): ReportItem {
   };
 }
 
-function progressItems(organizationId: string, instant: Instant, findings: AnalysisFindings): readonly ReportItem[] {
+function progressItems(
+  organizationId: string,
+  instant: Instant,
+  scope: ResolvedScope,
+  findings: AnalysisFindings,
+): readonly ReportItem[] {
   const progress = findings.progress;
   const identified = (cause: ItemCause): IdentifiedItem => identifyItem(organizationId, cause);
 
@@ -393,7 +406,7 @@ function progressItems(organizationId: string, instant: Instant, findings: Analy
     const flow = progress.flow;
     return [
       {
-        ...identified(progressCause(PROGRESS_CAUSE_KINDS.kanbanFlow)),
+        ...identified(progressCause(scope, PROGRESS_CAUSE_KINDS.kanbanFlow)),
         headline: flow.statement,
         detail: progress.statement,
         changeTag: 'unchanged',
@@ -408,7 +421,7 @@ function progressItems(organizationId: string, instant: Instant, findings: Analy
       // because fewer than two sprints have completed" is the honest answer for a
       // Kanban or brand-new team, and omitting the line entirely would leave the
       // reader to assume Compass simply had not got round to it.
-      projectionItem(organizationId, instant, findings, flow.evidence),
+      projectionItem(organizationId, instant, scope, findings, flow.evidence),
     ];
   }
 
@@ -419,7 +432,7 @@ function progressItems(organizationId: string, instant: Instant, findings: Analy
 
   const items: ReportItem[] = [
     {
-      ...identified(progressCause(PROGRESS_CAUSE_KINDS.sprint, sprint.sprintKey)),
+      ...identified(progressCause(scope, PROGRESS_CAUSE_KINDS.sprint, sprint.sprintKey)),
       headline: `${sprint.sprintName} is ${sprint.completionPercent}% complete — ${done} of ${total} ${unit}${sprint.goal === null ? '' : `, against "${sprint.goal}"`}`,
       detail: `${sprint.committed.tickets} items were committed at the start and ${sprint.addedMidSprint.tickets} were added since, so the denominator is ${sprint.currentScope.tickets}. Measured in ${unit} because ${
         sprint.basis === 'story_points'
@@ -441,11 +454,11 @@ function progressItems(organizationId: string, instant: Instant, findings: Analy
   // is what a reader following the marker should land on. A date with no way back
   // to the board behind it is exactly the kind of unfalsifiable claim the
   // evidence rule exists to forbid.
-  items.push(projectionItem(organizationId, instant, findings, sprint.evidence));
+  items.push(projectionItem(organizationId, instant, scope, findings, sprint.evidence));
 
   if (progress.velocity.kind === 'measured') {
     items.push({
-      ...identified(progressCause(PROGRESS_CAUSE_KINDS.velocity)),
+      ...identified(progressCause(scope, PROGRESS_CAUSE_KINDS.velocity)),
       headline: progress.velocity.statement,
       detail: progress.velocity.samples
         .map((sample) => `${sample.sprintName}: ${sample.points} points across ${sample.tickets} items`)
@@ -479,13 +492,14 @@ function progressItems(organizationId: string, instant: Instant, findings: Analy
 function projectionItem(
   organizationId: string,
   instant: Instant,
+  scope: ResolvedScope,
   findings: AnalysisFindings,
   evidence: readonly EvidenceRef[],
 ): ReportItem {
   const projection = findings.projection;
   const audit = findings.calibrationAudit;
   const verdicts = projection.selectedByVerdicts;
-  const cause = progressCause(PROGRESS_CAUSE_KINDS.projection);
+  const cause = progressCause(scope, PROGRESS_CAUSE_KINDS.projection);
   // The projected date is not a severity: a date moving out is not the same kind of fact as a
   // blocker deepening, and scoring it would make the change tag say something the collar
   // underneath it says better. So it is terminal, and it reads as unchanged while it persists.
@@ -646,10 +660,15 @@ function riskSectionSummary(findings: AnalysisFindings): string | undefined {
  * `findings` — which is what makes the one-click affordance impossible to ship in
  * only one of the two renderers.
  */
-function alignmentItem(instant: Instant, verdict: AlignmentVerdict): ReportItem {
-  // `off_goal` is keyed on the objective the work serves; the unattributed question is keyed on
-  // the bucket itself, which has no objective. Both spellings match what `alignment.ts` derived
-  // its id from, and `assertItemIdsMatchTheirCause` is what proves that rather than this comment.
+function alignmentItem(instant: Instant, scope: ResolvedScope, verdict: AlignmentVerdict): ReportItem {
+  // `off_goal` is keyed on the objective the work serves — an artifact, so two teams both serving that
+  // objective legitimately share the id. The unattributed question has no objective and is about *this
+  // team's* unplaced work, so it is keyed on the scope: a literal key gave every team one id, and a
+  // dismissal of one team's question suppressed the others'.
+  //
+  // Both spellings match what `alignment.ts` derived its id from, and `assertItemIdsMatchTheirCause` is
+  // what proves that rather than this comment — it caught this exact drift when the scope key was added
+  // to one side and not the other.
   const cause: ItemCause =
     verdict.kind === 'off_goal'
       ? {
@@ -657,7 +676,11 @@ function alignmentItem(instant: Instant, verdict: AlignmentVerdict): ReportItem 
           causeKind: 'off_goal',
           causeDiscriminator: '',
         }
-      : { entityRef: entityRef('commit', 'unattributed'), causeKind: 'unattributed', causeDiscriminator: '' };
+      : {
+          entityRef: entityRef('commit', `unattributed:${scope.teamKey ?? 'merged'}`),
+          causeKind: 'unattributed',
+          causeDiscriminator: '',
+        };
 
   return {
     stableId: verdict.stableId,

@@ -578,3 +578,45 @@ export {
   insideReportWindow,
   type AnalysisConfig,
 } from './generate.js';
+
+export {
+  MERGED_REPORT_WORD_BUDGET,
+  WordBudgetExceededError,
+  assertWithinWordBudget,
+  countWords,
+} from './budgets.js';
+
+export {
+  CHANGE_ACTION_WEIGHT,
+  CHANGE_BAND,
+  MAX_MERGED_ITEMS,
+  MAX_SEVERITY_CONTRIBUTION,
+  MERGED_REPORT_SCHEMA_VERSION,
+  SECTION_ACTION_WEIGHT,
+  SECTION_BAND,
+  actionImpact,
+  mergeTeamReports,
+  mergedChangeLine,
+  mergedItemsInSection,
+  mergedSectionKeys,
+  type ActionImpact,
+  type MergeTeamInput,
+  type MergeTeamReportsInput,
+  type MergedReport,
+  type MergedReportItem,
+  type MergedTeamSummary,
+} from './merged-report.js';
+
+export {
+  WEEKLY_DIGEST_SCHEMA_VERSION,
+  WEEKLY_DIGEST_TRAILING_DAYS,
+  WEEKLY_TOPIC_KEYS,
+  WEEKLY_TOPIC_PRODUCER,
+  WEEKLY_TOPIC_TITLE,
+  buildWeeklyDigest,
+  digestSummary,
+  type WeeklyDigest,
+  type WeeklyDigestInput,
+  type WeeklyTopic,
+  type WeeklyTopicKey,
+} from './weekly-digest.js';

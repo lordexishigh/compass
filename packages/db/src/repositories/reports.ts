@@ -497,6 +497,86 @@ export async function loadReportBundle(scoped: ScopedDb, reportId: string): Prom
   };
 }
 
+/** One row in the archive index: enough to list a report without loading its sections. */
+export interface ReportArchiveEntry {
+  readonly id: string;
+  readonly scopeKind: string;
+  readonly scopeKey: string;
+  readonly reportDate: string;
+  readonly reportInstant: Instant;
+  readonly timezone: string;
+  readonly rendererId: string;
+  /** Carried into the index so the list can mark a degraded report before it is opened. */
+  readonly fallbackRenderer: boolean;
+  readonly coverageStatus: string;
+  readonly generatedAt: Instant;
+  readonly itemCount: number;
+}
+
+/**
+ * Every stored report, newest first — the archive index.
+ *
+ * Ordered by `(report_instant desc, scope_kind, scope_key)`: the date is what a manager navigates by
+ * ("last Tuesday's"), and the scope columns are the tiebreak so several teams on one date list in a
+ * fixed order rather than in whatever order the rows came back. Nothing here relies on physical row
+ * order, which PostgreSQL has never promised and which would make the archive reshuffle itself between
+ * two loads.
+ *
+ * The item count is summed from `report_sections.item_count` rather than by counting `report_items`,
+ * because the section rows already hold it — a report with six zero-item sections is a real report and
+ * has to appear in the index, and a join against items would have to be an outer one to include it.
+ */
+export async function listReportArchive(
+  scoped: ScopedDb,
+  options: { readonly limit?: number; readonly scopeKind?: string; readonly scopeKey?: string } = {},
+): Promise<readonly ReportArchiveEntry[]> {
+  const predicates = [
+    ...(options.scopeKind === undefined ? [] : [eq(reports.scopeKind, options.scopeKind)]),
+    ...(options.scopeKey === undefined ? [] : [eq(reports.scopeKey, options.scopeKey)]),
+  ];
+
+  const rows = await scoped
+    .selectFrom(reports, predicates.length === 0 ? undefined : and(...predicates))
+    .orderBy(desc(reports.reportInstant), asc(reports.scopeKind), asc(reports.scopeKey))
+    .limit(options.limit ?? 200);
+
+  const entries: ReportArchiveEntry[] = [];
+  for (const row of rows) {
+    const sections = await scoped.selectFrom(reportSections, eq(reportSections.reportId, row.id));
+    entries.push({
+      id: row.id,
+      scopeKind: row.scopeKind,
+      scopeKey: row.scopeKey,
+      reportDate: row.reportDate,
+      reportInstant: fromDatabaseInstant(row.reportInstant),
+      timezone: row.timezone,
+      rendererId: row.rendererId,
+      fallbackRenderer: row.fallbackRenderer,
+      coverageStatus: row.coverageStatus,
+      generatedAt: fromDatabaseInstant(row.generatedAt),
+      itemCount: sections.reduce((total, section) => total + section.itemCount, 0),
+    });
+  }
+
+  return entries;
+}
+
+/**
+ * Every report for one civil date, across every scope — what the merged archive view re-merges.
+ *
+ * Keyed on the date rather than the instant, because a manager asks for "last Tuesday" and the merged
+ * view has to gather the same day's teams however far apart their generation instants happened to fall.
+ */
+export async function findReportsForDate(
+  scoped: ScopedDb,
+  reportDate: string,
+): Promise<readonly StoredReport[]> {
+  const rows = await scoped
+    .selectFrom(reports, eq(reports.reportDate, reportDate))
+    .orderBy(asc(reports.scopeKind), asc(reports.scopeKey));
+  return rows.map(toStoredReport);
+}
+
 /**
  * One item's state as a prior report left it — three fields and nothing else.
  *
