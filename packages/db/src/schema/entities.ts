@@ -110,6 +110,22 @@ export const teams = pgTable(
   (table) => entityConstraints('teams', table),
 );
 
+/**
+ * A person, as the roster declares them.
+ *
+ * `anonymizedAt` and `pseudonym` are the anonymization decision, mirrored onto the
+ * entity from `anonymizations` so the *pure* analysis path can read it. That matters:
+ * `developerName` in `@compass/analysis` is the single choke point every name in every
+ * report flows through, and it is a function of the snapshot alone — no database, no
+ * clock. Putting the decision on the entity is what lets one three-line change in that
+ * function anonymise every section of every future report at once.
+ *
+ * Both are tracked fields, so anonymising appends an `entity_versions` row like any
+ * other change of belief. Two consequences follow and both are wanted: a report
+ * regenerated for a past instant resolves the name that was in force *then*, and the
+ * change itself is recorded in a table the database refuses to let anything update or
+ * delete.
+ */
 export const developers = pgTable(
   'developers',
   {
@@ -117,6 +133,10 @@ export const developers = pgTable(
     displayName: text('display_name').notNull(),
     teamKey: text('team_key'),
     active: boolean('active').notNull(),
+    /** Set once the person's name has been withdrawn from future reports. */
+    anonymizedAt: instantColumn('anonymized_at'),
+    /** The stable stand-in. Non-null exactly when `anonymized_at` is. */
+    pseudonym: text('pseudonym'),
   },
   (table) => entityConstraints('developers', table),
 );

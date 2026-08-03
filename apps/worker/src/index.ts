@@ -54,6 +54,7 @@ import {
   type GenerationDependencies,
   type TeamCadence,
 } from './generation.js';
+import { describeFirstRun, ensureFirstRun } from './first-run.js';
 import { describeIngestWindow, nextIngestWindows } from './ingest-schedule.js';
 import { JOB_NAMES, handleIngestWindow, type IngestRunIds, type WorkerDependencies } from './jobs.js';
 import { storedReportToRendered } from './stored-report.js';
@@ -240,6 +241,18 @@ export function createDeliveryDependencies(clock: Clock, db: CompassDatabase): D
 
 export async function startWorker(): Promise<RunningWorker> {
   const clock = new SystemClock();
+
+  /**
+   * First run, before anything else.
+   *
+   * Ahead of `boss.start()` because pg-boss creates its own schema and would otherwise be
+   * racing the migration runner for the same database, and ahead of the queue
+   * subscriptions because a generation tick firing against an unprovisioned roster would
+   * find no teams and quietly enqueue nothing. It is a cheap check on every boot after the
+   * first — one indexed existence query — and the whole seed exactly once.
+   */
+  for (const line of describeFirstRun(await ensureFirstRun({ clock }))) console.info(line);
+
   const runtime = createWorkerRuntime(clock);
   const { dependencies } = runtime;
   const deliveryDependencies = createDeliveryDependencies(clock, runtime.db);

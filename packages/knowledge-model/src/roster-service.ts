@@ -277,16 +277,117 @@ export interface DeveloperInput {
   readonly active: boolean;
 }
 
+/**
+ * The anonymization state already on a Developer row.
+ *
+ * Read before every ordinary write and carried forward, and that is not defensive
+ * plumbing — it is the whole safety of the feature. `developer` is a *declared* entity
+ * with a complete tracked field set, so an observation must name every field including
+ * `anonymizedAt` and `pseudonym`. A roster edit that named them as null would silently
+ * un-anonymise somebody, and `provisionRoster` runs on every boot, so "silently" would
+ * mean "every time the container restarts".
+ *
+ * Exported so `roster.ts` and this module cannot disagree about it.
+ */
+export async function currentAnonymization(
+  store: KnowledgeStore,
+  developerKey: string,
+): Promise<{ readonly anonymizedAt: Instant | null; readonly pseudonym: string | null }> {
+  const prior = await store.read('developer', developerKey);
+  if (prior === null) return { anonymizedAt: null, pseudonym: null };
+
+  const anonymizedAt = prior.fields['anonymizedAt'];
+  const pseudonym = prior.fields['pseudonym'];
+
+  return {
+    anonymizedAt: typeof anonymizedAt === 'number' ? (anonymizedAt as Instant) : null,
+    pseudonym: typeof pseudonym === 'string' && pseudonym.length > 0 ? pseudonym : null,
+  };
+}
+
 export async function upsertDeveloper(
   store: KnowledgeStore,
   input: DeveloperInput,
   at: Instant,
 ): Promise<ConfigurationWrite> {
+  const held = await currentAnonymization(store, input.key);
+
   const result = await store.observe({
     kind: 'developer',
     naturalKey: input.key,
-    fields: { displayName: input.displayName, teamKey: input.teamKey, active: input.active },
+    fields: {
+      displayName: input.displayName,
+      teamKey: input.teamKey,
+      active: input.active,
+      // Carried, never restated. Renaming somebody on the roster screen is not a
+      // decision about whether their name appears in reports.
+      anonymizedAt: held.anonymizedAt,
+      pseudonym: held.pseudonym,
+    },
     observedAt: at,
+    evidence: null,
+  });
+
+  return { naturalKey: result.naturalKey, outcome: result.outcome, version: result.version };
+}
+
+export class UnknownDeveloperError extends Error {
+  readonly detail: string;
+
+  constructor(developerKey: string) {
+    const detail =
+      `There is no person with the key \`${developerKey}\` on this roster, so there is nothing to ` +
+      'anonymise. Check the roster screen for the exact key — anonymization is keyed on the person, ' +
+      'not on a name, precisely so that two people with the same name cannot be confused.';
+    super(detail);
+    this.name = 'UnknownDeveloperError';
+    this.detail = detail;
+  }
+}
+
+/**
+ * Withdraws a person's name from every future report, or puts it back.
+ *
+ * The write is an ordinary observation, which is the point: it appends an
+ * `entity_versions` row like any other change of belief, and that table refuses UPDATE
+ * and DELETE in the database itself. So "anonymised on the 3rd" is a fact nothing can
+ * quietly remove, and a report regenerated for the 2nd still resolves the real name —
+ * because effective-dated resolution reads the version in force at the instant asked
+ * about, not today's.
+ *
+ * The `anonymizations` table and the audit entry are written by the caller at the web
+ * edge, which is the layer that knows who is asking. This function is deliberately
+ * ignorant of the actor: the knowledge model records what is true, not who said so.
+ */
+export async function setDeveloperAnonymization(
+  store: KnowledgeStore,
+  input: {
+    readonly developerKey: string;
+    /** Null puts the real name back. Non-null is the stand-in to print. */
+    readonly pseudonym: string | null;
+    readonly at: Instant;
+  },
+): Promise<ConfigurationWrite> {
+  const prior = await store.read('developer', input.developerKey);
+  if (prior === null) throw new UnknownDeveloperError(input.developerKey);
+
+  const displayName = prior.fields['displayName'];
+  const teamKey = prior.fields['teamKey'];
+
+  const result = await store.observe({
+    kind: 'developer',
+    naturalKey: input.developerKey,
+    fields: {
+      // The real name stays on the row. Anonymization is a decision about what Compass
+      // *prints*, and deleting the name here would make the act unreversible for the
+      // wrong reason — a mistaken erasure request has to be fixable, deliberately.
+      displayName: typeof displayName === 'string' ? displayName : input.developerKey,
+      teamKey: typeof teamKey === 'string' ? teamKey : null,
+      active: prior.fields['active'] === true,
+      anonymizedAt: input.pseudonym === null ? null : input.at,
+      pseudonym: input.pseudonym,
+    },
+    observedAt: input.at,
     evidence: null,
   });
 

@@ -6,10 +6,12 @@ import {
   TimeTravelUnavailableError,
   knownTeamKeys,
   regenerateForInstant,
+  reportAlreadyGenerated,
   simulatedClockAvailable,
   stepableInstantFor,
   timeTravelBounds,
 } from '../../../lib/archive-source';
+import { checkRateLimit } from '../../../lib/rate-limit';
 
 /**
  * `POST /api/time-travel` — step `now` and regenerate through the real pipeline.
@@ -118,6 +120,28 @@ export async function POST(request: Request): Promise<NextResponse> {
           'reports, so step one of those and open the merged view for the new date.',
         400,
       );
+    }
+
+    /**
+     * The regeneration budget: 5 per hour per organization, spent only on an actual run.
+     *
+     * Per organization and not per user, because the cost is the tenant's: a pipeline run reads a
+     * window, rebuilds a snapshot, calls the analysis core and narrates, however many of their
+     * managers asked for it. Five is enough to correct a bad morning's report and iterate on the
+     * correction.
+     *
+     * Asked *after* every validation and only when the day is genuinely ungenerated, so a manager
+     * scrubbing back through last week — which is reading rows, not running pipelines — never
+     * spends it. `reportAlreadyGenerated` explains the benign race that makes this at worst
+     * off-by-one under concurrency.
+     */
+    if (!(await reportAlreadyGenerated(admitted.scoped, teamKey, date.value))) {
+      const limited = checkRateLimit({
+        action: 'report_regeneration',
+        subjects: { organization: admitted.organizationId },
+        now: admitted.now,
+      });
+      if (!limited.allowed && limited.response !== null) return limited.response;
     }
 
     const regenerated = await regenerateForInstant({

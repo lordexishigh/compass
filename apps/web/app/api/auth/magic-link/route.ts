@@ -1,8 +1,10 @@
 import { requestMagicLink } from '@compass/auth';
+import { normalizeEmail } from '@compass/db';
 import type { NextResponse } from 'next/server';
 
 import { baseUrlFor, guard, mailer, organizationName } from '../../../../lib/auth/guard';
 import { failure, jsonOk, readJsonObject, requiredString } from '../../../../lib/auth/http';
+import { checkRateLimit, clientAddress } from '../../../../lib/rate-limit';
 
 /**
  * `POST /api/auth/magic-link` — mails a 15-minute, single-use sign-in link.
@@ -27,6 +29,25 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   const email = requiredString(parsed.body, 'email');
   if ('response' in email) return email.response;
+
+  /**
+   * The same limit as `/api/auth/login`, and it belongs here more than it does there.
+   *
+   * This endpoint *sends mail* to an address the caller chose and answers identically whether or
+   * not that address has a seat. Unlimited, it is a way to have Compass deliver a hundred sign-in
+   * mails to a colleague's inbox — which is not a data leak but is unquestionably an attack, and
+   * one whose blame lands on Compass's sending reputation.
+   *
+   * Sharing the `auth_attempt` counter with sign-in is deliberate rather than convenient: the two
+   * are the same pressure on the same account, so exhausting one must not leave the other's
+   * allowance untouched.
+   */
+  const limited = checkRateLimit({
+    action: 'auth_attempt',
+    subjects: { ip: clientAddress(request), account: normalizeEmail(email.value) },
+    now: admitted.now,
+  });
+  if (!limited.allowed && limited.response !== null) return limited.response;
 
   try {
     const result = await requestMagicLink({

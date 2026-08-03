@@ -59,8 +59,22 @@ const UNAUTHENTICATED_PAGES: readonly {
   readonly route: string;
   readonly file: readonly string[];
   readonly showsCredentials: boolean;
+  /**
+   * The string that proves this surface reaches the credentials.
+   *
+   * Defaults to `href="/account"` — a link in rendered markup. Two surfaces discharge the duty
+   * differently and say so here rather than being special-cased in the assertion below.
+   */
+  readonly reaches?: string;
 }[] = [
   { route: '/account', file: ['app', 'account', 'page.tsx'], showsCredentials: true },
+  /**
+   * `/login` is an endpoint, not a screen — the short POST address published in
+   * `.nous/demo_account.json`. It appears here because the matrix grants `public` a GET on it, and
+   * this file's whole job is that every such surface has a route to the credentials. Its GET *is*
+   * that route: a 303 to `/account`, which is the page that prints them.
+   */
+  { route: '/login', file: ['app', 'login', 'route.ts'], showsCredentials: false, reaches: "'/account'" },
   { route: '/', file: ['components', 'report-document.tsx'], showsCredentials: false },
   { route: '/goals', file: ['app', 'goals', 'page.tsx'], showsCredentials: false },
   { route: '/account/invite', file: ['app', 'account', 'invite', 'page.tsx'], showsCredentials: false },
@@ -168,8 +182,8 @@ describe('every unauthenticated entry point reaches the credentials in one hop',
       // `/goals` is the one that reaches `/account` via the report rather than
       // directly: it is a screen you arrive at *from* the report, and its own link
       // back is to `/`, whose footer carries the account link asserted above. Any
-      // other page must name `/account` itself.
-      const expected = route === '/goals' ? 'href="/"' : 'href="/account"';
+      // other page must name `/account` itself, unless it declared its own proof above.
+      const expected = page.reaches ?? (route === '/goals' ? 'href="/"' : 'href="/account"');
 
       expect(
         source.includes(expected),

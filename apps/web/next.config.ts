@@ -11,18 +11,22 @@ const config: NextConfig = {
   // an entry here *and* still failed, because its binary lives in a separate
   // per-platform package the externals list does not name. See
   // `packages/auth/src/password.ts` for the whole of that reasoning.
-  async headers() {
-    return [
-      {
-        source: '/:path*',
-        headers: [
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          { key: 'X-Frame-Options', value: 'DENY' },
-        ],
-      },
-    ];
-  },
+  //
+  // ## There is deliberately no `headers()` here
+  //
+  // Three static headers used to be set from this file. They now come from
+  // `middleware.ts` along with the CSP, and this comment is the record of why the move
+  // was necessary rather than tidy.
+  //
+  // A strict CSP needs a per-response nonce. `headers()` is evaluated once, at build
+  // time, and cannot vary per response — so the CSP has to come from middleware. And a
+  // header declared in *both* places is emitted twice: browsers then intersect the two
+  // policies, which is the strictest possible reading of a mistake, and any assertion
+  // that a header equals its documented value fails against a joined string.
+  //
+  // So middleware owns all six, `apps/web/lib/security-headers.ts` is the single source
+  // of their values, and `tests/security-headers.test.ts` asserts this file declares no
+  // `headers()` at all — the comment is not what keeps the ownership single.
 };
 
 export default config;

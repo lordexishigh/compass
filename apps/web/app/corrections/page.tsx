@@ -7,8 +7,10 @@ import {
 import { readCorrections, readFeedbackLedger } from '@compass/db';
 import { headers } from 'next/headers';
 
+import { EmptyState } from '../../components/empty-state';
 import { StatedFailure } from '../../components/stated-failure';
 import { pageAccess } from '../../lib/auth/guard';
+import { EMPTY_STATES } from '../../lib/empty-states';
 
 /**
  * `/corrections` — what this manager has told Compass to stop saying, and what it did about it.
@@ -151,10 +153,7 @@ export default async function CorrectionsPage() {
           01 corrected off-goal flags
         </h2>
         {corrections.length === 0 ? (
-          <p className="stated-absence mt-3 text-[17px] leading-relaxed">
-            You have not marked an off-goal flag wrong. When you do, Compass records what it claimed and what you said
-            beside it, and stops making that claim.
-          </p>
+          <EmptyState copy={EMPTY_STATES.correctedFlags} />
         ) : (
           <ul className="mt-5 space-y-6">
             {corrections.map((correction) => (
@@ -180,9 +179,7 @@ export default async function CorrectionsPage() {
           02 findings held back
         </h2>
         {suppressions.length === 0 ? (
-          <p className="stated-absence mt-3 text-[17px] leading-relaxed">
-            Nothing is being held back. Every finding Compass has is in your report.
-          </p>
+          <EmptyState copy={EMPTY_STATES.suppressions} />
         ) : (
           <ul className="mt-5 space-y-5">
             {suppressions.map((entry) => (
@@ -211,9 +208,7 @@ export default async function CorrectionsPage() {
           03 snoozed, and returning
         </h2>
         {snoozes.length === 0 ? (
-          <p className="stated-absence mt-3 text-[17px] leading-relaxed">
-            Nothing is snoozed. A snooze is the one verdict that expires on its own.
-          </p>
+          <EmptyState copy={EMPTY_STATES.snoozes} />
         ) : (
           <ul className="mt-5 space-y-4">
             {snoozes.map((entry) => (

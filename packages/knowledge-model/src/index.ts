@@ -100,6 +100,9 @@ export {
   setTeamMembership,
   setWorkingCalendar,
   teamMembershipKey,
+  UnknownDeveloperError,
+  currentAnonymization,
+  setDeveloperAnonymization,
   upsertDeveloper,
   upsertTeam,
   type AbsenceInput,
@@ -184,3 +187,14 @@ export {
   type SnapshotSprintScopeChange,
   type SnapshotTicketTransition,
 } from './snapshot-builder.js';
+
+/**
+ * The one person-to-pseudonym scheme. Anonymization and LLM redacted mode both read it,
+ * so a person cannot be `Wren Alder` on the page and `Contributor 3` in the request.
+ */
+export {
+  FORMER_TEAM_MEMBER,
+  pseudonymFor,
+  pseudonymMap,
+  type PseudonymAssignment,
+} from './pseudonym.js';

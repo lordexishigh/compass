@@ -171,6 +171,34 @@ export {
   subscriptions,
 } from './schema/delivery.js';
 
+export { appFeedback } from './schema/app-feedback.js';
+
+export { INTEGRATION_TOKEN_KINDS, integrationTokens, organizationDataKeys } from './schema/security.js';
+
+export {
+  dataKeyRowId,
+  deleteIntegrationToken,
+  findDataKey,
+  findIntegrationToken,
+  integrationTokenRowId,
+  listIntegrationTokens,
+  saveDataKey,
+  saveIntegrationToken,
+  type DataKeyInput,
+  type IntegrationTokenInput,
+  type IntegrationTokenKind,
+  type StoredDataKey,
+  type StoredIntegrationToken,
+} from './repositories/integration-tokens.js';
+
+export {
+  APP_FEEDBACK_MAX_LENGTH,
+  readAppFeedback,
+  recordAppFeedback,
+  type AppFeedbackInput,
+  type StoredAppFeedback,
+} from './repositories/app-feedback.js';
+
 export {
   createShareLink,
   deactivateSubscription,
@@ -204,6 +232,73 @@ export {
   type StoredSubscription,
   type SubscriptionInput,
 } from './repositories/delivery.js';
+
+export {
+  anonymizations,
+  deletionRequests,
+  orgPrivacySettings,
+  purgeRuns,
+  rawEvents,
+  slackChannelIngestion,
+} from './schema/privacy.js';
+
+export {
+  CONVERSATION_KINDS,
+  DERIVED_RETENTION_CHOICES,
+  LLM_MINIMIZATION_MODES,
+  PRIVACY_DEFAULTS,
+  PrivateConversationError,
+  PseudonymCollisionError,
+  RAW_RETENTION_CHOICES,
+  channelsAwaitingNotice,
+  countRawEvents,
+  ensurePrivacySettings,
+  findAnonymization,
+  findDeletionRequest,
+  findDeletionRequestByUndoHash,
+  findLiveDeletionRequest,
+  findSlackChannel,
+  ingestibleConversationKeys,
+  insertDeletionRequest,
+  latestPurgeRun,
+  listAnonymizations,
+  listDeletionRequests,
+  listDeletionRequestsDue,
+  listPurgeRuns,
+  listRawEventsForConversation,
+  listRawEventsForIdentities,
+  listSlackChannels,
+  markDeletionPurged,
+  markDeletionUndone,
+  markExportDownloaded,
+  purgeRawEventsBefore,
+  purgeReportsBefore,
+  readPrivacySettings,
+  recordAnonymization,
+  recordChannelNotice,
+  recordPurgeRun,
+  recordRawEvents,
+  revertAnonymization,
+  setSlackChannelIngestion,
+  updatePrivacySettings,
+  type AnonymizationInput,
+  type ConversationKind,
+  type DeletionRequestInput,
+  type DeletionStatus,
+  type DeletionSubjectKind,
+  type DerivedRetentionYears,
+  type LlmMinimizationMode,
+  type PrivacySettingsRow,
+  type PurgeRunInput,
+  type RawEventInput,
+  type RawRetentionDays,
+  type SlackChannelInput,
+  type StoredAnonymization,
+  type StoredDeletionRequest,
+  type StoredPurgeRun,
+  type StoredRawEvent,
+  type StoredSlackChannel,
+} from './repositories/privacy.js';
 
 export {
   listNarrationTraces,
@@ -277,6 +372,12 @@ export {
 } from './client.js';
 
 export { MIGRATIONS_FOLDER, runMigrations } from './migrate.js';
+
+export {
+  FIRST_RUN_ADVISORY_LOCK_KEY,
+  withFirstRunLock,
+  type FirstRunSession,
+} from './first-run.js';
 
 export {
   insertIngestRun,

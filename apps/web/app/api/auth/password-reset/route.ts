@@ -1,8 +1,10 @@
 import { requestPasswordReset } from '@compass/auth';
+import { normalizeEmail } from '@compass/db';
 import type { NextResponse } from 'next/server';
 
 import { baseUrlFor, guard, mailer, organizationName } from '../../../../lib/auth/guard';
 import { failure, jsonOk, readJsonObject, requiredString } from '../../../../lib/auth/http';
+import { checkRateLimit, clientAddress } from '../../../../lib/rate-limit';
 
 /**
  * `POST /api/auth/password-reset` — mails a 1-hour, single-use reset link.
@@ -25,6 +27,16 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   const email = requiredString(parsed.body, 'email');
   if ('response' in email) return email.response;
+
+  // The `auth_attempt` allowance, shared with sign-in and the magic link. This route mails a
+  // *valid single-use credential* to an address the caller named, which is the strongest reason
+  // of the three to bound how often it can be asked for.
+  const limited = checkRateLimit({
+    action: 'auth_attempt',
+    subjects: { ip: clientAddress(request), account: normalizeEmail(email.value) },
+    now: admitted.now,
+  });
+  if (!limited.allowed && limited.response !== null) return limited.response;
 
   try {
     const result = await requestPasswordReset({

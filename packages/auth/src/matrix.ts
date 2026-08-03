@@ -148,6 +148,24 @@ export const ROLE_MATRIX: readonly RouteRule[] = [
     summary: 'Email and password in, session cookie out.',
     allow: { POST: ANYONE },
   },
+  /**
+   * The short sign-in address, published to a verification harness.
+   *
+   * `POST /login` is the same sign-in as `POST /api/auth/login` — one implementation in
+   * `lib/auth/login.ts` — reached by the address written into `.nous/demo_account.json`.
+   * `GET` is a 303 to `/account`, so a person who types it in a browser lands on the screen
+   * that has the form and the demonstration credentials on it.
+   *
+   * `ANYONE` on both verbs, for the same reason every row in this block is: it is how a
+   * session is obtained, so requiring one would be circular. It carries no `demoOnlyPublic`
+   * flag because it discloses nothing about the tenant either way — a wrong address and a
+   * wrong password get one 401 and one sentence.
+   */
+  {
+    route: '/login',
+    summary: 'The short sign-in address: POST credentials, or GET to reach the form.',
+    allow: { GET: ANYONE, POST: ANYONE },
+  },
   {
     route: '/api/auth/logout',
     summary: 'Ends this session. Leaves other devices alone.',
@@ -309,11 +327,45 @@ export const ROLE_MATRIX: readonly RouteRule[] = [
   // have no cookies to send, so requiring a session here would mean the feature could not
   // exist; both are narrower than a session once admitted, because a feedback token authorises
   // exactly one action on exactly one item and nothing else.
+  /**
+   * One path, two very different things, and the asymmetry is worth stating rather than tidying.
+   *
+   * `POST` is a manager's verdict on a finding — the report page's own buttons. `GET` is the list of
+   * submissions about **Compass itself** (`app_feedback`), and it is owner-only: those messages are
+   * other people's words about the product, sometimes naming a person or a customer, and a manager
+   * of one team has no business reading the org's support inbox. Owner is also the role that is
+   * team-unscoped, so the `teamScoped` flag below — which exists for the POST — cannot accidentally
+   * refuse the read.
+   *
+   * The submission itself is `POST /api/feedback/app`, a separate route, because `POST` here is
+   * already taken by the verdict and one verb on one path cannot mean two things without the
+   * handler guessing from the body which was meant.
+   */
   {
     route: '/api/feedback',
-    summary: "A manager's verdict on one finding: dismiss, reject, accept, already resolved, snooze.",
-    allow: { POST: ['owner', 'manager'] },
+    summary:
+      "GET: every submission about Compass itself, newest first, owner only. POST: a manager's verdict on one finding.",
+    allow: { GET: ['owner'], POST: ['owner', 'manager'] },
     teamScoped: true,
+  },
+  /**
+   * The in-app feedback control's own endpoint.
+   *
+   * `ANYONE`, with `demoOnlyPublic`, which is the same posture as `/` and for the same reason: the
+   * seeded demonstration report is readable with no session, so the reader who most needs to say
+   * "this page is confusing" is the one who has not signed up yet. Refusing them would mean the
+   * feature does not exist on the surface it is most needed. On a real tenant it closes along with
+   * everything else marked demo-only, and a seat is then required.
+   *
+   * It is not a hole. The route accepts one field, writes one row to a table nothing in the pipeline
+   * reads, and returns no organization data of any kind — so the worst a stranger can do with it is
+   * tell us something.
+   */
+  {
+    route: '/api/feedback/app',
+    summary: 'Submits one message about Compass itself. Writes a row nothing in the pipeline reads.',
+    allow: { POST: ANYONE },
+    demoOnlyPublic: true,
   },
   {
     route: '/api/feedback/link/[token]',
@@ -323,6 +375,29 @@ export const ROLE_MATRIX: readonly RouteRule[] = [
   {
     route: '/api/slack/actions',
     summary: 'Slack Block Kit interactions. Verified by v0 signature, then mapped to a seat.',
+    allow: { POST: ANYONE },
+  },
+
+  /**
+   * Inbound provider webhooks: GitHub, Slack and Jira, on one route.
+   *
+   * `ANYONE`, and it is the clearest case in the table of why that word does not mean "open". A
+   * webhook arrives from a provider's own infrastructure with no cookie it could possibly send, so a
+   * session requirement here would mean the feature cannot exist. What authorises it instead is
+   * strictly *narrower* than a session: an HMAC over the raw bytes under a secret only Compass and
+   * the provider hold, compared in constant time, inside a five-minute replay window for the two
+   * schemes that carry a timestamp. A caller without the secret is refused 401 before the body is
+   * parsed.
+   *
+   * No `demoOnlyPublic`, unlike `/api/feedback/app`: the flag confines a *public read of tenant
+   * data* to the demonstration tenant, and this route reads nothing and returns nothing about the
+   * organization. It answers "accepted" or "not verified", and a verified delivery is only ever an
+   * acknowledgement — Compass reads its sources by pulling a window on a schedule, so a webhook is
+   * a hint and never a record.
+   */
+  {
+    route: '/api/webhooks/[provider]',
+    summary: 'Inbound GitHub, Slack and Jira webhooks. Signature-verified before the body is parsed.',
     allow: { POST: ANYONE },
   },
 
@@ -382,6 +457,24 @@ export const ROLE_MATRIX: readonly RouteRule[] = [
     route: '/account/reset',
     summary: 'Set a new password from a reset link.',
     allow: { GET: ANYONE },
+  },
+  /**
+   * The guided first-report path, for an organization that is not the demonstration tenant.
+   *
+   * Owner and manager, and deliberately *not* `public`. Every step on it is a write to the
+   * configuration — declare a team, enter the two objectives, import a roster — and the
+   * matrix already says those writes are owner-or-manager on `/api/roster/*` and
+   * `/api/goals`. A screen that anyone could read while every button on it answered 403
+   * would be a worse experience than being told plainly to sign in.
+   *
+   * It is a destination, never an interception: nothing redirects to it, and `/` does not
+   * consult it. A new organization is *offered* this path from the report route when the
+   * report has nothing to describe yet; a seeded one never sees it.
+   */
+  {
+    route: '/start',
+    summary: 'The four-step path from a new organization to its first report.',
+    allow: { GET: ['owner', 'manager'] },
   },
   {
     route: '/seats',

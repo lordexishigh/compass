@@ -42,6 +42,15 @@ export {
 } from './model-ingest.js';
 
 export {
+  INGESTIBLE_CONVERSATION_KIND,
+  ingestChatMessages,
+  isIngestibleKind,
+  type ChatIngestRequest,
+  type ChatIngestResult,
+  type ChatIngestSkips,
+} from './chat.js';
+
+export {
   ArchivalFilter,
   NOTHING_ARCHIVED,
   loadTrackingDecisions,

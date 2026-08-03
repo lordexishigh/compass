@@ -49,6 +49,14 @@
   --motion-standard: 180ms;
   --motion-quick: 150ms;
   --motion-ease: cubic-bezier(0.2, 0, 0, 1);
+
+  /*
+   * The space the in-app feedback pill is allowed to occupy, reserved on `body` so the last line of
+   * a report can always be scrolled clear of it. 44px of target plus 12px of inset plus 12px of
+   * breathing room: a floating control that covered the final Wins item would be a small feature
+   * damaging the main one.
+   */
+  --app-feedback-reserve: 4.25rem;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -154,6 +162,12 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    /*
+     * Room below the fold for the feedback pill, plus whatever the device's own home indicator
+     * needs. Declared on `body` rather than on each page so no screen can forget it and end up with
+     * its last line under a floating control.
+     */
+    padding-bottom: calc(var(--app-feedback-reserve) + env(safe-area-inset-bottom, 0px));
   }
 
   /* Data tokens are always mono, tabular and never bold. */
@@ -709,6 +723,172 @@
     outline: none;
     border-color: var(--authored);
     box-shadow: 0 0 0 2px color-mix(in oklab, var(--authored) 30%, transparent);
+  }
+
+  /* ---------------------------------------------------------------------
+     The in-app feedback control: a note about Compass itself.
+
+     Teal on the authored surfaces, because it is the person's own words —
+     never emerald, which means verified positive fact. The pill is zinc at
+     rest so the page keeps exactly one saturated object, and the panel is a
+     card at the same 12px radius as every other card in the product.
+     --------------------------------------------------------------------- */
+
+  .app-feedback {
+    position: fixed;
+    right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    z-index: 40;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    /* Only the controls take pointer events; the column itself never covers the prose beside it. */
+    pointer-events: none;
+  }
+
+  .app-feedback > * {
+    pointer-events: auto;
+  }
+
+  .app-feedback__pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 16px;
+    border: 1px solid var(--rule-strong);
+    border-radius: 8px;
+    background-color: var(--surface-raised);
+    box-shadow: 0 1px 2px color-mix(in oklab, var(--ink-strong) 8%, transparent);
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    color: var(--ink-muted);
+    cursor: pointer;
+    transition:
+      border-color var(--motion-quick) var(--motion-ease),
+      color var(--motion-quick) var(--motion-ease);
+  }
+
+  .app-feedback__pill:hover {
+    border-color: var(--authored);
+    color: var(--ink-strong);
+  }
+
+  .app-feedback__pill:focus-visible {
+    outline: 2px solid var(--authored);
+    outline-offset: 2px;
+  }
+
+  /*
+   * On a phone the reading column is the full width, so there is no gutter to hide in. The pill
+   * therefore gets as narrow as a 44px target allows and stays hard against the right edge, so the
+   * most it can ever sit over is the ragged end of one line — and `--app-feedback-reserve` on `body`
+   * guarantees the document's own last line is scrollable clear of it entirely.
+   */
+  @media (max-width: 40rem) {
+    .app-feedback__pill {
+      padding: 0 12px;
+      font-size: 0.75rem;
+    }
+  }
+
+  /* 8px and a fade, the same disclosure motion as the evidence gutter. */
+  .app-feedback__panel {
+    width: min(22rem, calc(100vw - 24px));
+    padding: 16px;
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    background-color: var(--surface-raised);
+    box-shadow: 0 4px 16px color-mix(in oklab, var(--ink-strong) 10%, transparent);
+    animation: evidence-reveal 240ms var(--motion-ease) both;
+  }
+
+  .app-feedback__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .app-feedback__close {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    color: var(--ink-faint);
+    background: none;
+    border: 0;
+    padding: 4px 0;
+    cursor: pointer;
+    transition: color var(--motion-quick) var(--motion-ease);
+  }
+
+  .app-feedback__close:hover {
+    color: var(--ink-strong);
+  }
+
+  .app-feedback__close:focus-visible {
+    outline: 2px solid var(--authored);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  .app-feedback__label {
+    display: block;
+    margin-top: 8px;
+    font-family: var(--font-serif);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--ink-muted);
+  }
+
+  .app-feedback__field {
+    display: block;
+    width: 100%;
+    margin-top: 8px;
+    padding: 8px;
+    border: 1px solid var(--rule-strong);
+    border-radius: 8px;
+    background-color: var(--surface);
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--ink-strong);
+    resize: vertical;
+    transition: border-color var(--motion-quick) var(--motion-ease);
+  }
+
+  .app-feedback__field::placeholder {
+    color: var(--ink-faint);
+  }
+
+  .app-feedback__field:hover {
+    border-color: var(--authored);
+  }
+
+  .app-feedback__field:focus-visible {
+    outline: none;
+    border-color: var(--authored);
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--authored) 30%, transparent);
+  }
+
+  /* What happened, in the product's own voice. Teal when stored, zinc when refused: a failure is
+     news rather than the person's authorship, and Compass never colour-codes bad news. */
+  .app-feedback__outcome {
+    margin-top: 12px;
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--authored-text);
+  }
+
+  .app-feedback__outcome[data-state='refused'] {
+    color: var(--ink-muted);
+  }
+
+  .app-feedback__foot {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
   }
 }
 

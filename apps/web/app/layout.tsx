@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 
+import { AppFeedbackControl } from '../components/app-feedback-control';
+
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -28,6 +30,19 @@ export default function RootLayout({ children }: { readonly children: React.Reac
           Skip to the report
         </a>
         {children}
+        {/*
+          Mounted here rather than inside `ReportDocument`, which is what makes it reachable from
+          *both* report views — today's report at `/` and any archived permalink at
+          `/archive/[reportId]` — as well as the weekly digest and the merged view, without four
+          copies that can drift apart. It is the last child so it follows the document in the tab
+          order: a control a manager reaches after reading, never before.
+
+          `/` stays session-less. This is a leaf `'use client'` boundary under a Server Component
+          layout, so the report is still assembled on the server and arrives as HTML; the pill's own
+          endpoint allows the `public` principal, so the demonstration reader can use it with no
+          session at all.
+        */}
+        <AppFeedbackControl />
       </body>
     </html>
   );

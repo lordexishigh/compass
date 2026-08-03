@@ -162,7 +162,16 @@ export const NAMED_ENTITIES: readonly NamedEntityDefinition[] = [
     'conversationKey',
     'timezone',
   ]),
-  define('developer', developers, 'declared', ['displayName', 'teamKey', 'active']),
+  // `anonymizedAt` and `pseudonym` are tracked, so withdrawing a name appends a version
+  // rather than rewriting one — which is what makes the act auditable and what lets a
+  // report regenerated for a past instant still resolve the name in force then.
+  define(
+    'developer',
+    developers,
+    'declared',
+    ['displayName', 'teamKey', 'active', 'anonymizedAt', 'pseudonym'],
+    ['anonymizedAt'],
+  ),
   define('team_membership', teamMemberships, 'declared', [
     'teamKey',
     'developerKey',

@@ -142,14 +142,34 @@ describe('the first request to / passes no gate', () => {
     }
   });
 
-  it('serves / and nothing else as the report route: no /login, /setup or /onboarding', () => {
+  it('serves / as the report route, with no setup or onboarding screen in front of it', () => {
+    /**
+     * No *screen* may stand between a cold container and the report.
+     *
+     * This used to forbid the `app/login` directory outright. `/login` now exists as the
+     * short POST address published in `.nous/demo_account.json` for a verification harness,
+     * and the rule is asserted where it actually lives instead: it must be a `route.ts` with
+     * no `page.tsx`, so it cannot grow a form and become a wall. Its GET is a 303 to
+     * `/account`.
+     *
+     * The guided first-report path is at `/start`, which is a screen a reader *chooses* from
+     * a report that has explained why it is empty. It is not on this list because it is not
+     * an interception — and `/` cannot redirect to it, having no `redirect(` at all, which
+     * the assertion above pins.
+     */
     const routes = readdirSync(join(WEB_ROOT, 'app'), { withFileTypes: true })
       .filter((entry) => entry.isDirectory())
       .map((entry) => entry.name);
 
-    for (const gate of ['login', 'signin', 'sign-in', 'setup', 'onboarding', 'connect', 'welcome']) {
+    for (const gate of ['signin', 'sign-in', 'setup', 'onboarding', 'connect', 'welcome']) {
       expect(routes, `app/${gate} would be a gate on the way to the report`).not.toContain(gate);
     }
+
+    expect(existsSync(join(WEB_ROOT, 'app', 'login', 'route.ts'))).toBe(true);
+    expect(
+      existsSync(join(WEB_ROOT, 'app', 'login', 'page.tsx')),
+      'app/login/page.tsx would be a sign-in wall on the way to the report',
+    ).toBe(false);
   });
 
   it('reads its data on the server, with no client-side fetch on the report path', () => {

@@ -1,9 +1,7 @@
-import { describeLoginFailure, startSession, verifyLogin } from '@compass/auth';
-import { NextResponse } from 'next/server';
+import type { NextResponse } from 'next/server';
 
-import { setSessionCookie } from '../../../../lib/auth/cookies';
 import { guard } from '../../../../lib/auth/guard';
-import { failure, jsonError, readJsonObject, requiredPassword, requiredString } from '../../../../lib/auth/http';
+import { completeLogin } from '../../../../lib/auth/login';
 
 /**
  * `POST /api/auth/login` — email and password in, session cookie out.
@@ -16,6 +14,11 @@ import { failure, jsonError, readJsonObject, requiredPassword, requiredString } 
  * distinguishing them would publish which addresses have accounts here. The
  * unknown-address branch still performs one Argon2id verification against a decoy
  * hash, so the *timing* does not publish it either.
+ *
+ * The body of it lives in `lib/auth/login.ts`, shared with `/login` — the short address
+ * `.nous/demo_account.json` publishes for a verification harness. Two routes accept these
+ * credentials and they must be the same sign-in; the guard call stays here, per route,
+ * because that is the decision which has to be visible at every handler.
  */
 export const dynamic = 'force-dynamic';
 // Argon2id is a native addon. It cannot load on the Edge runtime, and a route that
@@ -26,46 +29,5 @@ export async function POST(request: Request): Promise<NextResponse> {
   const admitted = await guard({ request, route: '/api/auth/login', action: 'POST' });
   if (!admitted.allowed) return admitted.response;
 
-  const parsed = await readJsonObject(request);
-  if ('response' in parsed) return parsed.response;
-
-  const email = requiredString(parsed.body, 'email');
-  if ('response' in email) return email.response;
-  const password = requiredPassword(parsed.body);
-  if ('response' in password) return password.response;
-
-  try {
-    const result = await verifyLogin({ scoped: admitted.scoped, email: email.value, password: password.value });
-
-    if (!result.ok) {
-      return jsonError(
-        result.failure,
-        describeLoginFailure(result.failure),
-        // A pending seat is a 403: the credentials were right and the seat is not
-        // ready, which is a different thing for the reader to do about it.
-        result.failure === 'seat_not_active' ? 403 : 401,
-      );
-    }
-
-    const started = await startSession({
-      scoped: admitted.scoped,
-      userId: result.user.id,
-      now: admitted.now,
-    });
-
-    const response = NextResponse.json(
-      {
-        signedIn: true,
-        email: result.user.email,
-        displayName: result.user.displayName,
-        role: result.membership.role,
-        sessionExpiresAt: new Date(started.session.expiresAt).toISOString(),
-      },
-      { status: 200, headers: { 'cache-control': 'no-store' } },
-    );
-
-    return setSessionCookie(response, request, started.secret);
-  } catch (error) {
-    return failure(error);
-  }
+  return completeLogin(request, admitted);
 }

@@ -4,7 +4,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, type FormEvent, type ReactNode } from 'react';
 
+import { EMPTY_STATES } from '../lib/empty-states';
 import type { RosterScreenView } from '../lib/roster-source';
+
+import { EmptyState } from './empty-state';
 
 /**
  * The configuration screen: six sections of prose and lists, one measure.
@@ -72,15 +75,24 @@ function Section({
   numeral,
   title,
   lead,
+  anchor,
   children,
 }: {
   readonly numeral: string;
   readonly title: string;
   readonly lead: string;
+  /**
+   * An id, so another section's empty state can send the reader here.
+   *
+   * The absence form and the identifier form both live *inside* a person's row in section 04,
+   * which is why sections 05 and 06 have somewhere to point when they are empty: the action
+   * that fills them is up there, against a person.
+   */
+  readonly anchor?: string;
   readonly children: ReactNode;
 }) {
   return (
-    <section className="hairline mt-12 pt-8">
+    <section id={anchor} className="hairline mt-12 pt-8">
       <p className="section-label">
         <span className="font-mono tabular-nums">{numeral}</span> {title}
       </p>
@@ -172,9 +184,7 @@ export function RosterScreen({ roster }: { readonly roster: RosterScreenView }) 
         lead="A team owns a project, and the project's repositories are the ones its report is about. Removing somebody sets their membership inactive rather than deleting it — last Tuesday's report credited them with that day's work, and the row is the evidence."
       >
         {roster.teams.length === 0 ? (
-          <p className="stated-absence text-[15px]">
-            No team is configured. Until one is, a report has no scope to be about.
-          </p>
+          <EmptyState copy={EMPTY_STATES.rosterTeams} />
         ) : (
           <ul className="grid gap-8">
             {roster.teams.map((team) => (
@@ -298,11 +308,12 @@ export function RosterScreen({ roster }: { readonly roster: RosterScreenView }) 
       {/* ------------------------------------------------------------------ */}
       <Section
         numeral="04"
+        anchor="roster-identities"
         title="identity roster"
         lead="One person, several identifiers: every git email they commit under, one tracker account, one chat handle. An artifact is attributed to somebody if and only if a declared link matches the identifier exactly — never a similar name. Removing a link deletes nothing; its artifacts revert to unattributed."
       >
         {roster.developers.length === 0 ? (
-          <p className="stated-absence text-[15px]">No person is configured.</p>
+          <EmptyState copy={EMPTY_STATES.rosterPeople} />
         ) : (
           <ul className="grid gap-8">
             {roster.developers.map((developer) => (
@@ -406,9 +417,7 @@ export function RosterScreen({ roster }: { readonly roster: RosterScreenView }) 
         lead="Identifiers no link covers. The work is not dropped and not guessed at — the report asks about it rather than attributing it. Merging one is reversible: the merge records what it changed, so undo restores the prior attribution exactly."
       >
         {roster.unmatched.length === 0 ? (
-          <p className="stated-absence text-[15px]">
-            Nothing is unmatched. Every identifier Compass has seen resolves to a person.
-          </p>
+          <EmptyState copy={EMPTY_STATES.rosterUnmatched} />
         ) : (
           <ul className="grid gap-6">
             {roster.unmatched.map((row) => (
@@ -505,7 +514,7 @@ export function RosterScreen({ roster }: { readonly roster: RosterScreenView }) 
         lead="While an absence covers the report instant, stalled-work findings naming that person are withheld and the report states why, with a link back to the record. The elapsed count itself is never shortened — that number is one a manager can check on the board."
       >
         {roster.absences.length === 0 ? (
-          <p className="stated-absence text-[15px]">Nobody is marked out.</p>
+          <EmptyState copy={EMPTY_STATES.rosterAbsences} />
         ) : (
           <ul className="grid gap-2">
             {roster.absences.map((absence) => (

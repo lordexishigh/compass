@@ -209,11 +209,43 @@ export const SprintScopeChangeRecordSchema = z.strictObject({
 });
 export type SprintScopeChangeRecord = z.infer<typeof SprintScopeChangeRecordSchema>;
 
+/**
+ * How private a conversation is, as the provider classifies it.
+ *
+ * Slack's own vocabulary, because it is the vocabulary the decision is made in: Compass
+ * reads public channels and nothing else. A connector that reports the kind lets the
+ * ingest path veto a direct message *on the record itself*, independently of whatever
+ * the opt-in table says — which is what makes "DMs are never ingested" a property of two
+ * agreeing guards rather than of one table being correct.
+ */
+export const ConversationKindSchema = z.enum([
+  'public_channel',
+  'private_channel',
+  'direct_message',
+  'group_message',
+]);
+export type ConversationKind = z.infer<typeof ConversationKindSchema>;
+
 export const MessageRecordSchema = z.strictObject({
   ...envelope,
   /** Opaque id of the opted-in conversation. Chat ingest is never workspace-wide. */
   conversationKey: z.string().min(1),
   conversationName: z.string().min(1),
+  /**
+   * Optional, and the optionality is the honest shape rather than a convenience.
+   *
+   * A connector that cannot tell a public channel from a private one — the seeded one
+   * does not model the distinction, because it only ever produces public channels —
+   * leaves this absent, and the ingest filter then relies solely on the opt-in row,
+   * whose kind a manager declared and whose CHECK constraint refuses to enable anything
+   * but a public channel. A connector that *can* tell gets a veto: a record stamped
+   * `direct_message` is dropped even if its conversation is on the allowlist.
+   *
+   * Defaulting it to `public_channel` was the alternative and is the wrong failure
+   * direction: a provider that stopped reporting the field would silently start looking
+   * like it was reporting public channels.
+   */
+  conversationKind: ConversationKindSchema.optional(),
   authorIdentity: ExternalIdentitySchema,
   body: z.string(),
   threadRef: z.string().nullable(),

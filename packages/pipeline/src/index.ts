@@ -50,6 +50,7 @@ export {
 
 export {
   coverageNotesFrom,
+  nameRedactionsFrom,
   runReportPipeline,
   type ReportPipelineRequest,
   type ReportPipelineResult,

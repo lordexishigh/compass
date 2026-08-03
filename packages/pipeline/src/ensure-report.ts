@@ -1,12 +1,14 @@
 import type { ReportScope } from '@compass/analysis';
 import { formatCivilDate, previousCivilDayWindow, type Instant, type TimeWindow } from '@compass/clock';
 import {
+  PRIVACY_DEFAULTS,
   ScopedDb,
   findLatestReport,
   findLatestReportForDate,
   loadFreshness,
   loadReportBundle,
   orgScope,
+  readPrivacySettings,
   type CompassDatabase,
   type FreshnessReport,
   type StoredReportBundle,
@@ -87,7 +89,26 @@ export async function ensureDailyReport(request: EnsureReportRequest): Promise<E
     // Regenerating is the only honest recovery.
   }
 
-  const result = await runReportPipeline({ ...request, window });
+  /**
+   * The organization's own minimization mode, resolved here so no generation path can
+   * forget it.
+   *
+   * Every report Compass writes goes through this function — the scheduled worker job,
+   * the cold-start read, the time-travel regeneration, the merged build. Asking each of
+   * those edges to look the setting up would mean the mode held for whichever ones were
+   * remembered, and a privacy setting that applies to some of your reports is not a
+   * setting. An explicit `request.minimization` still wins, because the time-travel and
+   * test paths need to be able to pin it.
+   *
+   * A missing settings row falls back to the documented default rather than to `full`:
+   * the failure direction for "we could not read your preference" has to be the private
+   * one.
+   */
+  const settings = await readPrivacySettings(scoped);
+  const minimization =
+    request.minimization ?? settings?.llmMinimizationMode ?? PRIVACY_DEFAULTS.llmMinimizationMode;
+
+  const result = await runReportPipeline({ ...request, window, minimization });
   const bundle = await loadReportBundle(scoped, result.stored.id);
   if (bundle === null) {
     throw new ReportUnavailableError(reportDate, 'the pipeline wrote a report that could not be read back');

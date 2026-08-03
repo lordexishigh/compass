@@ -2,6 +2,14 @@ import type { SectionKey, StructuredReport } from '@compass/analysis';
 import { RENDERER_ID as TEMPLATE_RENDERER_ID, renderReport, type RenderedReport } from '@compass/renderers';
 
 import { describeVerdict, validateGrounding, type GroundingVerdict } from './grounding.js';
+import {
+  NO_LLM_STATEMENT,
+  assertNoRealNames,
+  redactPayload,
+  restoreText,
+  type MinimizationMode,
+  type NameRedaction,
+} from './minimization.js';
 import { narrationPayload, sectionRequests, type NarrationSectionRequest } from './payload.js';
 import {
   DEFAULT_MAX_OUTPUT_TOKENS,
@@ -127,6 +135,24 @@ export interface NarrateReportOptions {
    * rendering the same report twice. Omitted, this renders it.
    */
   readonly rendered?: RenderedReport;
+  /**
+   * How much of the organization the model is allowed to see. Defaults to `full`.
+   *
+   * `none` makes zero requests and returns the template renderer's own prose. `redacted`
+   * sends pseudonyms and substitutes the real names back here, after grounding. See
+   * `minimization.ts` for why the redaction is applied to the payload rather than to the
+   * prompt string.
+   */
+  readonly minimization?: MinimizationMode;
+  /**
+   * The name-to-pseudonym map, required in `redacted` mode and ignored otherwise.
+   *
+   * Supplied by the caller because the narrator sits above the knowledge model and does
+   * not read a roster. An empty map in `redacted` mode is not an error — an organization
+   * with no named developers has nothing to redact — but it is also not a licence to
+   * skip the mode: the leak assertion still runs and simply finds nothing.
+   */
+  readonly redactions?: readonly NameRedaction[];
 }
 
 /**
@@ -181,6 +207,7 @@ async function narrateSection(
   model: string,
   maxOutputTokens: number,
   maxAttempts: number,
+  redactions: readonly NameRedaction[],
 ): Promise<SectionAttemptResult> {
   const prompt = buildSectionPrompt(request);
   const traces: NarrationTraceRecord[] = [];
@@ -223,6 +250,29 @@ async function narrateSection(
   });
 
   let lastVerdict: GroundingVerdict | null = null;
+
+  /**
+   * The last gate before the wire, in redacted mode.
+   *
+   * Checked on the built prompt rather than on the payload, because the prompt is what
+   * actually leaves: a builder that stringified the *original* report would pass a
+   * payload check and still carry every name. Same reasoning `assertNoRawIngestedText`
+   * gives for running over the serialised prompt as well as the object.
+   *
+   * A leak throws, and the throw is caught by the transport handler below — so the
+   * outcome is a `unavailable` trace and a template-rendered report. A plainer page and
+   * no leak is the correct trade; a warning and a send is not.
+   */
+  if (redactions.length > 0) {
+    try {
+      assertNoRealNames(`the \`${sectionKey}\` system prompt`, prompt.system, redactions);
+      assertNoRealNames(`the \`${sectionKey}\` request`, prompt.user, redactions);
+    } catch (cause) {
+      const detail = cause instanceof Error ? cause.message : String(cause);
+      traces.push(trace(1, 'unavailable', detail));
+      return finish(null, { reason: detail, sectionKey, outcome: 'unavailable' });
+    }
+  }
 
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     let response;
@@ -322,6 +372,32 @@ export async function narrateReport(
   const templateSections = (): readonly NarratedSection[] =>
     rendered.sections.map((section) => ({ key: section.key, prose: section.prose, attempts: 0 }));
 
+  const minimization: MinimizationMode = options.minimization ?? 'full';
+  const redactions = minimization === 'redacted' ? (options.redactions ?? []) : [];
+
+  /**
+   * `none` mode: zero requests, and the report says so.
+   *
+   * A separate arm from `narrator === null` even though both render from the template,
+   * because the two are different facts and the page prints the difference. "No narrator
+   * is configured" is a deployment that has not been given a key; "narration is turned
+   * off" is a decision the organization made, and a manager showing the report to their
+   * team needs to be able to point at the second.
+   *
+   * The narrator is not consulted, not constructed against, and not asked whether it is
+   * available — so "zero LLM calls" is a property of the control flow rather than a
+   * count that happens to come out at zero.
+   */
+  if (minimization === 'none') {
+    return {
+      rendererId: TEMPLATE_RENDERER_ID,
+      fallback: { reason: NO_LLM_STATEMENT, sectionKey: null, outcome: 'unavailable' },
+      sections: templateSections(),
+      rendered,
+      traces: [],
+    };
+  }
+
   if (options.narrator === null) {
     return {
       rendererId: TEMPLATE_RENDERER_ID,
@@ -349,8 +425,12 @@ export async function narrateReport(
   // Sequential rather than parallel: six concurrent requests is a burst that
   // rate-limits an unlucky tenant into a fallback, and the six sections are read
   // in a fixed order anyway so there is no latency the reader can perceive.
-  for (const request of sectionRequests(narrationPayload(report))) {
-    const attempt = await narrateSection(narrator, request, model, maxOutputTokens, maxAttempts);
+  // Redaction happens here, to the payload, so the prompt the model sees and the
+  // vocabulary grounding checks against are built from the same pseudonymous object.
+  const payload = redactPayload(narrationPayload(report), redactions);
+
+  for (const request of sectionRequests(payload)) {
+    const attempt = await narrateSection(narrator, request, model, maxOutputTokens, maxAttempts, redactions);
     traces.push(...attempt.traces);
 
     if (attempt.prose === null) {
@@ -368,7 +448,24 @@ export async function narrateReport(
       };
     }
 
-    narrated.push({ key: request.section.key, prose: attempt.prose, attempts: attempt.attempts });
+    /**
+     * The real names go back on, here, after grounding has already passed.
+     *
+     * The order is the whole design. Grounding compared pseudonymous prose against a
+     * pseudonymous payload and found every token traceable; restoring afterwards swaps
+     * one label for another without touching a single quantity, date or identifier. So
+     * the validated claim and the printed claim are the same claim.
+     *
+     * It does mean the *printed* prose contains names the payload does not. That is not
+     * a hole in grounding — it is the substitution the mode exists to perform, done on
+     * this machine, by a function whose whole input is a map the caller resolved from
+     * the roster.
+     */
+    narrated.push({
+      key: request.section.key,
+      prose: restoreText(attempt.prose, redactions),
+      attempts: attempt.attempts,
+    });
   }
 
   return { rendererId: NARRATED_RENDERER_ID, fallback: null, sections: narrated, rendered, traces };

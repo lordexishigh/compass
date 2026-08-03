@@ -1,8 +1,10 @@
 import { headers } from 'next/headers';
 
+import { EmptyState } from '../../components/empty-state';
 import { StatedFailure } from '../../components/stated-failure';
 import { loadArchiveIndex, mergedArchiveHref } from '../../lib/archive-source';
 import { pageAccess } from '../../lib/auth/guard';
+import { EMPTY_STATES } from '../../lib/empty-states';
 
 /**
  * `/archive` — every report Compass has written, by date and by team.
@@ -101,10 +103,9 @@ export default async function ArchivePage() {
       </header>
 
       {days.length === 0 ? (
-        <p className="stated-absence mt-10 text-[17px] leading-relaxed">
-          Compass has not written a report yet. The first one appears here the moment the scheduler runs, or as soon as
-          somebody opens today&apos;s report on a cold container.
-        </p>
+        <div className="mt-10">
+          <EmptyState copy={EMPTY_STATES.archive} />
+        </div>
       ) : (
         <ol className="mt-10 space-y-8">
           {days.map((day) => (

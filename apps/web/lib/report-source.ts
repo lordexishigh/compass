@@ -1,9 +1,14 @@
 import { SystemClock } from '@compass/clock';
-import { ingestRunRowId, type CompassDatabase } from '@compass/db';
+import { ScopedDb, ingestRunRowId, orgScope, type CompassDatabase } from '@compass/db';
 import { narratorFromEnvironment } from '@compass/narrator';
 import { ensureDailyReport, loadFreshnessFor, type EnsuredReport } from '@compass/pipeline';
 import { SeedConnector, resolveSeededRun, type SeededRun } from '@compass/seed-connector';
 
+import {
+  organizationIsUnprovisioned,
+  readFirstRunReadiness,
+  type FirstRunStep,
+} from './first-run-source';
 import { resolveProvider } from './foundation-report';
 import { buildReportView, type ReportView } from './view-model';
 
@@ -110,6 +115,50 @@ export async function loadReportView(): Promise<ReportView> {
     freshness: ensured.freshness,
     timeShiftNote: notes.length === 0 ? null : notes.join(' '),
   });
+}
+
+/**
+ * What `/` has to render: a report, or the reason there is not one.
+ *
+ * ## Why the check happens before `ensureDailyReport` and not after
+ *
+ * Generating first and inspecting the result afterwards would be the obvious order and it is
+ * the wrong one. `ensureDailyReport` *persists* — an unprovisioned organization would end up
+ * with a stored report asserting six empty sections about a team that does not exist, and
+ * that row would then be served by the archive, the merged view and every subscription,
+ * forever. So the question is asked first, and the write does not happen at all.
+ *
+ * ## Why this does not weaken the zero-config promise
+ *
+ * The seeded tenant has teams and people from boot, so it takes the report branch on the very
+ * first request exactly as before — the extra cost is one roster read. The guide branch is
+ * reachable only by an organization that has genuinely never been configured, which the
+ * demonstration deployment never is. And a *quiet* day still renders six sections: this asks
+ * whether there is a subject, not whether the subject did anything.
+ */
+export type HomeView =
+  | { readonly kind: 'report'; readonly view: ReportView }
+  | {
+      readonly kind: 'unprovisioned';
+      readonly steps: readonly FirstRunStep[];
+      readonly reportExists: boolean;
+    };
+
+export async function loadHomeView(): Promise<HomeView> {
+  const run = requestedRun();
+  const scoped = new ScopedDb(database(), orgScope(run.organizationId));
+
+  const readiness = await readFirstRunReadiness({
+    scoped,
+    organizationId: run.organizationId,
+    now: run.now,
+  });
+
+  if (organizationIsUnprovisioned(readiness)) {
+    return { kind: 'unprovisioned', steps: readiness.steps, reportExists: readiness.reportExists };
+  }
+
+  return { kind: 'report', view: await loadReportView() };
 }
 
 /** Freshness on its own, for a surface that must not generate anything. */

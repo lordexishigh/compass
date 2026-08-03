@@ -91,7 +91,9 @@ export {
   ConsoleMailer,
   RecordingMailer,
   composeAuthMail,
+  composeLockoutMail,
   type AuthMailMessage,
+  type AuthMailPurpose,
   type AuthMailer,
 } from './mailer.js';
 
@@ -159,3 +161,77 @@ export {
   type OwnerCredentials,
   type OwnerEnvironment,
 } from './bootstrap.js';
+
+export {
+  LOCKOUT_BASE_MILLIS,
+  LOCKOUT_MAX_MILLIS,
+  RATE_LIMITED_ACTIONS,
+  RATE_LIMIT_POLICIES,
+  countAttempt,
+  describeRateLimit,
+  emptyWindow,
+  lockoutDurationFor,
+  secondsUntil,
+  type RateLimitDecision,
+  type RateLimitPolicy,
+  type RateLimitSubject,
+  type RateLimitWindow,
+  type RateLimitedAction,
+} from './rate-limit.js';
+
+export {
+  GITHUB_DELIVERY_HEADER,
+  GITHUB_EVENT_HEADER,
+  GITHUB_SIGNATURE_HEADER,
+  GITHUB_SIGNATURE_PREFIX,
+  JIRA_AUTHORIZATION_HEADER,
+  JIRA_SIGNATURE_HEADER,
+  WEBHOOK_PROVIDERS,
+  WEBHOOK_SECRET_ENV_VAR,
+  WEBHOOK_TIMESTAMP_WINDOW_MILLIS,
+  WEBHOOK_TIMESTAMP_WINDOW_SECONDS,
+  constantTimeEqual,
+  describeWebhookVerdict,
+  githubSignatureFor,
+  isWebhookAccepted,
+  isWebhookProvider,
+  jiraJwtFor,
+  jiraSignatureFor,
+  slackWebhookVerdict,
+  verifyGithubSignature,
+  verifyJiraSignature,
+  type GithubSignatureInput,
+  type JiraSignatureInput,
+  type WebhookProvider,
+  type WebhookVerdict,
+} from './webhooks.js';
+
+export {
+  DATA_KEY_BYTES,
+  ENVELOPE_SCHEME,
+  EnvelopeDecryptionError,
+  MASTER_KEY_ENV_VAR,
+  MasterKeyUnavailableError,
+  generateDataKey,
+  reencryptUnderNewKey,
+  resolveMasterKey,
+  rewrapDataKey,
+  seal,
+  unseal,
+  unwrapDataKey,
+  wrapDataKey,
+  type SealInput,
+  type SealedValue,
+  type UnsealInput,
+} from './envelope.js';
+
+export {
+  describeIntegrationToken,
+  describeIntegrationTokens,
+  rewrapOrganizationDataKey,
+  rotateOrganizationDataKey,
+  storeIntegrationToken,
+  useIntegrationToken,
+  type IntegrationTokenDescription,
+  type StoreTokenInput,
+} from './integration-tokens.js';

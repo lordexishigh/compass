@@ -26,6 +26,8 @@ export {
   SprintRecordSchema,
   SprintScopeChangeRecordSchema,
   MessageRecordSchema,
+  ConversationKindSchema,
+  type ConversationKind,
   type SourceKind,
   type ArtifactKind,
   type ExternalIdentity,

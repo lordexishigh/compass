@@ -2,6 +2,10 @@
 
 import { useState, type FormEvent } from 'react';
 
+import { EMPTY_STATES } from '../lib/empty-states';
+
+import { EmptyState } from './empty-state';
+
 /**
  * Seat management: one list, one form, no table.
  *
@@ -116,6 +120,14 @@ export function SeatManager(props: SeatManagerProps) {
 
   return (
     <div className="mt-10">
+      {/*
+        A seat list with nothing in it is very nearly unreachable — you are reading this screen
+        through a seat — but "very nearly" is not a reason to render a bare `<ul>`. An empty
+        `.map()` produces no markup at all, which is the failure mode that looks fine in review
+        and looks broken to whoever hits it.
+      */}
+      {props.seats.length === 0 && <EmptyState copy={EMPTY_STATES.seats} />}
+
       <ul className="grid gap-8">
         {props.seats.map((seat) => (
           <li
@@ -227,7 +239,8 @@ export function SeatManager(props: SeatManagerProps) {
       </ul>
 
       {props.canManage && (
-        <section className="mt-14 hairline pt-8">
+        // The anchor the empty state's primary action points at.
+        <section id="invite-seat" className="mt-14 hairline pt-8">
           <h2 className="section-label">invite a seat</h2>
           <p className="prose-narration mt-2 text-[15px]">
             The invitation works once and expires in seven days. Resending it revokes the previous link, so there is

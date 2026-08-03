@@ -12,6 +12,7 @@ import type { NextResponse } from 'next/server';
 
 import { guard } from '../../../../lib/auth/guard';
 import { failure, jsonError, jsonOk } from '../../../../lib/auth/http';
+import { checkRateLimit } from '../../../../lib/rate-limit';
 
 /**
  * `GET /api/share/<token>` — a shared report permalink.
@@ -81,6 +82,27 @@ export async function GET(
 
   const { token } = await context.params;
   const userId = admitted.identity?.user.id ?? null;
+
+  /**
+   * 120 reads per minute, counted against the *token*.
+   *
+   * Per token rather than per IP, and that is the whole design of this one. A share link is the
+   * only credential Compass hands out that may legitimately be opened by many people from many
+   * networks — a link pasted into a channel gets fetched by every unfurling bot in the workspace —
+   * so a per-IP limit here would be no limit at all. Per token bounds what a *leaked* link is
+   * worth: it stays openable by the colleagues it was meant for and stops being a free API onto
+   * the organization's reports.
+   *
+   * Counted on the hashed token, so the limiter's own key space holds no bearer secret. And
+   * counted before the lookup, so a flood of guesses at nonexistent tokens costs one Map read
+   * rather than one query each.
+   */
+  const limited = checkRateLimit({
+    action: 'share_link_read',
+    subjects: { token: hashShareToken(token) },
+    now: admitted.now,
+  });
+  if (!limited.allowed && limited.response !== null) return limited.response;
 
   try {
     // Looked up by digest: the token in the URL is never compared against a stored secret, and the

@@ -8,13 +8,20 @@ import type {
   ExternalIdentity,
   IssueRecord,
   IssueTransitionRecord,
+  MessageRecord,
   PullRequestRecord,
   ReleaseTagRecord,
   ReviewRecord,
   SprintRecord,
   SprintScopeChangeRecord,
 } from '@compass/connector-port';
-import { fromDatabaseInstant, historyRowId, insertIngestRun, type EntityKind } from '@compass/db';
+import {
+  fromDatabaseInstant,
+  historyRowId,
+  ingestibleConversationKeys,
+  insertIngestRun,
+  type EntityKind,
+} from '@compass/db';
 import {
   IdentityResolver,
   detectBlockedButDone,
@@ -29,6 +36,7 @@ import {
   type ObserveOutcome,
 } from '@compass/knowledge-model';
 
+import { ingestChatMessages, type ChatIngestResult } from './chat.js';
 import { ingestWindow, type IngestArtifactBatch, type IngestRunSummary } from './ingest-window.js';
 import {
   branchRefNaturalKey,
@@ -102,6 +110,8 @@ export interface ModelIngestResult {
   readonly unmatchedIdentityKeys: readonly string[];
   /** What archival declined to observe. Stated so an empty run is never a mystery. */
   readonly skippedByArchival: SkippedByArchival;
+  /** What chat ingest stored and what it refused. See `chat.ts`. */
+  readonly chat: ChatIngestResult;
 }
 
 const EMPTY_TALLY: ObservationTally = { created: 0, changed: 0, unchanged: 0, superseded: 0 };
@@ -593,6 +603,18 @@ export async function ingestWindowIntoModel(
     );
   }
 
+  // ---- chat, if and only if a manager named the channel ---------------------
+  //
+  // Last, and separate, because it is the one family that is *not* projected into the
+  // knowledge model: bodies go to `raw_events`, which retention deletes. The allowlist is
+  // read here rather than passed in so that no caller of this function can ingest chat by
+  // forgetting to filter — the only way to read a channel is for a row to say so.
+  const chat = await ingestChatMessages(store.scoped, {
+    messages: recordsFor(batches, 'messages') as readonly MessageRecord[],
+    allowedConversationKeys: await ingestibleConversationKeys(store.scoped),
+    now: request.now,
+  });
+
   // ---- judgements a source states outright ----------------------------------
   await observeBlockers(store, observe, issueRecords);
   await observeScopeCreepRisks(store, observe);
@@ -636,6 +658,7 @@ export async function ingestWindowIntoModel(
     correctionIds,
     unmatchedIdentityKeys: [...unmatched].sort(),
     skippedByArchival: archival.skipped,
+    chat,
   };
 }
 

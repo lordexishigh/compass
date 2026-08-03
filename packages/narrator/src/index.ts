@@ -53,6 +53,21 @@ export {
 } from './prompt.js';
 
 export {
+  MINIMIZATION_MODES,
+  NO_LLM_STATEMENT,
+  REDACTED_STATEMENT,
+  RealNameLeakError,
+  assertNoRealNames,
+  isMinimizationMode,
+  realNamesIn,
+  redactPayload,
+  redactText,
+  restoreText,
+  type MinimizationMode,
+  type NameRedaction,
+} from './minimization.js';
+
+export {
   UngroundedNarrationError,
   buildVocabulary,
   describeVerdict,

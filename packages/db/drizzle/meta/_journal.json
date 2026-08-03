@@ -78,6 +78,20 @@
       "when": 1785519600000,
       "tag": "0011_item_feedback_and_change_awareness",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1785526800000,
+      "tag": "0012_app_feedback",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1785534000000,
+      "tag": "0013_privacy_retention_and_minimization",
+      "breakpoints": true
     }
   ]
 }

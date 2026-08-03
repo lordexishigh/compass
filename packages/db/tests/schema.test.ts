@@ -42,6 +42,10 @@ describe('base schema convention', () => {
   it('defines every foundation and knowledge-model table', () => {
     expect(tableNames).toEqual([
       'absences',
+      // What somebody told us about Compass itself, as opposed to about a finding in a report.
+      // Deliberately not `feedback_entries` and deliberately not an entity: nothing in the pipeline
+      // reads it, so free text typed into a support box can never become an input to a verdict.
+      'app_feedback',
       'audit_log_entries',
       'auth_tokens',
       'blockers',

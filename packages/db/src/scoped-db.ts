@@ -2,6 +2,7 @@ import {
   and,
   eq,
   getTableName,
+  sql,
   type InferInsertModel,
   type InferSelectModel,
   type Query,
@@ -56,14 +57,54 @@ export interface ScopedSelect<TRow> extends PromiseLike<TRow[]> {
 export class ScopedDb {
   readonly #db: CompassDatabase;
   readonly #scope: OrgScope;
+  /**
+   * True only for the handle `eraseWithin` hands its callback.
+   *
+   * Not a constructor parameter, and not settable from outside: a caller cannot build an
+   * erasing handle, they can only be given one for the duration of one transaction.
+   */
+  readonly #erasing: boolean;
 
-  constructor(db: CompassDatabase, scope: OrgScope) {
+  constructor(db: CompassDatabase, scope: OrgScope, erasing = false) {
     if (db === null || db === undefined) {
       throw new TypeError('ScopedDb requires a database handle.');
     }
     // Throws at construction rather than returning an unscoped query builder.
     this.#scope = requireOrgScope(scope);
     this.#db = db;
+    this.#erasing = erasing;
+  }
+
+  /**
+   * Runs a block in which the append-only tables may be deleted from.
+   *
+   * The one sanctioned exception to the append-only guarantee, and it exists for exactly
+   * one caller: self-serve erasure. `entity_versions` holds display names,
+   * `ticket_status_transitions` holds who moved what, `audit_log_entries` holds who did
+   * what — so a deletion that skipped them would leave the personal data in place and
+   * mail a confirmation saying otherwise.
+   *
+   * Three things make this narrow rather than a hole in the guarantee:
+   *
+   *  - **It is a transaction.** `SET LOCAL` dies with the transaction, so a pooled
+   *    connection cannot hand the permission to whatever borrows it next. An erasure that
+   *    throws half-way rolls back rather than leaving a half-deleted tenant.
+   *  - **The permission is on the handle, not the class.** Only the `ScopedDb` passed to
+   *    `run` has it; the outer handle the caller already holds still refuses.
+   *  - **Both layers had to be changed together.** The database trigger checks the same
+   *    GUC (see migration 0013), so neither guard is the only one, and a future caller
+   *    that tried to delete history without this method is refused twice.
+   */
+  async eraseWithin<T>(run: (erasing: ScopedDb) => Promise<T>): Promise<T> {
+    const database = this.#db as CompassDatabase & {
+      transaction: <R>(fn: (tx: CompassDatabase) => Promise<R>) => Promise<R>;
+    };
+
+    return database.transaction(async (tx) => {
+      // `SET LOCAL` rather than `SET`: the permission must not survive the transaction.
+      await tx.execute(sql`set local compass.erasure = 'on'`);
+      return run(new ScopedDb(tx, this.#scope, true));
+    });
   }
 
   get organizationId(): string {
@@ -89,6 +130,11 @@ export class ScopedDb {
    * trigger is the other half; neither is trusted to be the only one.
    */
   #refuseHistoryMutation(table: OrgScopedTable, operation: 'update' | 'delete'): void {
+    // An erasing handle may delete history — and only delete it. Editing a past row is
+    // still refused even during an erasure: the point of erasure is that the record is
+    // gone, never that it says something different.
+    if (this.#erasing && operation === 'delete') return;
+
     const name = getTableName(table);
     if (isAppendOnlyTableName(name)) {
       throw new AppendOnlyTableError(name, operation);

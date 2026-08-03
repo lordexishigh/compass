@@ -78,6 +78,19 @@ const EXPECTED: Readonly<Record<string, Partial<Record<Action, readonly Principa
 
   '/api/auth/register': { POST: ['public', 'owner', 'manager', 'member', 'viewer'] },
   '/api/auth/login': { POST: ['public', 'owner', 'manager', 'member', 'viewer'] },
+  /**
+   * The short sign-in address, on the same terms as the endpoint it shares an implementation with.
+   *
+   * `POST` is the sign-in a verification harness performs against the `login_path` in
+   * `.nous/demo_account.json`; `GET` is a 303 to `/account`. Both `ANYONE`, because this is how a
+   * session is obtained — requiring one would be circular. Not `demoOnlyPublic`: it discloses nothing
+   * about the tenant either way, since a wrong address and a wrong password get one 401 and one
+   * sentence.
+   */
+  '/login': {
+    GET: ['public', 'owner', 'manager', 'member', 'viewer'],
+    POST: ['public', 'owner', 'manager', 'member', 'viewer'],
+  },
   '/api/auth/logout': { POST: ['public', 'owner', 'manager', 'member', 'viewer'] },
   '/api/auth/session': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
   '/api/auth/sessions': {
@@ -130,7 +143,25 @@ const EXPECTED: Readonly<Record<string, Partial<Record<Action, readonly Principa
    * neither establishes a session — `feedback-routes.test.ts` asserts the absence of `Set-Cookie`
    * on the link route directly, because that is the convenience somebody adds later in good faith.
    */
-  '/api/feedback': { POST: ['owner', 'manager'] },
+  /**
+   * `GET` is a different subject from the `POST` beside it: the list of submissions about **Compass
+   * itself**, which is owner-only. Those are other people's words, sometimes naming a colleague or
+   * quoting a customer, and a manager who edits their own team's configuration does not thereby get
+   * to read the organization's support inbox.
+   */
+  '/api/feedback': { GET: ['owner'], POST: ['owner', 'manager'] },
+
+  /**
+   * The in-app control's write, `public` on the same terms as `/`.
+   *
+   * The seeded demonstration report is readable with no session, so the reader who most needs to say
+   * "this page is confusing" is the one who has not signed up. A seated-only control would be a
+   * control that never hears from them. Narrow by construction: one field in, one row written to a
+   * table nothing in the pipeline reads, and a response carrying no organization data — so the most a
+   * stranger can do here is tell us something. `demoOnlyPublic`, so it closes with everything else on
+   * a real tenant.
+   */
+  '/api/feedback/app': { POST: ['public', 'owner', 'manager', 'member', 'viewer'] },
 
   /**
    * The time-travel control: owner and manager, because it *writes*.
@@ -175,6 +206,15 @@ const EXPECTED: Readonly<Record<string, Partial<Record<Action, readonly Principa
   '/account': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
   '/account/invite': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
   '/account/reset': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
+  /**
+   * The guided first-report path. Owner and manager, and deliberately not public.
+   *
+   * Every step on it writes configuration — a team, the two objectives, a roster — and those writes
+   * are already owner-or-manager on `/api/roster/*` and `/api/goals`. A screen anyone could read
+   * while every button on it answered 403 would be worse than being told to sign in. It is a
+   * destination, never an interception: nothing redirects to it.
+   */
+  '/start': { GET: ['owner', 'manager'] },
   '/seats': { GET: ['owner', 'manager'] },
   '/roster': { GET: ['owner', 'manager'] },
   // What a manager has told Compass to stop saying. Owner and manager, exactly like the roster:
@@ -408,6 +448,10 @@ describe('the seeded demo report route stays publicly readable', () => {
     // gets the same posture, and closes on a real tenant along with everything else here.
     expect(demoOnly.sort()).toEqual([
       '/',
+      // The in-app feedback write. Public on the demonstration tenant for the same reason `/` is —
+      // the reader who most needs to report a problem with the page is the one with no seat — and it
+      // returns no organization data, so the grant costs nothing on the read side.
+      '/api/feedback/app',
       '/api/goals',
       '/api/goals/[nodeId]',
       '/api/reports/[teamKey]',

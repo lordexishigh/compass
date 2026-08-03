@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -430,14 +430,42 @@ describe('the report route still passes no gate', () => {
     }
   });
 
-  it('has an /account route rather than a /login one, so no directory reads as a gate', () => {
+  it('has no sign-in or setup *screen* that could stand in front of the report', () => {
+    /**
+     * The rule, stated as what it protects rather than as a list of forbidden directories.
+     *
+     * This assertion used to require that `app/login` not exist at all. That was the right
+     * guard for the wrong reason: what must never happen is a *screen* that a reader has to
+     * pass through on the way to `/`. `app/login` now exists as a POST endpoint — the short
+     * address `.nous/demo_account.json` publishes for a verification harness — and it is
+     * held to being exactly that: a `route.ts` and no `page.tsx`, so it cannot acquire a
+     * form and become the wall this test exists to prevent. Its GET is a 303 to `/account`,
+     * which is the one screen where credentials are typed.
+     *
+     * Everything else on the list stays forbidden outright, because none of them has a
+     * reason to exist: a connector wizard or a welcome screen is precisely the interception
+     * the zero-config promise rules out. The guided first-report path lives at `/start`,
+     * which is a destination somebody chooses from a report that told them why it is empty —
+     * nothing redirects to it, and `page.tsx` on `/` cannot, having no `redirect(` in it at
+     * all (asserted above).
+     */
     const directories = readdirSync(join(WEB_ROOT, 'app'), { withFileTypes: true })
       .filter((entry) => entry.isDirectory())
       .map((entry) => entry.name);
 
     expect(directories).toContain('account');
-    for (const gate of ['login', 'signin', 'sign-in', 'setup', 'onboarding', 'connect', 'welcome']) {
+
+    for (const gate of ['signin', 'sign-in', 'setup', 'onboarding', 'connect', 'welcome']) {
       expect(directories, `app/${gate} would read as a gate on the way to the report`).not.toContain(gate);
+    }
+
+    // `/login` is an endpoint, and may never become a screen.
+    expect(existsSync(join(WEB_ROOT, 'app', 'login', 'route.ts'))).toBe(true);
+    for (const page of ['page.tsx', 'page.ts', 'page.jsx']) {
+      expect(
+        existsSync(join(WEB_ROOT, 'app', 'login', page)),
+        `app/login/${page} would make /login a sign-in wall rather than an endpoint`,
+      ).toBe(false);
     }
   });
 

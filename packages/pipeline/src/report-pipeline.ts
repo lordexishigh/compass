@@ -12,8 +12,20 @@ import type { Instant, TimeWindow } from '@compass/clock';
 import type { ConnectorPort, SourceCoverage } from '@compass/connector-port';
 import { ScopedDb, orgScope, type CompassDatabase, type StoredReport } from '@compass/db';
 import { ingestWindowIntoModel, type ModelIngestResult } from '@compass/ingest';
-import { KnowledgeStore, buildKnowledgeSnapshot, type KnowledgeSnapshot } from '@compass/knowledge-model';
-import { narrateReport, type NarrationResult, type NarratorPort } from '@compass/narrator';
+import {
+  KnowledgeStore,
+  buildKnowledgeSnapshot,
+  entitiesOfKind,
+  pseudonymMap,
+  type KnowledgeSnapshot,
+} from '@compass/knowledge-model';
+import {
+  narrateReport,
+  type MinimizationMode,
+  type NameRedaction,
+  type NarrationResult,
+  type NarratorPort,
+} from '@compass/narrator';
 import { renderReport, type RenderedReport } from '@compass/renderers';
 import { recordNarrationTraces } from '@compass/db';
 
@@ -74,6 +86,60 @@ export interface ReportPipelineRequest {
    * container with no `ANTHROPIC_API_KEY` serves complete six-section reports.
    */
   readonly narrator?: NarratorPort | null;
+  /**
+   * How much of the organization the model may see. Defaults to `full`.
+   *
+   * Read from `org_privacy_settings` by the process edge and handed down, exactly as the
+   * clock, the connector and the narrator are. Defaulting to `full` here rather than to
+   * the stored default is deliberate: this argument is what the *caller* decided, and a
+   * pipeline that silently applied a stronger posture than it was told to would make the
+   * setting page a lie in the safe direction, which is still a lie.
+   */
+  readonly minimization?: MinimizationMode;
+}
+
+/**
+ * The name-to-pseudonym map for redacted narration, read off the snapshot.
+ *
+ * Two details carry weight.
+ *
+ * **Every developer goes into `pseudonymMap`, not just the ones being redacted.** The
+ * map guarantees distinctness within the set it is given, and distinctness is what makes
+ * the restoring substitution unambiguous. Feeding it a subset would let a pseudonym
+ * assigned to somebody in the subset collide with one already in use by somebody
+ * anonymised outside it, and the failure would be a report attributing one person's work
+ * to another.
+ *
+ * **Already-anonymised people are excluded from the result.** What appears in their
+ * report lines is their stored pseudonym, not their name, so there is nothing about them
+ * left to hide from the model — and re-substituting a pseudonym for a pseudonym would
+ * mean the restore pass put a *pseudonym* back, which reads as a second identity for the
+ * same person.
+ */
+export function nameRedactionsFrom(snapshot: KnowledgeSnapshot): readonly NameRedaction[] {
+  const developers = entitiesOfKind(snapshot, 'developer');
+
+  const assignments = pseudonymMap(
+    developers.map((developer) => ({
+      developerKey: developer.naturalKey,
+      realName: typeof developer.fields['displayName'] === 'string' ? developer.fields['displayName'] : null,
+    })),
+  );
+
+  const anonymised = new Set(
+    developers
+      .filter((developer) => typeof developer.fields['anonymizedAt'] === 'number')
+      .map((developer) => developer.naturalKey),
+  );
+
+  return assignments
+    .filter(
+      (assignment): assignment is typeof assignment & { readonly realName: string } =>
+        assignment.realName !== null &&
+        assignment.realName.trim().length > 0 &&
+        !anonymised.has(assignment.developerKey),
+    )
+    .map((assignment) => ({ realName: assignment.realName, pseudonym: assignment.pseudonym }));
 }
 
 export interface ReportPipelineResult {
@@ -235,9 +301,31 @@ export async function runReportPipeline(request: ReportPipelineRequest): Promise
   // grounded prose or the template renderer's own sections — there is no third
   // outcome, which is what makes ungrounded prose unable to reach `persist`.
   const narrator = request.narrator ?? null;
+
+  /**
+   * Data minimization, resolved here because this is the layer that holds the roster.
+   *
+   * The narrator sits above the knowledge model and cannot read a Developer row, so the
+   * name-to-pseudonym map has to be resolved by a caller — and this is the only caller
+   * that has both the snapshot and the mode. `pseudonymMap` is the same function
+   * anonymization proposes with, which is what keeps one person from being `Wren Alder`
+   * on the wire and `Contributor 3` on the roster.
+   *
+   * `none` mode is passed straight through and `narrateReport` makes no request at all;
+   * it is not short-circuited here, so there is one place that decides what each mode
+   * means rather than two that have to agree.
+   */
+  const minimization = request.minimization ?? 'full';
+  const redactions = minimization === 'redacted' ? nameRedactionsFrom(snapshot) : [];
+
   const narrationStage = definePipelineStage<StructuredReport, NarrationResult | null>(
     'narrate',
-    async (input, _inner) => (narrator === null ? null : narrateReport(input, { narrator, rendered })),
+    async (input, _inner) =>
+      // `none` still runs the stage: it returns the template sections and the stated
+      // reason, which is what puts "no part of this was sent to a model" on the page.
+      narrator === null && minimization !== 'none'
+        ? null
+        : narrateReport(input, { narrator, rendered, minimization, redactions }),
   );
   const narration = record('narrate', await runStage(narrationStage, report, context));
 

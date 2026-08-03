@@ -3,7 +3,10 @@
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 
+import { EMPTY_STATES } from '../lib/empty-states';
 import type { GoalNodeView } from '../lib/goal-source';
+
+import { EmptyState } from './empty-state';
 
 /**
  * The minimal goal editing surface.
@@ -159,10 +162,9 @@ export function GoalEditor({ nodes, resolvedAt }: { readonly nodes: readonly Goa
       )}
 
       {nodes.length === 0 ? (
-        <p className="stated-absence mt-8 text-[17px] leading-relaxed">
-          No goal has been recorded yet, so alignment has nothing to resolve against and every commit will be asked
-          about rather than judged. Add the company objective first, then the quarter it breaks into.
-        </p>
+        <div className="mt-8">
+          <EmptyState copy={EMPTY_STATES.goals} />
+        </div>
       ) : (
         <ul className="mt-8 space-y-6">
           {nodes.map((node) => (
@@ -236,7 +238,8 @@ export function GoalEditor({ nodes, resolvedAt }: { readonly nodes: readonly Goa
         </ul>
       )}
 
-      <div className="mt-12 hairline pt-6">
+      {/* `id` so the empty state above, and the guided path, can point a reader straight at it. */}
+      <div id="add-a-goal" className="mt-12 hairline pt-6">
         <p className="section-label">Add a goal</p>
         {creating ? (
           <GoalForm

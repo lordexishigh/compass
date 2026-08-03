@@ -8,6 +8,7 @@ import { ensureDailyReport } from '@compass/pipeline';
 import { SeedConnector, resolveSeededRun, type SeededRun } from '@compass/seed-connector';
 
 import { bootstrap, type BootstrapResult } from './bootstrap.js';
+import { describeDemoAccountFile, writeDemoAccountFile } from './demo-account.js';
 
 /**
  * Cold start, all the way to a readable report.
@@ -151,6 +152,11 @@ if (entryPoint !== undefined && pathToFileURL(entryPoint).href === import.meta.u
       if (result.run.timeShiftNote !== null) console.info(`[compass] ${result.run.timeShiftNote}`);
       console.info(describeBootstrapOwner(result.bootstrap.owner));
       console.info(describeColdStart(result));
+
+      // The machine-readable half of the same credentials. Written here as well as from the
+      // worker's first-run check because `pnpm run seed` calls this file directly, and a
+      // harness told to run the documented seed command must find the file afterwards.
+      console.info(describeDemoAccountFile(writeDemoAccountFile()));
 
       // Six sections or the container is not ready. A report missing a section
       // would render as a page missing a heading, and a boot that reported

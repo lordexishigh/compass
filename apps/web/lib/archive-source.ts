@@ -1,6 +1,7 @@
 import { SystemClock, formatCivilDate, type Instant } from '@compass/clock';
 import {
   findReportById,
+  findReportForInstant,
   findReportsForDate,
   listReportArchive,
   loadReportBundle,
@@ -313,6 +314,34 @@ export async function regenerateForInstant(input: {
     href: archiveHref(ensured.bundle.report.id),
     generated: ensured.generated,
   };
+}
+
+/**
+ * Whether stepping to this day would *generate* a report or merely read one.
+ *
+ * Exists for the rate limiter and for nothing else. "Manual report regeneration, 5 per hour per
+ * organization" has to bound the expensive act — a full pipeline run — and must not bound the cheap
+ * one, because the time-travel scrubber steps day by day and a manager reviewing last week would hit
+ * a 429 on their fifth step. So the route asks this first and only spends the allowance when the
+ * answer is yes.
+ *
+ * It is the same question `ensureDailyReport` answers internally, asked with the same derived id, so
+ * the two cannot disagree about what "already generated" means. There is a benign race: two
+ * simultaneous requests for the same ungenerated day both see `false`, so the limit can be exceeded
+ * by one. That is the correct direction for this particular race to fall — the alternative is a lock
+ * around a pipeline run — and the second request finds the row written and returns it.
+ */
+export async function reportAlreadyGenerated(
+  scoped: ScopedDb,
+  teamKey: string,
+  date: string,
+): Promise<boolean> {
+  const existing = await findReportForInstant(
+    scoped,
+    { scopeKind: 'team', scopeKey: teamKey },
+    stepableInstantFor(date),
+  );
+  return existing !== null;
 }
 
 /**

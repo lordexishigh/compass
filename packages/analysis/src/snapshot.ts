@@ -391,7 +391,27 @@ export function transitionsByTicket(snapshot: AnalysisSnapshot): ReadonlyMap<str
 export function developerName(snapshot: AnalysisSnapshot, developerKey: string | null): string | null {
   if (developerKey === null) return null;
   const developer = entityByKey(snapshot, 'developer', developerKey);
-  return developer === null ? developerKey : (textField(developer, 'displayName') ?? developerKey);
+  if (developer === null) return developerKey;
+
+  /**
+   * Anonymization, and the reason it is three lines here rather than a pass over the
+   * finished report.
+   *
+   * This function is the single choke point every developer name in every section flows
+   * through — Blockers' owner, Risks' concentration, Recommendations' actor, Wins'
+   * credit, the review queue, the workload. So substituting here anonymises the whole
+   * report at once, in the pure layer, with no string rewriting afterwards and no
+   * chance of one detector being missed. A post-hoc scrub over rendered prose would be
+   * the opposite: unbounded, unverifiable, and one new detector away from leaking.
+   *
+   * The real name stays on the row and is still resolvable for a *past* instant,
+   * because `pseudonym` is an effective-dated tracked field like everything else. That
+   * is what makes yesterday's report still say what it said.
+   */
+  const pseudonym = textField(developer, 'pseudonym');
+  if (pseudonym !== null && instantField(developer, 'anonymizedAt') !== null) return pseudonym;
+
+  return textField(developer, 'displayName') ?? developerKey;
 }
 
 /**

@@ -1,4 +1,6 @@
 import { STATUS_FOR_DENIAL, describeDenial } from '@compass/auth';
+import { toIso } from '@compass/clock';
+import { readAppFeedback } from '@compass/db';
 import type { NextResponse } from 'next/server';
 
 import { guard, isDemoOrganization } from '../../../lib/auth/guard';
@@ -10,6 +12,7 @@ import {
   resolveItemReportScope,
   seatMayActOnItem,
 } from '../../../lib/feedback-source';
+import { checkRateLimit } from '../../../lib/rate-limit';
 
 /**
  * `POST /api/feedback` — the web view's one click.
@@ -33,6 +36,22 @@ const ROUTE = '/api/feedback';
 export async function POST(request: Request): Promise<NextResponse> {
   const admitted = await guard({ request, route: ROUTE, action: 'POST' });
   if (!admitted.allowed) return admitted.response;
+
+  /**
+   * 60 writes per minute, per user.
+   *
+   * Counted per user and not per IP: this route requires a seat, so there is always a user to
+   * count, and an office behind one address must not share one manager's allowance. A manager
+   * clicking through a report cannot reach one per second sustained; a script can, and a script
+   * writing feedback is rewriting what tomorrow's report says — every verdict here suppresses or
+   * accepts a finding, and the suppression outlives the click.
+   */
+  const limited = checkRateLimit({
+    action: 'feedback_write',
+    subjects: { user: admitted.identity?.user.id ?? null },
+    now: admitted.now,
+  });
+  if (!limited.allowed && limited.response !== null) return limited.response;
 
   const parsed = await readJsonObject(request);
   if ('response' in parsed) return parsed.response;
@@ -111,6 +130,52 @@ export async function POST(request: Request): Promise<NextResponse> {
       correctionWritten: result.correctionWritten,
       detail: result.sentence,
     });
+  } catch (error) {
+    return failure(error);
+  }
+}
+
+/**
+ * `GET /api/feedback` — every submission about **Compass itself**, newest first.
+ *
+ * A different subject from the POST above, on the same path. The POST is a verdict on a finding
+ * inside a report; this is the product's own support inbox — `app_feedback`, written by the in-app
+ * control at `POST /api/feedback/app` and read by nobody else.
+ *
+ * ## Owner only, and why not manager
+ *
+ * These are other people's words, typed into a box, sometimes naming a colleague or quoting a
+ * customer. A manager of one team edits the configuration behind their own report; they do not get
+ * to read what everyone in the organization has said about the product. The matrix is what decides
+ * that, and the owner is also the one role that is team-unscoped, so the `teamScoped` flag the POST
+ * needs cannot accidentally refuse this read.
+ *
+ * ## The response shape is mapped, not spread
+ *
+ * Exactly `{ id, message, created_at }` per row, constructed field by field. The stored row also
+ * carries `organization_id` and `user_id`, and a `...row` would publish both — the second being the
+ * identity of whoever wrote the message. Mapping explicitly means a column added to the table later
+ * cannot leak by default: it has to be named here first.
+ *
+ * `created_at` is snake_case because that is the field the criterion names and the shape the
+ * maintenance tooling reads, and it is serialised with `toIso` rather than left to `JSON.stringify`
+ * of a Date, so the string is Compass's own ISO-8601 rather than whatever the runtime's Date
+ * serialiser produces.
+ */
+export async function GET(request: Request): Promise<NextResponse> {
+  const admitted = await guard({ request, route: ROUTE, action: 'GET' });
+  if (!admitted.allowed) return admitted.response;
+
+  try {
+    const submissions = await readAppFeedback(admitted.scoped);
+
+    return jsonOk(
+      submissions.map((entry) => ({
+        id: entry.id,
+        message: entry.message,
+        created_at: toIso(entry.createdAt),
+      })),
+    );
   } catch (error) {
     return failure(error);
   }

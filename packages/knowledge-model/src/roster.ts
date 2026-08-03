@@ -2,7 +2,7 @@ import type { Instant } from '@compass/clock';
 import type { EntityKind } from '@compass/db';
 
 import { identityNaturalKey, normalizeIdentityValue, type IdentityKind } from './identity.js';
-import { recordAbsence } from './roster-service.js';
+import { currentAnonymization, recordAbsence } from './roster-service.js';
 import type { KnowledgeStore, ObserveOutcome } from './store.js';
 
 /**
@@ -199,6 +199,12 @@ export async function provisionRoster(
 
   let identityLinkCount = 0;
   for (const developer of [...roster.developers].sort((left, right) => (left.key < right.key ? -1 : 1))) {
+    // Read and carried forward, because this function runs on every boot. Provisioning
+    // the roster with `anonymizedAt: null` would un-anonymise everybody each time the
+    // container restarted, which is the worst possible shape for that bug: invisible,
+    // periodic, and a privacy regression rather than a crash.
+    const held = await currentAnonymization(store, developer.key);
+
     const result = await store.observe({
       kind: 'developer',
       naturalKey: developer.key,
@@ -206,6 +212,8 @@ export async function provisionRoster(
         displayName: developer.displayName,
         teamKey: developer.teamKey,
         active: developer.active,
+        anonymizedAt: held.anonymizedAt,
+        pseudonym: held.pseudonym,
       },
       observedAt: at,
       evidence: null,

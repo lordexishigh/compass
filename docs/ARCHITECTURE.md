@@ -171,37 +171,6 @@ Compass is a single TypeScript monorepo deployed as two processes (a Next.js web
 
 REST/JSON over Next.js route handlers, typed end-to-end with Zod schemas shared between server and client; every handler resolves (organization_id, role) first and calls only scoped repositories. Reports: GET /api/teams/:teamId/report?at=<ISO instant> and GET /api/orgs/:orgId/report/merged?at=<instant> (both regenerate through the real pipeline for that instant — this is the time-travel control), GET /api/reports/:id, GET /api/reports?team=&from=&to= (archive), POST /api/reports/:id/regenerate (rate-limited 5/hour/org), GET /api/reports/:id/evidence/:itemId (alignment link or matched text). Feedback: POST /api/items/:stableItemId/feedback {action: dismiss_risk | reject_recommendation | accept_recommendation | flag_alignment_wrong | blocker_resolved | snooze, reason?, days?} — keyed to the entity-derived stable ID, reachable identically from web, from signed single-purpose email links (GET+POST /f/:signedToken, one item, one action, 30-day expiry, single use, never a session), and from Slack Block Kit actions (signature verified, Slack user mapped to a Compass identity with permission on that report). Memos: POST /api/memos {raw_text, source} → 201 typed assertion, 409 with 2–3 candidates when subject resolution is below threshold, 422 {refusal: "I can't represent that yet"} when outside the five kinds; same code path serves POST /api/email/inbound and Slack DM/thread events. Config CRUD: /api/teams, /api/projects, /api/repositories, /api/objectives (effective-dated), /api/developers, /api/identity-links (merge/un-merge), /api/absences, /api/subscriptions. Sharing: POST /api/reports/:id/share {expiry: 7|30|90|never, audience: org|anyone} → 128-bit token, DELETE to revoke, GET /s/:token public read-only render with access logging. Auth: POST /api/auth/signup|login|logout|magic-link|reset, session cookie rotated on privilege change. Ops: GET /api/freshness (per-source ingested-at, coverage, degradation), POST /api/ingest/run. Structured reports are the versioned contract (report_schema_version on every row) and renderers/consumers read only that object.
 
-## Effective dating and the freeze rule
-
-The goal hierarchy — Company → Objective → Sprint goal, plus the links from work to the goal it
-serves — is **effective-dated**, and a report resolves it *as it stood at the report's own instant*.
-
-**A stated revision is never rewritten.** Editing a goal appends a new revision with a new
-`effective_from`; archiving one appends a revision that closes it. The rows a past report resolved
-against are still there afterwards, unchanged, which is what makes an archived report readable six
-weeks later as the document a manager actually read rather than as today's beliefs projected
-backwards.
-
-The rule has two halves, and which is which is the thing to be precise about:
-
-- **Frozen: the revision that was effective at that instant.** `goalHierarchyAt(nodes, revisions,
-  instant)` selects the revision whose effective window contains the instant, so re-running a past
-  report resolves the same chain it resolved the first time. A manager who renamed an objective last
-  Thursday has not changed what Tuesday's report said about it.
-- **Re-evaluated: the alignment verdict.** The *matching* — which commits serve which goal, and at
-  what confidence — is recomputed from the snapshot every run, because that is analysis rather than
-  record. So a manager's edit to the hierarchy takes effect on the next report without rewriting any
-  earlier one.
-
-An observed sync never supersedes a declared revision: `syncGoalHierarchy` projects what the
-connector saw, and a manager's own edit outranks it, because the edit is the more recent statement of
-intent by a human about their own organization.
-
-When new data contradicts a belief Compass has already stated, the contradiction is recorded as a
-**Correction** row rather than by editing the belief. `corrections` is append-only — the scoped-query
-layer refuses an update or a delete on it — so "reported blocked yesterday, actually merged" is a
-fact the product can state, with the prior belief quoted verbatim beside the new one.
-
 ## Key decisions
 
 - One language (TypeScript) across web, worker, analysis and fixtures: a solo/small team cannot afford two toolchains, and the purity/determinism gates (dependency-cruiser, custom ESLint clock rule, shared Zod schemas) are cheapest to enforce inside one type system and one CI.
