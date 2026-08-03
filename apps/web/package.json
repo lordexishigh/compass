@@ -32,7 +32,7 @@
   },
   "devDependencies": {
     "@compass/smoke": "workspace:*",
-    "@electric-sql/pglite": "0.3.11",
+    "@electric-sql/pglite": "0.5.4",
     "@tailwindcss/postcss": "4.3.3",
     "@types/node": "24.13.3",
     "@types/react": "19.2.18",
