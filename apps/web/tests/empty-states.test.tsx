@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
+import { ArchiveIndex } from '../components/archive-index';
 import { EmptyState } from '../components/empty-state';
 import { GoalEditor } from '../components/goal-editor';
 import { RosterScreen } from '../components/roster-screen';
@@ -68,8 +69,14 @@ const LIST_SCREENS: readonly {
 }[] = [
   {
     route: '/archive',
-    file: ['app', 'archive', 'page.tsx'],
+    // The index moved out of the page into a component so `accessibility.test.tsx` could render and
+    // audit it — the archive was the one surface the axe criterion names that had nothing a test
+    // could reach. The empty branch moved with it, so this now points at the component *and* can
+    // supply `rendered`, which the page-level entry could never do: the page is a Server Component
+    // that reaches the database.
+    file: ['components', 'archive-index.tsx'],
     entries: [EMPTY_STATES.archive],
+    rendered: renderToStaticMarkup(<ArchiveIndex days={[]} />),
   },
   {
     route: '/corrections',
@@ -221,8 +228,11 @@ describe('the screens that can be rendered here show their copy when empty', () 
       screen.rendered !== undefined,
   );
 
-  it('covers the three client list screens, so this suite is not vacuous', () => {
-    expect(renderable.map((screen) => screen.route).sort()).toEqual(['/goals', '/roster', '/seats']);
+  it('covers every list screen that can be rendered here, so this suite is not vacuous', () => {
+    // `/archive` joined the moment its index became a component rather than inline JSX in a Server
+    // Component. Enumerated rather than counted, so a screen that stops being renderable is a
+    // visible edit here instead of a silently smaller suite.
+    expect(renderable.map((screen) => screen.route).sort()).toEqual(['/archive', '/goals', '/roster', '/seats']);
   });
 
   it.each(renderable.map((screen) => [screen.route, screen] as const))(

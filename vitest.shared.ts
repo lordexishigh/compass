@@ -20,6 +20,7 @@ export const compassAliases: ReadonlyArray<{ find: string; replacement: string }
   { find: '@compass/connector-port/testkit', replacement: resolveSource('connector-port/src/testkit/index.ts') },
   { find: '@compass/connector-port', replacement: resolveSource('connector-port/src/index.ts') },
   { find: '@compass/clock', replacement: resolveSource('clock/src/index.ts') },
+  { find: '@compass/observability', replacement: resolveSource('observability/src/index.ts') },
   { find: '@compass/seed-connector', replacement: resolveSource('seed-connector/src/index.ts') },
   { find: '@compass/db/testing', replacement: resolveSource('db/src/testing/pglite.ts') },
   { find: '@compass/db', replacement: resolveSource('db/src/index.ts') },

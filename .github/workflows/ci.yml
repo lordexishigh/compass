@@ -80,27 +80,42 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # A clean checkout, one command. No `.env` is written first: the compose file
-      # supplies working defaults, because a demo that needs configuration is not a
-      # zero-config demo, and CI proving otherwise is the point of this job.
-      - name: docker compose up
-        run: docker compose up -d --build
-
-      # The acceptance criterion, as a command. `@compass/smoke` fetches `/`, waits
-      # for a report within its budget, and asserts all six section headings, the
-      # fixed order, at least one source link, no login form, no setup wizard, no
-      # empty state and no chart. The same function runs against the real rendered
-      # page in `apps/web/tests/cold-start.test.tsx`, so a green suite and a green
-      # container are checking the same thing.
+      # Built in its own step, so the image build is *not* inside the measured window.
       #
-      # The budget is raised over the 60-second criterion for one reason: a GitHub
-      # runner spends most of it on PostgreSQL's first-boot initdb and on the
-      # container's own start. `pnpm smoke` reports the measured time either way, so
-      # a real regression in time-to-report is still visible in the log.
-      - name: fetch / and assert a full six-section report
+      # `docker compose up -d --build` was one command and it charged compiling the
+      # application to the cold-start budget. Building is a CI cost that a person running
+      # `docker compose up` on a released image never pays, so measuring it made the
+      # number mean something nobody cares about — and it was the reason the gate had been
+      # loosened to 180 s. Splitting the two is what lets the published 60 s be the gate.
+      - name: docker compose build
+        run: docker compose build
+
+      # A clean checkout, no `.env` written first: the compose file supplies working
+      # defaults, because a demo that needs configuration is not a zero-config demo, and
+      # CI proving otherwise is the point of this job.
+      #
+      # This is where the measured window opens. Everything inside it — PostgreSQL's
+      # first-boot initdb, migrations, the seed load, the first ingest, the first
+      # generation, the first render — is Compass starting, which is what the criterion is
+      # about.
+      - name: docker compose up
+        run: docker compose up -d
+
+      # The acceptance criterion, as a command, **at its published number**. `@compass/smoke`
+      # fetches `/`, waits for a report within its budget, and asserts all six section
+      # headings, the fixed order, at least one source link, no login form, no setup wizard,
+      # no empty state and no chart. The same function runs against the real rendered page in
+      # `apps/web/tests/cold-start.test.tsx`, so a green suite and a green container are
+      # checking the same thing.
+      #
+      # 60000 ms, matching `COLD_START_BUDGET_MILLIS` and the row in `docs/budgets.md`. No
+      # override: a step that passed at three times its published budget was a gate in name
+      # only, and the honest options were to enforce the number or to publish the one being
+      # enforced. Excluding the build made the first one possible.
+      - name: fetch / and assert a full six-section report within 60 s
         env:
           COMPASS_SMOKE_URL: http://localhost:3000/
-          COMPASS_SMOKE_BUDGET_MS: '180000'
+          COMPASS_SMOKE_BUDGET_MS: '60000'
         run: pnpm run smoke
 
       # `pnpm smoke` already follows the first evidence link and insists on a page,
@@ -108,6 +123,77 @@ jobs:
       # its condition rather than implying them.
       - name: the readiness endpoint answers
         run: curl --fail --silent --show-error http://localhost:3000/api/health
+
+      - name: container logs
+        if: always()
+        run: docker compose logs --no-color --tail=200
+
+      - name: docker compose down
+        if: always()
+        run: docker compose down --volumes
+
+  perf:
+    name: performance budgets
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.15.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Its own job rather than a step in `verify`, for the same reason `cold-start` is one:
+      # `pnpm run verify` runs in-process against jsdom and cannot measure a paint. An LCP
+      # budget asserted without a renderer is not asserted.
+      #
+      # Build split from boot here too. This job measures nothing about start-up, so the split
+      # is not load-bearing — but leaving one job with `--build` folded in is how the habit
+      # comes back to the job where it does matter.
+      - name: docker compose build
+        run: docker compose build
+
+      - name: docker compose up
+        run: docker compose up -d
+
+      # `@compass/perf-budget` launches the Chromium-family browser the machine already has —
+      # `msedge`, then `chrome`, then a bundled `chromium` — and **fails rather than skips**
+      # when none launch. So the browser has to be present, and it is named here rather than
+      # assumed: a runner image that stopped shipping Chrome would otherwise surface as a
+      # mysterious budget failure instead of as a missing dependency.
+      - name: the throttled browser is available
+        run: |
+          google-chrome --version || chromium --version || microsoft-edge --version
+
+      # Wait for a report before measuring. `pnpm perf` navigates to `/` and reads LCP; doing
+      # that while the first report is still generating would measure the cold start, which is
+      # the other job's budget and a different number.
+      #
+      # This wait is a **precondition, not a gate**, and the generous budget says so: the
+      # cold-start assertion lives in the `cold-start` job at its published 60 s, and duplicating
+      # it here would mean one criterion enforced by two steps that could disagree. What this
+      # step must not do is fail the perf job for being slow to start — that is the other job's
+      # verdict to give.
+      - name: wait for a full six-section report before measuring
+        env:
+          COMPASS_SMOKE_URL: http://localhost:3000/
+          COMPASS_SMOKE_BUDGET_MS: '180000'
+        run: pnpm run smoke
+
+      # The two numbered budgets: 2000 ms LCP on the report, 5000 ms for a time-travel
+      # regeneration. Both are constants in `tools/perf-budget/src/index.ts` and both are
+      # published in `docs/budgets.md`; this is the job that makes them gates.
+      - name: assert the performance budgets
+        env:
+          COMPASS_PERF_BASE_URL: http://localhost:3000
+        run: pnpm run perf
 
       - name: container logs
         if: always()

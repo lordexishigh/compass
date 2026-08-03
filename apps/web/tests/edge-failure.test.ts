@@ -55,7 +55,19 @@ describe('GET /api/health with no DATABASE_URL', () => {
     expect(database, 'the readiness report was never reached').toBeDefined();
     expect(database?.status).toBe('not_configured');
     expect(database?.detail).toContain('DATABASE_URL');
-    expect(body.status).toBe('not_configured');
+
+    /**
+     * The *check* is `not_configured`; the overall status is `degraded`, and the difference matters.
+     *
+     * This asserted `not_configured` for the whole report, which was true only because the status
+     * ternary tested `not_configured` before `degraded` and so could never report a fault on any
+     * deployment with an absent capability. On this fixture the seeded connector is genuinely
+     * degraded — its archived code host is declared rate-limited on purpose — so `degraded` is the
+     * honest answer and something broken now outranks something merely absent. See
+     * `health.test.ts`, which pins the precedence directly.
+     */
+    expect(body.status).toBe('degraded');
+    expect(body.checks.find((check) => check.name === 'connector')?.status).toBe('degraded');
   });
 
   it('still names every other capability, so the guard failure cost no information', async () => {

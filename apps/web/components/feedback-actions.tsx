@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 
 import type { FeedbackOfferView } from '../lib/view-model';
 
@@ -33,6 +33,26 @@ import type { FeedbackOfferView } from '../lib/view-model';
  * undo window the design brief asks for. There is no optimistic removal: the item stays on the page
  * until the next report, because a row that vanished on click would leave the manager with no way to
  * see what they had just done.
+ *
+ * ## Where focus goes, which this component has to manage by hand
+ *
+ * Three times in this component's life the element holding focus is *removed from the DOM*, and the
+ * browser's answer to that is always the same and always wrong: focus falls to `<body>`, so the
+ * keyboard user's next Tab restarts from the top of the page. Each one is handled explicitly:
+ *
+ *  - **Pressing a verb that needs a reason** replaces the button with a text field. Focus moves into
+ *    the field (`autoFocus`), which is the case the `jsx-a11y/no-autofocus` exemption below is
+ *    written for.
+ *  - **Escape or Cancel** removes that field. Focus returns to the verb button that opened it, via
+ *    `verbRefs` — the button has re-mounted by then, so the restore runs in an effect rather than in
+ *    the handler.
+ *  - **Submitting** replaces the whole row with the outcome sentence. Focus moves to that sentence,
+ *    which carries `tabIndex={-1}` so it can receive focus without joining the tab order. It is the
+ *    only thing left that describes what just happened, and as `role="status"` it is announced too.
+ *
+ * WCAG 2.4.3 is the criterion, and it is worth naming what makes this non-optional rather than
+ * polish: a manager dismissing four risks in a row with the keyboard would otherwise be sent back to
+ * the top of the document after each one.
  */
 
 export interface FeedbackActionsProps {
@@ -54,6 +74,37 @@ export function FeedbackActions({ stableId, headline, offers, existing }: Feedba
   const [reasonFor, setReasonFor] = useState<string | null>(null);
   const [reason, setReason] = useState('');
   const [pending, startTransition] = useTransition();
+
+  /** The verb buttons, so a cancelled reason field can hand focus back to the one that opened it. */
+  const verbRefs = useRef(new Map<string, HTMLButtonElement>());
+  /** Set when a reason field was dismissed; cleared by the effect that restores focus. */
+  const [restoreFocusTo, setRestoreFocusTo] = useState<string | null>(null);
+  const outcomeRef = useRef<HTMLParagraphElement>(null);
+
+  /**
+   * Return focus to the verb after its reason field is dismissed.
+   *
+   * In an effect rather than in the key handler because the button does not exist yet when Escape
+   * fires — it is re-mounted by the same render that removes the field, so `verbRefs` is only
+   * populated once that render has committed.
+   */
+  useEffect(() => {
+    if (restoreFocusTo === null) return;
+    verbRefs.current.get(restoreFocusTo)?.focus();
+    setRestoreFocusTo(null);
+  }, [restoreFocusTo]);
+
+  /** Focus the outcome sentence, which has replaced the button that was focused. */
+  useEffect(() => {
+    if (outcome !== null) outcomeRef.current?.focus();
+  }, [outcome]);
+
+  /** Closes the reason field and asks for focus to go back where it came from. */
+  const dismissReason = (action: string): void => {
+    setReasonFor(null);
+    setReason('');
+    setRestoreFocusTo(action);
+  };
 
   if (offers.length === 0 && existing === null) return null;
 
@@ -90,7 +141,16 @@ export function FeedbackActions({ stableId, headline, offers, existing }: Feedba
 
   if (outcome !== null) {
     return (
-      <p className="feedback-outcome" data-state={outcome.kind === 'applied' ? 'applied' : 'refused'} role="status">
+      <p
+        ref={outcomeRef}
+        className="feedback-outcome"
+        data-state={outcome.kind === 'applied' ? 'applied' : 'refused'}
+        role="status"
+        // Focusable programmatically, never by Tab: it replaced the control that had focus, so
+        // somebody has to be given it, but a finished sentence is not a stop on the way through a
+        // document.
+        tabIndex={-1}
+      >
         {outcome.detail}
       </p>
     );
@@ -124,14 +184,16 @@ export function FeedbackActions({ stableId, headline, offers, existing }: Feedba
                 manager just pressed a verb, the button they pressed has been replaced by it, and
                 without moving focus their next Tab starts from wherever the removed button used to
                 be. That is a real focus-loss bug for a keyboard user, and WCAG 2.4.3 asks focus to
-                follow newly revealed content. Escape returns them, which the handler below does.
+                follow newly revealed content. Escape and Cancel both hand focus back to the verb —
+                see `dismissReason` and the effect that runs it, not this handler, because the
+                button has not re-mounted yet at the moment the key is pressed.
               */
               // eslint-disable-next-line jsx-a11y/no-autofocus -- focus follows the manager into the field their own keypress revealed; see above
               autoFocus
               onChange={(event) => setReason(event.target.value)}
               onKeyDown={(event) => {
                 if (event.key === 'Enter' && reason.trim().length > 0) submit(offer.action, reason.trim());
-                if (event.key === 'Escape') setReasonFor(null);
+                if (event.key === 'Escape') dismissReason(offer.action);
               }}
             />
             <button
@@ -142,7 +204,12 @@ export function FeedbackActions({ stableId, headline, offers, existing }: Feedba
             >
               {offer.label}
             </button>
-            <button type="button" className="feedback-action" disabled={pending} onClick={() => setReasonFor(null)}>
+            <button
+              type="button"
+              className="feedback-action"
+              disabled={pending}
+              onClick={() => dismissReason(offer.action)}
+            >
               Cancel
             </button>
           </span>
@@ -151,6 +218,12 @@ export function FeedbackActions({ stableId, headline, offers, existing }: Feedba
             key={offer.action}
             type="button"
             className="feedback-action"
+            // Registered so a cancelled reason field can give focus back to this exact verb rather
+            // than to the first one in the row.
+            ref={(node) => {
+              if (node === null) verbRefs.current.delete(offer.action);
+              else verbRefs.current.set(offer.action, node);
+            }}
             disabled={pending}
             // The accessible name carries the claim, because "Dismiss this risk" on its own tells a
             // screen-reader user which of four risks they are about to dismiss: none of them.

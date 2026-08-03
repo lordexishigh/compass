@@ -1,10 +1,9 @@
 import { headers } from 'next/headers';
 
-import { EmptyState } from '../../components/empty-state';
+import { ArchiveIndex } from '../../components/archive-index';
 import { StatedFailure } from '../../components/stated-failure';
-import { loadArchiveIndex, mergedArchiveHref } from '../../lib/archive-source';
+import { loadArchiveIndex } from '../../lib/archive-source';
 import { pageAccess } from '../../lib/auth/guard';
-import { EMPTY_STATES } from '../../lib/empty-states';
 
 /**
  * `/archive` — every report Compass has written, by date and by team.
@@ -102,46 +101,10 @@ export default async function ArchivePage() {
         </p>
       </header>
 
-      {days.length === 0 ? (
-        <div className="mt-10">
-          <EmptyState copy={EMPTY_STATES.archive} />
-        </div>
-      ) : (
-        <ol className="mt-10 space-y-8">
-          {days.map((day) => (
-            <li key={day.reportDate} className="hairline pt-6 first:border-t-0 first:pt-0">
-              <div className="flex flex-wrap items-baseline justify-between gap-x-4">
-                <h2 className="font-mono text-[15px] tabular-nums text-ink-strong">{day.reportDate}</h2>
-                <a href={mergedArchiveHref(day.reportDate)} className="tertiary-action">
-                  merged view
-                </a>
-              </div>
-
-              <ul className="mt-3 space-y-2">
-                {day.entries.map((entry) => (
-                  <li key={entry.reportId} className="flex flex-wrap items-baseline gap-x-3">
-                    <a
-                      href={entry.href}
-                      className="text-[15px] text-ink underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
-                    >
-                      {entry.scopeLabel}
-                    </a>
-                    <span className="font-mono text-[11px] tabular-nums text-ink-faint">
-                      {entry.itemCount} item{entry.itemCount === 1 ? '' : 's'}
-                    </span>
-                    {entry.coverageStatus !== 'complete' && (
-                      <span className="stated-absence text-[12px]">{entry.coverageStatus} coverage</span>
-                    )}
-                    {entry.fallbackRenderer && (
-                      <span className="stated-absence text-[12px]">rendered from template</span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </li>
-          ))}
-        </ol>
-      )}
+      {/* The index itself, in a component so `accessibility.test.tsx` can render and audit it. It
+          was inline here, which is why the archive was the one surface the axe criterion names that
+          had nothing a test could reach. */}
+      <ArchiveIndex days={days} />
     </div>
   );
 }

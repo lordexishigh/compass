@@ -55,6 +55,12 @@ describe('the pnpm workspace holds every layer as its own package', () => {
       // deterministic template renderer, so it sits above the renderers and calls
       // them, and it writes no rows, so it sits below the pipeline.
       'narrator',
+      // The bottom of the graph, beside `clock`: structured logging and the error-reporter
+      // scrubber. It depends on nothing — `types: []`, no npm imports, `now` a parameter on
+      // every emitter — which is what lets every layer above it emit a log line without
+      // inverting the dependency order. The scrubber lives here rather than in the app so
+      // the worker and the web edge cannot disagree about what may leave the process.
+      'observability',
       'pipeline',
       'renderers',
       'seed-connector',

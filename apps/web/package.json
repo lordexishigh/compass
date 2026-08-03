@@ -21,9 +21,11 @@
     "@compass/delivery": "workspace:*",
     "@compass/knowledge-model": "workspace:*",
     "@compass/narrator": "workspace:*",
+    "@compass/observability": "workspace:*",
     "@compass/pipeline": "workspace:*",
     "@compass/renderers": "workspace:*",
     "@compass/seed-connector": "workspace:*",
+    "@sentry/nextjs": "^10.69.0",
     "next": "15.5.22",
     "react": "19.2.8",
     "react-dom": "19.2.8"

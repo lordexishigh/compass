@@ -165,17 +165,20 @@ export default tseslint.config(
        */
       'jsx-a11y/no-onchange': 'off',
       /**
-       * Look three levels down for a label's text, not two.
+       * At its default depth, which is now the honest setting.
        *
-       * The default depth of 2 rejects `<label><input/><span><span>Title</span></span></label>`, which
-       * is the shape every radio option on the privacy screen uses — a title line and a description
-       * line stacked beside the control. That markup is *correct*: the label wraps its input, so the
-       * label's whole text content becomes the control's accessible name, description included.
-       * Rewriting it to satisfy a depth counter would flatten a two-line option into one, so the
-       * counter moves instead. The rule still fails a label with no text at all, which is what it is
-       * for.
+       * This carried `{ depth: 3 }` for the privacy screen's radio options, which then wrapped their
+       * input in a `<label>` alongside two nested spans — a shape the default depth of 2 rejects. The
+       * markup has since changed: each mode is now an `id`/`htmlFor` pair with the description tied on
+       * separately by `aria-describedby`, which is better for a screen reader (the accessible *name*
+       * is the mode, and the paragraph is a *description*, rather than one run-on string) and which
+       * the rule accepts without help.
+       *
+       * Nothing in the workspace needs the bump any more — checked by removing it and running
+       * `pnpm run lint`, which reported no violations of this rule — so it is gone. A loosened lint
+       * option kept for markup that no longer exists is a rule quietly weakened for everything else.
        */
-      'jsx-a11y/label-has-associated-control': ['error', { depth: 3 }],
+      'jsx-a11y/label-has-associated-control': 'error',
       /**
        * Police *mouse* handlers on non-interactive elements, not keyboard ones.
        *

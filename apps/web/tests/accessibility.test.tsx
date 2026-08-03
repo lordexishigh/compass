@@ -9,11 +9,18 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import { AlignmentEvidence } from '../components/alignment-evidence';
+import { ArchiveIndex } from '../components/archive-index';
 import { CalibrationCollar } from '../components/calibration-collar';
 import { CompletionLadder } from '../components/completion-ladder';
 import { EmptyState } from '../components/empty-state';
 import { FreshnessPanel } from '../components/freshness-panel';
-import { MinimizationControls, RetentionControls } from '../components/privacy-controls';
+import {
+  AnonymizeControl,
+  ChannelToggle,
+  DeletionControls,
+  MinimizationControls,
+  RetentionControls,
+} from '../components/privacy-controls';
 import { ReportDocument } from '../components/report-document';
 import { SeatManager } from '../components/seat-manager';
 import { SignInPanel } from '../components/sign-in-panel';
@@ -197,6 +204,79 @@ describe('axe reports no critical or serious violations', () => {
       renderToStaticMarkup(<SignInPanel demoCredentials={{ email: 'owner@example.com', password: 'a-long-password' }} />),
     );
   });
+
+  /**
+   * The archive: the fourth surface the criterion names, and the one that had no assertion.
+   *
+   * Two shapes, because they fail differently. The **index** is nested lists with a heading per date
+   * — list structure and heading order are exactly what axe catches and exactly what hand-written
+   * nesting gets wrong. A **permalinked report** is the report view again, but reached by a route
+   * that renders a *stored* row including its degradation flags, which is the state a reader is most
+   * likely to be sent a link to.
+   */
+  it('on the archive index', async () => {
+    const days = [
+      {
+        reportDate: '2026-07-30',
+        entries: [
+          {
+            reportId: 'report-platform-0730',
+            scopeLabel: 'platform',
+            scopeKind: 'team',
+            scopeKey: 'platform',
+            reportDate: '2026-07-30',
+            href: '/archive/report-platform-0730',
+            itemCount: 7,
+            coverageStatus: 'complete',
+            fallbackRenderer: false,
+            generatedAtLabel: '30 July 2026, 06:00',
+          },
+          // A degraded row, because the marks beside it are extra content and extra content is where
+          // a contrast or name violation would appear.
+          {
+            reportId: 'report-payments-0730',
+            scopeLabel: 'payments',
+            scopeKind: 'team',
+            scopeKey: 'payments',
+            reportDate: '2026-07-30',
+            href: '/archive/report-payments-0730',
+            itemCount: 1,
+            coverageStatus: 'partial',
+            fallbackRenderer: true,
+            generatedAtLabel: '30 July 2026, 06:00',
+          },
+        ],
+      },
+      {
+        reportDate: '2026-07-29',
+        entries: [
+          {
+            reportId: 'report-platform-0729',
+            scopeLabel: 'platform',
+            scopeKind: 'team',
+            scopeKey: 'platform',
+            reportDate: '2026-07-29',
+            href: '/archive/report-platform-0729',
+            itemCount: 4,
+            coverageStatus: 'complete',
+            fallbackRenderer: false,
+            generatedAtLabel: '29 July 2026, 06:00',
+          },
+        ],
+      },
+    ];
+
+    await expectNoBlockingViolations('the archive index', renderToStaticMarkup(<ArchiveIndex days={days} />));
+  });
+
+  it('on an archive with nothing in it yet', async () => {
+    // The empty state is a first-class surface here, not a skeleton box, so it is audited too.
+    await expectNoBlockingViolations('the empty archive index', renderToStaticMarkup(<ArchiveIndex days={[]} />));
+  });
+
+  it('on a permalinked archived report, rendered exactly as it was stored', async () => {
+    await expectNoBlockingViolations('the permalinked archived report', reportMarkup(fallbackBundle()));
+  });
 });
 
 /**
@@ -275,10 +355,13 @@ describe('axe reports no critical or serious violations on the configuration scr
 
   it('on the minimization controls, whose radio labels stack a title over a description', async () => {
     /**
-     * The shape that made `jsx-a11y/label-has-associated-control` complain at its default depth: a
-     * `<label>` wrapping its own radio plus two nested spans. It is correct — the label wraps the
-     * control, so its whole text content is the accessible name — and this is the assertion that says
-     * so from the reader's side rather than from the linter's.
+     * Each mode is a radio with an `id`, a sibling `<label htmlFor>` carrying the title, and a second
+     * sibling tied on with `aria-describedby` carrying the explanation.
+     *
+     * That split is the point of auditing it: the *name* is the mode ("Redacted") and the
+     * *description* is the paragraph, so a screen reader announces the choice and then the reasoning
+     * rather than one run-on string. A wrapping `<label>` containing both would have made the
+     * accessible name the whole paragraph.
      */
     await expectNoBlockingViolations(
       'the minimization controls',
@@ -298,6 +381,88 @@ describe('axe reports no critical or serious violations on the configuration scr
         </>,
       ),
     );
+  });
+
+  /**
+   * The rest of the privacy screen, including the destructive controls.
+   *
+   * These three were the gap: they are exported from the same file as the two above, they are the
+   * controls that *delete an organization* and *withdraw a person's name*, and nothing audited them.
+   * Each is rendered in every state its props can produce, because the awkward state is the one that
+   * fails — a control that is present but refused, a channel Compass will not read, an export a
+   * member may not download.
+   */
+  it('on the deletion controls, in all four permission combinations', async () => {
+    for (const canDeleteOrganization of [true, false]) {
+      for (const canExport of [true, false]) {
+        await expectNoBlockingViolations(
+          `the deletion controls (organization: ${canDeleteOrganization}, export: ${canExport})`,
+          renderToStaticMarkup(
+            <DeletionControls canDeleteOrganization={canDeleteOrganization} canExport={canExport} />,
+          ),
+        );
+      }
+    }
+  });
+
+  it('on the channel toggle, for a channel Compass will read and one it refuses', async () => {
+    // The non-public kinds render an extra stated sentence and a disabled control, which is a
+    // different tree — and the one where a disabled button with no explanation would slip through.
+    for (const [conversationKind, enabled] of [
+      ['public_channel', false],
+      ['public_channel', true],
+      ['private_channel', false],
+      ['direct_message', false],
+      ['group_message', false],
+    ] as const) {
+      await expectNoBlockingViolations(
+        `the channel toggle (${conversationKind}, enabled: ${enabled})`,
+        renderToStaticMarkup(
+          <ChannelToggle
+            conversationKey="C123CHECKOUT"
+            conversationName="checkout-standup"
+            conversationKind={conversationKind}
+            enabled={enabled}
+          />,
+        ),
+      );
+    }
+  });
+
+  it('on the anonymize control, both before and after a name is withdrawn', async () => {
+    for (const anonymized of [false, true]) {
+      await expectNoBlockingViolations(
+        `the anonymize control (anonymized: ${anonymized})`,
+        renderToStaticMarkup(
+          <AnonymizeControl developerKey="priya-raman" displayName="Priya Raman" anonymized={anonymized} />,
+        ),
+      );
+    }
+  });
+
+  it('gives those three action buttons a name that flips without also claiming a pressed state', () => {
+    /**
+     * A toggle may change its name or its `aria-pressed`, never both.
+     *
+     * These carried both, which announced the state twice and in opposite senses: "stop reading this
+     * channel, pressed" when the channel *is* being read reads as the exact opposite of the truth.
+     * They are action buttons whose label names the act, so the label is what stays and
+     * `aria-pressed` is what went.
+     */
+    const markup =
+      renderToStaticMarkup(
+        <ChannelToggle
+          conversationKey="C1"
+          conversationName="checkout-standup"
+          conversationKind="public_channel"
+          enabled
+        />,
+      ) + renderToStaticMarkup(<AnonymizeControl developerKey="p" displayName="Priya Raman" anonymized />);
+
+    expect(markup).not.toContain('aria-pressed');
+    // And the labels still say which act they perform, which is what carries the state instead.
+    expect(markup).toContain('stop reading this channel');
+    expect(markup).toContain('restore Priya Raman’s name');
   });
 
   it('on a designed empty state', async () => {
@@ -729,16 +894,34 @@ describe('AA contrast across light and dark', () => {
   });
 
   /**
-   * Both themes, from their own blocks.
+   * Every block that declares a theme — all four of them.
    *
-   * `:root` is light. The dark values live under `prefers-color-scheme: dark`, and a reader who has
-   * their system set that way is the *majority* case for a report opened at 08:45 — so a token that
-   * only clears AA in light is a token that fails for most of the people reading it.
+   * `:root` is light and `prefers-color-scheme: dark` is dark, and a reader whose system is set that
+   * way is the *majority* case for a report opened at 08:45, so a token that only clears AA in light
+   * fails for most of the people reading it.
+   *
+   * The two `data-theme` blocks are the explicit override the theme toggle stamps on the root
+   * element, and they were the gap: they declare the same tokens again, and only the first two blocks
+   * were parsed. An edit to `:root[data-theme='dark']` alone therefore passed a green suite while
+   * changing what a reader who has chosen dark actually sees. Four blocks, four sets of assertions —
+   * the duplication in the stylesheet is real, so the coverage has to match it rather than assume the
+   * pairs agree.
    */
   const THEMES = [
-    ['light', tokensIn(/:root\s*\{/)],
-    ['dark', tokensIn(/@media \(prefers-color-scheme: dark\)\s*\{\s*:root\s*\{/)],
+    ['light (:root)', tokensIn(/:root\s*\{/)],
+    ['dark (prefers-color-scheme)', tokensIn(/@media \(prefers-color-scheme: dark\)\s*\{\s*:root\s*\{/)],
+    ['light (data-theme)', tokensIn(/:root\[data-theme='light'\]\s*\{/)],
+    ['dark (data-theme)', tokensIn(/:root\[data-theme='dark'\]\s*\{/)],
   ] as const;
+
+  it('found all four theme blocks, so none of the assertions below is over an empty object', () => {
+    // Without this, a renamed selector would silently reduce every `it.each` below to a no-op on an
+    // empty token map — which is exactly the shape of failure this whole suite exists to prevent.
+    for (const [name, tokens] of THEMES) {
+      expect(Object.keys(tokens).length, `${name} parsed no tokens`).toBeGreaterThan(5);
+      expect(tokens['--surface'], `${name} declares no --surface`).toBeDefined();
+    }
+  });
 
   /** Text tokens that must clear 4.5:1 — body text, at every weight the page uses it. */
   const TEXT_TOKENS = ['--ink-strong', '--ink', '--ink-muted', '--ink-faint'] as const;
@@ -757,6 +940,41 @@ describe('AA contrast across light and dark', () => {
         `${token} (${colour}) on ${background} is ${measured.toFixed(2)}:1, below the 4.5:1 AA floor for body text`,
       ).toBeGreaterThanOrEqual(4.5);
     }
+  });
+
+  /**
+   * SC 1.4.11, which axe cannot check and which therefore has to be arithmetic.
+   *
+   * The zero-violations gate above sees nothing here: axe-core implements no rule for non-text
+   * contrast, so the boundary of a `<select>` could sit at 1.48:1 through a green suite — which is
+   * exactly what happened. `--rule-strong` (zinc-300) was doing two jobs, and it could only do one of
+   * them: a decorative hairline identifies nothing and is out of scope, while the border of the
+   * retention selects on `/privacy`, the time-travel stepper and the feedback field *is* the only
+   * thing telling a reader where the control is.
+   *
+   * So the two are separate tokens now, and this is the assertion that keeps them separate. 3:1 rather
+   * than 4.5:1 because that is what the success criterion asks of a component boundary, and it is
+   * checked in all four theme blocks for the same reason the text tokens are.
+   */
+  it.each(THEMES)('%s: the control boundary clears 3:1, which SC 1.4.11 requires', (_theme, tokens) => {
+    const background = tokens['--surface'];
+    const border = tokens['--control-border'];
+
+    expect(border, '--control-border is not declared in this theme').toBeDefined();
+
+    const measured = ratio(border!, background!);
+    expect(
+      measured,
+      `--control-border (${border}) on ${background} is ${measured.toFixed(2)}:1, below the 3:1 floor ` +
+        'SC 1.4.11 sets for the visual information identifying a UI component',
+    ).toBeGreaterThanOrEqual(3);
+  });
+
+  it.each(THEMES)('%s: the decorative hairline is still allowed to be faint', (_theme, tokens) => {
+    // The other half of the split, stated so nobody "fixes" it later. `--rule-strong` is a separator
+    // and uncrossed ladder notches: it identifies no component, so 1.4.11 does not reach it, and
+    // darkening it would put a heavy rule through a page whose whole argument is quiet typography.
+    expect(tokens['--rule-strong'], '--rule-strong is not declared in this theme').toBeDefined();
   });
 
   it.each(THEMES)('%s: the raised surface is no worse than the page surface', (_theme, tokens) => {

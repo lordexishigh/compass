@@ -390,6 +390,9 @@ describe('the line an operator reads', () => {
         rosterCreated: 0,
         rosterChanged: 0,
         owner: ownerResult,
+        // The privacy posture the boot script now writes and echoes, so an operator can read the
+        // retention windows and the narration mode out of the boot log without opening a page.
+        privacy: { rawEventRetentionDays: 90, derivedRetentionYears: 3, llmMinimizationMode: 'redacted' },
       },
       run,
       ...warmed,

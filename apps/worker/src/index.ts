@@ -56,6 +56,7 @@ import {
   type TeamCadence,
 } from './generation.js';
 import { describeFirstRun, ensureFirstRun } from './first-run.js';
+import { initErrorReporting } from './error-reporting.js';
 import { describeIngestWindow, nextIngestWindows } from './ingest-schedule.js';
 import {
   CHANNEL_NOTICE_CRON,
@@ -273,6 +274,16 @@ export function createPrivacyDependencies(db: CompassDatabase): PrivacyDependenc
 
 export async function startWorker(): Promise<RunningWorker> {
   const clock = new SystemClock();
+
+  /**
+   * Error reporting first, so a crash during boot is reported rather than only logged.
+   *
+   * Ahead of the migration runner and `boss.start()` deliberately: the failures worth catching most
+   * are the ones that stop the worker from starting at all, and an initialization that ran after them
+   * would miss every one. No `SENTRY_DSN` makes this a no-op, which is the ordinary state of the
+   * zero-config demo.
+   */
+  initErrorReporting();
 
   /**
    * First run, before anything else.

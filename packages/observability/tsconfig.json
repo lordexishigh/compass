@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "tsBuildInfoFile": "dist/.tsbuildinfo",
+    // `types: []` like `packages/clock`: this package depends on nothing, and the empty list is
+    // what makes an accidental `node:` import a compile error rather than a silent coupling.
+    "types": []
+  },
+  "include": ["src/**/*.ts"]
+}

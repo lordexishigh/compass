@@ -182,7 +182,7 @@ describe('redacted mode', () => {
                 stableId: 'risk-1',
                 headline: `${PRIYA} is the reviewer`,
                 detail: 'The oldest is six days old.',
-                changeTag: 'recurring',
+                changeTag: 'unchanged',
                 ageDays: 6,
                 changeClause: `—— ${MARCUS} added as a reviewer, age unchanged`,
                 evidenceLabels: ['#883'],

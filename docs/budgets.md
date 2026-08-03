@@ -21,6 +21,26 @@ always the prose.
 | One team's daily report, ~90-second read | 450 words | `DAILY_REPORT_READING_BUDGET` | `tools/quality-gates/tests/budgets.test.ts` |
 | Narration-fallback alert rate | 0.20 | `NARRATION_FALLBACK_ALERT_RATE` | `packages/analysis/tests/budgets.test.ts` |
 
+### Which of these are gates, and which are targets
+
+The table says what each number *is* and which test owns the constant. It does not say whether a
+failing **measurement** fails a build, and those are different claims — so, plainly, before the
+sections that go into each one:
+
+- **Gated end to end.** The two performance budgets, by the `perf` job in
+  `.github/workflows/ci.yml`, against a running container. The merged 400-word ceiling, by the
+  renderer refusing to emit prose over it.
+- **Gated end to end**, also: cold start, by the `cold-start` job, at 60000 ms. The image build runs
+  in its own step so it is outside the measured window — see below for why that is the difference
+  between a gate and a formality.
+- **Gated on one path only.** The 900-word daily ceiling fails closed on the *narrated* path; the
+  seeded corpus renders 1,400–2,000 words through the template renderer and is over it today. See
+  below.
+- **A target, not yet met.** The 450-word ninety-second read. Its own section says so at length.
+
+Three of seven are therefore not what a reader would assume from the table alone, and each one says
+where its gap is rather than leaving the number to be read as a promise.
+
 The word and rate constants live in `packages/analysis/src/budgets.ts`. The two performance
 constants live in `tools/perf-budget/src/index.ts`, beside the runner that measures them, and the
 cold-start constant in `tools/smoke/src/probe.ts`, beside the probe that measures it.
@@ -72,6 +92,31 @@ Measured by `@compass/smoke`, which polls `/` until it returns a report the cold
 accepts — six headings, six sections rendered, at least one source link. The elapsed time is taken
 from the caller's own `now` at the first attempt rather than from a per-attempt clock, so a slow
 container cannot report four seconds after a five-minute wait.
+
+### What the 60 seconds is measured over
+
+**From `docker compose up` to a rendered report**, and CI asserts exactly that number — 60000 ms, no
+override.
+
+The distinction that makes it a real gate is what sits *outside* the window: the image build. The
+`cold-start` job runs `docker compose build` as its own step and only then `docker compose up -d`, so
+compiling the application is not charged to the budget. Everything inside the window is Compass
+starting — PostgreSQL's first-boot `initdb`, migrations, the seed load, the first ingest, the first
+generation, the first render — which is what a person running `docker compose up` on a released image
+actually waits for.
+
+That split is the whole reason the number can be enforced. Folded together as
+`docker compose up -d --build`, the measurement included a cost no user ever pays, and the gate had
+been loosened to 180000 ms to accommodate it — a step passing at three times its published budget,
+which is a gate in name only. Two assertions hold the number now:
+
+- `tools/smoke/tests/probe.test.ts` asserts the constant and the probe's behaviour at it — a report
+  at 59 s passes, one at 61 s fails, and elapsed time is measured from the first attempt rather than
+  per-attempt. That runs in `pnpm test` on every push.
+- The `cold-start` job asserts it against a real container.
+
+`pnpm smoke` prints the measured elapsed time either way, so a regression that stays under the budget
+is still visible in the log.
 
 ## The merged cross-team report — 400 words
 

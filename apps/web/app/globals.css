@@ -21,6 +21,26 @@
   --rule-strong: #d4d4d8; /* zinc-300 — low severity, uncrossed notches */
   --rule-severe: #18181b; /* zinc-900 — high severity */
 
+  /*
+   * The boundary of a real control, as distinct from a decorative rule.
+   *
+   * `--rule-strong` used to do both jobs and could not do the second one: zinc-300 on white is
+   * 1.48:1, and WCAG 2.1 AA SC 1.4.11 asks 3:1 for the visual information that identifies a UI
+   * component. A hairline separator is exempt — it identifies nothing — but the border of a
+   * `<select>` on /privacy or the time-travel stepper *is* the only thing telling a reader where the
+   * control is, so it is not.
+   *
+   * zinc-500 clears 3:1 against both surfaces (4.84:1 on white, 4.11:1 on zinc-950), so one value
+   * serves every theme and the token needs no per-theme override to be correct — the dark blocks
+   * still declare it, because a token declared in one block and inherited into another is the shape
+   * that breaks when somebody reorders them.
+   *
+   * axe has no rule for 1.4.11, so this is guarded arithmetically in
+   * `apps/web/tests/accessibility.test.tsx` beside the text tokens rather than by the zero-violations
+   * gate, which cannot see it.
+   */
+  --control-border: #71717a; /* zinc-500 — 4.84:1 on --surface */
+
   /* Marks and rules only — never small text (3.4:1 on white). */
   --verified: #059669; /* emerald-600 */
   --verified-hover: #047857; /* emerald-700 */
@@ -72,6 +92,8 @@
     --rule: #27272a;
     --rule-strong: #3f3f46;
     --rule-severe: #f4f4f5;
+    /* zinc-500 again: 4.11:1 on zinc-950, so one value clears 3:1 in both themes. */
+    --control-border: #71717a;
 
     --verified: #34d399; /* emerald-400 for contrast on zinc-950 */
     --verified-hover: #6ee7b7;
@@ -97,6 +119,7 @@
   --rule: #e4e4e7;
   --rule-strong: #d4d4d8;
   --rule-severe: #18181b;
+  --control-border: #71717a;
   --verified: #059669;
   --verified-hover: #047857;
   --verified-text: #047857;
@@ -117,6 +140,7 @@
   --rule: #27272a;
   --rule-strong: #3f3f46;
   --rule-severe: #f4f4f5;
+  --control-border: #71717a;
   --verified: #34d399;
   --verified-hover: #6ee7b7;
   --verified-text: #34d399;
@@ -492,7 +516,9 @@
     margin-top: 4px;
     padding: 0 0 2px;
     border: 0;
-    border-bottom: 1px solid var(--rule-strong);
+    /* `--control-border`, not `--rule-strong`: this single rule *is* the field, so it is the visual
+       information identifying a component and SC 1.4.11 asks 3:1 of it. */
+    border-bottom: 1px solid var(--control-border);
     border-radius: 0;
     background: transparent;
     font-family: var(--font-sans);
@@ -665,7 +691,9 @@
     gap: 4px;
     min-height: 44px;
     padding: 0 12px;
-    border: 1px solid var(--rule-strong);
+    /* A button whose fill is the page surface: the border is the only thing that says it is a
+       button, which is precisely what SC 1.4.11 covers. */
+    border: 1px solid var(--control-border);
     border-radius: 8px;
     background-color: var(--surface);
     font-family: var(--font-sans);
@@ -696,7 +724,8 @@
   .time-date {
     min-height: 44px;
     padding: 0 10px;
-    border: 1px solid var(--rule-strong);
+    /* SC 1.4.11: the control's own boundary. See `--control-border`. */
+    border: 1px solid var(--control-border);
     border-radius: 8px;
     background-color: var(--surface);
     font-family: var(--font-mono);
@@ -725,7 +754,8 @@
     max-width: 28rem;
     margin-top: 6px;
     padding: 6px 8px;
-    border: 1px solid var(--rule-strong);
+    /* SC 1.4.11: the control's own boundary. See `--control-border`. */
+    border: 1px solid var(--control-border);
     border-radius: 8px;
     background-color: var(--surface);
     font-family: var(--font-sans);
@@ -775,7 +805,8 @@
     align-items: center;
     min-height: 44px;
     padding: 0 16px;
-    border: 1px solid var(--rule-strong);
+    /* SC 1.4.11: the control's own boundary. See `--control-border`. */
+    border: 1px solid var(--control-border);
     border-radius: 8px;
     background-color: var(--surface-raised);
     box-shadow: 0 1px 2px color-mix(in oklab, var(--ink-strong) 8%, transparent);
@@ -864,7 +895,8 @@
     width: 100%;
     margin-top: 8px;
     padding: 8px;
-    border: 1px solid var(--rule-strong);
+    /* SC 1.4.11: the control's own boundary. See `--control-border`. */
+    border: 1px solid var(--control-border);
     border-radius: 8px;
     background-color: var(--surface);
     font-family: var(--font-sans);

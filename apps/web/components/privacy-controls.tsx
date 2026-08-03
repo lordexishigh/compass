@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 
 /**
  * The three writes on `/privacy`, as one small client island.
@@ -86,15 +86,33 @@ async function send(
   }
 }
 
+/**
+ * The sentence that says what a privacy change actually did.
+ *
+ * ## Why the region is rendered even when it is empty
+ *
+ * A screen reader announces changes *inside an existing* live region. It watches regions it already
+ * knows about; a `role="status"` element that is inserted into the DOM together with its text is
+ * frequently missed entirely, because there was no region to be watching when the text arrived.
+ *
+ * This returned `null` until there was an outcome, which is the shape that fails — and it failed on
+ * the sentences that matter most in this file: "the next scheduled purge applies the new window",
+ * "the model was shown pseudonyms". A manager changing retention with a screen reader got silence.
+ *
+ * So the `<p>` is always present and only its *content* changes. `data-state` moves with the text for
+ * the same reason: it is what colours the line, and an `applied` attribute sitting on an empty
+ * paragraph would style a blank.
+ */
 function OutcomeLine({ outcome }: { readonly outcome: Outcome | null }) {
-  if (outcome === null) return null;
   return (
     <p
       role="status"
-      data-state={outcome.kind === 'refused' ? 'refused' : 'applied'}
-      className="feedback-outcome mt-3"
+      // Absent while empty rather than a third "none" value: the stylesheet keys on `refused`, and a
+      // state attribute on a paragraph with no text describes nothing.
+      {...(outcome === null ? {} : { 'data-state': outcome.kind === 'refused' ? 'refused' : 'applied' })}
+      className={outcome === null ? 'sr-only' : 'feedback-outcome mt-3'}
     >
-      {outcome.detail}
+      {outcome === null ? '' : outcome.detail}
     </p>
   );
 }
@@ -188,8 +206,32 @@ export function MinimizationControls({
   const [outcome, setOutcome] = useState<Outcome | null>(null);
   const [pending, startTransition] = useTransition();
 
+  /**
+   * The radios, so focus can come back to the one the manager just chose.
+   *
+   * Same hazard `FeedbackActions` handles with `verbRefs`: a control that is disabled while a write is
+   * in flight cannot hold focus, so the browser drops it to `<body>` and the next Tab restarts from
+   * the top of the document. The configuration screens had no equivalent, which meant changing the
+   * narration mode with the keyboard threw the reader out of the fieldset every time.
+   *
+   * Moving `disabled` from the `<fieldset>` to each `<input>` alone would not have fixed it — a
+   * disabled input cannot hold focus either — so the fix is the same as the report's: remember which
+   * one was activated, and put focus back when the transition ends.
+   */
+  const radioRefs = useRef(new Map<string, HTMLInputElement>());
+  const [restoreFocusTo, setRestoreFocusTo] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Only once the write has finished: while `pending` the input is still disabled and `.focus()`
+    // would be a no-op.
+    if (pending || restoreFocusTo === null) return;
+    radioRefs.current.get(restoreFocusTo)?.focus();
+    setRestoreFocusTo(null);
+  }, [pending, restoreFocusTo]);
+
   const choose = (value: string) => {
     setSelected(value);
+    setRestoreFocusTo(value);
     startTransition(async () => {
       setOutcome(await send('/api/privacy/settings', 'PATCH', { llmMinimizationMode: value }));
     });
@@ -197,7 +239,15 @@ export function MinimizationControls({
 
   return (
     <div className="mt-5">
-      <fieldset disabled={!canEdit || pending} className="space-y-4">
+      {/*
+        `disabled` here covers only `!canEdit`, which is a *standing* state: a viewer never focuses
+        these, so nothing is taken away from anybody. The transient in-flight disable lives on the
+        individual inputs below, paired with the focus restore above — a `<fieldset disabled>` that
+        flickered on every write is what dropped focus to `<body>`.
+
+        `aria-busy` says a write is in flight without removing anything from the accessibility tree.
+      */}
+      <fieldset disabled={!canEdit} aria-busy={pending} className="space-y-4">
         <legend className="sr-only">How much a language model is shown</legend>
         {/* `id`/`htmlFor` rather than a wrapping label: the mode's title and its explanation are
             two blocks, and a label whose text is nested inside them is one a screen reader — and
@@ -211,6 +261,13 @@ export function MinimizationControls({
               name="llm-minimization-mode"
               value={option.value}
               checked={selected === option.value}
+              // The transient disable, on the input rather than the fieldset, so the effect above can
+              // give focus back to this exact radio when the write finishes.
+              disabled={pending}
+              ref={(node) => {
+                if (node === null) radioRefs.current.delete(option.value);
+                else radioRefs.current.set(option.value, node);
+              }}
               onChange={() => choose(option.value)}
               aria-describedby={`llm-mode-${option.value}-detail`}
               className="mt-1 accent-[var(--verified)]"
@@ -279,13 +336,17 @@ export function ChannelToggle({
 
   return (
     <div>
-      <button
-        type="button"
-        className="feedback-action"
-        onClick={toggle}
-        disabled={pending || !isPublic}
-        aria-pressed={isOn}
-      >
+      {/*
+        No `aria-pressed`.
+
+        This is an *action* button, not a toggle: its label names the act it performs — "read this
+        channel" / "stop reading this channel" — and that is the idiom the rest of the product uses.
+        Pairing a flipping label with `aria-pressed` announced the state twice and in opposite
+        senses: a screen reader read "stop reading this channel, pressed" when the channel *is* being
+        read, which is exactly backwards from how a pressed toggle is understood. A toggle may change
+        its name or its pressed state, never both.
+      */}
+      <button type="button" className="feedback-action" onClick={toggle} disabled={pending || !isPublic}>
         {pending ? 'saving…' : isOn ? 'stop reading this channel' : 'read this channel'}
       </button>
       {isPublic ? null : (
@@ -323,7 +384,10 @@ export function AnonymizeControl({
 
   return (
     <div>
-      <button type="button" className="feedback-action" onClick={act} disabled={pending} aria-pressed={isAnonymous}>
+      {/* An action button, not a toggle — see `ChannelToggle` for why `aria-pressed` is absent. The
+          label names the act and carries the person it acts on, which is the half a screen-reader
+          user needs when four of these sit in a list. */}
+      <button type="button" className="feedback-action" onClick={act} disabled={pending}>
         {pending
           ? 'saving…'
           : isAnonymous

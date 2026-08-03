@@ -21,6 +21,7 @@
     "baseUrl": ".",
     "paths": {
       "@compass/clock": ["packages/clock/src/index.ts"],
+      "@compass/observability": ["packages/observability/src/index.ts"],
       "@compass/connector-port/testkit": ["packages/connector-port/src/testkit/index.ts"],
       "@compass/connector-port": ["packages/connector-port/src/index.ts"],
       "@compass/seed-connector": ["packages/seed-connector/src/index.ts"],

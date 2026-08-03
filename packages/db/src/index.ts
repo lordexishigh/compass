@@ -311,6 +311,15 @@ export {
 } from './repositories/privacy.js';
 
 export {
+  failedDeliveryCount,
+  lastSuccessfulDeliveryAt,
+  lastSuccessfulIngestAt,
+} from './repositories/observability.js';
+
+// Deployment-wide rather than per-organization, which is why it is not a repository. See the file.
+export { readQueueDepth, type QueueDepth } from './queue-depth.js';
+
+export {
   listNarrationTraces,
   narrationTraceRowId,
   recordNarrationTraces,
