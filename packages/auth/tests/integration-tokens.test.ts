@@ -420,11 +420,34 @@ describe('the envelope, on its own', () => {
   });
 
   it('detects a single flipped bit in the ciphertext', () => {
+    /**
+     * The flip is applied to the decoded bytes and then re-encoded, not to the base64url text.
+     *
+     * Editing the last *character* of a base64url string does not reliably change the bytes it
+     * decodes to — the final character can carry padding bits that are discarded — so a text-level
+     * tamper was sometimes a no-op and this test failed roughly one run in three, on a fresh random
+     * IV each time. Flipping a byte is exact.
+     */
     const key = generateDataKey();
     const sealed = seal({ plaintext: GITHUB_TOKEN, key, context: ['x'] });
     const parts = sealed.split('.');
-    const body = parts[3]!;
-    parts[3] = `${body.slice(0, -1)}${body.slice(-1) === 'A' ? 'B' : 'A'}`;
+
+    const ciphertext = Buffer.from(parts[3]!, 'base64url');
+    ciphertext[0] = ciphertext[0]! ^ 0x01;
+    parts[3] = ciphertext.toString('base64url');
+
+    expect(() => unseal({ sealed: parts.join('.'), key, context: ['x'] })).toThrow(EnvelopeDecryptionError);
+  });
+
+  it('detects a flipped bit in the authentication tag as well', () => {
+    // The other half of GCM: a tampered tag must fail rather than being ignored.
+    const key = generateDataKey();
+    const sealed = seal({ plaintext: GITHUB_TOKEN, key, context: ['x'] });
+    const parts = sealed.split('.');
+
+    const tag = Buffer.from(parts[2]!, 'base64url');
+    tag[0] = tag[0]! ^ 0x01;
+    parts[2] = tag.toString('base64url');
 
     expect(() => unseal({ sealed: parts.join('.'), key, context: ['x'] })).toThrow(EnvelopeDecryptionError);
   });

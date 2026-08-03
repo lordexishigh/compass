@@ -115,6 +115,18 @@ export function FeedbackActions({ stableId, headline, offers, existing }: Feedba
               className="feedback-reason"
               value={reason}
               placeholder="Why? One line is enough."
+              /*
+                Focus follows the manager into the field that just appeared.
+
+                `jsx-a11y/no-autofocus` is right about the case it is named for — autofocus on page
+                load steals focus from a reader who has not asked for anything — and it stays an error
+                everywhere else. This is the opposite situation: the field exists *because* the
+                manager just pressed a verb, the button they pressed has been replaced by it, and
+                without moving focus their next Tab starts from wherever the removed button used to
+                be. That is a real focus-loss bug for a keyboard user, and WCAG 2.4.3 asks focus to
+                follow newly revealed content. Escape returns them, which the handler below does.
+              */
+              // eslint-disable-next-line jsx-a11y/no-autofocus -- focus follows the manager into the field their own keypress revealed; see above
               autoFocus
               onChange={(event) => setReason(event.target.value)}
               onKeyDown={(event) => {

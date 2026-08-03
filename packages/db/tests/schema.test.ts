@@ -42,6 +42,10 @@ describe('base schema convention', () => {
   it('defines every foundation and knowledge-model table', () => {
     expect(tableNames).toEqual([
       'absences',
+      // One row per person whose name Compass has stopped printing. Kept and stamped on a
+      // reversal rather than deleted, and — like `purge_runs` — deliberately without a foreign
+      // key: the record of an erasure has to survive the tenant's own erasure.
+      'anonymizations',
       // What somebody told us about Compass itself, as opposed to about a finding in a report.
       // Deliberately not `feedback_entries` and deliberately not an entity: nothing in the pipeline
       // reads it, so free text typed into a support box can never become an input to a verdict.
@@ -53,6 +57,10 @@ describe('base schema convention', () => {
       'commits',
       'companies',
       'corrections',
+      // A pending or completed self-serve deletion. Both deadlines are frozen onto the row at
+      // request time rather than derived on read: "you have seven days" is a promise made to a
+      // person, not a constant that may be edited later.
+      'deletion_requests',
       'delivery_log',
       'developers',
       'entity_versions',
@@ -66,6 +74,8 @@ describe('base schema convention', () => {
       'identity_links',
       'ingest_runs',
       'ingest_source_coverage',
+      // Integration OAuth and refresh tokens, sealed under a per-organization data key.
+      'integration_tokens',
       'manager_memos',
       'membership_team_scopes',
       'memberships',
@@ -74,9 +84,24 @@ describe('base schema convention', () => {
       'objective_scope_links',
       'objective_versions',
       'objectives',
+      // The privacy posture: the two retention windows and the narration mode. One row per
+      // organization, written when the organization is created rather than defaulted at read
+      // time, so an owner can tell a deliberate choice from an absent one.
+      'org_privacy_settings',
+      // The per-organization data key that wraps the integration tokens above.
+      'organization_data_keys',
       'organizations',
       'projects',
       'pull_requests',
+      // One row per retention purge, including the ones that deleted nothing: the retention
+      // page's "last purge" line is the only evidence an owner has that the job is alive.
+      // Deliberately without a foreign key to `organizations` — the record of a deletion must
+      // outlive the tenant it happened to.
+      'purge_runs',
+      // Verbatim chat message bodies, and the only table in Compass whose whole purpose is to
+      // be deleted. Every other artifact family is projected into a typed entity and the
+      // original discarded; a message's value is its prose, so there is nothing to project.
+      'raw_events',
       'recommendations',
       'release_tags',
       'report_item_evidence',
@@ -89,6 +114,9 @@ describe('base schema convention', () => {
       'sessions',
       'share_link_access',
       'share_links',
+      // Which chat conversations Compass reads, one named channel at a time. Carries a CHECK
+      // that makes a direct message or a private channel unenablable by any path.
+      'slack_channel_ingestion',
       'source_configs',
       'sprint_scope_changes',
       'sprints',

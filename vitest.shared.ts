@@ -16,6 +16,7 @@ const resolveToolSource = (relative: string): string =>
 
 export const compassAliases: ReadonlyArray<{ find: string; replacement: string }> = [
   { find: '@compass/smoke', replacement: resolveToolSource('smoke/src/index.ts') },
+  { find: '@compass/perf-budget', replacement: resolveToolSource('perf-budget/src/index.ts') },
   { find: '@compass/connector-port/testkit', replacement: resolveSource('connector-port/src/testkit/index.ts') },
   { find: '@compass/connector-port', replacement: resolveSource('connector-port/src/index.ts') },
   { find: '@compass/clock', replacement: resolveSource('clock/src/index.ts') },
@@ -28,6 +29,9 @@ export const compassAliases: ReadonlyArray<{ find: string; replacement: string }
   { find: '@compass/memos', replacement: resolveSource('memos/src/index.ts') },
   { find: '@compass/ingest', replacement: resolveSource('ingest/src/index.ts') },
   { find: '@compass/analysis', replacement: resolveSource('analysis/src/index.ts') },
+  // Ordered after `@compass/seed-connector` only by coincidence; what matters is that
+  // it precedes nothing it is a prefix of, and it is a prefix of nothing.
+  { find: '@compass/seed-snapshot', replacement: resolveSource('seed-snapshot/src/index.ts') },
   { find: '@compass/renderers', replacement: resolveSource('renderers/src/index.ts') },
   { find: '@compass/delivery/testkit', replacement: resolveSource('delivery/src/testkit/index.ts') },
   { find: '@compass/delivery', replacement: resolveSource('delivery/src/index.ts') },

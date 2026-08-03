@@ -57,11 +57,14 @@ function readDerivedWindow(
   const raw = body['derivedRetentionYears'];
 
   if (raw === null) return { value: null, present: true };
-  if (typeof raw !== 'number' || ![1, 3, 7].includes(raw)) {
+  // Checked against the exported choices rather than a literal, so adding a fourth window is one
+  // edit rather than two that could disagree. `null` is filtered out because it was handled above.
+  const years = DERIVED_RETENTION_CHOICES.filter((choice): choice is 1 | 3 | 7 => choice !== null);
+  if (typeof raw !== 'number' || !(years as readonly number[]).includes(raw)) {
     return {
       response: jsonError(
         'invalid_request',
-        '`derivedRetentionYears` must be 1, 3 or 7 — or `null` for indefinite, which is a deliberate choice rather ' +
+        `\`derivedRetentionYears\` must be ${years.join(', ')} — or \`null\` for indefinite, which is a deliberate choice rather ` +
           'than the absence of one. Reports are the product; deleting them early destroys the continuity the ' +
           'whole design rests on.',
         400,

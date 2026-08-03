@@ -1,11 +1,16 @@
 import { createHash, randomBytes } from 'node:crypto';
 
+
 import { formatCivilDate, instantFromEpochMillis, toEpochMillis, toIso, type Instant } from '@compass/clock';
 import {
   ACCOUNT_ERASURE_CATEGORIES,
   ERASURE_CATEGORIES,
   PRIVACY_DEFAULTS,
+  anonymizationRowId,
   countRawEvents,
+  deletionRequestRowId,
+  privacySettingsRowId,
+  slackChannelRowId,
   ensurePrivacySettings,
   findAnonymization,
   findDeletionRequestByUndoHash,
@@ -13,7 +18,6 @@ import {
   findOrganization,
   findUserById,
   insertDeletionRequest,
-  latestPurgeRun,
   listAnonymizations,
   listDeletionRequests,
   listPurgeRuns,
@@ -100,7 +104,7 @@ export interface PrivacyAdminView {
  * value nothing has written. It is idempotent and the row is created once.
  */
 export async function loadPrivacyAdminView(scoped: ScopedDb, now: Instant): Promise<PrivacyAdminView> {
-  const settings = await ensurePrivacySettings(scoped, { id: privacySettingsId(scoped.organizationId), at: now });
+  const settings = await ensurePrivacySettings(scoped, { id: privacySettingsRowId(scoped.organizationId), at: now });
   const organization = await findOrganization(scoped);
   const roster = await readRosterView(new KnowledgeStore(scoped), now);
   const anonymizations = await listAnonymizations(scoped);
@@ -144,26 +148,14 @@ export async function loadPrivacyAdminView(scoped: ScopedDb, now: Instant): Prom
 }
 
 /**
- * The settings row id, derived from the organization.
+ * The row-id derivations live in `@compass/db` and are re-exported here.
  *
- * Derived rather than random for the same reason every other Compass row id is: two
- * processes booting together must land on the same row, and `onConflictDoNothing` can only
- * do its job if both candidates share an id.
+ * Not a stylistic choice: `apps/worker`'s boot script writes the settings row too, and
+ * `onConflictDoNothing` can only turn that race into a no-op if both processes derive the
+ * *same* id. A second copy of the hash in this file would be a second id, and the loser of
+ * the boot race would fail on the unique constraint instead of finding the row.
  */
-export const privacySettingsId = (organizationId: string): string =>
-  deterministicId(`privacy-settings:${organizationId}`);
-
-/** A UUIDv5-shaped id from a namespaced string. */
-function deterministicId(seed: string): string {
-  const digest = createHash('sha1').update(`compass:privacy:${seed}`).digest();
-  const bytes = Uint8Array.prototype.slice.call(digest, 0, 16);
-  // Version 5, RFC 4122 variant, so the value is a well-formed UUID rather than 32 hex
-  // characters that happen to fit the column.
-  bytes[6] = ((bytes[6] ?? 0) & 0x0f) | 0x50;
-  bytes[8] = ((bytes[8] ?? 0) & 0x3f) | 0x80;
-  const hex = [...bytes].map((byte) => byte.toString(16).padStart(2, '0')).join('');
-  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
-}
+export { privacySettingsRowId };
 
 // ---------------------------------------------------------------------------
 // Settings writes
@@ -189,7 +181,7 @@ export async function saveRetention(
   now: Instant,
 ): Promise<RetentionView['llmMinimizationMode']> {
   const before = await ensurePrivacySettings(scoped, {
-    id: privacySettingsId(scoped.organizationId),
+    id: privacySettingsRowId(scoped.organizationId),
     at: now,
   });
 
@@ -253,7 +245,7 @@ export async function saveChannelIngestion(
   now: Instant,
 ): Promise<StoredSlackChannel> {
   const stored = await setSlackChannelIngestion(scoped, {
-    id: deterministicId(`channel:${scoped.organizationId}:${input.conversationKey}`),
+    id: slackChannelRowId(scoped.organizationId, input.conversationKey),
     conversationKey: input.conversationKey,
     conversationName: input.conversationName,
     conversationKind: input.conversationKind,
@@ -350,7 +342,7 @@ async function reservePseudonym(
     const candidate = pseudonymFor(salt === 0 ? input.developerKey : `${input.developerKey}#${salt}`);
     try {
       const stored = await recordAnonymization(scoped, {
-        id: deterministicId(`anonymization:${scoped.organizationId}:${input.developerKey}`),
+        id: anonymizationRowId(scoped.organizationId, input.developerKey),
         developerKey: input.developerKey,
         pseudonym: candidate,
         reason: input.reason,
@@ -483,7 +475,7 @@ export async function requestDeletion(
   const undoSecret = randomBytes(UNDO_TOKEN_BYTES).toString('base64url');
 
   const request = await insertDeletionRequest(scoped, {
-    id: deterministicId(`deletion:${scoped.organizationId}:${input.subjectKind}:${input.subjectId}:${toIso(now)}`),
+    id: deletionRequestRowId(scoped.organizationId, input.subjectKind, input.subjectId, toIso(now)),
     subjectKind: input.subjectKind,
     subjectId: input.subjectId,
     requestedByUserId: identity?.user.id ?? null,

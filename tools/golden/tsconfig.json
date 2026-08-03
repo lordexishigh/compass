@@ -1,0 +1,17 @@
+{
+  // Editor-only, like `tools/quality-gates`. `pnpm typecheck` checks this package
+  // through the root `tsconfig.tests.json` project, which is also what defines the
+  // `@compass/*` path mappings. Nothing here is emitted: `src/` is run with `tsx`.
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": false,
+    "incremental": false,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false,
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["vitest.config.ts", "src/**/*.ts", "tests/**/*.ts"]
+}

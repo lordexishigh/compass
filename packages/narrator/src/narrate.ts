@@ -1,4 +1,9 @@
-import type { SectionKey, StructuredReport } from '@compass/analysis';
+import {
+  DAILY_REPORT_WORD_BUDGET,
+  countWords,
+  type SectionKey,
+  type StructuredReport,
+} from '@compass/analysis';
 import { RENDERER_ID as TEMPLATE_RENDERER_ID, renderReport, type RenderedReport } from '@compass/renderers';
 
 import { describeVerdict, validateGrounding, type GroundingVerdict } from './grounding.js';
@@ -466,6 +471,37 @@ export async function narrateReport(
       prose: restoreText(attempt.prose, redactions),
       attempts: attempt.attempts,
     });
+  }
+
+  /**
+   * The last gate before narrated prose is accepted: the word ceiling.
+   *
+   * Checked over the whole report rather than per section, because the budget is a fact about the
+   * document a manager reads and six sections that are each individually reasonable can still add up
+   * to something nobody finishes. Checked *after* the loop for the same reason — five accepted
+   * sections and a sixth that pushed the total over is still a report over the ceiling.
+   *
+   * It fails closed exactly as a grounding rejection does, and deliberately reuses the same
+   * `outcome: 'rejected'` and the same fallback shape: from the reader's side these are the same
+   * event — the model wrote something Compass would not publish — and giving them two different
+   * dispositions would mean two disclosure notes saying the same thing differently.
+   */
+  const narratedWords = countWords(narrated.map((section) => section.prose).join('\n\n'));
+  if (narratedWords > DAILY_REPORT_WORD_BUDGET) {
+    return {
+      rendererId: TEMPLATE_RENDERER_ID,
+      fallback: {
+        reason:
+          `The narrated report ran to ${narratedWords} words against a ceiling of ${DAILY_REPORT_WORD_BUDGET}, so ` +
+          'Compass sent its own deterministic render instead. Every figure, link and notch is complete; only the ' +
+          'wording is templated.',
+        sectionKey: null,
+        outcome: 'rejected',
+      },
+      sections: templateSections(),
+      rendered,
+      traces,
+    };
   }
 
   return { rendererId: NARRATED_RENDERER_ID, fallback: null, sections: narrated, rendered, traces };

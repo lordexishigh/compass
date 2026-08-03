@@ -191,6 +191,45 @@ REST/JSON over Next.js route handlers, typed end-to-end with Zod schemas shared 
 - Web UI is server-rendered React with markdown-with-allowlist and no charting dependency at all, which makes the prose-first/no-chart constraint a dependency fact plus a render assertion rather than a design guideline.
 - One Docker image run as two processes (web, worker) and one docker compose file used identically by developers and CI: the cold-start smoke test exercises the same artifact that ships.
 
+## Effective dating and the freeze rule
+
+The goal hierarchy — Company → Objective → Sprint goal, plus the links from work to the goal it
+serves — is **effective-dated**, and a report resolves it *as it stood at the report's own instant*.
+
+**A stated revision is never rewritten.** Editing a goal appends a new revision with a new
+`effective_from`; archiving one appends a revision that closes it. The rows a past report resolved
+against are still there afterwards, unchanged, which is what makes an archived report readable six
+weeks later as the document a manager actually read rather than as today's beliefs projected
+backwards.
+
+The rule has two halves, and which is which is the thing to be precise about:
+
+- **Frozen: the revision that was effective at that instant.** `goalHierarchyAt(nodes, revisions,
+  instant)` selects the revision whose effective window contains the instant, so re-running a past
+  report resolves the same chain it resolved the first time. A manager who renamed an objective last
+  Thursday has not changed what Tuesday's report said about it.
+- **Re-evaluated: the alignment verdict.** The *matching* — which commits serve which goal, and at
+  what confidence — is recomputed from the snapshot every run, because that is analysis rather than
+  record. So a manager's edit to the hierarchy takes effect on the next report without rewriting any
+  earlier one.
+
+An observed sync never supersedes a declared revision: `syncGoalHierarchy` projects what the
+connector saw, and a manager's own edit outranks it, because the edit is the more recent statement of
+intent by a human about their own organization.
+
+When new data contradicts a belief Compass has already stated, the contradiction is recorded as a
+**Correction** row rather than by editing the belief. `corrections` is append-only — the scoped-query
+layer refuses an update or a delete on it — so "reported blocked yesterday, actually merged" is a
+fact the product can state, with the prior belief quoted verbatim beside the new one.
+
+The same rule governs a **withdrawn name**, which is why anonymization is two substitutions rather
+than one edit. A report generated after the withdrawal never contains the name — `developerName`
+returns the pseudonym, and it is the single choke point every name in every section flows through. A
+report generated *before* it keeps its rows byte-for-byte and renders "a former team member" at read
+time, with every ticket key, pull request number and count intact. Rewriting the stored rows would
+break the content hash and make an archived report disagree with the copy in the manager's inbox;
+losing the receipts would turn "stop printing my name" into "delete a day of the team's evidence".
+
 ## Assumptions
 
 - Scale for the MVP and the year after it: tens of organizations, each with 1–3 teams, 5–8 engineers per team, tens of repos and a few thousand tickets — a single Postgres instance and one small app instance are sufficient, and no load-testing infrastructure is in scope.

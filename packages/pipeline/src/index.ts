@@ -19,6 +19,7 @@ export {
   NON_SEMANTIC_FIELDS,
   NonSerializableValueError,
   canonicalJson,
+  canonicalPrettyJson,
   isSameReport,
   reportHash,
 } from './canonical-json.js';

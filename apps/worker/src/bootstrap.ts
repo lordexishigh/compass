@@ -14,7 +14,9 @@ import {
   ScopedDb,
   createDatabase,
   ensureOrganization,
+  ensurePrivacySettings,
   orgScope,
+  privacySettingsRowId,
   resolveDatabaseUrl,
   runMigrations,
 } from '@compass/db';
@@ -52,6 +54,17 @@ export interface BootstrapResult {
   readonly rosterChanged: number;
   /** The first owner. Without this the deployment could authenticate and nobody could sign in. */
   readonly owner: BootstrapOwnerResult;
+  /**
+   * The privacy posture in force, echoed so the boot log states it.
+   *
+   * Printed rather than assumed: an operator reading the boot output should be able to see how
+   * long this deployment keeps chat and whether names go to a model, without opening a page.
+   */
+  readonly privacy: {
+    readonly rawEventRetentionDays: number;
+    readonly derivedRetentionYears: number | null;
+    readonly llmMinimizationMode: string;
+  };
 }
 
 /**
@@ -129,6 +142,23 @@ export async function bootstrap(): Promise<BootstrapResult> {
     });
 
     const scoped = new ScopedDb(handle.db, orgScope(bundle.organizationId));
+
+    /**
+     * The privacy posture, written at creation rather than defaulted on first read.
+     *
+     * Here beside the roster and the first owner, because it belongs to the same class of thing:
+     * something the product cannot run honestly without, and which nobody should have to know a
+     * command for. A retention window that only came into existence when somebody first opened
+     * the privacy page would mean an organization ran for a month with no window — and the
+     * purge, reading a missing row, would have been applying a default nobody had been shown.
+     *
+     * Idempotent, like everything else in this function.
+     */
+    const privacy = await ensurePrivacySettings(scoped, {
+      id: privacySettingsRowId(bundle.organizationId),
+      at: bundle.window.start,
+    });
+
     const store = new KnowledgeStore(scoped);
     const roster = rosterFromFixtures(fixtures, SEED_TIMEZONE, bundle.window.start);
     const provisioned = await provisionRoster(store, roster);
@@ -150,6 +180,11 @@ export async function bootstrap(): Promise<BootstrapResult> {
       rosterCreated: provisioned.created,
       rosterChanged: provisioned.changed,
       owner,
+      privacy: {
+        rawEventRetentionDays: privacy.rawEventRetentionDays,
+        derivedRetentionYears: privacy.derivedRetentionYears,
+        llmMinimizationMode: privacy.llmMinimizationMode,
+      },
     };
   } finally {
     await handle.close();

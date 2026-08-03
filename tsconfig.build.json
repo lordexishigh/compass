@@ -11,11 +11,13 @@
     { "path": "packages/memos" },
     { "path": "packages/ingest" },
     { "path": "packages/analysis" },
+    { "path": "packages/seed-snapshot" },
     { "path": "packages/renderers" },
     { "path": "packages/delivery" },
     { "path": "packages/narrator" },
     { "path": "packages/pipeline" },
     { "path": "apps/worker" },
-    { "path": "tools/smoke" }
+    { "path": "tools/smoke" },
+    { "path": "tools/perf-budget" }
   ]
 }

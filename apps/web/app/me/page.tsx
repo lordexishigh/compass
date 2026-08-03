@@ -1,6 +1,7 @@
 import { formatCivilDate, formatCivilDateTime } from '@compass/clock';
 import { headers } from 'next/headers';
 
+import { DeletionControls } from '../../components/privacy-controls';
 import { StatedFailure } from '../../components/stated-failure';
 import { pageAccess } from '../../lib/auth/guard';
 import { loadAboutMe, type AboutMeView } from '../../lib/privacy-source';
@@ -292,11 +293,23 @@ export default async function AboutMePage() {
           and deleting them would take a day out of somebody else&apos;s history. Anonymization is the instrument for
           the name.
         </p>
-        <p className="mt-5 flex flex-wrap gap-x-5 text-[13px]">
-          <a href="/account" className="tertiary-action">
-            delete your account
-          </a>
+        <p className="prose-narration mt-3">
+          Deleting enters a seven-day grace period and emails you a link that cancels it. Nothing is removed until
+          that period ends, and you can take a copy of everything first.
         </p>
+        {/*
+          The control itself, on this page rather than only on `/privacy`.
+
+          `/api/privacy/deletion` admits every seat and decides the *subject* from the session, so
+          a member has always been permitted to delete their own account — but the only control was
+          on a screen their role cannot open, which made the permission unreachable. This is what
+          makes "in-app deletion" true for the people most likely to want it.
+
+          `canDeleteOrganization` is false unconditionally here: ending the product for everybody is
+          not an act that belongs on a page about one person, and the route refuses it for anyone but
+          an owner regardless.
+        */}
+        <DeletionControls canDeleteOrganization={false} canExport={access.principal === 'owner'} />
       </Section>
 
       <p className="mt-14 font-serif text-[12.5px] italic text-ink-faint">

@@ -31,13 +31,15 @@
       "@compass/memos": ["packages/memos/src/index.ts"],
       "@compass/ingest": ["packages/ingest/src/index.ts"],
       "@compass/analysis": ["packages/analysis/src/index.ts"],
+      "@compass/seed-snapshot": ["packages/seed-snapshot/src/index.ts"],
       "@compass/renderers": ["packages/renderers/src/index.ts"],
       "@compass/delivery/testkit": ["packages/delivery/src/testkit/index.ts"],
       "@compass/delivery": ["packages/delivery/src/index.ts"],
       "@compass/narrator/testkit": ["packages/narrator/src/testkit/index.ts"],
       "@compass/narrator": ["packages/narrator/src/index.ts"],
       "@compass/pipeline": ["packages/pipeline/src/index.ts"],
-      "@compass/smoke": ["tools/smoke/src/index.ts"]
+      "@compass/smoke": ["tools/smoke/src/index.ts"],
+      "@compass/perf-budget": ["tools/perf-budget/src/index.ts"]
     }
   },
   "include": [
@@ -48,8 +50,14 @@
     "apps/worker/tests/**/*.ts",
     "tools/quality-gates/vitest.config.ts",
     "tools/quality-gates/tests/**/*.ts",
+    "tools/golden/vitest.config.ts",
+    "tools/golden/src/**/*.ts",
+    "tools/golden/tests/**/*.ts",
     "tools/smoke/vitest.config.ts",
-    "tools/smoke/tests/**/*.ts"
+    "tools/smoke/tests/**/*.ts",
+    "tools/perf-budget/vitest.config.ts",
+    "tools/perf-budget/src/**/*.ts",
+    "tools/perf-budget/tests/**/*.ts"
   ],
   "exclude": ["tools/quality-gates/fixtures/**"]
 }

@@ -16,10 +16,16 @@ const ruleTester = new RuleTester({
 });
 
 describe('the plugin surface', () => {
-  it('exports exactly the four build gates', () => {
+  it('exports exactly the five build gates', () => {
     expect(Object.keys(plugin.rules).sort()).toEqual([
       'no-analysis-io',
       'no-clock-instantiation',
+      // `beta-security-hardening`: no credential in a log line or a response body, anywhere in
+      // the workspace. Its behaviour is asserted through the real workspace ESLint in
+      // `tools/quality-gates/tests/security-posture.test.ts` rather than with a RuleTester here,
+      // because the claim that matters is the *wiring* — a rule registered against the wrong glob
+      // passes every RuleTester and protects nothing.
+      'no-secret-disclosure',
       'no-system-clock',
       'no-time-library-imports',
     ]);

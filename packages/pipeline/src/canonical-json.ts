@@ -34,7 +34,22 @@ export function canonicalJson(value: unknown, options: { readonly exclude?: read
   return serialize(value, '$', exclude);
 }
 
-function serialize(value: unknown, path: string, exclude: ReadonlySet<string>): string {
+/**
+ * One walk, two shapes.
+ *
+ * `indent` empty means the compact form the hash is computed over; a non-empty
+ * `indent` means the pretty form a fixture is stored in. Every other decision —
+ * key order, the exclusion set, which values are refused outright — is shared,
+ * which is what keeps a golden fixture and a determinism hash from disagreeing
+ * about anything except whitespace.
+ */
+function serialize(
+  value: unknown,
+  path: string,
+  exclude: ReadonlySet<string>,
+  indent = '',
+  current = '',
+): string {
   if (value === null) return 'null';
 
   const kind = typeof value;
@@ -53,8 +68,17 @@ function serialize(value: unknown, path: string, exclude: ReadonlySet<string>): 
     throw new NonSerializableValueError(path, `is a ${kind}`);
   }
 
+  const inner = current + indent;
+  // An empty container is `[]` / `{}` in both forms: a newline around nothing is
+  // whitespace a reviewer has to skip past.
+  const open = (bracket: '[' | '{') => (indent === '' ? bracket : `${bracket}\n${inner}`);
+  const close = (bracket: ']' | '}') => (indent === '' ? bracket : `\n${current}${bracket}`);
+  const separator = indent === '' ? ',' : `,\n${inner}`;
+
   if (Array.isArray(value)) {
-    return `[${value.map((entry, index) => serialize(entry, `${path}[${index}]`, exclude)).join(',')}]`;
+    if (value.length === 0) return '[]';
+    const entries = value.map((entry, index) => serialize(entry, `${path}[${index}]`, exclude, indent, inner));
+    return `${open('[')}${entries.join(separator)}${close(']')}`;
   }
 
   if (value instanceof Date) {
@@ -65,9 +89,44 @@ function serialize(value: unknown, path: string, exclude: ReadonlySet<string>): 
     .filter(([key, nested]) => !exclude.has(key) && nested !== undefined)
     .sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0));
 
-  return `{${entries
-    .map(([key, nested]) => `${JSON.stringify(key)}:${serialize(nested, `${path}.${key}`, exclude)}`)
-    .join(',')}}`;
+  if (entries.length === 0) return '{}';
+  const gap = indent === '' ? ':' : ': ';
+  const rendered = entries.map(
+    ([key, nested]) => `${JSON.stringify(key)}${gap}${serialize(nested, `${path}.${key}`, exclude, indent, inner)}`,
+  );
+  return `${open('{')}${rendered.join(separator)}${close('}')}`;
+}
+
+/**
+ * The same canonical form, pretty-printed for a checked-in fixture.
+ *
+ * ## Why this lives beside `canonicalJson` rather than in the golden tooling
+ *
+ * A golden fixture and a determinism hash have to disagree about exactly one
+ * thing — whitespace — and about nothing else. Key order, the non-semantic
+ * allowlist and the refusal to serialise a `Date` or a `NaN` must be identical, or
+ * `test:golden` and the determinism gate would be checking two different notions
+ * of "the same report" and could pass and fail independently. So both walk the same
+ * `serialize` function through one `indent` parameter; there is no second
+ * implementation to keep in step.
+ *
+ * ## Why pretty at all
+ *
+ * A fixture is reviewed as a diff. Compact JSON puts a whole report on one line, so
+ * changing one headline shows up as a single unreadable modified line — the "opaque
+ * blob" the acceptance criteria rule out. Two-space indent with one value per line
+ * makes `git diff` name the field that moved, which is the entire point of checking
+ * the fixtures in.
+ *
+ * The trailing newline is deliberate: without it every editor and every `>>` append
+ * produces a spurious "\ No newline at end of file" line in the diff.
+ */
+export function canonicalPrettyJson(
+  value: unknown,
+  options: { readonly exclude?: readonly string[] } = {},
+): string {
+  const exclude = new Set(options.exclude ?? []);
+  return `${serialize(value, '$', exclude, '  ', '')}\n`;
 }
 
 /**

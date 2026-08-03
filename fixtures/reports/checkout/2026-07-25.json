@@ -1,0 +1,6089 @@
+{
+  "changeSummary": {
+    "counts": {
+      "improved": 0,
+      "new": 22,
+      "resolved": 1,
+      "unchanged": 0,
+      "worsened": 0
+    },
+    "departedStableIds": [],
+    "hasPriorReport": false,
+    "nothingMaterialChanged": false,
+    "priorInstant": null,
+    "statement": "This is the first report Compass has generated for this scope, so everything below is stated for the first time rather than as news."
+  },
+  "coverage": [],
+  "findings": {
+    "alignment": {
+      "coverage": [
+        {
+          "alignmentClass": "configured",
+          "count": 1,
+          "subjectKind": "commit"
+        },
+        {
+          "alignmentClass": "inferred",
+          "count": 1,
+          "subjectKind": "commit"
+        },
+        {
+          "alignmentClass": "semantic",
+          "count": 1,
+          "subjectKind": "commit"
+        },
+        {
+          "alignmentClass": "unattributed",
+          "count": 1,
+          "subjectKind": "commit"
+        },
+        {
+          "alignmentClass": "configured",
+          "count": 12,
+          "subjectKind": "ticket"
+        },
+        {
+          "alignmentClass": "inferred",
+          "count": 0,
+          "subjectKind": "ticket"
+        },
+        {
+          "alignmentClass": "semantic",
+          "count": 0,
+          "subjectKind": "ticket"
+        },
+        {
+          "alignmentClass": "unattributed",
+          "count": 0,
+          "subjectKind": "ticket"
+        }
+      ],
+      "goalNodeCount": 15,
+      "hierarchyResolvedAt": 1784970000000,
+      "resolutions": [
+        {
+          "alignmentClass": "inferred",
+          "at": 1784863600000,
+          "chainNodeIds": [
+            "CHK/Sprint 16",
+            "OBJ-Q3-CHK",
+            "OBJ-CO-1"
+          ],
+          "confidence": 1,
+          "evidence": {
+            "chainNodeIds": [
+              "CHK/Sprint 16",
+              "OBJ-Q3-CHK",
+              "OBJ-CO-1"
+            ],
+            "chainTitles": [
+              "Roll guest checkout out to the first merchant cohort",
+              "Ship guest checkout to every merchant",
+              "Make Northwind the fastest way to take a payment on the web"
+            ],
+            "matchedIn": "branch_name",
+            "matchedOffset": 8,
+            "matchedSubstring": "CHK-313",
+            "searchedText": "feature/CHK-313-payment-sheet-flashes-before",
+            "tier": "inferred",
+            "via": "ticket_key_in_branch"
+          },
+          "evidenceRefs": [
+            {
+              "kind": "issue",
+              "label": "CHK-313",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-313"
+            },
+            {
+              "kind": "commit",
+              "label": "63e334a",
+              "sourceKey": "code",
+              "sourceRecordId": "checkout-web@63e334a"
+            }
+          ],
+          "nodeId": "CHK/Sprint 16",
+          "nodeRevision": 1,
+          "nodeTitle": "Roll guest checkout out to the first merchant cohort",
+          "objectiveNodeId": "OBJ-Q3-CHK",
+          "objectiveTitle": "Ship guest checkout to every merchant",
+          "offGoalCandidate": null,
+          "servesCurrentObjective": true,
+          "subjectKey": "checkout-web@63e334a",
+          "subjectKind": "commit",
+          "subjectLabel": "63e334a",
+          "subjectText": "pin the rounding mode to the ledger's",
+          "threshold": 0.3
+        },
+        {
+          "alignmentClass": "unattributed",
+          "at": 1784882400000,
+          "chainNodeIds": [],
+          "confidence": 0,
+          "evidence": {
+            "comparedTextA": "silence a noisy linter rule",
+            "comparedTextB": null,
+            "matchedTokens": [],
+            "question": "What was this commit for?",
+            "score": 0,
+            "threshold": 0.3,
+            "tier": "unattributed"
+          },
+          "evidenceRefs": [
+            {
+              "kind": "commit",
+              "label": "cde774d",
+              "sourceKey": "code",
+              "sourceRecordId": "checkout-web@cde774d"
+            }
+          ],
+          "nodeId": null,
+          "nodeRevision": null,
+          "nodeTitle": null,
+          "objectiveNodeId": null,
+          "objectiveTitle": null,
+          "offGoalCandidate": null,
+          "servesCurrentObjective": null,
+          "subjectKey": "checkout-web@cde774d",
+          "subjectKind": "commit",
+          "subjectLabel": "cde774d",
+          "subjectText": "silence a noisy linter rule",
+          "threshold": 0.3
+        },
+        {
+          "alignmentClass": "configured",
+          "at": 1784932080000,
+          "chainNodeIds": [
+            "CHK/Sprint 16",
+            "OBJ-Q3-CHK",
+            "OBJ-CO-1"
+          ],
+          "confidence": 1,
+          "evidence": {
+            "chainNodeIds": [
+              "CHK/Sprint 16",
+              "OBJ-Q3-CHK",
+              "OBJ-CO-1"
+            ],
+            "chainTitles": [
+              "Roll guest checkout out to the first merchant cohort",
+              "Ship guest checkout to every merchant",
+              "Make Northwind the fastest way to take a payment on the web"
+            ],
+            "matchedIn": "commit_message",
+            "matchedOffset": 0,
+            "matchedSubstring": "CHK-316",
+            "searchedText": "CHK-316 skip the partition when the snapshot is absent",
+            "tier": "configured",
+            "via": "ticket_sprint_goal"
+          },
+          "evidenceRefs": [
+            {
+              "kind": "issue",
+              "label": "CHK-316",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-316"
+            },
+            {
+              "kind": "commit",
+              "label": "dc31b6f",
+              "sourceKey": "code",
+              "sourceRecordId": "checkout-web@dc31b6f"
+            }
+          ],
+          "nodeId": "CHK/Sprint 16",
+          "nodeRevision": 1,
+          "nodeTitle": "Roll guest checkout out to the first merchant cohort",
+          "objectiveNodeId": "OBJ-Q3-CHK",
+          "objectiveTitle": "Ship guest checkout to every merchant",
+          "offGoalCandidate": null,
+          "servesCurrentObjective": true,
+          "subjectKey": "checkout-web@dc31b6f",
+          "subjectKind": "commit",
+          "subjectLabel": "dc31b6f",
+          "subjectText": "CHK-316 skip the partition when the snapshot is absent",
+          "threshold": 0.3
+        },
+        {
+          "alignmentClass": "semantic",
+          "at": 1784894160000,
+          "chainNodeIds": [
+            "OBJ-Q3-PLAT",
+            "OBJ-CO-1"
+          ],
+          "confidence": 0.4286,
+          "evidence": {
+            "chainNodeIds": [
+              "OBJ-Q3-PLAT",
+              "OBJ-CO-1"
+            ],
+            "chainTitles": [
+              "Cut p95 payment gateway latency below 400 ms",
+              "Make Northwind the fastest way to take a payment on the web"
+            ],
+            "comparedTextA": "reduce payment gateway latency on the hot path",
+            "comparedTextB": "Cut p95 payment gateway latency below 400 ms",
+            "matchedTokens": [
+              "gateway",
+              "latency",
+              "payment"
+            ],
+            "score": 0.4286,
+            "threshold": 0.3,
+            "tier": "semantic"
+          },
+          "evidenceRefs": [
+            {
+              "kind": "commit",
+              "label": "e5faf2a",
+              "sourceKey": "code",
+              "sourceRecordId": "checkout-web@e5faf2a"
+            }
+          ],
+          "nodeId": "OBJ-Q3-PLAT",
+          "nodeRevision": 1,
+          "nodeTitle": "Cut p95 payment gateway latency below 400 ms",
+          "objectiveNodeId": "OBJ-Q3-PLAT",
+          "objectiveTitle": "Cut p95 payment gateway latency below 400 ms",
+          "offGoalCandidate": null,
+          "servesCurrentObjective": true,
+          "subjectKey": "checkout-web@e5faf2a",
+          "subjectKind": "commit",
+          "subjectLabel": "e5faf2a",
+          "subjectText": "reduce payment gateway latency on the hot path",
+          "threshold": 0.3
+        },
+        {
+          "alignmentClass": "configured",
+          "at": 1779120180000,
+          "chainNodeIds": [
+            "CHK/Sprint 12",
+            "OBJ-Q3-CHK",
+            "OBJ-CO-1"
+          ],
+          "confidence": 1,
+          "evidence": {
+            "chainNodeIds": [
+              "CHK/Sprint 12",
+              "OBJ-Q3-CHK",
+              "OBJ-CO-1"
+            ],
+            "chainTitles": [
+              "Ship the guest checkout address form",
+              "Ship guest checkout to every merchant",
+              "Make Northwind the fastest way to take a payment on the web"
+            ],
+            "matchedIn": null,
+            "matchedOffset": null,
+            "matchedSubstring": null,
+            "searchedText": null,
+            "tier": "configured",
+            "via": "ticket_sprint_goal"
+          },
+          "evidenceRefs": [
+            {
+              "kind": "issue",
+              "label": "CHK-202",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-202"
+            }
+          ],
+          "nodeId": "CHK/Sprint 12",
+          "nodeRevision": 1,
+          "nodeTitle": "Ship the guest checkout address form",
+          "objectiveNodeId": "OBJ-Q3-CHK",
+          "objectiveTitle": "Ship guest checkout to every merchant",
+          "offGoalCandidate": null,
+          "servesCurrentObjective": true,
+          "subjectKey": "CHK-202",
+          "subjectKind": "ticket",
+          "subjectLabel": "CHK-202",
+          "subjectText": "Declined card message names the wrong field",
+          "threshold": 0.3
+        },
+        {
+          "alignmentClass": "configured",
+          "at": 1779458220000,
+          "chainNodeIds": [
+            "CHK/Sprint 12",
+            "OBJ-Q3-CHK",
+            "OBJ-CO-1"
+          ],
+          "confidence": 1,
+          "evidence": {
+            "chainNodeIds": [
+              "CHK/Sprint 12",
+              "OBJ-Q3-CHK",
+              "OBJ-CO-1"
+            ],
+            "chainTitles": [
+              "Ship the guest checkout address form",
+              "Ship guest checkout to every merchant",
+              "Make Northwind the fastest way to take a payment on the web"
+            ],
+            "matchedIn": null,
+            "matchedOffset": null,
+            "matchedSubstring": null,
+            "searchedText": null,
+            "tier": "configured",
+            "via": "ticket_sprint_goal"
+          },
+          "evidenceRefs": [
+            {
+              "kind": "issue",
+              "label": "CHK-208",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-208"
+            }
+          ],
+          "nodeId": "CHK/Sprint 12",
+          "nodeRevision": 1,
+          "nodeTitle": "Ship the guest checkout address form",
+          "objectiveNodeId": "OBJ-Q3-CHK",
+          "objectiveTitle": "Ship guest checkout to every merchant",
+          "offGoalCandidate": null,
+          "servesCurrentObjective": true,
+          "subjectKey": "CHK-208",
+          "subjectKind": "ticket",
+          "subjectLabel": "CHK-208",
+          "subjectText": "Postcode lookup times out without a fallback",
+          "threshold": 0.3
+        },
+        {
+          "alignmentClass": "configured",
+          "at": 1779538920000,
+          "chainNodeIds": [
+            "CHK/Sprint 12",
+            "OBJ-Q3-CHK",
+            "OBJ-CO-1"
+          ],
+          "confidence": 1,
+          "evidence": {
+            "chainNodeIds": [
+              "CHK/Sprint 12",
+              "OBJ-Q3-CHK",
+              "OBJ-CO-1"
+            ],
+            "chainTitles": [
+              "Ship the guest checkout address form",
+              "Ship guest checkout to every merchant",
+              "Make Northwind the fastest way to take a payment on the web"
+            ],
+            "matchedIn": null,
+            "matchedOffset": null,
+            "matchedSubstring": null,
+            "searchedText": null,
+            "tier": "configured",
+            "via": "ticket_sprint_goal"
+          },
+          "evidenceRefs": [
+            {
+              "kind": "issue",
+              "label": "CHK-210",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-210"
+            }
+          ],
+          "nodeId": "CHK/Sprint 12",
+          "nodeRevision": 1,
+          "nodeTitle": "Ship the guest checkout address form",
+          "objectiveNodeId": "OBJ-Q3-CHK",
+          "objectiveTitle": "Ship guest checkout to every merchant",
+          "offGoalCandidate": null,
+          "servesCurrentObjective": true,
+          "subjectKey": "CHK-210",
+          "subjectKind": "ticket",
+          "subjectLabel": "CHK-210",
+          "subjectText": "Apple wallet button renders on unsupported browsers",
+          "threshold": 0.3
+        },
+        {
+          "alignmentClass": "configured",
+          "at": 1781719140000,
+          "chainNodeIds": [
+            "CHK/Sprint 14",
+            "OBJ-Q3-CHK",
+            "OBJ-CO-1"
+          ],
+          "confidence": 1,
+          "evidence": {
+            "chainNodeIds": [
+              "CHK/Sprint 14",
+              "OBJ-Q3-CHK",
+              "OBJ-CO-1"
+            ],
+            "chainTitles": [
+              "Guest checkout survives a declined card",
+              "Ship guest checkout to every merchant",
+              "Make Northwind the fastest way to take a payment on the web"
+            ],
+            "matchedIn": null,
+            "matchedOffset": null,
+            "matchedSubstring": null,
+            "searchedText": null,
+            "tier": "configured",
+            "via": "ticket_sprint_goal"
+          },
+          "evidenceRefs": [
+            {
+              "kind": "issue",
+              "label": "CHK-253",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-253"
+            }
+          ],
+          "nodeId": "CHK/Sprint 14",
+          "nodeRevision": 1,
+          "nodeTitle": "Guest checkout survives a declined card",
+          "objectiveNodeId": "OBJ-Q3-CHK",
+          "objectiveTitle": "Ship guest checkout to every merchant",
+          "offGoalCandidate": null,
+          "servesCurrentObjective": true,
+          "subjectKey": "CHK-253",
+          "subjectKind": "ticket",
+          "subjectLabel": "CHK-253",
+          "subjectText": "Mobile keyboard covers the pay button for large merchants",
+          "threshold": 0.3
+        },
+        {
+          "alignmentClass": "configured",
+          "at": 1781955480000,
+          "chainNodeIds": [
+            "CHK/Sprint 14",
+            "OBJ-Q3-CHK",
+            "OBJ-CO-1"
+          ],
+          "confidence": 1,
+          "evidence": {
+            "chainNodeIds": [
+              "CHK/Sprint 14",
+              "OBJ-Q3-CHK",
+              "OBJ-CO-1"
+            ],
+            "chainTitles": [
+              "Guest checkout survives a declined card",
+              "Ship guest checkout to every merchant",
+              "Make Northwind the fastest way to take a payment on the web"
+            ],
+            "matchedIn": null,
+            "matchedOffset": null,
+            "matchedSubstring": null,
+            "searchedText": null,
+            "tier": "configured",
+            "via": "ticket_sprint_goal"
+          },
+          "evidenceRefs": [
+            {
+              "kind": "issue",
+              "label": "CHK-259",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-259"
+            }
+          ],
+          "nodeId": "CHK/Sprint 14",
+          "nodeRevision": 1,
+          "nodeTitle": "Guest checkout survives a declined card",
+          "objectiveNodeId": "OBJ-Q3-CHK",
+          "objectiveTitle": "Ship guest checkout to every merchant",
+          "offGoalCandidate": null,
+          "servesCurrentObjective": true,
+          "subjectKey": "CHK-259",
+          "subjectKind": "ticket",
+          "subjectLabel": "CHK-259",
+          "subjectText": "Guest order cannot be claimed after sign-up for large merchants",
+          "threshold": 0.3
+        },
+        {
+          "alignmentClass": "configured",
+          "at": 1782231660000,
+          "chainNodeIds": [
+            "CHK/Sprint 14",
+            "OBJ-Q3-CHK",
+            "OBJ-CO-1"
+          ],
+          "confidence": 1,
+          "evidence": {
+            "chainNodeIds": [
+              "CHK/Sprint 14",
+              "OBJ-Q3-CHK",
+              "OBJ-CO-1"
+            ],
+            "chainTitles": [
+              "Guest checkout survives a declined card",
+              "Ship guest checkout to every merchant",
+              "Make Northwind the fastest way to take a payment on the web"
+            ],
+            "matchedIn": null,
+            "matchedOffset": null,
+            "matchedSubstring": null,
+            "searchedText": null,
+            "tier": "configured",
+            "via": "ticket_sprint_goal"
+          },
+          "evidenceRefs": [
+            {
+              "kind": "issue",
+              "label": "CHK-263",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-263"
+            }
+          ],
+          "nodeId": "CHK/Sprint 14",
+          "nodeRevision": 1,
+          "nodeTitle": "Guest checkout survives a declined card",
+          "objectiveNodeId": "OBJ-Q3-CHK",
+          "objectiveTitle": "Ship guest checkout to every merchant",
+          "offGoalCandidate": null,
+          "servesCurrentObjective": true,
+          "subjectKey": "CHK-263",
+          "subjectKind": "ticket",
+          "subjectLabel": "CHK-263",
+          "subjectText": "Focus ring is invisible on the dark theme for large merchants",
+          "threshold": 0.3
+        },
+        {
+          "alignmentClass": "configured",
+          "at": 1782553080000,
+          "chainNodeIds": [
+            "CHK/Sprint 14",
+            "OBJ-Q3-CHK",
+            "OBJ-CO-1"
+          ],
+          "confidence": 1,
+          "evidence": {
+            "chainNodeIds": [
+              "CHK/Sprint 14",
+              "OBJ-Q3-CHK",
+              "OBJ-CO-1"
+            ],
+            "chainTitles": [
+              "Guest checkout survives a declined card",
+              "Ship guest checkout to every merchant",
+              "Make Northwind the fastest way to take a payment on the web"
+            ],
+            "matchedIn": null,
+            "matchedOffset": null,
+            "matchedSubstring": null,
+            "searchedText": null,
+            "tier": "configured",
+            "via": "ticket_sprint_goal"
+          },
+          "evidenceRefs": [
+            {
+              "kind": "issue",
+              "label": "CHK-271",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-271"
+            }
+          ],
+          "nodeId": "CHK/Sprint 14",
+          "nodeRevision": 1,
+          "nodeTitle": "Guest checkout survives a declined card",
+          "objectiveNodeId": "OBJ-Q3-CHK",
+          "objectiveTitle": "Ship guest checkout to every merchant",
+          "offGoalCandidate": null,
+          "servesCurrentObjective": true,
+          "subjectKey": "CHK-271",
+          "subjectKind": "ticket",
+          "subjectLabel": "CHK-271",
+          "subjectText": "Merchant theme overrides the error colour for large merchants",
+          "threshold": 0.3
+        },
+        {
+          "alignmentClass": "configured",
+          "at": 1782724560000,
+          "chainNodeIds": [
+            "CHK/Sprint 15",
+            "OBJ-Q3-CHK",
+            "OBJ-CO-1"
+          ],
+          "confidence": 1,
+          "evidence": {
+            "chainNodeIds": [
+              "CHK/Sprint 15",
+              "OBJ-Q3-CHK",
+              "OBJ-CO-1"
+            ],
+            "chainTitles": [
+              "Guest checkout works on mobile web",
+              "Ship guest checkout to every merchant",
+              "Make Northwind the fastest way to take a payment on the web"
+            ],
+            "matchedIn": null,
+            "matchedOffset": null,
+            "matchedSubstring": null,
+            "searchedText": null,
+            "tier": "configured",
+            "via": "ticket_sprint_goal"
+          },
+          "evidenceRefs": [
+            {
+              "kind": "issue",
+              "label": "CHK-273",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-273"
+            }
+          ],
+          "nodeId": "CHK/Sprint 15",
+          "nodeRevision": 1,
+          "nodeTitle": "Guest checkout works on mobile web",
+          "objectiveNodeId": "OBJ-Q3-CHK",
+          "objectiveTitle": "Ship guest checkout to every merchant",
+          "offGoalCandidate": null,
+          "servesCurrentObjective": true,
+          "subjectKey": "CHK-273",
+          "subjectKind": "ticket",
+          "subjectLabel": "CHK-273",
+          "subjectText": "Address form loses state on a validation error under sustained load",
+          "threshold": 0.3
+        },
+        {
+          "alignmentClass": "configured",
+          "at": 1783693380000,
+          "chainNodeIds": [
+            "CHK/Sprint 15",
+            "OBJ-Q3-CHK",
+            "OBJ-CO-1"
+          ],
+          "confidence": 1,
+          "evidence": {
+            "chainNodeIds": [
+              "CHK/Sprint 15",
+              "OBJ-Q3-CHK",
+              "OBJ-CO-1"
+            ],
+            "chainTitles": [
+              "Guest checkout works on mobile web",
+              "Ship guest checkout to every merchant",
+              "Make Northwind the fastest way to take a payment on the web"
+            ],
+            "matchedIn": null,
+            "matchedOffset": null,
+            "matchedSubstring": null,
+            "searchedText": null,
+            "tier": "configured",
+            "via": "ticket_sprint_goal"
+          },
+          "evidenceRefs": [
+            {
+              "kind": "issue",
+              "label": "CHK-292",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-292"
+            }
+          ],
+          "nodeId": "CHK/Sprint 15",
+          "nodeRevision": 1,
+          "nodeTitle": "Guest checkout works on mobile web",
+          "objectiveNodeId": "OBJ-Q3-CHK",
+          "objectiveTitle": "Ship guest checkout to every merchant",
+          "offGoalCandidate": null,
+          "servesCurrentObjective": true,
+          "subjectKey": "CHK-292",
+          "subjectKind": "ticket",
+          "subjectLabel": "CHK-292",
+          "subjectText": "Retry after a decline charges twice on slow networks under sustained load",
+          "threshold": 0.3
+        },
+        {
+          "alignmentClass": "configured",
+          "at": 1784112360000,
+          "chainNodeIds": [
+            "CHK/Sprint 16",
+            "OBJ-Q3-CHK",
+            "OBJ-CO-1"
+          ],
+          "confidence": 1,
+          "evidence": {
+            "chainNodeIds": [
+              "CHK/Sprint 16",
+              "OBJ-Q3-CHK",
+              "OBJ-CO-1"
+            ],
+            "chainTitles": [
+              "Roll guest checkout out to the first merchant cohort",
+              "Ship guest checkout to every merchant",
+              "Make Northwind the fastest way to take a payment on the web"
+            ],
+            "matchedIn": null,
+            "matchedOffset": null,
+            "matchedSubstring": null,
+            "searchedText": null,
+            "tier": "configured",
+            "via": "ticket_sprint_goal"
+          },
+          "evidenceRefs": [
+            {
+              "kind": "issue",
+              "label": "CHK-302",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-302"
+            }
+          ],
+          "nodeId": "CHK/Sprint 16",
+          "nodeRevision": 1,
+          "nodeTitle": "Roll guest checkout out to the first merchant cohort",
+          "objectiveNodeId": "OBJ-Q3-CHK",
+          "objectiveTitle": "Ship guest checkout to every merchant",
+          "offGoalCandidate": null,
+          "servesCurrentObjective": true,
+          "subjectKey": "CHK-302",
+          "subjectKind": "ticket",
+          "subjectLabel": "CHK-302",
+          "subjectText": "Order summary rounds tax the wrong way after a redeploy",
+          "threshold": 0.3
+        },
+        {
+          "alignmentClass": "configured",
+          "at": 1784738700000,
+          "chainNodeIds": [
+            "CHK/Sprint 16",
+            "OBJ-Q3-CHK",
+            "OBJ-CO-1"
+          ],
+          "confidence": 1,
+          "evidence": {
+            "chainNodeIds": [
+              "CHK/Sprint 16",
+              "OBJ-Q3-CHK",
+              "OBJ-CO-1"
+            ],
+            "chainTitles": [
+              "Roll guest checkout out to the first merchant cohort",
+              "Ship guest checkout to every merchant",
+              "Make Northwind the fastest way to take a payment on the web"
+            ],
+            "matchedIn": null,
+            "matchedOffset": null,
+            "matchedSubstring": null,
+            "searchedText": null,
+            "tier": "configured",
+            "via": "ticket_sprint_goal"
+          },
+          "evidenceRefs": [
+            {
+              "kind": "issue",
+              "label": "CHK-314",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-314"
+            }
+          ],
+          "nodeId": "CHK/Sprint 16",
+          "nodeRevision": 1,
+          "nodeTitle": "Roll guest checkout out to the first merchant cohort",
+          "objectiveNodeId": "OBJ-Q3-CHK",
+          "objectiveTitle": "Ship guest checkout to every merchant",
+          "offGoalCandidate": null,
+          "servesCurrentObjective": true,
+          "subjectKey": "CHK-314",
+          "subjectKind": "ticket",
+          "subjectLabel": "CHK-314",
+          "subjectText": "Delivery estimate ignores the merchant calendar after a redeploy",
+          "threshold": 0.3
+        },
+        {
+          "alignmentClass": "configured",
+          "at": 1785229200000,
+          "chainNodeIds": [
+            "OBJ-Q3-CHK",
+            "OBJ-CO-1"
+          ],
+          "confidence": 1,
+          "evidence": {
+            "chainNodeIds": [
+              "OBJ-Q3-CHK",
+              "OBJ-CO-1"
+            ],
+            "chainTitles": [
+              "Ship guest checkout to every merchant",
+              "Make Northwind the fastest way to take a payment on the web"
+            ],
+            "matchedIn": null,
+            "matchedOffset": null,
+            "matchedSubstring": null,
+            "searchedText": null,
+            "tier": "configured",
+            "via": "team_objective"
+          },
+          "evidenceRefs": [
+            {
+              "kind": "issue",
+              "label": "CHK-701",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-701"
+            }
+          ],
+          "nodeId": "OBJ-Q3-CHK",
+          "nodeRevision": 1,
+          "nodeTitle": "Ship guest checkout to every merchant",
+          "objectiveNodeId": "OBJ-Q3-CHK",
+          "objectiveTitle": "Ship guest checkout to every merchant",
+          "offGoalCandidate": null,
+          "servesCurrentObjective": true,
+          "subjectKey": "CHK-701",
+          "subjectKind": "ticket",
+          "subjectLabel": "CHK-701",
+          "subjectText": "Guest checkout retries a declined card twice on slow networks",
+          "threshold": 0.3
+        }
+      ],
+      "statement": "3 of 4 commits in this window resolve to a goal, and the rest are asked about rather than judged.",
+      "threshold": {
+        "id": "T17",
+        "statement": "Alignment is attributed semantically only when the shared-vocabulary score reaches 0.30; below that the work is unattributed and Compass asks rather than states.",
+        "unit": "basis_points",
+        "value": 3000
+      },
+      "verdicts": [
+        {
+          "ageDays": 0,
+          "confidence": 0,
+          "detail": "cde774d name no tracker key in a commit message or a branch, and the closest goal wording scored 0 against a threshold of 0.3. Nothing in the goal hierarchy shared a word with them.",
+          "evidence": {
+            "comparedTextA": "silence a noisy linter rule",
+            "comparedTextB": null,
+            "matchedTokens": [],
+            "question": "What were this commit for?",
+            "score": 0,
+            "threshold": 0.3,
+            "tier": "unattributed"
+          },
+          "evidenceRefs": [
+            {
+              "kind": "commit",
+              "label": "cde774d",
+              "sourceKey": "code",
+              "sourceRecordId": "checkout-web@cde774d"
+            }
+          ],
+          "headline": "1 commit could not be tied to a sprint objective",
+          "kind": "unattributed",
+          "label": null,
+          "objectiveNodeId": null,
+          "objectiveTitle": null,
+          "question": "What were this commit for?",
+          "resolvedTier": "unattributed",
+          "stableId": "v1:1da0fc49c9c06f90",
+          "subjects": [
+            {
+              "key": "checkout-web@cde774d",
+              "kind": "commit",
+              "label": "cde774d"
+            }
+          ],
+          "threshold": {
+            "id": "T17",
+            "statement": "Alignment is attributed semantically only when the shared-vocabulary score reaches 0.30; below that the work is unattributed and Compass asks rather than states.",
+            "unit": "basis_points",
+            "value": 3000
+          }
+        }
+      ]
+    },
+    "blockers": [
+      {
+        "ageDays": 61,
+        "detail": "CHK-210 is in \"In Progress\" and its last status change was 61 days ago. That crosses T1 at 3 working days. Compass is inferring this from silence, so it may simply be work that does not show up on the board.",
+        "detectedAt": 1779632520000,
+        "evidence": [
+          {
+            "kind": "issue",
+            "label": "CHK-210",
+            "sourceKey": "tracker",
+            "sourceRecordId": "CHK-210"
+          }
+        ],
+        "headline": "CHK-210 has not moved for 45 working days",
+        "measured": {
+          "unit": "working_days",
+          "value": 45
+        },
+        "ownerDeveloperKey": "rafael-lima",
+        "ownerName": "Rafael Lima",
+        "signal": "status_dwell",
+        "stableId": "v1:4e461200f073b7d9",
+        "subject": {
+          "key": "CHK-210",
+          "kind": "ticket",
+          "label": "CHK-210"
+        },
+        "threshold": {
+          "id": "T1",
+          "statement": "A work item that has not changed status for three working days while neither done nor waiting to start.",
+          "unit": "working_days",
+          "value": 3
+        }
+      },
+      {
+        "ageDays": 61,
+        "detail": "The tracker carries the blocked flag on CHK-202 — Declined card message names the wrong field. Compass is reporting what the tracker states, not inferring it.",
+        "detectedAt": 1779638580000,
+        "evidence": [
+          {
+            "kind": "issue",
+            "label": "CHK-202",
+            "sourceKey": "tracker",
+            "sourceRecordId": "CHK-202"
+          }
+        ],
+        "headline": "CHK-202 is blocked, day 61",
+        "measured": {
+          "unit": "days",
+          "value": 61
+        },
+        "ownerDeveloperKey": "rafael-lima",
+        "ownerName": "Rafael Lima",
+        "signal": "tracker_flag",
+        "stableId": "v1:d6ca58e50e5e88aa",
+        "subject": {
+          "key": "CHK-202",
+          "kind": "ticket",
+          "label": "CHK-202"
+        },
+        "threshold": {
+          "id": "T0",
+          "statement": "The source states this outright, so no threshold is applied.",
+          "unit": "none",
+          "value": 0
+        }
+      },
+      {
+        "ageDays": 55,
+        "detail": "Daniel Ortiz asked for changes on #8067 and nothing has happened since — 1 changes-requested cycle so far. That crosses T3 at 2 working days.",
+        "detectedAt": 1780176120000,
+        "evidence": [
+          {
+            "kind": "pull_request",
+            "label": "#8067",
+            "sourceKey": "primary-code",
+            "sourceRecordId": "pull-request-8067"
+          }
+        ],
+        "headline": "#8067 was sent back for changes 40 working days ago and has not moved",
+        "measured": {
+          "unit": "working_days",
+          "value": 40
+        },
+        "ownerDeveloperKey": "rafael-lima",
+        "ownerName": "Rafael Lima",
+        "signal": "changes_requested_stalled",
+        "stableId": "v1:c84aeee2ca0a96f6",
+        "subject": {
+          "key": "primary-code:pull-request-8067",
+          "kind": "pull_request",
+          "label": "#8067"
+        },
+        "threshold": {
+          "id": "T3",
+          "statement": "A pull request whose latest review asked for changes, with no push and no new review for two working days.",
+          "unit": "working_days",
+          "value": 2
+        }
+      },
+      {
+        "ageDays": 36,
+        "detail": "CHK-253 is in \"In Progress\" and its last status change was 36 days ago. That crosses T1 at 3 working days. Compass is inferring this from silence, so it may simply be work that does not show up on the board.",
+        "detectedAt": 1781819940000,
+        "evidence": [
+          {
+            "kind": "issue",
+            "label": "CHK-253",
+            "sourceKey": "tracker",
+            "sourceRecordId": "CHK-253"
+          }
+        ],
+        "headline": "CHK-253 has not moved for 27 working days",
+        "measured": {
+          "unit": "working_days",
+          "value": 27
+        },
+        "ownerDeveloperKey": "daniel-ortiz",
+        "ownerName": "Daniel Ortiz",
+        "signal": "status_dwell",
+        "stableId": "v1:b17bed421c7fdb02",
+        "subject": {
+          "key": "CHK-253",
+          "kind": "ticket",
+          "label": "CHK-253"
+        },
+        "threshold": {
+          "id": "T1",
+          "statement": "A work item that has not changed status for three working days while neither done nor waiting to start.",
+          "unit": "working_days",
+          "value": 3
+        }
+      },
+      {
+        "ageDays": 31,
+        "detail": "CHK-263 is in \"In Progress\" and its last status change was 31 days ago. That crosses T1 at 3 working days. Compass is inferring this from silence, so it may simply be work that does not show up on the board.",
+        "detectedAt": 1782238860000,
+        "evidence": [
+          {
+            "kind": "issue",
+            "label": "CHK-263",
+            "sourceKey": "tracker",
+            "sourceRecordId": "CHK-263"
+          }
+        ],
+        "headline": "CHK-263 has not moved for 24 working days",
+        "measured": {
+          "unit": "working_days",
+          "value": 24
+        },
+        "ownerDeveloperKey": "rafael-lima",
+        "ownerName": "Rafael Lima",
+        "signal": "status_dwell",
+        "stableId": "v1:e02a061a2ac2a6e3",
+        "subject": {
+          "key": "CHK-263",
+          "kind": "ticket",
+          "label": "CHK-263"
+        },
+        "threshold": {
+          "id": "T1",
+          "statement": "A work item that has not changed status for three working days while neither done nor waiting to start.",
+          "unit": "working_days",
+          "value": 3
+        }
+      },
+      {
+        "ageDays": 27,
+        "detail": "Daniel Ortiz asked for changes on #8090 and nothing has happened since — 1 changes-requested cycle so far. That crosses T3 at 2 working days.",
+        "detectedAt": 1782577260000,
+        "evidence": [
+          {
+            "kind": "pull_request",
+            "label": "#8090",
+            "sourceKey": "primary-code",
+            "sourceRecordId": "pull-request-8090"
+          }
+        ],
+        "headline": "#8090 was sent back for changes 20 working days ago and has not moved",
+        "measured": {
+          "unit": "working_days",
+          "value": 20
+        },
+        "ownerDeveloperKey": "rafael-lima",
+        "ownerName": "Rafael Lima",
+        "signal": "changes_requested_stalled",
+        "stableId": "v1:75aa5399604d1610",
+        "subject": {
+          "key": "primary-code:pull-request-8090",
+          "kind": "pull_request",
+          "label": "#8090"
+        },
+        "threshold": {
+          "id": "T3",
+          "statement": "A pull request whose latest review asked for changes, with no push and no new review for two working days.",
+          "unit": "working_days",
+          "value": 2
+        }
+      },
+      {
+        "ageDays": 26,
+        "detail": "CHK-271 is in \"In Progress\" and its last status change was 26 days ago. That crosses T1 at 3 working days. Compass is inferring this from silence, so it may simply be work that does not show up on the board.",
+        "detectedAt": 1782643080000,
+        "evidence": [
+          {
+            "kind": "issue",
+            "label": "CHK-271",
+            "sourceKey": "tracker",
+            "sourceRecordId": "CHK-271"
+          }
+        ],
+        "headline": "CHK-271 has not moved for 20 working days",
+        "measured": {
+          "unit": "working_days",
+          "value": 20
+        },
+        "ownerDeveloperKey": "ingrid-falk",
+        "ownerName": "Ingrid Falk",
+        "signal": "status_dwell",
+        "stableId": "v1:ec3c2fc205ceec6a",
+        "subject": {
+          "key": "CHK-271",
+          "kind": "ticket",
+          "label": "CHK-271"
+        },
+        "threshold": {
+          "id": "T1",
+          "statement": "A work item that has not changed status for three working days while neither done nor waiting to start.",
+          "unit": "working_days",
+          "value": 3
+        }
+      },
+      {
+        "ageDays": 13,
+        "detail": "The tracker carries the blocked flag on CHK-292 — Retry after a decline charges twice on slow networks under sustained load. Compass is reporting what the tracker states, not inferring it.",
+        "detectedAt": 1783779780000,
+        "evidence": [
+          {
+            "kind": "issue",
+            "label": "CHK-292",
+            "sourceKey": "tracker",
+            "sourceRecordId": "CHK-292"
+          }
+        ],
+        "headline": "CHK-292 is blocked, day 13",
+        "measured": {
+          "unit": "days",
+          "value": 13
+        },
+        "ownerDeveloperKey": "ingrid-falk",
+        "ownerName": "Ingrid Falk",
+        "signal": "tracker_flag",
+        "stableId": "v1:bb5172ba132cd431",
+        "subject": {
+          "key": "CHK-292",
+          "kind": "ticket",
+          "label": "CHK-292"
+        },
+        "threshold": {
+          "id": "T0",
+          "statement": "The source states this outright, so no threshold is applied.",
+          "unit": "none",
+          "value": 0
+        }
+      },
+      {
+        "ageDays": 9,
+        "detail": "CHK-302 is in \"In Progress\" and its last status change was 9 days ago. That crosses T1 at 3 working days. Compass is inferring this from silence, so it may simply be work that does not show up on the board.",
+        "detectedAt": 1784123160000,
+        "evidence": [
+          {
+            "kind": "issue",
+            "label": "CHK-302",
+            "sourceKey": "tracker",
+            "sourceRecordId": "CHK-302"
+          }
+        ],
+        "headline": "CHK-302 has not moved for 8 working days",
+        "measured": {
+          "unit": "working_days",
+          "value": 8
+        },
+        "ownerDeveloperKey": "daniel-ortiz",
+        "ownerName": "Daniel Ortiz",
+        "signal": "status_dwell",
+        "stableId": "v1:1dec7444e7173925",
+        "subject": {
+          "key": "CHK-302",
+          "kind": "ticket",
+          "label": "CHK-302"
+        },
+        "threshold": {
+          "id": "T1",
+          "statement": "A work item that has not changed status for three working days while neither done nor waiting to start.",
+          "unit": "working_days",
+          "value": 3
+        }
+      },
+      {
+        "ageDays": 0,
+        "detail": "The tracker carries the blocked flag on CHK-701 — Guest checkout retries a declined card twice on slow networks. Compass is reporting what the tracker states, not inferring it.",
+        "detectedAt": 1785399300000,
+        "evidence": [
+          {
+            "kind": "issue",
+            "label": "CHK-701",
+            "sourceKey": "tracker",
+            "sourceRecordId": "CHK-701"
+          }
+        ],
+        "headline": "CHK-701 is blocked",
+        "measured": {
+          "unit": "days",
+          "value": 0
+        },
+        "ownerDeveloperKey": "naomi-chen",
+        "ownerName": "Naomi Chen",
+        "signal": "tracker_flag",
+        "stableId": "v1:37b68ff5898894f8",
+        "subject": {
+          "key": "CHK-701",
+          "kind": "ticket",
+          "label": "CHK-701"
+        },
+        "threshold": {
+          "id": "T0",
+          "statement": "The source states this outright, so no threshold is applied.",
+          "unit": "none",
+          "value": 0
+        }
+      }
+    ],
+    "calibration": {
+      "correlation": {
+        "absoluteCoefficientBasisPoints": 491,
+        "coefficientBasisPoints": 491,
+        "coefficientThreshold": {
+          "id": "T12",
+          "statement": "Story points are uninformative when their correlation with elapsed days falls below 0.30.",
+          "unit": "basis_points",
+          "value": 3000
+        },
+        "sampleSize": 75,
+        "sampleThreshold": {
+          "id": "T13",
+          "statement": "A calibration verdict needs ten completed, estimated items.",
+          "unit": "sample_size",
+          "value": 10
+        },
+        "samples": [
+          {
+            "elapsedWorkingDays": 7,
+            "estimatePoints": 13,
+            "ticketKey": "CHK-201"
+          },
+          {
+            "elapsedWorkingDays": 4,
+            "estimatePoints": 8,
+            "ticketKey": "CHK-203"
+          },
+          {
+            "elapsedWorkingDays": 3,
+            "estimatePoints": 1,
+            "ticketKey": "CHK-204"
+          },
+          {
+            "elapsedWorkingDays": 2,
+            "estimatePoints": 3,
+            "ticketKey": "CHK-205"
+          },
+          {
+            "elapsedWorkingDays": 2,
+            "estimatePoints": 5,
+            "ticketKey": "CHK-209"
+          },
+          {
+            "elapsedWorkingDays": 2,
+            "estimatePoints": 5,
+            "ticketKey": "CHK-211"
+          },
+          {
+            "elapsedWorkingDays": 7,
+            "estimatePoints": 5,
+            "ticketKey": "CHK-212"
+          },
+          {
+            "elapsedWorkingDays": 2,
+            "estimatePoints": 3,
+            "ticketKey": "CHK-213"
+          },
+          {
+            "elapsedWorkingDays": 3,
+            "estimatePoints": 13,
+            "ticketKey": "CHK-214"
+          },
+          {
+            "elapsedWorkingDays": 3,
+            "estimatePoints": 3,
+            "ticketKey": "CHK-215"
+          },
+          {
+            "elapsedWorkingDays": 4,
+            "estimatePoints": 1,
+            "ticketKey": "CHK-216"
+          },
+          {
+            "elapsedWorkingDays": 2,
+            "estimatePoints": 5,
+            "ticketKey": "CHK-217"
+          },
+          {
+            "elapsedWorkingDays": 5,
+            "estimatePoints": 2,
+            "ticketKey": "CHK-218"
+          },
+          {
+            "elapsedWorkingDays": 4,
+            "estimatePoints": 5,
+            "ticketKey": "CHK-219"
+          },
+          {
+            "elapsedWorkingDays": 0,
+            "estimatePoints": 3,
+            "ticketKey": "CHK-220"
+          },
+          {
+            "elapsedWorkingDays": 0,
+            "estimatePoints": 1,
+            "ticketKey": "CHK-221"
+          },
+          {
+            "elapsedWorkingDays": 0,
+            "estimatePoints": 5,
+            "ticketKey": "CHK-222"
+          },
+          {
+            "elapsedWorkingDays": 5,
+            "estimatePoints": 13,
+            "ticketKey": "CHK-223"
+          },
+          {
+            "elapsedWorkingDays": 4,
+            "estimatePoints": 1,
+            "ticketKey": "CHK-224"
+          },
+          {
+            "elapsedWorkingDays": 5,
+            "estimatePoints": 13,
+            "ticketKey": "CHK-226"
+          },
+          {
+            "elapsedWorkingDays": 6,
+            "estimatePoints": 3,
+            "ticketKey": "CHK-227"
+          },
+          {
+            "elapsedWorkingDays": 3,
+            "estimatePoints": 13,
+            "ticketKey": "CHK-230"
+          },
+          {
+            "elapsedWorkingDays": 4,
+            "estimatePoints": 8,
+            "ticketKey": "CHK-231"
+          },
+          {
+            "elapsedWorkingDays": 4,
+            "estimatePoints": 8,
+            "ticketKey": "CHK-232"
+          },
+          {
+            "elapsedWorkingDays": 5,
+            "estimatePoints": 3,
+            "ticketKey": "CHK-234"
+          },
+          {
+            "elapsedWorkingDays": 5,
+            "estimatePoints": 3,
+            "ticketKey": "CHK-236"
+          },
+          {
+            "elapsedWorkingDays": 4,
+            "estimatePoints": 13,
+            "ticketKey": "CHK-238"
+          },
+          {
+            "elapsedWorkingDays": 4,
+            "estimatePoints": 13,
+            "ticketKey": "CHK-239"
+          },
+          {
+            "elapsedWorkingDays": 4,
+            "estimatePoints": 3,
+            "ticketKey": "CHK-240"
+          },
+          {
+            "elapsedWorkingDays": 1,
+            "estimatePoints": 5,
+            "ticketKey": "CHK-241"
+          },
+          {
+            "elapsedWorkingDays": 4,
+            "estimatePoints": 8,
+            "ticketKey": "CHK-242"
+          },
+          {
+            "elapsedWorkingDays": 1,
+            "estimatePoints": 1,
+            "ticketKey": "CHK-243"
+          },
+          {
+            "elapsedWorkingDays": 5,
+            "estimatePoints": 13,
+            "ticketKey": "CHK-244"
+          },
+          {
+            "elapsedWorkingDays": 6,
+            "estimatePoints": 13,
+            "ticketKey": "CHK-245"
+          },
+          {
+            "elapsedWorkingDays": 5,
+            "estimatePoints": 13,
+            "ticketKey": "CHK-247"
+          },
+          {
+            "elapsedWorkingDays": 3,
+            "estimatePoints": 5,
+            "ticketKey": "CHK-248"
+          },
+          {
+            "elapsedWorkingDays": 2,
+            "estimatePoints": 13,
+            "ticketKey": "CHK-249"
+          },
+          {
+            "elapsedWorkingDays": 4,
+            "estimatePoints": 8,
+            "ticketKey": "CHK-250"
+          },
+          {
+            "elapsedWorkingDays": 1,
+            "estimatePoints": 5,
+            "ticketKey": "CHK-251"
+          },
+          {
+            "elapsedWorkingDays": 1,
+            "estimatePoints": 13,
+            "ticketKey": "CHK-254"
+          },
+          {
+            "elapsedWorkingDays": 1,
+            "estimatePoints": 8,
+            "ticketKey": "CHK-255"
+          },
+          {
+            "elapsedWorkingDays": 1,
+            "estimatePoints": 13,
+            "ticketKey": "CHK-257"
+          },
+          {
+            "elapsedWorkingDays": 1,
+            "estimatePoints": 2,
+            "ticketKey": "CHK-258"
+          },
+          {
+            "elapsedWorkingDays": 1,
+            "estimatePoints": 1,
+            "ticketKey": "CHK-261"
+          },
+          {
+            "elapsedWorkingDays": 7,
+            "estimatePoints": 3,
+            "ticketKey": "CHK-265"
+          },
+          {
+            "elapsedWorkingDays": 1,
+            "estimatePoints": 2,
+            "ticketKey": "CHK-267"
+          },
+          {
+            "elapsedWorkingDays": 3,
+            "estimatePoints": 8,
+            "ticketKey": "CHK-268"
+          },
+          {
+            "elapsedWorkingDays": 0,
+            "estimatePoints": 8,
+            "ticketKey": "CHK-269"
+          },
+          {
+            "elapsedWorkingDays": 4,
+            "estimatePoints": 3,
+            "ticketKey": "CHK-270"
+          },
+          {
+            "elapsedWorkingDays": 3,
+            "estimatePoints": 3,
+            "ticketKey": "CHK-272"
+          },
+          {
+            "elapsedWorkingDays": 5,
+            "estimatePoints": 13,
+            "ticketKey": "CHK-274"
+          },
+          {
+            "elapsedWorkingDays": 8,
+            "estimatePoints": 3,
+            "ticketKey": "CHK-275"
+          },
+          {
+            "elapsedWorkingDays": 3,
+            "estimatePoints": 13,
+            "ticketKey": "CHK-276"
+          },
+          {
+            "elapsedWorkingDays": 6,
+            "estimatePoints": 2,
+            "ticketKey": "CHK-277"
+          },
+          {
+            "elapsedWorkingDays": 2,
+            "estimatePoints": 13,
+            "ticketKey": "CHK-278"
+          },
+          {
+            "elapsedWorkingDays": 1,
+            "estimatePoints": 13,
+            "ticketKey": "CHK-280"
+          },
+          {
+            "elapsedWorkingDays": 6,
+            "estimatePoints": 5,
+            "ticketKey": "CHK-281"
+          },
+          {
+            "elapsedWorkingDays": 0,
+            "estimatePoints": 1,
+            "ticketKey": "CHK-282"
+          },
+          {
+            "elapsedWorkingDays": 7,
+            "estimatePoints": 1,
+            "ticketKey": "CHK-283"
+          },
+          {
+            "elapsedWorkingDays": 8,
+            "estimatePoints": 5,
+            "ticketKey": "CHK-284"
+          },
+          {
+            "elapsedWorkingDays": 4,
+            "estimatePoints": 8,
+            "ticketKey": "CHK-285"
+          },
+          {
+            "elapsedWorkingDays": 3,
+            "estimatePoints": 3,
+            "ticketKey": "CHK-286"
+          },
+          {
+            "elapsedWorkingDays": 2,
+            "estimatePoints": 2,
+            "ticketKey": "CHK-287"
+          },
+          {
+            "elapsedWorkingDays": 7,
+            "estimatePoints": 8,
+            "ticketKey": "CHK-288"
+          },
+          {
+            "elapsedWorkingDays": 3,
+            "estimatePoints": 13,
+            "ticketKey": "CHK-289"
+          },
+          {
+            "elapsedWorkingDays": 2,
+            "estimatePoints": 5,
+            "ticketKey": "CHK-290"
+          },
+          {
+            "elapsedWorkingDays": 3,
+            "estimatePoints": 13,
+            "ticketKey": "CHK-295"
+          },
+          {
+            "elapsedWorkingDays": 1,
+            "estimatePoints": 8,
+            "ticketKey": "CHK-296"
+          },
+          {
+            "elapsedWorkingDays": 4,
+            "estimatePoints": 5,
+            "ticketKey": "CHK-298"
+          },
+          {
+            "elapsedWorkingDays": 4,
+            "estimatePoints": 1,
+            "ticketKey": "CHK-299"
+          },
+          {
+            "elapsedWorkingDays": 0,
+            "estimatePoints": 8,
+            "ticketKey": "CHK-304"
+          },
+          {
+            "elapsedWorkingDays": 1,
+            "estimatePoints": 5,
+            "ticketKey": "CHK-305"
+          },
+          {
+            "elapsedWorkingDays": 3,
+            "estimatePoints": 2,
+            "ticketKey": "CHK-306"
+          },
+          {
+            "elapsedWorkingDays": 3,
+            "estimatePoints": 5,
+            "ticketKey": "CHK-310"
+          },
+          {
+            "elapsedWorkingDays": 2,
+            "estimatePoints": 13,
+            "ticketKey": "CHK-311"
+          }
+        ],
+        "spread": {
+          "elapsedWorkingDays": {
+            "maximum": 8,
+            "median": 3,
+            "minimum": 0,
+            "spread": 8,
+            "unit": "working_days"
+          },
+          "estimatePoints": {
+            "maximum": 13,
+            "median": 5,
+            "minimum": 1,
+            "spread": 12,
+            "unit": "story_points"
+          }
+        },
+        "statement": "Across 75 completed items your points correlate with elapsed working days at 0.05, over durations spanning 0 to 8 working days with a median of 3.",
+        "statistic": "point_to_elapsed_working_days",
+        "ticketKeys": [
+          "CHK-201",
+          "CHK-203",
+          "CHK-204",
+          "CHK-205",
+          "CHK-209",
+          "CHK-211",
+          "CHK-212",
+          "CHK-213",
+          "CHK-214",
+          "CHK-215",
+          "CHK-216",
+          "CHK-217",
+          "CHK-218",
+          "CHK-219",
+          "CHK-220",
+          "CHK-221",
+          "CHK-222",
+          "CHK-223",
+          "CHK-224",
+          "CHK-226",
+          "CHK-227",
+          "CHK-230",
+          "CHK-231",
+          "CHK-232",
+          "CHK-234",
+          "CHK-236",
+          "CHK-238",
+          "CHK-239",
+          "CHK-240",
+          "CHK-241",
+          "CHK-242",
+          "CHK-243",
+          "CHK-244",
+          "CHK-245",
+          "CHK-247",
+          "CHK-248",
+          "CHK-249",
+          "CHK-250",
+          "CHK-251",
+          "CHK-254",
+          "CHK-255",
+          "CHK-257",
+          "CHK-258",
+          "CHK-261",
+          "CHK-265",
+          "CHK-267",
+          "CHK-268",
+          "CHK-269",
+          "CHK-270",
+          "CHK-272",
+          "CHK-274",
+          "CHK-275",
+          "CHK-276",
+          "CHK-277",
+          "CHK-278",
+          "CHK-280",
+          "CHK-281",
+          "CHK-282",
+          "CHK-283",
+          "CHK-284",
+          "CHK-285",
+          "CHK-286",
+          "CHK-287",
+          "CHK-288",
+          "CHK-289",
+          "CHK-290",
+          "CHK-295",
+          "CHK-296",
+          "CHK-298",
+          "CHK-299",
+          "CHK-304",
+          "CHK-305",
+          "CHK-306",
+          "CHK-310",
+          "CHK-311"
+        ]
+      },
+      "correlationThreshold": {
+        "id": "T12",
+        "statement": "Story points are uninformative when their correlation with elapsed days falls below 0.30.",
+        "unit": "basis_points",
+        "value": 3000
+      },
+      "sampleSize": 75,
+      "sampleThreshold": {
+        "id": "T13",
+        "statement": "A calibration verdict needs ten completed, estimated items.",
+        "unit": "sample_size",
+        "value": 10
+      },
+      "statement": "Your points have not tracked elapsed working days across 75 completed items — correlation 0.05 over durations spanning 0 to 8 working days, below the 0.30 Compass needs — so any date below is a cycle-time guess, not a plan.",
+      "ticketKeys": [
+        "CHK-201",
+        "CHK-203",
+        "CHK-204",
+        "CHK-205",
+        "CHK-209",
+        "CHK-211",
+        "CHK-212",
+        "CHK-213",
+        "CHK-214",
+        "CHK-215",
+        "CHK-216",
+        "CHK-217",
+        "CHK-218",
+        "CHK-219",
+        "CHK-220",
+        "CHK-221",
+        "CHK-222",
+        "CHK-223",
+        "CHK-224",
+        "CHK-226",
+        "CHK-227",
+        "CHK-230",
+        "CHK-231",
+        "CHK-232",
+        "CHK-234",
+        "CHK-236",
+        "CHK-238",
+        "CHK-239",
+        "CHK-240",
+        "CHK-241",
+        "CHK-242",
+        "CHK-243",
+        "CHK-244",
+        "CHK-245",
+        "CHK-247",
+        "CHK-248",
+        "CHK-249",
+        "CHK-250",
+        "CHK-251",
+        "CHK-254",
+        "CHK-255",
+        "CHK-257",
+        "CHK-258",
+        "CHK-261",
+        "CHK-265",
+        "CHK-267",
+        "CHK-268",
+        "CHK-269",
+        "CHK-270",
+        "CHK-272",
+        "CHK-274",
+        "CHK-275",
+        "CHK-276",
+        "CHK-277",
+        "CHK-278",
+        "CHK-280",
+        "CHK-281",
+        "CHK-282",
+        "CHK-283",
+        "CHK-284",
+        "CHK-285",
+        "CHK-286",
+        "CHK-287",
+        "CHK-288",
+        "CHK-289",
+        "CHK-290",
+        "CHK-295",
+        "CHK-296",
+        "CHK-298",
+        "CHK-299",
+        "CHK-304",
+        "CHK-305",
+        "CHK-306",
+        "CHK-310",
+        "CHK-311"
+      ],
+      "verdict": "points_uninformative"
+    },
+    "calibrationAudit": {
+      "completedSprintCount": 4,
+      "statement": "Compass audited the data behind this report and reached 4 verdicts: points_uninformative, scope_is_fiction, workflow_inconsistent, statuses_stale.",
+      "statistics": {
+        "carryover": {
+          "breachCountThreshold": {
+            "id": "T20",
+            "statement": "Scope is fiction when three or more of the trailing five sprints breached the carryover rate.",
+            "unit": "count",
+            "value": 3
+          },
+          "breachedSprintCount": 4,
+          "meanRateBasisPoints": 4529,
+          "perSprint": [
+            {
+              "breachedThreshold": true,
+              "carriedTicketKeys": [
+                "CHK-202",
+                "CHK-208",
+                "CHK-210",
+                "CHK-212",
+                "CHK-218",
+                "CHK-221",
+                "CHK-224"
+              ],
+              "carriedTickets": 7,
+              "closedAt": 1780304400000,
+              "committedTickets": 21,
+              "rateBasisPoints": 3333,
+              "sprintKey": "primary-tracker:sprint-CHK-1",
+              "sprintName": "Sprint 12"
+            },
+            {
+              "breachedThreshold": true,
+              "carriedTicketKeys": [
+                "CHK-235",
+                "CHK-236",
+                "CHK-239",
+                "CHK-242",
+                "CHK-243",
+                "CHK-244",
+                "CHK-245",
+                "CHK-246",
+                "CHK-247",
+                "CHK-248"
+              ],
+              "carriedTickets": 10,
+              "closedAt": 1781514000000,
+              "committedTickets": 23,
+              "rateBasisPoints": 4348,
+              "sprintKey": "primary-tracker:sprint-CHK-2",
+              "sprintName": "Sprint 13"
+            },
+            {
+              "breachedThreshold": true,
+              "carriedTicketKeys": [
+                "CHK-253",
+                "CHK-259",
+                "CHK-260",
+                "CHK-262",
+                "CHK-263",
+                "CHK-264",
+                "CHK-268",
+                "CHK-269",
+                "CHK-270",
+                "CHK-271",
+                "CHK-272",
+                "CHK-274"
+              ],
+              "carriedTickets": 12,
+              "closedAt": 1782723600000,
+              "committedTickets": 23,
+              "rateBasisPoints": 5217,
+              "sprintKey": "primary-tracker:sprint-CHK-3",
+              "sprintName": "Sprint 14"
+            },
+            {
+              "breachedThreshold": true,
+              "carriedTicketKeys": [
+                "CHK-273",
+                "CHK-283",
+                "CHK-284",
+                "CHK-288",
+                "CHK-289",
+                "CHK-291",
+                "CHK-292",
+                "CHK-293",
+                "CHK-294",
+                "CHK-295",
+                "CHK-296",
+                "CHK-298"
+              ],
+              "carriedTickets": 12,
+              "closedAt": 1783933200000,
+              "committedTickets": 23,
+              "rateBasisPoints": 5217,
+              "sprintKey": "primary-tracker:sprint-CHK-4",
+              "sprintName": "Sprint 15"
+            }
+          ],
+          "rateThreshold": {
+            "id": "T19",
+            "statement": "A sprint carried over when three tenths or more of its committed items were still unfinished when it closed.",
+            "unit": "basis_points",
+            "value": 3000
+          },
+          "statement": "Across the last 4 completed sprints a mean of 45% of the committed baseline rolled into the next sprint, and 4 of them passed the 30% T19 sets.",
+          "statistic": "carryover_rate",
+          "trailingSprints": 5
+        },
+        "estimateCoverage": {
+          "coverageBasisPoints": 8125,
+          "estimatedTickets": 39,
+          "statement": "39 of 48 items raised in the last 28 days carry a point estimate — 81%, against the 60% T18 asks for.",
+          "statistic": "estimate_coverage",
+          "threshold": {
+            "id": "T18",
+            "statement": "Estimates are sparse when fewer than three fifths of the work items in the trailing window carry a point estimate.",
+            "unit": "basis_points",
+            "value": 6000
+          },
+          "totalTickets": 48,
+          "trailingDays": 28,
+          "unestimatedTicketKeys": [
+            "CHK-273",
+            "CHK-279",
+            "CHK-291",
+            "CHK-293",
+            "CHK-294",
+            "CHK-297",
+            "CHK-301",
+            "CHK-307",
+            "CHK-314"
+          ],
+          "window": {
+            "end": 1784970000000,
+            "start": 1782550800000
+          }
+        },
+        "pointToElapsed": {
+          "absoluteCoefficientBasisPoints": 491,
+          "coefficientBasisPoints": 491,
+          "coefficientThreshold": {
+            "id": "T12",
+            "statement": "Story points are uninformative when their correlation with elapsed days falls below 0.30.",
+            "unit": "basis_points",
+            "value": 3000
+          },
+          "sampleSize": 75,
+          "sampleThreshold": {
+            "id": "T13",
+            "statement": "A calibration verdict needs ten completed, estimated items.",
+            "unit": "sample_size",
+            "value": 10
+          },
+          "samples": [
+            {
+              "elapsedWorkingDays": 7,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-201"
+            },
+            {
+              "elapsedWorkingDays": 4,
+              "estimatePoints": 8,
+              "ticketKey": "CHK-203"
+            },
+            {
+              "elapsedWorkingDays": 3,
+              "estimatePoints": 1,
+              "ticketKey": "CHK-204"
+            },
+            {
+              "elapsedWorkingDays": 2,
+              "estimatePoints": 3,
+              "ticketKey": "CHK-205"
+            },
+            {
+              "elapsedWorkingDays": 2,
+              "estimatePoints": 5,
+              "ticketKey": "CHK-209"
+            },
+            {
+              "elapsedWorkingDays": 2,
+              "estimatePoints": 5,
+              "ticketKey": "CHK-211"
+            },
+            {
+              "elapsedWorkingDays": 7,
+              "estimatePoints": 5,
+              "ticketKey": "CHK-212"
+            },
+            {
+              "elapsedWorkingDays": 2,
+              "estimatePoints": 3,
+              "ticketKey": "CHK-213"
+            },
+            {
+              "elapsedWorkingDays": 3,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-214"
+            },
+            {
+              "elapsedWorkingDays": 3,
+              "estimatePoints": 3,
+              "ticketKey": "CHK-215"
+            },
+            {
+              "elapsedWorkingDays": 4,
+              "estimatePoints": 1,
+              "ticketKey": "CHK-216"
+            },
+            {
+              "elapsedWorkingDays": 2,
+              "estimatePoints": 5,
+              "ticketKey": "CHK-217"
+            },
+            {
+              "elapsedWorkingDays": 5,
+              "estimatePoints": 2,
+              "ticketKey": "CHK-218"
+            },
+            {
+              "elapsedWorkingDays": 4,
+              "estimatePoints": 5,
+              "ticketKey": "CHK-219"
+            },
+            {
+              "elapsedWorkingDays": 0,
+              "estimatePoints": 3,
+              "ticketKey": "CHK-220"
+            },
+            {
+              "elapsedWorkingDays": 0,
+              "estimatePoints": 1,
+              "ticketKey": "CHK-221"
+            },
+            {
+              "elapsedWorkingDays": 0,
+              "estimatePoints": 5,
+              "ticketKey": "CHK-222"
+            },
+            {
+              "elapsedWorkingDays": 5,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-223"
+            },
+            {
+              "elapsedWorkingDays": 4,
+              "estimatePoints": 1,
+              "ticketKey": "CHK-224"
+            },
+            {
+              "elapsedWorkingDays": 5,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-226"
+            },
+            {
+              "elapsedWorkingDays": 6,
+              "estimatePoints": 3,
+              "ticketKey": "CHK-227"
+            },
+            {
+              "elapsedWorkingDays": 3,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-230"
+            },
+            {
+              "elapsedWorkingDays": 4,
+              "estimatePoints": 8,
+              "ticketKey": "CHK-231"
+            },
+            {
+              "elapsedWorkingDays": 4,
+              "estimatePoints": 8,
+              "ticketKey": "CHK-232"
+            },
+            {
+              "elapsedWorkingDays": 5,
+              "estimatePoints": 3,
+              "ticketKey": "CHK-234"
+            },
+            {
+              "elapsedWorkingDays": 5,
+              "estimatePoints": 3,
+              "ticketKey": "CHK-236"
+            },
+            {
+              "elapsedWorkingDays": 4,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-238"
+            },
+            {
+              "elapsedWorkingDays": 4,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-239"
+            },
+            {
+              "elapsedWorkingDays": 4,
+              "estimatePoints": 3,
+              "ticketKey": "CHK-240"
+            },
+            {
+              "elapsedWorkingDays": 1,
+              "estimatePoints": 5,
+              "ticketKey": "CHK-241"
+            },
+            {
+              "elapsedWorkingDays": 4,
+              "estimatePoints": 8,
+              "ticketKey": "CHK-242"
+            },
+            {
+              "elapsedWorkingDays": 1,
+              "estimatePoints": 1,
+              "ticketKey": "CHK-243"
+            },
+            {
+              "elapsedWorkingDays": 5,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-244"
+            },
+            {
+              "elapsedWorkingDays": 6,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-245"
+            },
+            {
+              "elapsedWorkingDays": 5,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-247"
+            },
+            {
+              "elapsedWorkingDays": 3,
+              "estimatePoints": 5,
+              "ticketKey": "CHK-248"
+            },
+            {
+              "elapsedWorkingDays": 2,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-249"
+            },
+            {
+              "elapsedWorkingDays": 4,
+              "estimatePoints": 8,
+              "ticketKey": "CHK-250"
+            },
+            {
+              "elapsedWorkingDays": 1,
+              "estimatePoints": 5,
+              "ticketKey": "CHK-251"
+            },
+            {
+              "elapsedWorkingDays": 1,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-254"
+            },
+            {
+              "elapsedWorkingDays": 1,
+              "estimatePoints": 8,
+              "ticketKey": "CHK-255"
+            },
+            {
+              "elapsedWorkingDays": 1,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-257"
+            },
+            {
+              "elapsedWorkingDays": 1,
+              "estimatePoints": 2,
+              "ticketKey": "CHK-258"
+            },
+            {
+              "elapsedWorkingDays": 1,
+              "estimatePoints": 1,
+              "ticketKey": "CHK-261"
+            },
+            {
+              "elapsedWorkingDays": 7,
+              "estimatePoints": 3,
+              "ticketKey": "CHK-265"
+            },
+            {
+              "elapsedWorkingDays": 1,
+              "estimatePoints": 2,
+              "ticketKey": "CHK-267"
+            },
+            {
+              "elapsedWorkingDays": 3,
+              "estimatePoints": 8,
+              "ticketKey": "CHK-268"
+            },
+            {
+              "elapsedWorkingDays": 0,
+              "estimatePoints": 8,
+              "ticketKey": "CHK-269"
+            },
+            {
+              "elapsedWorkingDays": 4,
+              "estimatePoints": 3,
+              "ticketKey": "CHK-270"
+            },
+            {
+              "elapsedWorkingDays": 3,
+              "estimatePoints": 3,
+              "ticketKey": "CHK-272"
+            },
+            {
+              "elapsedWorkingDays": 5,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-274"
+            },
+            {
+              "elapsedWorkingDays": 8,
+              "estimatePoints": 3,
+              "ticketKey": "CHK-275"
+            },
+            {
+              "elapsedWorkingDays": 3,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-276"
+            },
+            {
+              "elapsedWorkingDays": 6,
+              "estimatePoints": 2,
+              "ticketKey": "CHK-277"
+            },
+            {
+              "elapsedWorkingDays": 2,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-278"
+            },
+            {
+              "elapsedWorkingDays": 1,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-280"
+            },
+            {
+              "elapsedWorkingDays": 6,
+              "estimatePoints": 5,
+              "ticketKey": "CHK-281"
+            },
+            {
+              "elapsedWorkingDays": 0,
+              "estimatePoints": 1,
+              "ticketKey": "CHK-282"
+            },
+            {
+              "elapsedWorkingDays": 7,
+              "estimatePoints": 1,
+              "ticketKey": "CHK-283"
+            },
+            {
+              "elapsedWorkingDays": 8,
+              "estimatePoints": 5,
+              "ticketKey": "CHK-284"
+            },
+            {
+              "elapsedWorkingDays": 4,
+              "estimatePoints": 8,
+              "ticketKey": "CHK-285"
+            },
+            {
+              "elapsedWorkingDays": 3,
+              "estimatePoints": 3,
+              "ticketKey": "CHK-286"
+            },
+            {
+              "elapsedWorkingDays": 2,
+              "estimatePoints": 2,
+              "ticketKey": "CHK-287"
+            },
+            {
+              "elapsedWorkingDays": 7,
+              "estimatePoints": 8,
+              "ticketKey": "CHK-288"
+            },
+            {
+              "elapsedWorkingDays": 3,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-289"
+            },
+            {
+              "elapsedWorkingDays": 2,
+              "estimatePoints": 5,
+              "ticketKey": "CHK-290"
+            },
+            {
+              "elapsedWorkingDays": 3,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-295"
+            },
+            {
+              "elapsedWorkingDays": 1,
+              "estimatePoints": 8,
+              "ticketKey": "CHK-296"
+            },
+            {
+              "elapsedWorkingDays": 4,
+              "estimatePoints": 5,
+              "ticketKey": "CHK-298"
+            },
+            {
+              "elapsedWorkingDays": 4,
+              "estimatePoints": 1,
+              "ticketKey": "CHK-299"
+            },
+            {
+              "elapsedWorkingDays": 0,
+              "estimatePoints": 8,
+              "ticketKey": "CHK-304"
+            },
+            {
+              "elapsedWorkingDays": 1,
+              "estimatePoints": 5,
+              "ticketKey": "CHK-305"
+            },
+            {
+              "elapsedWorkingDays": 3,
+              "estimatePoints": 2,
+              "ticketKey": "CHK-306"
+            },
+            {
+              "elapsedWorkingDays": 3,
+              "estimatePoints": 5,
+              "ticketKey": "CHK-310"
+            },
+            {
+              "elapsedWorkingDays": 2,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-311"
+            }
+          ],
+          "spread": {
+            "elapsedWorkingDays": {
+              "maximum": 8,
+              "median": 3,
+              "minimum": 0,
+              "spread": 8,
+              "unit": "working_days"
+            },
+            "estimatePoints": {
+              "maximum": 13,
+              "median": 5,
+              "minimum": 1,
+              "spread": 12,
+              "unit": "story_points"
+            }
+          },
+          "statement": "Across 75 completed items your points correlate with elapsed working days at 0.05, over durations spanning 0 to 8 working days with a median of 3.",
+          "statistic": "point_to_elapsed_working_days",
+          "ticketKeys": [
+            "CHK-201",
+            "CHK-203",
+            "CHK-204",
+            "CHK-205",
+            "CHK-209",
+            "CHK-211",
+            "CHK-212",
+            "CHK-213",
+            "CHK-214",
+            "CHK-215",
+            "CHK-216",
+            "CHK-217",
+            "CHK-218",
+            "CHK-219",
+            "CHK-220",
+            "CHK-221",
+            "CHK-222",
+            "CHK-223",
+            "CHK-224",
+            "CHK-226",
+            "CHK-227",
+            "CHK-230",
+            "CHK-231",
+            "CHK-232",
+            "CHK-234",
+            "CHK-236",
+            "CHK-238",
+            "CHK-239",
+            "CHK-240",
+            "CHK-241",
+            "CHK-242",
+            "CHK-243",
+            "CHK-244",
+            "CHK-245",
+            "CHK-247",
+            "CHK-248",
+            "CHK-249",
+            "CHK-250",
+            "CHK-251",
+            "CHK-254",
+            "CHK-255",
+            "CHK-257",
+            "CHK-258",
+            "CHK-261",
+            "CHK-265",
+            "CHK-267",
+            "CHK-268",
+            "CHK-269",
+            "CHK-270",
+            "CHK-272",
+            "CHK-274",
+            "CHK-275",
+            "CHK-276",
+            "CHK-277",
+            "CHK-278",
+            "CHK-280",
+            "CHK-281",
+            "CHK-282",
+            "CHK-283",
+            "CHK-284",
+            "CHK-285",
+            "CHK-286",
+            "CHK-287",
+            "CHK-288",
+            "CHK-289",
+            "CHK-290",
+            "CHK-295",
+            "CHK-296",
+            "CHK-298",
+            "CHK-299",
+            "CHK-304",
+            "CHK-305",
+            "CHK-306",
+            "CHK-310",
+            "CHK-311"
+          ]
+        },
+        "scopeChurn": {
+          "breachedSprintKeys": [],
+          "perSprint": [
+            {
+              "addedTicketKeys": [
+                "CHK-209",
+                "CHK-219",
+                "CHK-223"
+              ],
+              "breachedThreshold": false,
+              "churnBasisPoints": 1429,
+              "committedBaseline": 21,
+              "removedTicketKeys": [],
+              "sprintKey": "primary-tracker:sprint-CHK-1",
+              "sprintName": "Sprint 12"
+            },
+            {
+              "addedTicketKeys": [
+                "CHK-238"
+              ],
+              "breachedThreshold": false,
+              "churnBasisPoints": 435,
+              "committedBaseline": 23,
+              "removedTicketKeys": [],
+              "sprintKey": "primary-tracker:sprint-CHK-2",
+              "sprintName": "Sprint 13"
+            },
+            {
+              "addedTicketKeys": [
+                "CHK-265",
+                "CHK-267"
+              ],
+              "breachedThreshold": false,
+              "churnBasisPoints": 870,
+              "committedBaseline": 23,
+              "removedTicketKeys": [],
+              "sprintKey": "primary-tracker:sprint-CHK-3",
+              "sprintName": "Sprint 14"
+            },
+            {
+              "addedTicketKeys": [
+                "CHK-280"
+              ],
+              "breachedThreshold": false,
+              "churnBasisPoints": 435,
+              "committedBaseline": 23,
+              "removedTicketKeys": [],
+              "sprintKey": "primary-tracker:sprint-CHK-4",
+              "sprintName": "Sprint 15"
+            },
+            {
+              "addedTicketKeys": [],
+              "breachedThreshold": false,
+              "churnBasisPoints": 435,
+              "committedBaseline": 23,
+              "removedTicketKeys": [
+                "CHK-314"
+              ],
+              "sprintKey": "primary-tracker:sprint-CHK-5",
+              "sprintName": "Sprint 16"
+            }
+          ],
+          "statement": "The worst churn across 5 sprints was 14% of the committed baseline, inside the 25% T21 allows.",
+          "statistic": "scope_churn",
+          "threshold": {
+            "id": "T21",
+            "statement": "Scope is fiction when a quarter or more of the committed baseline was added or removed after the sprint started.",
+            "unit": "basis_points",
+            "value": 2500
+          },
+          "worstChurnBasisPoints": 1429
+        },
+        "staleStatus": {
+          "dwellThreshold": {
+            "id": "T23",
+            "statement": "A work item is stale when it has sat in an in-progress status for three working days with no commit and no pull-request activity.",
+            "unit": "working_days",
+            "value": 3
+          },
+          "inProgressTickets": 8,
+          "incidenceBasisPoints": 8750,
+          "incidenceThreshold": {
+            "id": "T24",
+            "statement": "Statuses are stale when a fifth or more of the in-progress items are stale by T23.",
+            "unit": "basis_points",
+            "value": 2000
+          },
+          "stale": [
+            {
+              "inProgressWorkingDays": 45,
+              "status": "Blocked",
+              "ticketKey": "CHK-202",
+              "workingDaysSinceActivity": null
+            },
+            {
+              "inProgressWorkingDays": 45,
+              "status": "In Progress",
+              "ticketKey": "CHK-210",
+              "workingDaysSinceActivity": 42
+            },
+            {
+              "inProgressWorkingDays": 27,
+              "status": "In Progress",
+              "ticketKey": "CHK-253",
+              "workingDaysSinceActivity": 25
+            },
+            {
+              "inProgressWorkingDays": 24,
+              "status": "In Progress",
+              "ticketKey": "CHK-263",
+              "workingDaysSinceActivity": 20
+            },
+            {
+              "inProgressWorkingDays": 20,
+              "status": "In Progress",
+              "ticketKey": "CHK-271",
+              "workingDaysSinceActivity": null
+            },
+            {
+              "inProgressWorkingDays": 10,
+              "status": "Blocked",
+              "ticketKey": "CHK-292",
+              "workingDaysSinceActivity": null
+            },
+            {
+              "inProgressWorkingDays": 8,
+              "status": "In Progress",
+              "ticketKey": "CHK-302",
+              "workingDaysSinceActivity": 6
+            }
+          ],
+          "staleTicketKeys": [
+            "CHK-202",
+            "CHK-210",
+            "CHK-253",
+            "CHK-263",
+            "CHK-271",
+            "CHK-292",
+            "CHK-302"
+          ],
+          "staleTickets": 7,
+          "statement": "7 of 8 in-progress items — 88% — have sat still for 3 working days or more with no commit and no pull request: CHK-202, CHK-210, CHK-253, CHK-263, CHK-271, CHK-292, CHK-302.",
+          "statistic": "stale_status_incidence"
+        },
+        "statusDwell": {
+          "inconsistentStatuses": [
+            "In Progress",
+            "In Review"
+          ],
+          "perStatus": [
+            {
+              "inconsistent": true,
+              "sampleSize": 101,
+              "spread": {
+                "maximum": 247,
+                "median": 94,
+                "minimum": 0,
+                "spread": 247,
+                "unit": "hours"
+              },
+              "spreadOverMedianBasisPoints": 26277,
+              "status": "In Progress",
+              "ticketKeys": [
+                "CHK-201",
+                "CHK-202",
+                "CHK-203",
+                "CHK-204",
+                "CHK-205",
+                "CHK-206",
+                "CHK-207",
+                "CHK-209",
+                "CHK-211",
+                "CHK-212",
+                "CHK-213",
+                "CHK-214",
+                "CHK-215",
+                "CHK-216",
+                "CHK-217",
+                "CHK-218",
+                "CHK-219",
+                "CHK-220",
+                "CHK-221",
+                "CHK-222",
+                "CHK-223",
+                "CHK-224",
+                "CHK-225",
+                "CHK-226",
+                "CHK-227",
+                "CHK-228",
+                "CHK-229",
+                "CHK-230",
+                "CHK-231",
+                "CHK-232",
+                "CHK-233",
+                "CHK-234",
+                "CHK-235",
+                "CHK-236",
+                "CHK-237",
+                "CHK-238",
+                "CHK-239",
+                "CHK-240",
+                "CHK-241",
+                "CHK-242",
+                "CHK-243",
+                "CHK-244",
+                "CHK-245",
+                "CHK-246",
+                "CHK-247",
+                "CHK-248",
+                "CHK-249",
+                "CHK-250",
+                "CHK-251",
+                "CHK-252",
+                "CHK-254",
+                "CHK-255",
+                "CHK-256",
+                "CHK-257",
+                "CHK-258",
+                "CHK-260",
+                "CHK-261",
+                "CHK-262",
+                "CHK-264",
+                "CHK-265",
+                "CHK-266",
+                "CHK-267",
+                "CHK-268",
+                "CHK-269",
+                "CHK-270",
+                "CHK-272",
+                "CHK-274",
+                "CHK-275",
+                "CHK-276",
+                "CHK-277",
+                "CHK-278",
+                "CHK-279",
+                "CHK-280",
+                "CHK-281",
+                "CHK-282",
+                "CHK-283",
+                "CHK-284",
+                "CHK-285",
+                "CHK-286",
+                "CHK-287",
+                "CHK-288",
+                "CHK-289",
+                "CHK-290",
+                "CHK-291",
+                "CHK-292",
+                "CHK-293",
+                "CHK-294",
+                "CHK-295",
+                "CHK-296",
+                "CHK-297",
+                "CHK-298",
+                "CHK-299",
+                "CHK-300",
+                "CHK-301",
+                "CHK-303",
+                "CHK-304",
+                "CHK-305",
+                "CHK-306",
+                "CHK-308",
+                "CHK-310",
+                "CHK-311"
+              ]
+            },
+            {
+              "inconsistent": true,
+              "sampleSize": 96,
+              "spread": {
+                "maximum": 37,
+                "median": 17.5,
+                "minimum": 1,
+                "spread": 36,
+                "unit": "hours"
+              },
+              "spreadOverMedianBasisPoints": 20571,
+              "status": "In Review",
+              "ticketKeys": [
+                "CHK-201",
+                "CHK-203",
+                "CHK-204",
+                "CHK-205",
+                "CHK-206",
+                "CHK-207",
+                "CHK-209",
+                "CHK-211",
+                "CHK-212",
+                "CHK-213",
+                "CHK-214",
+                "CHK-215",
+                "CHK-216",
+                "CHK-217",
+                "CHK-218",
+                "CHK-219",
+                "CHK-220",
+                "CHK-221",
+                "CHK-222",
+                "CHK-223",
+                "CHK-224",
+                "CHK-225",
+                "CHK-226",
+                "CHK-227",
+                "CHK-228",
+                "CHK-229",
+                "CHK-230",
+                "CHK-231",
+                "CHK-232",
+                "CHK-233",
+                "CHK-234",
+                "CHK-235",
+                "CHK-236",
+                "CHK-237",
+                "CHK-238",
+                "CHK-239",
+                "CHK-240",
+                "CHK-241",
+                "CHK-242",
+                "CHK-243",
+                "CHK-244",
+                "CHK-245",
+                "CHK-246",
+                "CHK-247",
+                "CHK-248",
+                "CHK-249",
+                "CHK-250",
+                "CHK-251",
+                "CHK-252",
+                "CHK-254",
+                "CHK-255",
+                "CHK-256",
+                "CHK-257",
+                "CHK-258",
+                "CHK-260",
+                "CHK-261",
+                "CHK-262",
+                "CHK-264",
+                "CHK-265",
+                "CHK-266",
+                "CHK-267",
+                "CHK-268",
+                "CHK-269",
+                "CHK-270",
+                "CHK-272",
+                "CHK-274",
+                "CHK-275",
+                "CHK-276",
+                "CHK-277",
+                "CHK-278",
+                "CHK-279",
+                "CHK-280",
+                "CHK-281",
+                "CHK-282",
+                "CHK-283",
+                "CHK-284",
+                "CHK-285",
+                "CHK-286",
+                "CHK-287",
+                "CHK-288",
+                "CHK-289",
+                "CHK-290",
+                "CHK-291",
+                "CHK-293",
+                "CHK-294",
+                "CHK-295",
+                "CHK-296",
+                "CHK-297",
+                "CHK-298",
+                "CHK-299",
+                "CHK-301",
+                "CHK-304",
+                "CHK-305",
+                "CHK-306",
+                "CHK-310",
+                "CHK-311"
+              ]
+            }
+          ],
+          "sampleThreshold": {
+            "id": "T13",
+            "statement": "A calibration verdict needs ten completed, estimated items.",
+            "unit": "sample_size",
+            "value": 10
+          },
+          "spreadThreshold": {
+            "id": "T22",
+            "statement": "A workflow status is inconsistent when the spread of its dwell times reaches one and a half times its own median dwell.",
+            "unit": "basis_points",
+            "value": 15000
+          },
+          "statement": "In Progress, In Review hold items for wildly different lengths of time, so the status does not mean the same thing twice.",
+          "statistic": "status_dwell_consistency",
+          "trailingSprints": 5
+        },
+        "subTaskDoubleCount": {
+          "doubleCountedParentKeys": [],
+          "doubleCountedParents": 0,
+          "parentTickets": 0,
+          "shareBasisPoints": 0,
+          "statement": "No work item in scope has sub-tasks, so no points total can be double-counting one.",
+          "statistic": "sub_task_double_count"
+        }
+      },
+      "suppressed": [],
+      "trailingSprints": 5,
+      "verdictNames": [
+        "points_uninformative",
+        "scope_is_fiction",
+        "workflow_inconsistent",
+        "statuses_stale"
+      ],
+      "verdicts": [
+        {
+          "evidence": [
+            {
+              "kind": "issue",
+              "label": "CHK-201",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-201"
+            },
+            {
+              "kind": "issue",
+              "label": "CHK-203",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-203"
+            },
+            {
+              "kind": "issue",
+              "label": "CHK-204",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-204"
+            },
+            {
+              "kind": "issue",
+              "label": "CHK-205",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-205"
+            },
+            {
+              "kind": "issue",
+              "label": "CHK-209",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-209"
+            }
+          ],
+          "name": "points_uninformative",
+          "sampleSize": 75,
+          "statement": "Across 75 completed items your points correlate with elapsed working days at 0.05, over durations spanning 0 to 8 working days with a median of 3. T12 needs 0.30, so your points are not telling you how long work takes and any date below is a cycle-time guess.",
+          "statistic": "point_to_elapsed_working_days",
+          "subjects": [
+            "CHK-201",
+            "CHK-203",
+            "CHK-204",
+            "CHK-205",
+            "CHK-209",
+            "CHK-211",
+            "CHK-212",
+            "CHK-213",
+            "CHK-214",
+            "CHK-215",
+            "CHK-216",
+            "CHK-217",
+            "CHK-218",
+            "CHK-219",
+            "CHK-220",
+            "CHK-221",
+            "CHK-222",
+            "CHK-223",
+            "CHK-224",
+            "CHK-226",
+            "CHK-227",
+            "CHK-230",
+            "CHK-231",
+            "CHK-232",
+            "CHK-234",
+            "CHK-236",
+            "CHK-238",
+            "CHK-239",
+            "CHK-240",
+            "CHK-241",
+            "CHK-242",
+            "CHK-243",
+            "CHK-244",
+            "CHK-245",
+            "CHK-247",
+            "CHK-248",
+            "CHK-249",
+            "CHK-250",
+            "CHK-251",
+            "CHK-254",
+            "CHK-255",
+            "CHK-257",
+            "CHK-258",
+            "CHK-261",
+            "CHK-265",
+            "CHK-267",
+            "CHK-268",
+            "CHK-269",
+            "CHK-270",
+            "CHK-272",
+            "CHK-274",
+            "CHK-275",
+            "CHK-276",
+            "CHK-277",
+            "CHK-278",
+            "CHK-280",
+            "CHK-281",
+            "CHK-282",
+            "CHK-283",
+            "CHK-284",
+            "CHK-285",
+            "CHK-286",
+            "CHK-287",
+            "CHK-288",
+            "CHK-289",
+            "CHK-290",
+            "CHK-295",
+            "CHK-296",
+            "CHK-298",
+            "CHK-299",
+            "CHK-304",
+            "CHK-305",
+            "CHK-306",
+            "CHK-310",
+            "CHK-311"
+          ],
+          "supportingThresholds": [
+            {
+              "id": "T13",
+              "statement": "A calibration verdict needs ten completed, estimated items.",
+              "unit": "sample_size",
+              "value": 10
+            }
+          ],
+          "threshold": {
+            "id": "T12",
+            "statement": "Story points are uninformative when their correlation with elapsed days falls below 0.30.",
+            "unit": "basis_points",
+            "value": 3000
+          },
+          "value": 491,
+          "valueUnit": "basis_points"
+        },
+        {
+          "evidence": [
+            {
+              "kind": "sprint",
+              "label": "Sprint 12",
+              "sourceKey": "primary-tracker",
+              "sourceRecordId": "sprint-CHK-1"
+            },
+            {
+              "kind": "sprint",
+              "label": "Sprint 13",
+              "sourceKey": "primary-tracker",
+              "sourceRecordId": "sprint-CHK-2"
+            },
+            {
+              "kind": "sprint",
+              "label": "Sprint 14",
+              "sourceKey": "primary-tracker",
+              "sourceRecordId": "sprint-CHK-3"
+            },
+            {
+              "kind": "sprint",
+              "label": "Sprint 15",
+              "sourceKey": "primary-tracker",
+              "sourceRecordId": "sprint-CHK-4"
+            }
+          ],
+          "name": "scope_is_fiction",
+          "sampleSize": 4,
+          "statement": "Across the last 4 completed sprints a mean of 45% of the committed baseline rolled into the next sprint, and 4 of them passed the 30% T19 sets. T20 fires at 3 breached sprints out of the trailing 5, so what this team commits to at the start of a sprint is not what it works on.",
+          "statistic": "carryover_rate_and_scope_churn",
+          "subjects": [
+            "primary-tracker:sprint-CHK-1",
+            "primary-tracker:sprint-CHK-2",
+            "primary-tracker:sprint-CHK-3",
+            "primary-tracker:sprint-CHK-4"
+          ],
+          "supportingThresholds": [
+            {
+              "id": "T19",
+              "statement": "A sprint carried over when three tenths or more of its committed items were still unfinished when it closed.",
+              "unit": "basis_points",
+              "value": 3000
+            }
+          ],
+          "threshold": {
+            "id": "T20",
+            "statement": "Scope is fiction when three or more of the trailing five sprints breached the carryover rate.",
+            "unit": "count",
+            "value": 3
+          },
+          "value": 4,
+          "valueUnit": "count"
+        },
+        {
+          "evidence": [
+            {
+              "kind": "issue",
+              "label": "CHK-201",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-201"
+            },
+            {
+              "kind": "issue",
+              "label": "CHK-202",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-202"
+            },
+            {
+              "kind": "issue",
+              "label": "CHK-203",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-203"
+            },
+            {
+              "kind": "issue",
+              "label": "CHK-204",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-204"
+            },
+            {
+              "kind": "issue",
+              "label": "CHK-205",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-205"
+            }
+          ],
+          "name": "workflow_inconsistent",
+          "sampleSize": 101,
+          "statement": "In Progress, In Review hold items for wildly different lengths of time, so the status does not mean the same thing twice. `In Progress` spans 0 to 247 hours across 101 observations against a median of 94, which is 2.63 times that median where T22 fires at 1.50.",
+          "statistic": "status_dwell_consistency",
+          "subjects": [
+            "In Progress",
+            "In Review"
+          ],
+          "supportingThresholds": [
+            {
+              "id": "T13",
+              "statement": "A calibration verdict needs ten completed, estimated items.",
+              "unit": "sample_size",
+              "value": 10
+            }
+          ],
+          "threshold": {
+            "id": "T22",
+            "statement": "A workflow status is inconsistent when the spread of its dwell times reaches one and a half times its own median dwell.",
+            "unit": "basis_points",
+            "value": 15000
+          },
+          "value": 26277,
+          "valueUnit": "basis_points"
+        },
+        {
+          "evidence": [
+            {
+              "kind": "issue",
+              "label": "CHK-202",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-202"
+            },
+            {
+              "kind": "issue",
+              "label": "CHK-210",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-210"
+            },
+            {
+              "kind": "issue",
+              "label": "CHK-253",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-253"
+            },
+            {
+              "kind": "issue",
+              "label": "CHK-263",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-263"
+            },
+            {
+              "kind": "issue",
+              "label": "CHK-271",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-271"
+            }
+          ],
+          "name": "statuses_stale",
+          "sampleSize": 8,
+          "statement": "7 of 8 in-progress items — 88% — have sat still for 3 working days or more with no commit and no pull request: CHK-202, CHK-210, CHK-253, CHK-263, CHK-271, CHK-292, CHK-302. T24 fires at 20%, so the board is not describing where the work actually is.",
+          "statistic": "stale_status_incidence",
+          "subjects": [
+            "CHK-202",
+            "CHK-210",
+            "CHK-253",
+            "CHK-263",
+            "CHK-271",
+            "CHK-292",
+            "CHK-302"
+          ],
+          "supportingThresholds": [
+            {
+              "id": "T23",
+              "statement": "A work item is stale when it has sat in an in-progress status for three working days with no commit and no pull-request activity.",
+              "unit": "working_days",
+              "value": 3
+            }
+          ],
+          "threshold": {
+            "id": "T24",
+            "statement": "Statuses are stale when a fifth or more of the in-progress items are stale by T23.",
+            "unit": "basis_points",
+            "value": 2000
+          },
+          "value": 8750,
+          "valueUnit": "basis_points"
+        }
+      ]
+    },
+    "elapsedFacts": [
+      {
+        "dayCount": 62,
+        "entityId": "primary-code:pull-request-8067",
+        "entityKind": "pull_request",
+        "entityLabel": "#8067",
+        "evidence": [
+          {
+            "kind": "pull_request",
+            "label": "#8067",
+            "sourceKey": "primary-code",
+            "sourceRecordId": "pull-request-8067"
+          }
+        ],
+        "kind": "awaiting_review",
+        "occurrences": 1,
+        "since": 1779582120000,
+        "stableId": "v1:5a37a1082ffbbfa8",
+        "statement": "open for review, day 62"
+      },
+      {
+        "dayCount": 61,
+        "entityId": "CHK-202",
+        "entityKind": "ticket",
+        "entityLabel": "CHK-202",
+        "evidence": [
+          {
+            "kind": "issue",
+            "label": "CHK-202",
+            "sourceKey": "tracker",
+            "sourceRecordId": "CHK-202"
+          }
+        ],
+        "kind": "still_blocked",
+        "occurrences": 1,
+        "since": 1779638580000,
+        "stableId": "v1:30960b8f07e449c7",
+        "statement": "still blocked, day 61"
+      },
+      {
+        "dayCount": 61,
+        "entityId": "CHK-210",
+        "entityKind": "ticket",
+        "entityLabel": "CHK-210",
+        "evidence": [
+          {
+            "kind": "issue",
+            "label": "CHK-210",
+            "sourceKey": "tracker",
+            "sourceRecordId": "CHK-210"
+          }
+        ],
+        "kind": "still_in_flight",
+        "occurrences": 1,
+        "since": 1779632520000,
+        "stableId": "v1:f9fd7d349832f7a0",
+        "statement": "in progress since day 61"
+      },
+      {
+        "dayCount": 37,
+        "entityId": "primary-code:pull-request-8086",
+        "entityKind": "pull_request",
+        "entityLabel": "#8086",
+        "evidence": [
+          {
+            "kind": "pull_request",
+            "label": "#8086",
+            "sourceKey": "primary-code",
+            "sourceRecordId": "pull-request-8086"
+          }
+        ],
+        "kind": "awaiting_review",
+        "occurrences": 1,
+        "since": 1781762340000,
+        "stableId": "v1:1fde058facfde725",
+        "statement": "open for review, day 37"
+      },
+      {
+        "dayCount": 36,
+        "entityId": "CHK-253",
+        "entityKind": "ticket",
+        "entityLabel": "CHK-253",
+        "evidence": [
+          {
+            "kind": "issue",
+            "label": "CHK-253",
+            "sourceKey": "tracker",
+            "sourceRecordId": "CHK-253"
+          }
+        ],
+        "kind": "still_in_flight",
+        "occurrences": 1,
+        "since": 1781819940000,
+        "stableId": "v1:b1d6277ae01ae261",
+        "statement": "in progress since day 36"
+      },
+      {
+        "dayCount": 31,
+        "entityId": "primary-code:pull-request-8090",
+        "entityKind": "pull_request",
+        "entityLabel": "#8090",
+        "evidence": [
+          {
+            "kind": "pull_request",
+            "label": "#8090",
+            "sourceKey": "primary-code",
+            "sourceRecordId": "pull-request-8090"
+          }
+        ],
+        "kind": "awaiting_review",
+        "occurrences": 1,
+        "since": 1782267660000,
+        "stableId": "v1:456b32ecefc4e44e",
+        "statement": "open for review, day 31"
+      },
+      {
+        "dayCount": 31,
+        "entityId": "CHK-263",
+        "entityKind": "ticket",
+        "entityLabel": "CHK-263",
+        "evidence": [
+          {
+            "kind": "issue",
+            "label": "CHK-263",
+            "sourceKey": "tracker",
+            "sourceRecordId": "CHK-263"
+          }
+        ],
+        "kind": "still_in_flight",
+        "occurrences": 1,
+        "since": 1782238860000,
+        "stableId": "v1:cc387c8c117fb1ca",
+        "statement": "in progress since day 31"
+      },
+      {
+        "dayCount": 26,
+        "entityId": "CHK-271",
+        "entityKind": "ticket",
+        "entityLabel": "CHK-271",
+        "evidence": [
+          {
+            "kind": "issue",
+            "label": "CHK-271",
+            "sourceKey": "tracker",
+            "sourceRecordId": "CHK-271"
+          }
+        ],
+        "kind": "still_in_flight",
+        "occurrences": 1,
+        "since": 1782643080000,
+        "stableId": "v1:4bd75a2fd83cb7a9",
+        "statement": "in progress since day 26"
+      },
+      {
+        "dayCount": 13,
+        "entityId": "CHK-292",
+        "entityKind": "ticket",
+        "entityLabel": "CHK-292",
+        "evidence": [
+          {
+            "kind": "issue",
+            "label": "CHK-292",
+            "sourceKey": "tracker",
+            "sourceRecordId": "CHK-292"
+          }
+        ],
+        "kind": "still_blocked",
+        "occurrences": 1,
+        "since": 1783779780000,
+        "stableId": "v1:81f2ec6da3a1660a",
+        "statement": "still blocked, day 13"
+      },
+      {
+        "dayCount": 9,
+        "entityId": "primary-code:pull-request-8107",
+        "entityKind": "pull_request",
+        "entityLabel": "#8107",
+        "evidence": [
+          {
+            "kind": "pull_request",
+            "label": "#8107",
+            "sourceKey": "primary-code",
+            "sourceRecordId": "pull-request-8107"
+          }
+        ],
+        "kind": "awaiting_review",
+        "occurrences": 1,
+        "since": 1784159160000,
+        "stableId": "v1:5d4404678a68f985",
+        "statement": "open for review, day 9"
+      },
+      {
+        "dayCount": 9,
+        "entityId": "CHK-302",
+        "entityKind": "ticket",
+        "entityLabel": "CHK-302",
+        "evidence": [
+          {
+            "kind": "issue",
+            "label": "CHK-302",
+            "sourceKey": "tracker",
+            "sourceRecordId": "CHK-302"
+          }
+        ],
+        "kind": "still_in_flight",
+        "occurrences": 1,
+        "since": 1784123160000,
+        "stableId": "v1:6a557821f9d6e0d4",
+        "statement": "in progress since day 9"
+      }
+    ],
+    "progress": {
+      "mode": "sprint",
+      "sprint": {
+        "addedMidSprint": {
+          "points": 0,
+          "ticketKeys": [],
+          "tickets": 0
+        },
+        "basis": "story_points",
+        "basisThreshold": {
+          "id": "T15",
+          "statement": "Completion is measured in story points only when four fifths or more of the sprint scope carries an estimate; otherwise it is measured in items.",
+          "unit": "basis_points",
+          "value": 8000
+        },
+        "committed": {
+          "points": 120,
+          "ticketKeys": [
+            "CHK-297",
+            "CHK-299",
+            "CHK-300",
+            "CHK-301",
+            "CHK-302",
+            "CHK-303",
+            "CHK-304",
+            "CHK-305",
+            "CHK-306",
+            "CHK-307",
+            "CHK-308",
+            "CHK-309",
+            "CHK-310",
+            "CHK-311",
+            "CHK-312",
+            "CHK-313",
+            "CHK-314",
+            "CHK-315",
+            "CHK-316",
+            "CHK-317",
+            "CHK-318",
+            "CHK-319",
+            "CHK-320"
+          ],
+          "tickets": 23
+        },
+        "completed": {
+          "points": 107,
+          "ticketKeys": [
+            "CHK-297",
+            "CHK-299",
+            "CHK-300",
+            "CHK-301",
+            "CHK-303",
+            "CHK-304",
+            "CHK-305",
+            "CHK-306",
+            "CHK-307",
+            "CHK-308",
+            "CHK-309",
+            "CHK-310",
+            "CHK-311",
+            "CHK-312",
+            "CHK-313",
+            "CHK-315",
+            "CHK-316",
+            "CHK-317",
+            "CHK-318",
+            "CHK-319",
+            "CHK-320"
+          ],
+          "tickets": 21
+        },
+        "completedAt": 1785142800000,
+        "completionPercent": 89,
+        "completionPercentOfCommitment": 89,
+        "currentScope": {
+          "points": 120,
+          "ticketKeys": [
+            "CHK-297",
+            "CHK-299",
+            "CHK-300",
+            "CHK-301",
+            "CHK-302",
+            "CHK-303",
+            "CHK-304",
+            "CHK-305",
+            "CHK-306",
+            "CHK-307",
+            "CHK-308",
+            "CHK-309",
+            "CHK-310",
+            "CHK-311",
+            "CHK-312",
+            "CHK-313",
+            "CHK-314",
+            "CHK-315",
+            "CHK-316",
+            "CHK-317",
+            "CHK-318",
+            "CHK-319",
+            "CHK-320"
+          ],
+          "tickets": 23
+        },
+        "elapsedWorkingDays": 12,
+        "endAt": 1785142800000,
+        "evidence": [
+          {
+            "kind": "sprint",
+            "label": "Sprint 16",
+            "sourceKey": "primary-tracker",
+            "sourceRecordId": "sprint-CHK-5"
+          }
+        ],
+        "goal": "Roll guest checkout out to the first merchant cohort",
+        "reconciliation": [
+          {
+            "addedMidSprint": false,
+            "countedIn": "completed",
+            "points": null,
+            "status": "Done",
+            "statusCategory": "done",
+            "ticketKey": "CHK-297",
+            "title": "Address form loses state on a validation error after a redeploy"
+          },
+          {
+            "addedMidSprint": false,
+            "countedIn": "completed",
+            "points": 1,
+            "status": "Done",
+            "statusCategory": "done",
+            "ticketKey": "CHK-299",
+            "title": "Guest session expires mid-payment with no warning after a redeploy"
+          },
+          {
+            "addedMidSprint": false,
+            "countedIn": "completed",
+            "points": 3,
+            "status": "Done",
+            "statusCategory": "done",
+            "ticketKey": "CHK-300",
+            "title": "Card entry field rejects a valid Maestro number after a redeploy"
+          },
+          {
+            "addedMidSprint": false,
+            "countedIn": "completed",
+            "points": null,
+            "status": "Done",
+            "statusCategory": "done",
+            "ticketKey": "CHK-301",
+            "title": "Mobile keyboard covers the pay button after a redeploy"
+          },
+          {
+            "addedMidSprint": false,
+            "countedIn": "remaining",
+            "points": 13,
+            "status": "In Progress",
+            "statusCategory": "in_progress",
+            "ticketKey": "CHK-302",
+            "title": "Order summary rounds tax the wrong way after a redeploy"
+          },
+          {
+            "addedMidSprint": false,
+            "countedIn": "completed",
+            "points": 13,
+            "status": "Done",
+            "statusCategory": "done",
+            "ticketKey": "CHK-303",
+            "title": "Email receipt omits the merchant name after a redeploy"
+          },
+          {
+            "addedMidSprint": false,
+            "countedIn": "completed",
+            "points": 8,
+            "status": "Done",
+            "statusCategory": "done",
+            "ticketKey": "CHK-304",
+            "title": "Postcode lookup times out without a fallback after a redeploy"
+          },
+          {
+            "addedMidSprint": false,
+            "countedIn": "completed",
+            "points": 5,
+            "status": "Done",
+            "statusCategory": "done",
+            "ticketKey": "CHK-305",
+            "title": "Screen reader skips the payment error region after a redeploy"
+          },
+          {
+            "addedMidSprint": false,
+            "countedIn": "completed",
+            "points": 2,
+            "status": "Done",
+            "statusCategory": "done",
+            "ticketKey": "CHK-306",
+            "title": "Apple wallet button renders on unsupported browsers after a redeploy"
+          },
+          {
+            "addedMidSprint": false,
+            "countedIn": "completed",
+            "points": null,
+            "status": "Done",
+            "statusCategory": "done",
+            "ticketKey": "CHK-307",
+            "title": "Guest order cannot be claimed after sign-up after a redeploy"
+          },
+          {
+            "addedMidSprint": false,
+            "countedIn": "completed",
+            "points": 5,
+            "status": "Done",
+            "statusCategory": "done",
+            "ticketKey": "CHK-308",
+            "title": "Coupon field accepts an expired code after a redeploy"
+          },
+          {
+            "addedMidSprint": false,
+            "countedIn": "completed",
+            "points": 13,
+            "status": "Done",
+            "statusCategory": "done",
+            "ticketKey": "CHK-309",
+            "title": "Back navigation resubmits the payment after a redeploy"
+          },
+          {
+            "addedMidSprint": false,
+            "countedIn": "completed",
+            "points": 5,
+            "status": "Done",
+            "statusCategory": "done",
+            "ticketKey": "CHK-310",
+            "title": "Currency symbol is hard-coded to sterling after a redeploy"
+          },
+          {
+            "addedMidSprint": false,
+            "countedIn": "completed",
+            "points": 13,
+            "status": "Done",
+            "statusCategory": "done",
+            "ticketKey": "CHK-311",
+            "title": "Focus ring is invisible on the dark theme after a redeploy"
+          },
+          {
+            "addedMidSprint": false,
+            "countedIn": "completed",
+            "points": 3,
+            "status": "Done",
+            "statusCategory": "done",
+            "ticketKey": "CHK-312",
+            "title": "Checkout bundle ships an unused date library after a redeploy"
+          },
+          {
+            "addedMidSprint": false,
+            "countedIn": "completed",
+            "points": 13,
+            "status": "Done",
+            "statusCategory": "done",
+            "ticketKey": "CHK-313",
+            "title": "Payment sheet flashes before the token loads after a redeploy"
+          },
+          {
+            "addedMidSprint": false,
+            "countedIn": "remaining",
+            "points": null,
+            "status": "To Do",
+            "statusCategory": "todo",
+            "ticketKey": "CHK-314",
+            "title": "Delivery estimate ignores the merchant calendar after a redeploy"
+          },
+          {
+            "addedMidSprint": false,
+            "countedIn": "completed",
+            "points": 5,
+            "status": "Done",
+            "statusCategory": "done",
+            "ticketKey": "CHK-315",
+            "title": "Guest email is not normalized before lookup after a redeploy"
+          },
+          {
+            "addedMidSprint": false,
+            "countedIn": "completed",
+            "points": 2,
+            "status": "Done",
+            "statusCategory": "done",
+            "ticketKey": "CHK-316",
+            "title": "Retry after a decline charges twice on slow networks after a redeploy"
+          },
+          {
+            "addedMidSprint": false,
+            "countedIn": "completed",
+            "points": 8,
+            "status": "Done",
+            "statusCategory": "done",
+            "ticketKey": "CHK-317",
+            "title": "Form autofill overwrites the entered postcode after a redeploy"
+          },
+          {
+            "addedMidSprint": false,
+            "countedIn": "completed",
+            "points": 5,
+            "status": "Done",
+            "statusCategory": "done",
+            "ticketKey": "CHK-318",
+            "title": "Terms checkbox is not announced as required after a redeploy"
+          },
+          {
+            "addedMidSprint": false,
+            "countedIn": "completed",
+            "points": 2,
+            "status": "Done",
+            "statusCategory": "done",
+            "ticketKey": "CHK-319",
+            "title": "Merchant theme overrides the error colour after a redeploy"
+          },
+          {
+            "addedMidSprint": false,
+            "countedIn": "completed",
+            "points": 1,
+            "status": "Done",
+            "statusCategory": "done",
+            "ticketKey": "CHK-320",
+            "title": "Session cookie is set without the secure flag after a redeploy"
+          }
+        ],
+        "remaining": {
+          "points": 13,
+          "ticketKeys": [
+            "CHK-302",
+            "CHK-314"
+          ],
+          "tickets": 2
+        },
+        "sprintKey": "primary-tracker:sprint-CHK-5",
+        "sprintName": "Sprint 16",
+        "startAt": 1783933200000,
+        "state": "closed",
+        "unestimatedTicketKeys": [
+          "CHK-297",
+          "CHK-301",
+          "CHK-307",
+          "CHK-314"
+        ]
+      },
+      "velocity": {
+        "basis": "story_points",
+        "kind": "measured",
+        "meanPoints": 114.3,
+        "meanTickets": 22,
+        "medianPoints": 112,
+        "samples": [
+          {
+            "completedAt": 1780304400000,
+            "evidence": [
+              {
+                "kind": "sprint",
+                "label": "Sprint 12",
+                "sourceKey": "primary-tracker",
+                "sourceRecordId": "sprint-CHK-1"
+              }
+            ],
+            "points": 95,
+            "sprintKey": "primary-tracker:sprint-CHK-1",
+            "sprintName": "Sprint 12",
+            "ticketKeys": [
+              "CHK-201",
+              "CHK-203",
+              "CHK-204",
+              "CHK-205",
+              "CHK-206",
+              "CHK-207",
+              "CHK-209",
+              "CHK-211",
+              "CHK-212",
+              "CHK-213",
+              "CHK-214",
+              "CHK-215",
+              "CHK-216",
+              "CHK-217",
+              "CHK-218",
+              "CHK-219",
+              "CHK-220",
+              "CHK-221",
+              "CHK-222",
+              "CHK-223",
+              "CHK-224"
+            ],
+            "tickets": 21
+          },
+          {
+            "completedAt": 1781514000000,
+            "evidence": [
+              {
+                "kind": "sprint",
+                "label": "Sprint 13",
+                "sourceKey": "primary-tracker",
+                "sourceRecordId": "sprint-CHK-2"
+              }
+            ],
+            "points": 138,
+            "sprintKey": "primary-tracker:sprint-CHK-2",
+            "sprintName": "Sprint 13",
+            "ticketKeys": [
+              "CHK-225",
+              "CHK-226",
+              "CHK-227",
+              "CHK-228",
+              "CHK-229",
+              "CHK-230",
+              "CHK-231",
+              "CHK-232",
+              "CHK-233",
+              "CHK-234",
+              "CHK-235",
+              "CHK-236",
+              "CHK-237",
+              "CHK-238",
+              "CHK-239",
+              "CHK-240",
+              "CHK-241",
+              "CHK-242",
+              "CHK-243",
+              "CHK-244",
+              "CHK-245",
+              "CHK-246",
+              "CHK-247",
+              "CHK-248"
+            ],
+            "tickets": 24
+          },
+          {
+            "completedAt": 1782723600000,
+            "evidence": [
+              {
+                "kind": "sprint",
+                "label": "Sprint 14",
+                "sourceKey": "primary-tracker",
+                "sourceRecordId": "sprint-CHK-3"
+              }
+            ],
+            "points": 103,
+            "sprintKey": "primary-tracker:sprint-CHK-3",
+            "sprintName": "Sprint 14",
+            "ticketKeys": [
+              "CHK-249",
+              "CHK-250",
+              "CHK-251",
+              "CHK-252",
+              "CHK-254",
+              "CHK-255",
+              "CHK-256",
+              "CHK-257",
+              "CHK-258",
+              "CHK-260",
+              "CHK-261",
+              "CHK-262",
+              "CHK-264",
+              "CHK-265",
+              "CHK-266",
+              "CHK-267",
+              "CHK-268",
+              "CHK-269",
+              "CHK-270",
+              "CHK-272",
+              "CHK-274"
+            ],
+            "tickets": 21
+          },
+          {
+            "completedAt": 1783933200000,
+            "evidence": [
+              {
+                "kind": "sprint",
+                "label": "Sprint 15",
+                "sourceKey": "primary-tracker",
+                "sourceRecordId": "sprint-CHK-4"
+              }
+            ],
+            "points": 121,
+            "sprintKey": "primary-tracker:sprint-CHK-4",
+            "sprintName": "Sprint 15",
+            "ticketKeys": [
+              "CHK-275",
+              "CHK-276",
+              "CHK-277",
+              "CHK-278",
+              "CHK-279",
+              "CHK-280",
+              "CHK-281",
+              "CHK-282",
+              "CHK-283",
+              "CHK-284",
+              "CHK-285",
+              "CHK-286",
+              "CHK-287",
+              "CHK-288",
+              "CHK-289",
+              "CHK-290",
+              "CHK-291",
+              "CHK-293",
+              "CHK-294",
+              "CHK-295",
+              "CHK-296",
+              "CHK-298"
+            ],
+            "tickets": 22
+          }
+        ],
+        "statement": "Over the last 4 completed sprints the team finished a mean of 114.3 points per sprint, and that pace is flat.",
+        "trend": "flat",
+        "trendBasisPoints": -386
+      }
+    },
+    "projection": {
+      "band": {
+        "confidence": "low",
+        "earliestInstant": 1785834000000,
+        "earliestUtcDate": "2026-08-04",
+        "latestInstant": 1786438800000,
+        "latestUtcDate": "2026-08-11",
+        "spanDays": 7
+      },
+      "calibration": {
+        "correlation": {
+          "absoluteCoefficientBasisPoints": 491,
+          "coefficientBasisPoints": 491,
+          "coefficientThreshold": {
+            "id": "T12",
+            "statement": "Story points are uninformative when their correlation with elapsed days falls below 0.30.",
+            "unit": "basis_points",
+            "value": 3000
+          },
+          "sampleSize": 75,
+          "sampleThreshold": {
+            "id": "T13",
+            "statement": "A calibration verdict needs ten completed, estimated items.",
+            "unit": "sample_size",
+            "value": 10
+          },
+          "samples": [
+            {
+              "elapsedWorkingDays": 7,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-201"
+            },
+            {
+              "elapsedWorkingDays": 4,
+              "estimatePoints": 8,
+              "ticketKey": "CHK-203"
+            },
+            {
+              "elapsedWorkingDays": 3,
+              "estimatePoints": 1,
+              "ticketKey": "CHK-204"
+            },
+            {
+              "elapsedWorkingDays": 2,
+              "estimatePoints": 3,
+              "ticketKey": "CHK-205"
+            },
+            {
+              "elapsedWorkingDays": 2,
+              "estimatePoints": 5,
+              "ticketKey": "CHK-209"
+            },
+            {
+              "elapsedWorkingDays": 2,
+              "estimatePoints": 5,
+              "ticketKey": "CHK-211"
+            },
+            {
+              "elapsedWorkingDays": 7,
+              "estimatePoints": 5,
+              "ticketKey": "CHK-212"
+            },
+            {
+              "elapsedWorkingDays": 2,
+              "estimatePoints": 3,
+              "ticketKey": "CHK-213"
+            },
+            {
+              "elapsedWorkingDays": 3,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-214"
+            },
+            {
+              "elapsedWorkingDays": 3,
+              "estimatePoints": 3,
+              "ticketKey": "CHK-215"
+            },
+            {
+              "elapsedWorkingDays": 4,
+              "estimatePoints": 1,
+              "ticketKey": "CHK-216"
+            },
+            {
+              "elapsedWorkingDays": 2,
+              "estimatePoints": 5,
+              "ticketKey": "CHK-217"
+            },
+            {
+              "elapsedWorkingDays": 5,
+              "estimatePoints": 2,
+              "ticketKey": "CHK-218"
+            },
+            {
+              "elapsedWorkingDays": 4,
+              "estimatePoints": 5,
+              "ticketKey": "CHK-219"
+            },
+            {
+              "elapsedWorkingDays": 0,
+              "estimatePoints": 3,
+              "ticketKey": "CHK-220"
+            },
+            {
+              "elapsedWorkingDays": 0,
+              "estimatePoints": 1,
+              "ticketKey": "CHK-221"
+            },
+            {
+              "elapsedWorkingDays": 0,
+              "estimatePoints": 5,
+              "ticketKey": "CHK-222"
+            },
+            {
+              "elapsedWorkingDays": 5,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-223"
+            },
+            {
+              "elapsedWorkingDays": 4,
+              "estimatePoints": 1,
+              "ticketKey": "CHK-224"
+            },
+            {
+              "elapsedWorkingDays": 5,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-226"
+            },
+            {
+              "elapsedWorkingDays": 6,
+              "estimatePoints": 3,
+              "ticketKey": "CHK-227"
+            },
+            {
+              "elapsedWorkingDays": 3,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-230"
+            },
+            {
+              "elapsedWorkingDays": 4,
+              "estimatePoints": 8,
+              "ticketKey": "CHK-231"
+            },
+            {
+              "elapsedWorkingDays": 4,
+              "estimatePoints": 8,
+              "ticketKey": "CHK-232"
+            },
+            {
+              "elapsedWorkingDays": 5,
+              "estimatePoints": 3,
+              "ticketKey": "CHK-234"
+            },
+            {
+              "elapsedWorkingDays": 5,
+              "estimatePoints": 3,
+              "ticketKey": "CHK-236"
+            },
+            {
+              "elapsedWorkingDays": 4,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-238"
+            },
+            {
+              "elapsedWorkingDays": 4,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-239"
+            },
+            {
+              "elapsedWorkingDays": 4,
+              "estimatePoints": 3,
+              "ticketKey": "CHK-240"
+            },
+            {
+              "elapsedWorkingDays": 1,
+              "estimatePoints": 5,
+              "ticketKey": "CHK-241"
+            },
+            {
+              "elapsedWorkingDays": 4,
+              "estimatePoints": 8,
+              "ticketKey": "CHK-242"
+            },
+            {
+              "elapsedWorkingDays": 1,
+              "estimatePoints": 1,
+              "ticketKey": "CHK-243"
+            },
+            {
+              "elapsedWorkingDays": 5,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-244"
+            },
+            {
+              "elapsedWorkingDays": 6,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-245"
+            },
+            {
+              "elapsedWorkingDays": 5,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-247"
+            },
+            {
+              "elapsedWorkingDays": 3,
+              "estimatePoints": 5,
+              "ticketKey": "CHK-248"
+            },
+            {
+              "elapsedWorkingDays": 2,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-249"
+            },
+            {
+              "elapsedWorkingDays": 4,
+              "estimatePoints": 8,
+              "ticketKey": "CHK-250"
+            },
+            {
+              "elapsedWorkingDays": 1,
+              "estimatePoints": 5,
+              "ticketKey": "CHK-251"
+            },
+            {
+              "elapsedWorkingDays": 1,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-254"
+            },
+            {
+              "elapsedWorkingDays": 1,
+              "estimatePoints": 8,
+              "ticketKey": "CHK-255"
+            },
+            {
+              "elapsedWorkingDays": 1,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-257"
+            },
+            {
+              "elapsedWorkingDays": 1,
+              "estimatePoints": 2,
+              "ticketKey": "CHK-258"
+            },
+            {
+              "elapsedWorkingDays": 1,
+              "estimatePoints": 1,
+              "ticketKey": "CHK-261"
+            },
+            {
+              "elapsedWorkingDays": 7,
+              "estimatePoints": 3,
+              "ticketKey": "CHK-265"
+            },
+            {
+              "elapsedWorkingDays": 1,
+              "estimatePoints": 2,
+              "ticketKey": "CHK-267"
+            },
+            {
+              "elapsedWorkingDays": 3,
+              "estimatePoints": 8,
+              "ticketKey": "CHK-268"
+            },
+            {
+              "elapsedWorkingDays": 0,
+              "estimatePoints": 8,
+              "ticketKey": "CHK-269"
+            },
+            {
+              "elapsedWorkingDays": 4,
+              "estimatePoints": 3,
+              "ticketKey": "CHK-270"
+            },
+            {
+              "elapsedWorkingDays": 3,
+              "estimatePoints": 3,
+              "ticketKey": "CHK-272"
+            },
+            {
+              "elapsedWorkingDays": 5,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-274"
+            },
+            {
+              "elapsedWorkingDays": 8,
+              "estimatePoints": 3,
+              "ticketKey": "CHK-275"
+            },
+            {
+              "elapsedWorkingDays": 3,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-276"
+            },
+            {
+              "elapsedWorkingDays": 6,
+              "estimatePoints": 2,
+              "ticketKey": "CHK-277"
+            },
+            {
+              "elapsedWorkingDays": 2,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-278"
+            },
+            {
+              "elapsedWorkingDays": 1,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-280"
+            },
+            {
+              "elapsedWorkingDays": 6,
+              "estimatePoints": 5,
+              "ticketKey": "CHK-281"
+            },
+            {
+              "elapsedWorkingDays": 0,
+              "estimatePoints": 1,
+              "ticketKey": "CHK-282"
+            },
+            {
+              "elapsedWorkingDays": 7,
+              "estimatePoints": 1,
+              "ticketKey": "CHK-283"
+            },
+            {
+              "elapsedWorkingDays": 8,
+              "estimatePoints": 5,
+              "ticketKey": "CHK-284"
+            },
+            {
+              "elapsedWorkingDays": 4,
+              "estimatePoints": 8,
+              "ticketKey": "CHK-285"
+            },
+            {
+              "elapsedWorkingDays": 3,
+              "estimatePoints": 3,
+              "ticketKey": "CHK-286"
+            },
+            {
+              "elapsedWorkingDays": 2,
+              "estimatePoints": 2,
+              "ticketKey": "CHK-287"
+            },
+            {
+              "elapsedWorkingDays": 7,
+              "estimatePoints": 8,
+              "ticketKey": "CHK-288"
+            },
+            {
+              "elapsedWorkingDays": 3,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-289"
+            },
+            {
+              "elapsedWorkingDays": 2,
+              "estimatePoints": 5,
+              "ticketKey": "CHK-290"
+            },
+            {
+              "elapsedWorkingDays": 3,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-295"
+            },
+            {
+              "elapsedWorkingDays": 1,
+              "estimatePoints": 8,
+              "ticketKey": "CHK-296"
+            },
+            {
+              "elapsedWorkingDays": 4,
+              "estimatePoints": 5,
+              "ticketKey": "CHK-298"
+            },
+            {
+              "elapsedWorkingDays": 4,
+              "estimatePoints": 1,
+              "ticketKey": "CHK-299"
+            },
+            {
+              "elapsedWorkingDays": 0,
+              "estimatePoints": 8,
+              "ticketKey": "CHK-304"
+            },
+            {
+              "elapsedWorkingDays": 1,
+              "estimatePoints": 5,
+              "ticketKey": "CHK-305"
+            },
+            {
+              "elapsedWorkingDays": 3,
+              "estimatePoints": 2,
+              "ticketKey": "CHK-306"
+            },
+            {
+              "elapsedWorkingDays": 3,
+              "estimatePoints": 5,
+              "ticketKey": "CHK-310"
+            },
+            {
+              "elapsedWorkingDays": 2,
+              "estimatePoints": 13,
+              "ticketKey": "CHK-311"
+            }
+          ],
+          "spread": {
+            "elapsedWorkingDays": {
+              "maximum": 8,
+              "median": 3,
+              "minimum": 0,
+              "spread": 8,
+              "unit": "working_days"
+            },
+            "estimatePoints": {
+              "maximum": 13,
+              "median": 5,
+              "minimum": 1,
+              "spread": 12,
+              "unit": "story_points"
+            }
+          },
+          "statement": "Across 75 completed items your points correlate with elapsed working days at 0.05, over durations spanning 0 to 8 working days with a median of 3.",
+          "statistic": "point_to_elapsed_working_days",
+          "ticketKeys": [
+            "CHK-201",
+            "CHK-203",
+            "CHK-204",
+            "CHK-205",
+            "CHK-209",
+            "CHK-211",
+            "CHK-212",
+            "CHK-213",
+            "CHK-214",
+            "CHK-215",
+            "CHK-216",
+            "CHK-217",
+            "CHK-218",
+            "CHK-219",
+            "CHK-220",
+            "CHK-221",
+            "CHK-222",
+            "CHK-223",
+            "CHK-224",
+            "CHK-226",
+            "CHK-227",
+            "CHK-230",
+            "CHK-231",
+            "CHK-232",
+            "CHK-234",
+            "CHK-236",
+            "CHK-238",
+            "CHK-239",
+            "CHK-240",
+            "CHK-241",
+            "CHK-242",
+            "CHK-243",
+            "CHK-244",
+            "CHK-245",
+            "CHK-247",
+            "CHK-248",
+            "CHK-249",
+            "CHK-250",
+            "CHK-251",
+            "CHK-254",
+            "CHK-255",
+            "CHK-257",
+            "CHK-258",
+            "CHK-261",
+            "CHK-265",
+            "CHK-267",
+            "CHK-268",
+            "CHK-269",
+            "CHK-270",
+            "CHK-272",
+            "CHK-274",
+            "CHK-275",
+            "CHK-276",
+            "CHK-277",
+            "CHK-278",
+            "CHK-280",
+            "CHK-281",
+            "CHK-282",
+            "CHK-283",
+            "CHK-284",
+            "CHK-285",
+            "CHK-286",
+            "CHK-287",
+            "CHK-288",
+            "CHK-289",
+            "CHK-290",
+            "CHK-295",
+            "CHK-296",
+            "CHK-298",
+            "CHK-299",
+            "CHK-304",
+            "CHK-305",
+            "CHK-306",
+            "CHK-310",
+            "CHK-311"
+          ]
+        },
+        "correlationThreshold": {
+          "id": "T12",
+          "statement": "Story points are uninformative when their correlation with elapsed days falls below 0.30.",
+          "unit": "basis_points",
+          "value": 3000
+        },
+        "sampleSize": 75,
+        "sampleThreshold": {
+          "id": "T13",
+          "statement": "A calibration verdict needs ten completed, estimated items.",
+          "unit": "sample_size",
+          "value": 10
+        },
+        "statement": "Your points have not tracked elapsed working days across 75 completed items — correlation 0.05 over durations spanning 0 to 8 working days, below the 0.30 Compass needs — so any date below is a cycle-time guess, not a plan.",
+        "ticketKeys": [
+          "CHK-201",
+          "CHK-203",
+          "CHK-204",
+          "CHK-205",
+          "CHK-209",
+          "CHK-211",
+          "CHK-212",
+          "CHK-213",
+          "CHK-214",
+          "CHK-215",
+          "CHK-216",
+          "CHK-217",
+          "CHK-218",
+          "CHK-219",
+          "CHK-220",
+          "CHK-221",
+          "CHK-222",
+          "CHK-223",
+          "CHK-224",
+          "CHK-226",
+          "CHK-227",
+          "CHK-230",
+          "CHK-231",
+          "CHK-232",
+          "CHK-234",
+          "CHK-236",
+          "CHK-238",
+          "CHK-239",
+          "CHK-240",
+          "CHK-241",
+          "CHK-242",
+          "CHK-243",
+          "CHK-244",
+          "CHK-245",
+          "CHK-247",
+          "CHK-248",
+          "CHK-249",
+          "CHK-250",
+          "CHK-251",
+          "CHK-254",
+          "CHK-255",
+          "CHK-257",
+          "CHK-258",
+          "CHK-261",
+          "CHK-265",
+          "CHK-267",
+          "CHK-268",
+          "CHK-269",
+          "CHK-270",
+          "CHK-272",
+          "CHK-274",
+          "CHK-275",
+          "CHK-276",
+          "CHK-277",
+          "CHK-278",
+          "CHK-280",
+          "CHK-281",
+          "CHK-282",
+          "CHK-283",
+          "CHK-284",
+          "CHK-285",
+          "CHK-286",
+          "CHK-287",
+          "CHK-288",
+          "CHK-289",
+          "CHK-290",
+          "CHK-295",
+          "CHK-296",
+          "CHK-298",
+          "CHK-299",
+          "CHK-304",
+          "CHK-305",
+          "CHK-306",
+          "CHK-310",
+          "CHK-311"
+        ],
+        "verdict": "points_uninformative"
+      },
+      "instant": 1785834000000,
+      "kind": "projected",
+      "method": "cycle_time",
+      "reasoning": {
+        "assumptions": [
+          "Items are worked one flow at a time at the observed rate.",
+          "The remaining items are no harder than the ones already measured.",
+          "Story points are ignored entirely, because the audit found they have not predicted duration here."
+        ],
+        "confidence": "low",
+        "formula": "remaining items × median measured cycle time, banded to the 85th percentile",
+        "inputs": [
+          {
+            "name": "remainingItems",
+            "unit": "items",
+            "value": 2
+          },
+          {
+            "name": "medianCycleTimeDays",
+            "unit": "days",
+            "value": 4.8
+          },
+          {
+            "name": "p85CycleTimeDays",
+            "unit": "days",
+            "value": 8.1
+          },
+          {
+            "name": "sampleSize",
+            "unit": "items",
+            "value": 96
+          }
+        ],
+        "method": "cycle_time",
+        "selectedByVerdicts": [
+          "points_uninformative"
+        ]
+      },
+      "selectedByVerdicts": [
+        "points_uninformative"
+      ],
+      "statement": "2026-08-04 to 2026-08-11 — a 7-day band from measured cycle time over 96 finished items. This is a cycle-time guess, not a velocity forecast.",
+      "utcDate": "2026-08-04"
+    },
+    "recommendations": [
+      {
+        "actor": {
+          "displayName": "Rafael Lima",
+          "key": "rafael-lima",
+          "kind": "developer"
+        },
+        "cause": {
+          "causeDiscriminator": "changes_requested_stalled",
+          "causeKind": "recommend_blocker",
+          "entityRef": "pull_request:primary-code:pull-request-8067"
+        },
+        "evidence": [
+          {
+            "kind": "pull_request",
+            "label": "#8067",
+            "sourceKey": "primary-code",
+            "sourceRecordId": "pull-request-8067"
+          }
+        ],
+        "object": {
+          "key": "primary-code:pull-request-8067",
+          "kind": "pull_request",
+          "label": "#8067"
+        },
+        "rationale": "Daniel Ortiz asked for changes on #8067 and nothing has happened since — 1 changes-requested cycle so far. That crosses T3 at 2 working days.",
+        "source": "blocker",
+        "stableId": "v1:1f4d4cddcaad1491",
+        "step": "Push the requested changes to #8067, or say in one line why they are not happening.",
+        "urgency": "today"
+      },
+      {
+        "actor": {
+          "displayName": "Rafael Lima",
+          "key": "rafael-lima",
+          "kind": "developer"
+        },
+        "cause": {
+          "causeDiscriminator": "status_dwell",
+          "causeKind": "recommend_blocker",
+          "entityRef": "ticket:CHK-263"
+        },
+        "evidence": [
+          {
+            "kind": "issue",
+            "label": "CHK-263",
+            "sourceKey": "tracker",
+            "sourceRecordId": "CHK-263"
+          }
+        ],
+        "object": {
+          "key": "CHK-263",
+          "kind": "ticket",
+          "label": "CHK-263"
+        },
+        "rationale": "CHK-263 is in \"In Progress\" and its last status change was 31 days ago. That crosses T1 at 3 working days. Compass is inferring this from silence, so it may simply be work that does not show up on the board.",
+        "source": "blocker",
+        "stableId": "v1:a91253aa37313460",
+        "step": "Ask what CHK-263 is waiting on and write the answer on the ticket.",
+        "urgency": "today"
+      },
+      {
+        "actor": {
+          "displayName": "Rafael Lima",
+          "key": "rafael-lima",
+          "kind": "developer"
+        },
+        "cause": {
+          "causeDiscriminator": "status_dwell",
+          "causeKind": "recommend_blocker",
+          "entityRef": "ticket:CHK-210"
+        },
+        "evidence": [
+          {
+            "kind": "issue",
+            "label": "CHK-210",
+            "sourceKey": "tracker",
+            "sourceRecordId": "CHK-210"
+          }
+        ],
+        "object": {
+          "key": "CHK-210",
+          "kind": "ticket",
+          "label": "CHK-210"
+        },
+        "rationale": "CHK-210 is in \"In Progress\" and its last status change was 61 days ago. That crosses T1 at 3 working days. Compass is inferring this from silence, so it may simply be work that does not show up on the board.",
+        "source": "blocker",
+        "stableId": "v1:d088dc606c5b8b3a",
+        "step": "Ask what CHK-210 is waiting on and write the answer on the ticket.",
+        "urgency": "today"
+      },
+      {
+        "actor": {
+          "displayName": "Rafael Lima",
+          "key": "rafael-lima",
+          "kind": "developer"
+        },
+        "cause": {
+          "causeDiscriminator": "tracker_flag",
+          "causeKind": "recommend_blocker",
+          "entityRef": "ticket:CHK-202"
+        },
+        "evidence": [
+          {
+            "kind": "issue",
+            "label": "CHK-202",
+            "sourceKey": "tracker",
+            "sourceRecordId": "CHK-202"
+          }
+        ],
+        "object": {
+          "key": "CHK-202",
+          "kind": "ticket",
+          "label": "CHK-202"
+        },
+        "rationale": "The tracker carries the blocked flag on CHK-202 — Declined card message names the wrong field. Compass is reporting what the tracker states, not inferring it.",
+        "source": "blocker",
+        "stableId": "v1:d863f876c1e7a629",
+        "step": "Chase the dependency CHK-202 is blocked on, or hand it back to the board.",
+        "urgency": "today"
+      },
+      {
+        "actor": {
+          "displayName": "Daniel Ortiz",
+          "key": "daniel-ortiz",
+          "kind": "developer"
+        },
+        "cause": {
+          "causeDiscriminator": "status_dwell",
+          "causeKind": "recommend_blocker",
+          "entityRef": "ticket:CHK-253"
+        },
+        "evidence": [
+          {
+            "kind": "issue",
+            "label": "CHK-253",
+            "sourceKey": "tracker",
+            "sourceRecordId": "CHK-253"
+          }
+        ],
+        "object": {
+          "key": "CHK-253",
+          "kind": "ticket",
+          "label": "CHK-253"
+        },
+        "rationale": "CHK-253 is in \"In Progress\" and its last status change was 36 days ago. That crosses T1 at 3 working days. Compass is inferring this from silence, so it may simply be work that does not show up on the board.",
+        "source": "blocker",
+        "stableId": "v1:faac3d9ca4aecdc1",
+        "step": "Ask what CHK-253 is waiting on and write the answer on the ticket.",
+        "urgency": "today"
+      }
+    ],
+    "reviewQueue": {
+      "awaitingFirstReview": 0,
+      "concentration": null,
+      "entries": [
+        {
+          "ageDays": 62,
+          "authorDeveloperKey": "rafael-lima",
+          "authorName": "Rafael Lima",
+          "awaitingFirstReview": false,
+          "evidence": [
+            {
+              "kind": "pull_request",
+              "label": "#8067",
+              "sourceKey": "primary-code",
+              "sourceRecordId": "pull-request-8067"
+            }
+          ],
+          "lastReviewAt": 1780176120000,
+          "lastReviewVerdict": "changes_requested",
+          "linkedTicketKeys": [
+            "CHK-210"
+          ],
+          "pullRequestKey": "primary-code:pull-request-8067",
+          "pullRequestNumber": "#8067",
+          "repositoryKey": "checkout-web",
+          "reviewCount": 3,
+          "reviewerDeveloperKeys": [
+            "daniel-ortiz"
+          ],
+          "reviewerNames": [
+            "Daniel Ortiz"
+          ],
+          "stableId": "v1:3d5d44270d32008e",
+          "timeInReviewDays": 55,
+          "title": "CHK-210 Apple wallet button renders on unsupported browsers",
+          "workingDaysWaiting": 40
+        },
+        {
+          "ageDays": 37,
+          "authorDeveloperKey": "daniel-ortiz",
+          "authorName": "Daniel Ortiz",
+          "awaitingFirstReview": false,
+          "evidence": [
+            {
+              "kind": "pull_request",
+              "label": "#8086",
+              "sourceKey": "primary-code",
+              "sourceRecordId": "pull-request-8086"
+            }
+          ],
+          "lastReviewAt": 1782014340000,
+          "lastReviewVerdict": "commented",
+          "linkedTicketKeys": [
+            "CHK-253"
+          ],
+          "pullRequestKey": "primary-code:pull-request-8086",
+          "pullRequestNumber": "#8086",
+          "repositoryKey": "checkout-web",
+          "reviewCount": 2,
+          "reviewerDeveloperKeys": [
+            "rafael-lima"
+          ],
+          "reviewerNames": [
+            "Rafael Lima"
+          ],
+          "stableId": "v1:feec87bfc46993e1",
+          "timeInReviewDays": 34,
+          "title": "CHK-253 Mobile keyboard covers the pay button for large merchants",
+          "workingDaysWaiting": 25
+        },
+        {
+          "ageDays": 31,
+          "authorDeveloperKey": "rafael-lima",
+          "authorName": "Rafael Lima",
+          "awaitingFirstReview": false,
+          "evidence": [
+            {
+              "kind": "pull_request",
+              "label": "#8090",
+              "sourceKey": "primary-code",
+              "sourceRecordId": "pull-request-8090"
+            }
+          ],
+          "lastReviewAt": 1782577260000,
+          "lastReviewVerdict": "changes_requested",
+          "linkedTicketKeys": [
+            "CHK-263"
+          ],
+          "pullRequestKey": "primary-code:pull-request-8090",
+          "pullRequestNumber": "#8090",
+          "repositoryKey": "checkout-web",
+          "reviewCount": 2,
+          "reviewerDeveloperKeys": [
+            "daniel-ortiz"
+          ],
+          "reviewerNames": [
+            "Daniel Ortiz"
+          ],
+          "stableId": "v1:c5150734cf838c30",
+          "timeInReviewDays": 27,
+          "title": "CHK-263 Focus ring is invisible on the dark theme for large merchants",
+          "workingDaysWaiting": 20
+        },
+        {
+          "ageDays": 9,
+          "authorDeveloperKey": "daniel-ortiz",
+          "authorName": "Daniel Ortiz",
+          "awaitingFirstReview": false,
+          "evidence": [
+            {
+              "kind": "pull_request",
+              "label": "#8107",
+              "sourceKey": "primary-code",
+              "sourceRecordId": "pull-request-8107"
+            }
+          ],
+          "lastReviewAt": 1784321160000,
+          "lastReviewVerdict": "commented",
+          "linkedTicketKeys": [
+            "CHK-302"
+          ],
+          "pullRequestKey": "primary-code:pull-request-8107",
+          "pullRequestNumber": "#8107",
+          "repositoryKey": "checkout-web",
+          "reviewCount": 3,
+          "reviewerDeveloperKeys": [
+            "rafael-lima"
+          ],
+          "reviewerNames": [
+            "Rafael Lima"
+          ],
+          "stableId": "v1:fa0ceab3925fa541",
+          "timeInReviewDays": 7,
+          "title": "CHK-302 Order summary rounds tax the wrong way after a redeploy",
+          "workingDaysWaiting": 6
+        }
+      ],
+      "medianTimeInReviewDays": 30.5,
+      "oldestAgeDays": 62,
+      "openByReviewer": [
+        {
+          "developerKey": "daniel-ortiz",
+          "displayName": "Daniel Ortiz",
+          "oldestAgeDays": 62,
+          "openCount": 2,
+          "pullRequestNumbers": [
+            "#8067",
+            "#8090"
+          ]
+        },
+        {
+          "developerKey": "rafael-lima",
+          "displayName": "Rafael Lima",
+          "oldestAgeDays": 37,
+          "openCount": 2,
+          "pullRequestNumbers": [
+            "#8086",
+            "#8107"
+          ]
+        }
+      ],
+      "statement": "4 pull requests are open for review, the oldest 62 days old.",
+      "totalOpen": 4,
+      "withNoReviewer": 0
+    },
+    "risks": [
+      {
+        "ageDays": 0,
+        "cause": "estimation_noise",
+        "detail": "Your points have not tracked elapsed working days across 75 completed items — correlation 0.05 over durations spanning 0 to 8 working days, below the 0.30 Compass needs — so any date below is a cycle-time guess, not a plan. Compass compares points against measured start-to-finish duration for 75 completed items; T12 needs a correlation of 0.30. Every projected date in this report is therefore a cycle-time guess, and it is set in a lighter weight for that reason.",
+        "evidence": [
+          {
+            "kind": "issue",
+            "label": "CHK-201",
+            "sourceKey": "tracker",
+            "sourceRecordId": "CHK-201"
+          },
+          {
+            "kind": "issue",
+            "label": "CHK-203",
+            "sourceKey": "tracker",
+            "sourceRecordId": "CHK-203"
+          },
+          {
+            "kind": "issue",
+            "label": "CHK-204",
+            "sourceKey": "tracker",
+            "sourceRecordId": "CHK-204"
+          },
+          {
+            "kind": "issue",
+            "label": "CHK-205",
+            "sourceKey": "tracker",
+            "sourceRecordId": "CHK-205"
+          },
+          {
+            "kind": "issue",
+            "label": "CHK-209",
+            "sourceKey": "tracker",
+            "sourceRecordId": "CHK-209"
+          }
+        ],
+        "headline": "Story points are not predicting how long work takes",
+        "measured": {
+          "unit": "basis_points",
+          "value": 491
+        },
+        "priorAt": null,
+        "priorBasis": "no_prior_observation",
+        "priorValue": null,
+        "severity": "medium",
+        "stableId": "v1:06478b19345462da",
+        "subject": {
+          "key": "checkout",
+          "kind": "team",
+          "label": "estimation calibration"
+        },
+        "threshold": {
+          "id": "T12",
+          "statement": "Story points are uninformative when their correlation with elapsed days falls below 0.30.",
+          "unit": "basis_points",
+          "value": 3000
+        },
+        "trend": "new"
+      },
+      {
+        "ageDays": 0,
+        "cause": "unreleased_merged_work",
+        "detail": "guest-checkout-1.0.0-rc.1 was cut 0 days ago and 4 pull requests have merged into checkout-web since — 0 of them before this window. T16 fires at 3. The oldest is #9201 (CHK-701), which has been waiting 0 days.",
+        "evidence": [
+          {
+            "kind": "pull_request",
+            "label": "#8112",
+            "sourceKey": "primary-code",
+            "sourceRecordId": "pull-request-8112"
+          },
+          {
+            "kind": "pull_request",
+            "label": "#8113",
+            "sourceKey": "primary-code",
+            "sourceRecordId": "pull-request-8113"
+          },
+          {
+            "kind": "pull_request",
+            "label": "#8114",
+            "sourceKey": "primary-code",
+            "sourceRecordId": "pull-request-8114"
+          },
+          {
+            "kind": "pull_request",
+            "label": "#9201",
+            "sourceKey": "primary-code",
+            "sourceRecordId": "pull-request-9201"
+          },
+          {
+            "kind": "release",
+            "label": "guest-checkout-1.0.0-rc.1",
+            "sourceKey": "code",
+            "sourceRecordId": "checkout-web:guest-checkout-1.0.0-rc.1"
+          }
+        ],
+        "headline": "4 merged pull requests sit ahead of guest-checkout-1.0.0-rc.1",
+        "measured": {
+          "unit": "count",
+          "value": 4
+        },
+        "priorAt": null,
+        "priorBasis": "no_prior_observation",
+        "priorValue": null,
+        "severity": "medium",
+        "stableId": "v1:7365e3ae3206a743",
+        "subject": {
+          "key": "checkout-web",
+          "kind": "repository",
+          "label": "checkout-web"
+        },
+        "threshold": {
+          "id": "T16",
+          "statement": "Three or more merged pull requests sitting ahead of the newest release tag is unreleased work worth naming.",
+          "unit": "count",
+          "value": 3
+        },
+        "trend": "new"
+      },
+      {
+        "ageDays": 0,
+        "cause": "done_without_pull_request",
+        "detail": "The tracker moved CHK-310 into a done status — \"Currency symbol is hard-coded to sterling after a redeploy\", and Compass can find no pull request the forge linked to it. The completion ladder therefore stops at R1 accepted with nothing above it. Either the work landed under a branch that never named the key, or the status was moved ahead of the work; both make every points total and every velocity that counts this item wrong.",
+        "evidence": [
+          {
+            "kind": "issue",
+            "label": "CHK-310",
+            "sourceKey": "tracker",
+            "sourceRecordId": "CHK-310"
+          }
+        ],
+        "headline": "CHK-310 is accepted with no pull request behind it",
+        "measured": {
+          "unit": "count",
+          "value": 1
+        },
+        "priorAt": null,
+        "priorBasis": "no_prior_observation",
+        "priorValue": null,
+        "severity": "medium",
+        "stableId": "v1:e8a69ff36b985d30",
+        "subject": {
+          "key": "CHK-310",
+          "kind": "ticket",
+          "label": "CHK-310"
+        },
+        "threshold": {
+          "id": "T0",
+          "statement": "The source states this outright, so no threshold is applied.",
+          "unit": "none",
+          "value": 0
+        },
+        "trend": "new"
+      }
+    ],
+    "technicalDebt": {
+      "evidence": [
+        {
+          "kind": "issue",
+          "label": "CHK-253",
+          "sourceKey": "tracker",
+          "sourceRecordId": "CHK-253"
+        },
+        {
+          "kind": "issue",
+          "label": "CHK-302",
+          "sourceKey": "tracker",
+          "sourceRecordId": "CHK-302"
+        }
+      ],
+      "growth": "flat",
+      "openedPerSprint": [
+        {
+          "complete": true,
+          "endAt": 1780304400000,
+          "opened": 4,
+          "sprintKey": "primary-tracker:sprint-CHK-1",
+          "sprintName": "Sprint 12",
+          "startAt": 1779094800000,
+          "ticketKeys": [
+            "CHK-211",
+            "CHK-212",
+            "CHK-218",
+            "CHK-221"
+          ]
+        },
+        {
+          "complete": true,
+          "endAt": 1781514000000,
+          "opened": 11,
+          "sprintKey": "primary-tracker:sprint-CHK-2",
+          "sprintName": "Sprint 13",
+          "startAt": 1780304400000,
+          "ticketKeys": [
+            "CHK-226",
+            "CHK-227",
+            "CHK-228",
+            "CHK-233",
+            "CHK-235",
+            "CHK-236",
+            "CHK-238",
+            "CHK-239",
+            "CHK-241",
+            "CHK-243",
+            "CHK-246"
+          ]
+        },
+        {
+          "complete": true,
+          "endAt": 1782723600000,
+          "opened": 9,
+          "sprintKey": "primary-tracker:sprint-CHK-3",
+          "sprintName": "Sprint 14",
+          "startAt": 1781514000000,
+          "ticketKeys": [
+            "CHK-250",
+            "CHK-252",
+            "CHK-253",
+            "CHK-255",
+            "CHK-258",
+            "CHK-265",
+            "CHK-269",
+            "CHK-270",
+            "CHK-272"
+          ]
+        },
+        {
+          "complete": true,
+          "endAt": 1783933200000,
+          "opened": 7,
+          "sprintKey": "primary-tracker:sprint-CHK-4",
+          "sprintName": "Sprint 15",
+          "startAt": 1782723600000,
+          "ticketKeys": [
+            "CHK-283",
+            "CHK-285",
+            "CHK-288",
+            "CHK-293",
+            "CHK-294",
+            "CHK-295",
+            "CHK-296"
+          ]
+        },
+        {
+          "complete": false,
+          "endAt": 1785142800000,
+          "opened": 5,
+          "sprintKey": "primary-tracker:sprint-CHK-5",
+          "sprintName": "Sprint 16",
+          "startAt": 1783933200000,
+          "ticketKeys": [
+            "CHK-300",
+            "CHK-301",
+            "CHK-302",
+            "CHK-307",
+            "CHK-319"
+          ]
+        },
+        {
+          "complete": false,
+          "endAt": 1786352400000,
+          "opened": 0,
+          "sprintKey": "primary-tracker:sprint-CHK-6",
+          "sprintName": "Sprint 17",
+          "startAt": 1785142800000,
+          "ticketKeys": []
+        }
+      ],
+      "reasons": [
+        "Open tech-debt items changed by +1 over the last 28 days, which does not cross T9 at 3.",
+        "The 2 open tech-debt items have a mean age of 23 days, past T11 at 21."
+      ],
+      "signals": {
+        "meanOpenAgeDays": {
+          "name": "meanOpenAgeDays",
+          "oldestAgeDays": 37,
+          "oldestTicketKey": "CHK-253",
+          "sampleSize": 2,
+          "value": 23
+        },
+        "netChangeOverTrailingWindow": {
+          "closedTicketKeys": [
+            "CHK-265",
+            "CHK-269",
+            "CHK-270",
+            "CHK-272",
+            "CHK-283",
+            "CHK-285",
+            "CHK-288",
+            "CHK-293",
+            "CHK-294",
+            "CHK-295",
+            "CHK-296",
+            "CHK-301"
+          ],
+          "name": "netChangeOverTrailingWindow",
+          "openedTicketKeys": [
+            "CHK-270",
+            "CHK-272",
+            "CHK-283",
+            "CHK-285",
+            "CHK-288",
+            "CHK-293",
+            "CHK-294",
+            "CHK-295",
+            "CHK-296",
+            "CHK-300",
+            "CHK-301",
+            "CHK-302",
+            "CHK-307"
+          ],
+          "trailingDays": 28,
+          "value": 1
+        },
+        "openTechDebtItems": {
+          "name": "openTechDebtItems",
+          "ticketKeys": [
+            "CHK-253",
+            "CHK-302"
+          ],
+          "value": 2
+        },
+        "reworkedMergedPullRequestShare": {
+          "cycleCount": 3,
+          "denominator": 49,
+          "granularity": "perPullRequest",
+          "name": "reworkedMergedPullRequestShare",
+          "numerator": 0,
+          "pullRequestNumbers": [],
+          "valueBasisPoints": 0
+        }
+      },
+      "statement": "2 open tech-debt items, up 1 over 28 days, mean age 23 days. Debt is flat.",
+      "thresholdsApplied": [
+        {
+          "id": "T9",
+          "statement": "Tech debt is growing when the open tech-debt count rose by three or more over the trailing four weeks.",
+          "unit": "count",
+          "value": 3
+        },
+        {
+          "id": "T11",
+          "statement": "Open tech-debt work is stale when its mean age passes three weeks.",
+          "unit": "days",
+          "value": 21
+        }
+      ]
+    },
+    "wins": [],
+    "workload": {
+      "basis": "open_assigned_items_and_pending_reviews",
+      "concentration": null,
+      "peopleCarryingWork": 4,
+      "perDeveloper": [
+        {
+          "absent": false,
+          "developerKey": "daniel-ortiz",
+          "displayName": "Daniel Ortiz",
+          "openAuthoredPullRequests": 2,
+          "openItemKeys": [
+            "CHK-253",
+            "CHK-302"
+          ],
+          "openItems": 2,
+          "pendingReviewNumbers": [
+            "#8067",
+            "#8090"
+          ],
+          "pendingReviews": 2
+        },
+        {
+          "absent": false,
+          "developerKey": "ingrid-falk",
+          "displayName": "Ingrid Falk",
+          "openAuthoredPullRequests": 0,
+          "openItemKeys": [
+            "CHK-271",
+            "CHK-292"
+          ],
+          "openItems": 2,
+          "pendingReviewNumbers": [],
+          "pendingReviews": 0
+        },
+        {
+          "absent": false,
+          "developerKey": "naomi-chen",
+          "displayName": "Naomi Chen",
+          "openAuthoredPullRequests": 0,
+          "openItemKeys": [
+            "CHK-701"
+          ],
+          "openItems": 1,
+          "pendingReviewNumbers": [],
+          "pendingReviews": 0
+        },
+        {
+          "absent": false,
+          "developerKey": "rafael-lima",
+          "displayName": "Rafael Lima",
+          "openAuthoredPullRequests": 2,
+          "openItemKeys": [
+            "CHK-202",
+            "CHK-210",
+            "CHK-263"
+          ],
+          "openItems": 3,
+          "pendingReviewNumbers": [
+            "#8086",
+            "#8107"
+          ],
+          "pendingReviews": 2
+        }
+      ],
+      "statement": "8 items in flight across 4 people.",
+      "totalOpenItems": 8,
+      "unassignedItemKeys": [],
+      "unassignedOpenItems": 0
+    },
+    "yesterday": [
+      {
+        "artifacts": [
+          {
+            "kind": "issue",
+            "label": "CHK-310",
+            "sourceKey": "tracker",
+            "sourceRecordId": "CHK-310"
+          }
+        ],
+        "assigneeDeveloperKey": "naomi-chen",
+        "completedAt": 1784913420000,
+        "events": [
+          {
+            "at": 1784913420000,
+            "kind": "ticket_accepted",
+            "label": "CHK-310"
+          }
+        ],
+        "ladder": {
+          "deploySignalAvailable": false,
+          "highestContiguous": "R1",
+          "highestCrossed": "R1",
+          "highestCrossedLabel": "accepted",
+          "notches": [
+            {
+              "crossed": true,
+              "crossedAt": 1784913420000,
+              "evidence": [
+                {
+                  "kind": "issue",
+                  "label": "CHK-310",
+                  "sourceKey": "tracker",
+                  "sourceRecordId": "CHK-310"
+                }
+              ],
+              "label": "accepted",
+              "reachable": true,
+              "rung": "R1",
+              "statement": null
+            },
+            {
+              "crossed": false,
+              "crossedAt": null,
+              "evidence": [],
+              "label": "merged",
+              "reachable": true,
+              "rung": "R2",
+              "statement": null
+            },
+            {
+              "crossed": false,
+              "crossedAt": null,
+              "evidence": [],
+              "label": "integrated",
+              "reachable": true,
+              "rung": "R3",
+              "statement": null
+            },
+            {
+              "crossed": false,
+              "crossedAt": null,
+              "evidence": [],
+              "label": "released",
+              "reachable": true,
+              "rung": "R4",
+              "statement": null
+            },
+            {
+              "crossed": false,
+              "crossedAt": null,
+              "evidence": [],
+              "label": "deployed",
+              "reachable": false,
+              "rung": "R5",
+              "statement": "no deploy signal available"
+            }
+          ],
+          "rungSuffix": "accepted, not yet merged"
+        },
+        "stableId": "v1:8f59c18f0557867e",
+        "ticketKey": "CHK-310",
+        "title": "Currency symbol is hard-coded to sterling after a redeploy",
+        "unitOfWork": "ticket:CHK-310"
+      }
+    ]
+  },
+  "instant": 1784970000000,
+  "organizationId": "00000000-0000-4000-8000-000000000001",
+  "schemaVersion": 2,
+  "scope": {
+    "kind": "team",
+    "teamKey": "checkout"
+  },
+  "sections": [
+    {
+      "emptyStatement": "Nothing crossed a completion threshold yesterday.",
+      "index": 1,
+      "items": [
+        {
+          "ageDays": 0,
+          "cause": {
+            "causeDiscriminator": "",
+            "causeKind": "completed",
+            "entityRef": "unit_of_work:ticket:CHK-310"
+          },
+          "changeTag": "resolved",
+          "detail": "Reached R1 accepted — evidence: CHK-310.",
+          "evidence": [
+            {
+              "kind": "issue",
+              "label": "CHK-310",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-310"
+            }
+          ],
+          "firstSeenAt": 1784970000000,
+          "headline": "CHK-310 — Currency symbol is hard-coded to sterling after a redeploy — accepted, not yet merged",
+          "ladder": {
+            "deploySignalAvailable": false,
+            "highestContiguous": "R1",
+            "highestCrossed": "R1",
+            "highestCrossedLabel": "accepted",
+            "notches": [
+              {
+                "crossed": true,
+                "crossedAt": 1784913420000,
+                "evidence": [
+                  {
+                    "kind": "issue",
+                    "label": "CHK-310",
+                    "sourceKey": "tracker",
+                    "sourceRecordId": "CHK-310"
+                  }
+                ],
+                "label": "accepted",
+                "reachable": true,
+                "rung": "R1",
+                "statement": null
+              },
+              {
+                "crossed": false,
+                "crossedAt": null,
+                "evidence": [],
+                "label": "merged",
+                "reachable": true,
+                "rung": "R2",
+                "statement": null
+              },
+              {
+                "crossed": false,
+                "crossedAt": null,
+                "evidence": [],
+                "label": "integrated",
+                "reachable": true,
+                "rung": "R3",
+                "statement": null
+              },
+              {
+                "crossed": false,
+                "crossedAt": null,
+                "evidence": [],
+                "label": "released",
+                "reachable": true,
+                "rung": "R4",
+                "statement": null
+              },
+              {
+                "crossed": false,
+                "crossedAt": null,
+                "evidence": [],
+                "label": "deployed",
+                "reachable": false,
+                "rung": "R5",
+                "statement": "no deploy signal available"
+              }
+            ],
+            "rungSuffix": "accepted, not yet merged"
+          },
+          "severityScore": 0,
+          "signalOnsetAt": 1784913420000,
+          "stableId": "v1:8f59c18f0557867e"
+        }
+      ],
+      "key": "yesterday",
+      "summary": "1 unit of work crossed a completion threshold in this window.",
+      "title": "Yesterday"
+    },
+    {
+      "emptyStatement": "No sprint or flow progress could be computed for this window.",
+      "index": 2,
+      "items": [
+        {
+          "ageDays": 12,
+          "cause": {
+            "causeDiscriminator": "",
+            "causeKind": "sprint_completion",
+            "entityRef": "progress:primary-tracker:sprint-CHK-5"
+          },
+          "changeTag": "new",
+          "detail": "23 items were committed at the start and 0 were added since, so the denominator is 23. Measured in points because the scope is estimated. Completed: CHK-297, CHK-299, CHK-300, CHK-301, CHK-303, CHK-304, CHK-305, CHK-306, CHK-307, CHK-308, CHK-309, CHK-310, CHK-311, CHK-312, CHK-313, CHK-315, CHK-316, CHK-317, CHK-318, CHK-319, CHK-320. Remaining: CHK-302, CHK-314.",
+          "evidence": [
+            {
+              "kind": "sprint",
+              "label": "Sprint 16",
+              "sourceKey": "primary-tracker",
+              "sourceRecordId": "sprint-CHK-5"
+            }
+          ],
+          "firstSeenAt": 1784970000000,
+          "headline": "Sprint 16 is 89% complete — 107 of 120 points, against \"Roll guest checkout out to the first merchant cohort\"",
+          "severityScore": 11,
+          "signalOnsetAt": 1783933200000,
+          "stableId": "v1:ffee39a640300e14"
+        },
+        {
+          "ageDays": 0,
+          "cause": {
+            "causeDiscriminator": "",
+            "causeKind": "projected_completion",
+            "entityRef": "progress:checkout"
+          },
+          "changeTag": "new",
+          "detail": "2026-08-04 to 2026-08-11 — a 7-day band from measured cycle time over 96 finished items. This is a cycle-time guess, not a velocity forecast. Your points have not tracked elapsed working days across 75 completed items — correlation 0.05 over durations spanning 0 to 8 working days, below the 0.30 Compass needs — so any date below is a cycle-time guess, not a plan. Computed by measured cycle time at low confidence — remaining items × median measured cycle time, banded to the 85th percentile. Method selected by the calibration audit: points_uninformative. Compass audited the data behind this report and reached 4 verdicts: points_uninformative, scope_is_fiction, workflow_inconsistent, statuses_stale.",
+          "evidence": [
+            {
+              "kind": "sprint",
+              "label": "Sprint 16",
+              "sourceKey": "primary-tracker",
+              "sourceRecordId": "sprint-CHK-5"
+            }
+          ],
+          "firstSeenAt": 1784970000000,
+          "headline": "Projected completion 2026-08-04",
+          "severityScore": 0,
+          "signalOnsetAt": 1784970000000,
+          "stableId": "v1:014b6b9af0ee5916"
+        },
+        {
+          "ageDays": 0,
+          "cause": {
+            "causeDiscriminator": "",
+            "causeKind": "velocity",
+            "entityRef": "progress:checkout"
+          },
+          "changeTag": "new",
+          "detail": "Sprint 12: 95 points across 21 items; Sprint 13: 138 points across 24 items; Sprint 14: 103 points across 21 items; Sprint 15: 121 points across 22 items",
+          "evidence": [
+            {
+              "kind": "sprint",
+              "label": "Sprint 12",
+              "sourceKey": "primary-tracker",
+              "sourceRecordId": "sprint-CHK-1"
+            },
+            {
+              "kind": "sprint",
+              "label": "Sprint 13",
+              "sourceKey": "primary-tracker",
+              "sourceRecordId": "sprint-CHK-2"
+            },
+            {
+              "kind": "sprint",
+              "label": "Sprint 14",
+              "sourceKey": "primary-tracker",
+              "sourceRecordId": "sprint-CHK-3"
+            },
+            {
+              "kind": "sprint",
+              "label": "Sprint 15",
+              "sourceKey": "primary-tracker",
+              "sourceRecordId": "sprint-CHK-4"
+            }
+          ],
+          "firstSeenAt": 1784970000000,
+          "headline": "Over the last 4 completed sprints the team finished a mean of 114.3 points per sprint, and that pace is flat.",
+          "severityScore": 100,
+          "signalOnsetAt": 1784970000000,
+          "stableId": "v1:dcbd645377cfaf12"
+        }
+      ],
+      "key": "progress",
+      "summary": "Sprint 16, day 12.",
+      "title": "Progress"
+    },
+    {
+      "emptyStatement": "Nothing is blocked on a signal Compass can see.",
+      "index": 3,
+      "items": [
+        {
+          "ageDays": 61,
+          "cause": {
+            "causeDiscriminator": "",
+            "causeKind": "status_dwell",
+            "entityRef": "ticket:CHK-210"
+          },
+          "changeClause": "in progress since day 61",
+          "changeTag": "new",
+          "detail": "CHK-210 is in \"In Progress\" and its last status change was 61 days ago. That crosses T1 at 3 working days. Compass is inferring this from silence, so it may simply be work that does not show up on the board.",
+          "evidence": [
+            {
+              "kind": "issue",
+              "label": "CHK-210",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-210"
+            }
+          ],
+          "firstSeenAt": 1784970000000,
+          "headline": "CHK-210 has not moved for 45 working days",
+          "severityScore": 45,
+          "signalOnsetAt": 1779632520000,
+          "stableId": "v1:4e461200f073b7d9"
+        },
+        {
+          "ageDays": 61,
+          "cause": {
+            "causeDiscriminator": "",
+            "causeKind": "tracker_flag",
+            "entityRef": "ticket:CHK-202"
+          },
+          "changeClause": "still blocked, day 61",
+          "changeTag": "new",
+          "detail": "The tracker carries the blocked flag on CHK-202 — Declined card message names the wrong field. Compass is reporting what the tracker states, not inferring it.",
+          "evidence": [
+            {
+              "kind": "issue",
+              "label": "CHK-202",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-202"
+            }
+          ],
+          "firstSeenAt": 1784970000000,
+          "headline": "CHK-202 is blocked, day 61",
+          "severityScore": 61,
+          "signalOnsetAt": 1779638580000,
+          "stableId": "v1:d6ca58e50e5e88aa"
+        },
+        {
+          "ageDays": 55,
+          "cause": {
+            "causeDiscriminator": "",
+            "causeKind": "changes_requested_stalled",
+            "entityRef": "pull_request:primary-code:pull-request-8067"
+          },
+          "changeClause": "open for review, day 62",
+          "changeTag": "new",
+          "detail": "Daniel Ortiz asked for changes on #8067 and nothing has happened since — 1 changes-requested cycle so far. That crosses T3 at 2 working days.",
+          "evidence": [
+            {
+              "kind": "pull_request",
+              "label": "#8067",
+              "sourceKey": "primary-code",
+              "sourceRecordId": "pull-request-8067"
+            }
+          ],
+          "firstSeenAt": 1784970000000,
+          "headline": "#8067 was sent back for changes 40 working days ago and has not moved",
+          "severityScore": 40,
+          "signalOnsetAt": 1780176120000,
+          "stableId": "v1:c84aeee2ca0a96f6"
+        },
+        {
+          "ageDays": 36,
+          "cause": {
+            "causeDiscriminator": "",
+            "causeKind": "status_dwell",
+            "entityRef": "ticket:CHK-253"
+          },
+          "changeClause": "in progress since day 36",
+          "changeTag": "new",
+          "detail": "CHK-253 is in \"In Progress\" and its last status change was 36 days ago. That crosses T1 at 3 working days. Compass is inferring this from silence, so it may simply be work that does not show up on the board.",
+          "evidence": [
+            {
+              "kind": "issue",
+              "label": "CHK-253",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-253"
+            }
+          ],
+          "firstSeenAt": 1784970000000,
+          "headline": "CHK-253 has not moved for 27 working days",
+          "severityScore": 27,
+          "signalOnsetAt": 1781819940000,
+          "stableId": "v1:b17bed421c7fdb02"
+        },
+        {
+          "ageDays": 31,
+          "cause": {
+            "causeDiscriminator": "",
+            "causeKind": "status_dwell",
+            "entityRef": "ticket:CHK-263"
+          },
+          "changeClause": "in progress since day 31",
+          "changeTag": "new",
+          "detail": "CHK-263 is in \"In Progress\" and its last status change was 31 days ago. That crosses T1 at 3 working days. Compass is inferring this from silence, so it may simply be work that does not show up on the board.",
+          "evidence": [
+            {
+              "kind": "issue",
+              "label": "CHK-263",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-263"
+            }
+          ],
+          "firstSeenAt": 1784970000000,
+          "headline": "CHK-263 has not moved for 24 working days",
+          "severityScore": 24,
+          "signalOnsetAt": 1782238860000,
+          "stableId": "v1:e02a061a2ac2a6e3"
+        },
+        {
+          "ageDays": 27,
+          "cause": {
+            "causeDiscriminator": "",
+            "causeKind": "changes_requested_stalled",
+            "entityRef": "pull_request:primary-code:pull-request-8090"
+          },
+          "changeClause": "open for review, day 31",
+          "changeTag": "new",
+          "detail": "Daniel Ortiz asked for changes on #8090 and nothing has happened since — 1 changes-requested cycle so far. That crosses T3 at 2 working days.",
+          "evidence": [
+            {
+              "kind": "pull_request",
+              "label": "#8090",
+              "sourceKey": "primary-code",
+              "sourceRecordId": "pull-request-8090"
+            }
+          ],
+          "firstSeenAt": 1784970000000,
+          "headline": "#8090 was sent back for changes 20 working days ago and has not moved",
+          "severityScore": 20,
+          "signalOnsetAt": 1782577260000,
+          "stableId": "v1:75aa5399604d1610"
+        },
+        {
+          "ageDays": 26,
+          "cause": {
+            "causeDiscriminator": "",
+            "causeKind": "status_dwell",
+            "entityRef": "ticket:CHK-271"
+          },
+          "changeClause": "in progress since day 26",
+          "changeTag": "new",
+          "detail": "CHK-271 is in \"In Progress\" and its last status change was 26 days ago. That crosses T1 at 3 working days. Compass is inferring this from silence, so it may simply be work that does not show up on the board.",
+          "evidence": [
+            {
+              "kind": "issue",
+              "label": "CHK-271",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-271"
+            }
+          ],
+          "firstSeenAt": 1784970000000,
+          "headline": "CHK-271 has not moved for 20 working days",
+          "severityScore": 20,
+          "signalOnsetAt": 1782643080000,
+          "stableId": "v1:ec3c2fc205ceec6a"
+        },
+        {
+          "ageDays": 13,
+          "cause": {
+            "causeDiscriminator": "",
+            "causeKind": "tracker_flag",
+            "entityRef": "ticket:CHK-292"
+          },
+          "changeClause": "still blocked, day 13",
+          "changeTag": "new",
+          "detail": "The tracker carries the blocked flag on CHK-292 — Retry after a decline charges twice on slow networks under sustained load. Compass is reporting what the tracker states, not inferring it.",
+          "evidence": [
+            {
+              "kind": "issue",
+              "label": "CHK-292",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-292"
+            }
+          ],
+          "firstSeenAt": 1784970000000,
+          "headline": "CHK-292 is blocked, day 13",
+          "severityScore": 13,
+          "signalOnsetAt": 1783779780000,
+          "stableId": "v1:bb5172ba132cd431"
+        },
+        {
+          "ageDays": 9,
+          "cause": {
+            "causeDiscriminator": "",
+            "causeKind": "status_dwell",
+            "entityRef": "ticket:CHK-302"
+          },
+          "changeClause": "in progress since day 9",
+          "changeTag": "new",
+          "detail": "CHK-302 is in \"In Progress\" and its last status change was 9 days ago. That crosses T1 at 3 working days. Compass is inferring this from silence, so it may simply be work that does not show up on the board.",
+          "evidence": [
+            {
+              "kind": "issue",
+              "label": "CHK-302",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-302"
+            }
+          ],
+          "firstSeenAt": 1784970000000,
+          "headline": "CHK-302 has not moved for 8 working days",
+          "severityScore": 8,
+          "signalOnsetAt": 1784123160000,
+          "stableId": "v1:1dec7444e7173925"
+        },
+        {
+          "ageDays": 0,
+          "cause": {
+            "causeDiscriminator": "",
+            "causeKind": "tracker_flag",
+            "entityRef": "ticket:CHK-701"
+          },
+          "changeTag": "new",
+          "detail": "The tracker carries the blocked flag on CHK-701 — Guest checkout retries a declined card twice on slow networks. Compass is reporting what the tracker states, not inferring it.",
+          "evidence": [
+            {
+              "kind": "issue",
+              "label": "CHK-701",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-701"
+            }
+          ],
+          "firstSeenAt": 1784970000000,
+          "headline": "CHK-701 is blocked",
+          "severityScore": 0,
+          "signalOnsetAt": 1785399300000,
+          "stableId": "v1:37b68ff5898894f8"
+        }
+      ],
+      "key": "blockers",
+      "summary": "4 pull requests are open for review, the oldest 62 days old.",
+      "title": "Blockers"
+    },
+    {
+      "emptyStatement": "No risk crossed its threshold in this window.",
+      "index": 4,
+      "items": [
+        {
+          "ageDays": 0,
+          "cause": {
+            "causeDiscriminator": "",
+            "causeKind": "estimation_noise",
+            "entityRef": "team:checkout"
+          },
+          "changeClause": "medium severity, new — against no comparable prior measurement",
+          "changeTag": "new",
+          "detail": "Your points have not tracked elapsed working days across 75 completed items — correlation 0.05 over durations spanning 0 to 8 working days, below the 0.30 Compass needs — so any date below is a cycle-time guess, not a plan. Compass compares points against measured start-to-finish duration for 75 completed items; T12 needs a correlation of 0.30. Every projected date in this report is therefore a cycle-time guess, and it is set in a lighter weight for that reason.",
+          "evidence": [
+            {
+              "kind": "issue",
+              "label": "CHK-201",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-201"
+            },
+            {
+              "kind": "issue",
+              "label": "CHK-203",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-203"
+            },
+            {
+              "kind": "issue",
+              "label": "CHK-204",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-204"
+            },
+            {
+              "kind": "issue",
+              "label": "CHK-205",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-205"
+            },
+            {
+              "kind": "issue",
+              "label": "CHK-209",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-209"
+            }
+          ],
+          "firstSeenAt": 1784970000000,
+          "headline": "Story points are not predicting how long work takes",
+          "severityScore": 200,
+          "signalOnsetAt": 1784970000000,
+          "stableId": "v1:06478b19345462da"
+        },
+        {
+          "ageDays": 0,
+          "cause": {
+            "causeDiscriminator": "",
+            "causeKind": "unreleased_merged_work",
+            "entityRef": "repository:checkout-web"
+          },
+          "changeClause": "medium severity, new — against no comparable prior measurement",
+          "changeTag": "new",
+          "detail": "guest-checkout-1.0.0-rc.1 was cut 0 days ago and 4 pull requests have merged into checkout-web since — 0 of them before this window. T16 fires at 3. The oldest is #9201 (CHK-701), which has been waiting 0 days.",
+          "evidence": [
+            {
+              "kind": "pull_request",
+              "label": "#8112",
+              "sourceKey": "primary-code",
+              "sourceRecordId": "pull-request-8112"
+            },
+            {
+              "kind": "pull_request",
+              "label": "#8113",
+              "sourceKey": "primary-code",
+              "sourceRecordId": "pull-request-8113"
+            },
+            {
+              "kind": "pull_request",
+              "label": "#8114",
+              "sourceKey": "primary-code",
+              "sourceRecordId": "pull-request-8114"
+            },
+            {
+              "kind": "pull_request",
+              "label": "#9201",
+              "sourceKey": "primary-code",
+              "sourceRecordId": "pull-request-9201"
+            },
+            {
+              "kind": "release",
+              "label": "guest-checkout-1.0.0-rc.1",
+              "sourceKey": "code",
+              "sourceRecordId": "checkout-web:guest-checkout-1.0.0-rc.1"
+            }
+          ],
+          "firstSeenAt": 1784970000000,
+          "headline": "4 merged pull requests sit ahead of guest-checkout-1.0.0-rc.1",
+          "severityScore": 233,
+          "signalOnsetAt": 1784970000000,
+          "stableId": "v1:7365e3ae3206a743"
+        },
+        {
+          "ageDays": 0,
+          "cause": {
+            "causeDiscriminator": "",
+            "causeKind": "done_without_pull_request",
+            "entityRef": "ticket:CHK-310"
+          },
+          "changeClause": "medium severity, new — against no comparable prior measurement",
+          "changeTag": "new",
+          "detail": "The tracker moved CHK-310 into a done status — \"Currency symbol is hard-coded to sterling after a redeploy\", and Compass can find no pull request the forge linked to it. The completion ladder therefore stops at R1 accepted with nothing above it. Either the work landed under a branch that never named the key, or the status was moved ahead of the work; both make every points total and every velocity that counts this item wrong.",
+          "evidence": [
+            {
+              "kind": "issue",
+              "label": "CHK-310",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-310"
+            }
+          ],
+          "firstSeenAt": 1784970000000,
+          "headline": "CHK-310 is accepted with no pull request behind it",
+          "severityScore": 200,
+          "signalOnsetAt": 1784970000000,
+          "stableId": "v1:e8a69ff36b985d30"
+        },
+        {
+          "ageDays": 0,
+          "alignment": {
+            "confidence": 0,
+            "evidence": {
+              "comparedTextA": "silence a noisy linter rule",
+              "comparedTextB": null,
+              "matchedTokens": [],
+              "question": "What were this commit for?",
+              "score": 0,
+              "threshold": 0.3,
+              "tier": "unattributed"
+            },
+            "kind": "unattributed",
+            "label": null,
+            "objectiveNodeId": null,
+            "objectiveTitle": null,
+            "question": "What were this commit for?",
+            "resolvedTier": "unattributed",
+            "subjectLabels": [
+              "cde774d"
+            ],
+            "threshold": 0.3,
+            "thresholdId": "T17"
+          },
+          "cause": {
+            "causeDiscriminator": "",
+            "causeKind": "unattributed",
+            "entityRef": "commit:unattributed:checkout"
+          },
+          "changeTag": "new",
+          "detail": "cde774d name no tracker key in a commit message or a branch, and the closest goal wording scored 0 against a threshold of 0.3. Nothing in the goal hierarchy shared a word with them.",
+          "evidence": [
+            {
+              "kind": "commit",
+              "label": "cde774d",
+              "sourceKey": "code",
+              "sourceRecordId": "checkout-web@cde774d"
+            }
+          ],
+          "firstSeenAt": 1784970000000,
+          "headline": "1 commit could not be tied to a sprint objective",
+          "severityScore": 10,
+          "signalOnsetAt": 1784970000000,
+          "stableId": "v1:1da0fc49c9c06f90"
+        }
+      ],
+      "key": "risks",
+      "summary": "3 risks crossed a threshold, 3 moving the wrong way. 3 of 4 commits in this window resolve to a goal, and the rest are asked about rather than judged.",
+      "title": "Risks"
+    },
+    {
+      "emptyStatement": "Nothing needs your hand today.",
+      "index": 5,
+      "items": [
+        {
+          "ageDays": 0,
+          "cause": {
+            "causeDiscriminator": "changes_requested_stalled",
+            "causeKind": "recommend_blocker",
+            "entityRef": "pull_request:primary-code:pull-request-8067"
+          },
+          "changeClause": "today",
+          "changeTag": "new",
+          "detail": "Daniel Ortiz asked for changes on #8067 and nothing has happened since — 1 changes-requested cycle so far. That crosses T3 at 2 working days.",
+          "evidence": [
+            {
+              "kind": "pull_request",
+              "label": "#8067",
+              "sourceKey": "primary-code",
+              "sourceRecordId": "pull-request-8067"
+            }
+          ],
+          "firstSeenAt": 1784970000000,
+          "headline": "Rafael Lima — Push the requested changes to #8067, or say in one line why they are not happening.",
+          "severityScore": 200,
+          "signalOnsetAt": 1784970000000,
+          "stableId": "v1:1f4d4cddcaad1491"
+        },
+        {
+          "ageDays": 0,
+          "cause": {
+            "causeDiscriminator": "status_dwell",
+            "causeKind": "recommend_blocker",
+            "entityRef": "ticket:CHK-263"
+          },
+          "changeClause": "today",
+          "changeTag": "new",
+          "detail": "CHK-263 is in \"In Progress\" and its last status change was 31 days ago. That crosses T1 at 3 working days. Compass is inferring this from silence, so it may simply be work that does not show up on the board.",
+          "evidence": [
+            {
+              "kind": "issue",
+              "label": "CHK-263",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-263"
+            }
+          ],
+          "firstSeenAt": 1784970000000,
+          "headline": "Rafael Lima — Ask what CHK-263 is waiting on and write the answer on the ticket.",
+          "severityScore": 200,
+          "signalOnsetAt": 1784970000000,
+          "stableId": "v1:a91253aa37313460"
+        },
+        {
+          "ageDays": 0,
+          "cause": {
+            "causeDiscriminator": "status_dwell",
+            "causeKind": "recommend_blocker",
+            "entityRef": "ticket:CHK-210"
+          },
+          "changeClause": "today",
+          "changeTag": "new",
+          "detail": "CHK-210 is in \"In Progress\" and its last status change was 61 days ago. That crosses T1 at 3 working days. Compass is inferring this from silence, so it may simply be work that does not show up on the board.",
+          "evidence": [
+            {
+              "kind": "issue",
+              "label": "CHK-210",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-210"
+            }
+          ],
+          "firstSeenAt": 1784970000000,
+          "headline": "Rafael Lima — Ask what CHK-210 is waiting on and write the answer on the ticket.",
+          "severityScore": 200,
+          "signalOnsetAt": 1784970000000,
+          "stableId": "v1:d088dc606c5b8b3a"
+        },
+        {
+          "ageDays": 0,
+          "cause": {
+            "causeDiscriminator": "tracker_flag",
+            "causeKind": "recommend_blocker",
+            "entityRef": "ticket:CHK-202"
+          },
+          "changeClause": "today",
+          "changeTag": "new",
+          "detail": "The tracker carries the blocked flag on CHK-202 — Declined card message names the wrong field. Compass is reporting what the tracker states, not inferring it.",
+          "evidence": [
+            {
+              "kind": "issue",
+              "label": "CHK-202",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-202"
+            }
+          ],
+          "firstSeenAt": 1784970000000,
+          "headline": "Rafael Lima — Chase the dependency CHK-202 is blocked on, or hand it back to the board.",
+          "severityScore": 200,
+          "signalOnsetAt": 1784970000000,
+          "stableId": "v1:d863f876c1e7a629"
+        },
+        {
+          "ageDays": 0,
+          "cause": {
+            "causeDiscriminator": "status_dwell",
+            "causeKind": "recommend_blocker",
+            "entityRef": "ticket:CHK-253"
+          },
+          "changeClause": "today",
+          "changeTag": "new",
+          "detail": "CHK-253 is in \"In Progress\" and its last status change was 36 days ago. That crosses T1 at 3 working days. Compass is inferring this from silence, so it may simply be work that does not show up on the board.",
+          "evidence": [
+            {
+              "kind": "issue",
+              "label": "CHK-253",
+              "sourceKey": "tracker",
+              "sourceRecordId": "CHK-253"
+            }
+          ],
+          "firstSeenAt": 1784970000000,
+          "headline": "Daniel Ortiz — Ask what CHK-253 is waiting on and write the answer on the ticket.",
+          "severityScore": 200,
+          "signalOnsetAt": 1784970000000,
+          "stableId": "v1:faac3d9ca4aecdc1"
+        }
+      ],
+      "key": "recommendations",
+      "summary": "One step each, all of them finishable today.",
+      "title": "Recommendations"
+    },
+    {
+      "emptyStatement": "Work landed in this window, but none of it met rule W1 — merged or beyond, and either three points or five working days old.",
+      "index": 6,
+      "items": [],
+      "key": "wins",
+      "title": "Wins"
+    }
+  ],
+  "suppressed": [],
+  "timezone": "Europe/London",
+  "window": {
+    "end": 1784934000000,
+    "start": 1784847600000
+  }
+}

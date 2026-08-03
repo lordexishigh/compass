@@ -1,3 +1,5 @@
+import { DAILY_REPORT_WORD_BUDGET, countWords } from '@compass/analysis';
+import { RENDERER_ID as TEMPLATE_RENDERER_ID } from '@compass/renderers';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -7,6 +9,7 @@ import {
   narrationPayload,
   sectionRequests,
   validateGrounding,
+  type NarratorPort,
 } from '@compass/narrator';
 import {
   FABRICATED_TOKENS,
@@ -18,6 +21,26 @@ import {
 } from '@compass/narrator/testkit';
 
 import { RAW_COMMIT_MESSAGE, fullReport } from './helpers/reports.js';
+
+/**
+ * A narrator whose prose is grounded and far too long.
+ *
+ * Built by repeating a grounded narrator's own output, which is the trick that makes this test about
+ * one thing. Repetition adds no new tokens, so the grounding validator still passes every claim —
+ * the *only* rule the report can now fail is the word ceiling. A fake that invented filler words
+ * would be rejected for fabrication first and would prove nothing about the budget.
+ */
+function verboseNarrator(times: number): NarratorPort {
+  const inner = groundedNarrator();
+
+  return {
+    narratorId: 'fake:verbose',
+    async narrate(request) {
+      const response = await inner.narrate(request);
+      return { ...response, prose: Array.from({ length: times }, () => response.prose).join(' ') };
+    },
+  };
+}
 
 /**
  * Subtask 003: bounded retries, and no report ever delivered with ungrounded prose.
@@ -271,5 +294,67 @@ describe('what actually leaves the process', () => {
       expect(request.system).toBe(first?.system);
     }
     expect(recorder.requests.map((request) => request.attempt)).toEqual([1, 2, 3]);
+  });
+});
+
+/**
+ * The daily's fail-closed word ceiling — the owning test `docs/budgets.md` names for
+ * `DAILY_REPORT_WORD_BUDGET`.
+ *
+ * The budget is checked on the narration path and nowhere else, and the reason is recorded in
+ * `packages/analysis/src/budgets.ts`: it was first placed inside `renderReport`, where it fired on the
+ * *deterministic* renderer — the thing narration falls back to — because the seeded corpus renders
+ * about 1,750 templated words. There was nothing left to fall back to. Here it guards the only path
+ * that can run long.
+ */
+describe('a narrated report over the word ceiling falls back to the template renderer', () => {
+  it('accepts a grounded report that is within budget', async () => {
+    const result = await narrateReport(fullReport(), { narrator: groundedNarrator() });
+
+    expect(result.rendererId).toBe(NARRATED_RENDERER_ID);
+    expect(result.fallback).toBeNull();
+    // The control: the fixture must be *inside* the budget, or the test below proves nothing.
+    expect(countWords(result.sections.map((section) => section.prose).join('\n\n'))).toBeLessThanOrEqual(
+      DAILY_REPORT_WORD_BUDGET,
+    );
+  });
+
+  it('discards grounded prose that runs past the ceiling', async () => {
+    // 40× the grounded output: every token still traceable, the total far past 900 words.
+    const result = await narrateReport(fullReport(), { narrator: verboseNarrator(40) });
+
+    expect(result.rendererId).toBe(TEMPLATE_RENDERER_ID);
+    expect(result.fallback).not.toBeNull();
+    expect(result.fallback?.outcome, 'over budget is a rejection, like a grounding failure').toBe('rejected');
+    // Whole-report, not one section: no `sectionKey`, because no single section is at fault.
+    expect(result.fallback?.sectionKey).toBeNull();
+  });
+
+  it('says how long it ran and what the ceiling was, so the disclosure is checkable', async () => {
+    const result = await narrateReport(fullReport(), { narrator: verboseNarrator(40) });
+
+    expect(result.fallback?.reason).toContain(String(DAILY_REPORT_WORD_BUDGET));
+    expect(result.fallback?.reason).toMatch(/\d+ words/);
+    // The reader is told the report is still complete — only the wording is templated.
+    expect(result.fallback?.reason).toContain('complete');
+  });
+
+  it('sends the deterministic render, so the manager still gets a report', async () => {
+    const result = await narrateReport(fullReport(), { narrator: verboseNarrator(40) });
+
+    // The whole point of failing closed: six sections, from the renderer that cannot run long.
+    expect(result.sections).toHaveLength(6);
+    expect(result.rendered.sections).toHaveLength(6);
+    for (const section of result.sections) {
+      expect(section.prose.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('keeps the traces, so the fallback is diagnosable', async () => {
+    // Six sections were narrated successfully before the total tripped the ceiling; throwing their
+    // traces away would leave no record of what the model actually wrote.
+    const result = await narrateReport(fullReport(), { narrator: verboseNarrator(40) });
+
+    expect(result.traces).toHaveLength(6);
   });
 });

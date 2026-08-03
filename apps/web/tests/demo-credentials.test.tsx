@@ -80,6 +80,15 @@ const UNAUTHENTICATED_PAGES: readonly {
   { route: '/account/invite', file: ['app', 'account', 'invite', 'page.tsx'], showsCredentials: false },
   { route: '/account/reset', file: ['app', 'account', 'reset', 'page.tsx'], showsCredentials: false },
   /**
+   * The deletion-undo landing page.
+   *
+   * Public and carrying no `demoOnlyPublic`, because it holds no organization data at all: it reads a
+   * token from the query string, posts it, and prints the outcome. Somebody arriving here followed a
+   * link from an email about their own account, so the way out that matters is `/account`, which it
+   * names directly rather than by way of the report.
+   */
+  { route: '/account/deletion', file: ['app', 'account', 'deletion', 'page.tsx'], showsCredentials: false },
+  /**
    * The archive and the two cross-cutting reads.
    *
    * `showsCredentials: false` for the same reason `/` is: a reader who arrives at last Tuesday's report has
@@ -96,6 +105,26 @@ const UNAUTHENTICATED_PAGES: readonly {
   },
   { route: '/merged', file: ['app', 'merged', 'page.tsx'], showsCredentials: false },
   { route: '/weekly', file: ['app', 'weekly', 'page.tsx'], showsCredentials: false },
+  /**
+   * The evidence page behind a claim.
+   *
+   * It joined this list when it gained a matrix entry at all: `beta-security-hardening` extended the
+   * route enumeration to rendered screens and found `/artifact/[kind]/[artifactId]` had been serving
+   * one organization's commits and tickets with no entry in `ROLE_MATRIX`. Public on the
+   * demonstration tenant now, on the same terms as the report — a receipt is only useful if the
+   * reader of the claim can open it.
+   *
+   * Discharges its duty the way `/goals` does, and for the same reason: it is a page you arrive at
+   * *from* the report, by tapping an evidence marker, so its way out is back to `/` — whose footer
+   * carries the account link. The proof points at the component rather than the page because the
+   * page is a two-line shell around it.
+   */
+  {
+    route: '/artifact/[kind]/[artifactId]',
+    file: ['components', 'artifact-detail.tsx'],
+    showsCredentials: false,
+    reaches: 'href="/"',
+  },
 ];
 
 describe('the published demonstration credentials are shown where they are needed', () => {

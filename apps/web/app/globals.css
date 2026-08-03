@@ -505,10 +505,29 @@
     border-bottom-color: var(--ink-faint);
   }
 
+  /*
+     The typed-in state: the rule under the field thickens and turns emerald.
+     `:focus` rather than `:focus-visible`, because a text field that has been clicked into
+     genuinely is the thing being typed into and should look like it.
+  */
   .goal-input:focus {
     outline: none;
     border-bottom: 2px solid var(--verified);
     padding-bottom: 1px;
+  }
+
+  /*
+     Keyboard focus additionally keeps the ring.
+
+     The rule above sets `outline: none`, and on its own that left a keyboard reader with a 1px→2px
+     border change as their only focus signal — a difference of one pixel and a hue, which is not a
+     focus indicator anybody can find while tabbing. `:focus-visible` comes after `:focus` in this
+     block so it wins the cascade for keyboard entry, and the field ends up with both: the emerald
+     rule that says "typing here", and the ring every other control on the page uses.
+  */
+  .goal-input:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
   }
 
   .goal-input:read-only {

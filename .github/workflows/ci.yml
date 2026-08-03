@@ -29,8 +29,20 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # Lint, typecheck and the whole suite, including the architecture gates in
-      # `tools/quality-gates` and the cold-start assertions in `tools/smoke`.
+      # Lint, typecheck and the whole suite. `pnpm test` is recursive, so this
+      # already includes:
+      #
+      #  - `tools/quality-gates` — the no-system-clock source scan over every
+      #    guarded package, and the analysis-purity scan. `pnpm run arch` (inside
+      #    `verify`) runs dependency-cruiser over the same boundaries, so purity is
+      #    enforced twice by two independent mechanisms.
+      #  - `tools/golden` — the golden fixture diff and the determinism gate, which
+      #    generates the same (org, team, instant) twice in-process, twice in
+      #    separate processes, and again under a different timezone and locale.
+      #  - `tools/smoke` — the cold-start assertions.
+      #
+      # They are named here rather than left implicit because a gate nobody can see
+      # in the workflow is a gate somebody removes from a package.json by accident.
       - run: pnpm run verify
 
       # The seed is checked in, so a regeneration that produces different bytes is
@@ -39,6 +51,16 @@ jobs:
         run: |
           pnpm run seed:generate
           git diff --exit-code -- seed/
+
+      # The same argument, one layer up. `pnpm run verify` has already compared live
+      # analysis output against the checked-in fixtures; this proves the *writer* is
+      # deterministic too, so `golden:update` on an unchanged tree is a no-op. A
+      # regeneration that dirtied the tree would mean the fixtures encode something
+      # about the machine that produced them.
+      - name: the checked-in golden fixtures still regenerate byte for byte
+        run: |
+          pnpm run golden:update
+          git diff --exit-code -- fixtures/
 
   cold-start:
     name: docker compose cold start

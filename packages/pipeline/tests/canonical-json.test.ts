@@ -5,9 +5,81 @@ import {
   NON_SEMANTIC_FIELDS,
   NonSerializableValueError,
   canonicalJson,
+  canonicalPrettyJson,
   isSameReport,
   reportHash,
 } from '@compass/pipeline';
+
+/**
+ * The pretty form a golden fixture is stored in.
+ *
+ * The property that matters is not how it looks — it is that it differs from the
+ * compact form in *whitespace only*. A fixture whose key order or allowlist
+ * differed from the hash's would make `test:golden` and the determinism gate two
+ * different checks that could pass and fail independently, which is exactly the
+ * failure a single serializer is meant to prevent.
+ */
+describe('canonical pretty JSON, for a fixture a human reviews', () => {
+  const sample = {
+    scope: { teamKey: 'platform', kind: 'team' },
+    findings: { blockers: [{ stableId: 'b2', ageDays: 4 }, { stableId: 'b1', ageDays: 9 }] },
+    counts: { blockers: 2 },
+    empty: {},
+    none: [],
+  };
+
+  it('encodes exactly what the compact form encodes', () => {
+    expect(JSON.parse(canonicalPrettyJson(sample))).toEqual(JSON.parse(canonicalJson(sample)));
+  });
+
+  it('differs from the compact form in whitespace and nothing else', () => {
+    const stripped = canonicalPrettyJson(sample).replace(/\n\s*/g, '').replace(/": /g, '":');
+    expect(stripped).toBe(canonicalJson(sample));
+  });
+
+  it('sorts keys the same way, so a fixture diff is never an ordering artefact', () => {
+    expect(canonicalPrettyJson({ b: 1, a: 2 })).toBe(canonicalPrettyJson({ a: 2, b: 1 }));
+    const lines = canonicalPrettyJson({ zebra: 1, apple: 2 }).split('\n');
+    expect(lines[1]?.trim().startsWith('"apple"')).toBe(true);
+  });
+
+  it('puts one value per line, which is what makes a diff name the field that moved', () => {
+    // The whole justification for checking fixtures in. A single-line blob would
+    // report any change as one modified line.
+    const lines = canonicalPrettyJson(sample).trimEnd().split('\n');
+    expect(lines.length).toBeGreaterThan(10);
+    expect(lines[0]).toBe('{');
+    expect(lines.at(-1)).toBe('}');
+  });
+
+  it('ends with exactly one newline', () => {
+    const rendered = canonicalPrettyJson(sample);
+    expect(rendered.endsWith('}\n')).toBe(true);
+    expect(rendered.endsWith('}\n\n')).toBe(false);
+  });
+
+  it('keeps an empty object and an empty array on one line', () => {
+    expect(canonicalPrettyJson({ empty: {}, none: [] })).toBe('{\n  "empty": {},\n  "none": []\n}\n');
+  });
+
+  it('honours the same non-semantic allowlist', () => {
+    const withStamps = { ...sample, runId: 'run-1', generatedAt: 1 };
+    const pretty = canonicalPrettyJson(withStamps, { exclude: NON_SEMANTIC_FIELDS });
+
+    expect(pretty).not.toContain('runId');
+    expect(pretty).not.toContain('generatedAt');
+    expect(JSON.parse(pretty)).toEqual(JSON.parse(canonicalJson(sample, { exclude: NON_SEMANTIC_FIELDS })));
+  });
+
+  it('refuses the same unreproducible values', () => {
+    expect(() => canonicalPrettyJson({ at: new Date(0) })).toThrow(NonSerializableValueError);
+    expect(() => canonicalPrettyJson({ ratio: Number.NaN })).toThrow(NonSerializableValueError);
+  });
+
+  it('is stable across calls, so `golden:update` produces no diff when nothing changed', () => {
+    expect(canonicalPrettyJson(sample)).toBe(canonicalPrettyJson(sample));
+  });
+});
 
 describe('canonical JSON', () => {
   it('orders keys so insertion order cannot change a hash', () => {

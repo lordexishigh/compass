@@ -199,21 +199,37 @@ export function MinimizationControls({
     <div className="mt-5">
       <fieldset disabled={!canEdit || pending} className="space-y-4">
         <legend className="sr-only">How much a language model is shown</legend>
+        {/* `id`/`htmlFor` rather than a wrapping label: the mode's title and its explanation are
+            two blocks, and a label whose text is nested inside them is one a screen reader — and
+            `jsx-a11y` — cannot find. The explanation is tied on with `aria-describedby`, so it is
+            announced after the name rather than as part of it. */}
         {MODES.map((option) => (
-          <label key={option.value} className="flex gap-3">
+          <div key={option.value} className="flex gap-3">
             <input
+              id={`llm-mode-${option.value}`}
               type="radio"
               name="llm-minimization-mode"
               value={option.value}
               checked={selected === option.value}
               onChange={() => choose(option.value)}
+              aria-describedby={`llm-mode-${option.value}-detail`}
               className="mt-1 accent-[var(--verified)]"
             />
             <span>
-              <span className="block text-[14px] font-semibold text-ink-strong">{option.title}</span>
-              <span className="mt-0.5 block text-[13px] leading-relaxed text-ink-muted">{option.detail}</span>
+              <label
+                htmlFor={`llm-mode-${option.value}`}
+                className="block text-[14px] font-semibold text-ink-strong"
+              >
+                {option.title}
+              </label>
+              <span
+                id={`llm-mode-${option.value}-detail`}
+                className="mt-0.5 block text-[13px] leading-relaxed text-ink-muted"
+              >
+                {option.detail}
+              </span>
             </span>
-          </label>
+          </div>
         ))}
       </fieldset>
 
@@ -319,7 +335,23 @@ export function AnonymizeControl({
   );
 }
 
-export function DeletionControls({ canDeleteOrganization }: { readonly canDeleteOrganization: boolean }) {
+export function DeletionControls({
+  canDeleteOrganization,
+  /**
+   * Whether to offer the whole-organization export.
+   *
+   * `/api/privacy/export` is owner-only, so offering the link to a member would be a button
+   * that answers 403 — which reads as the product being broken rather than as the permission
+   * it is. When it is not offered, the alternative is stated instead: this page is itself the
+   * record of what Compass holds about the reader, which is the thing they were actually
+   * asking for. Defaults to true so `/privacy`, whose only readers are owners and managers,
+   * needs no extra argument.
+   */
+  canExport = true,
+}: {
+  readonly canDeleteOrganization: boolean;
+  readonly canExport?: boolean;
+}) {
   const [confirmed, setConfirmed] = useState(false);
   const [outcome, setOutcome] = useState<Outcome | null>(null);
   const [pending, startTransition] = useTransition();
@@ -333,11 +365,19 @@ export function DeletionControls({ canDeleteOrganization }: { readonly canDelete
 
   return (
     <div className="mt-5">
-      <p className="mt-2 flex flex-wrap gap-x-5 text-[13px]">
-        <a href="/api/privacy/export" className="tertiary-action">
-          download everything Compass holds
-        </a>
-      </p>
+      {canExport ? (
+        <p className="mt-2 flex flex-wrap gap-x-5 text-[13px]">
+          <a href="/api/privacy/export" className="tertiary-action">
+            download everything Compass holds
+          </a>
+        </p>
+      ) : (
+        <p className="stated-absence mt-2">
+          The machine-readable export of the whole organization is an owner&apos;s to download. Everything Compass
+          holds about <em>you</em> is on this page, and the email it sends when you ask to delete carries the same
+          link an owner would use.
+        </p>
+      )}
 
       <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
         <button type="button" className="feedback-action" onClick={() => request('account')} disabled={pending}>

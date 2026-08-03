@@ -11,7 +11,6 @@ import {
   eraseAccountData,
   eraseOrganizationData,
   findOrganization,
-  latestPurgeRun,
   listDeletionRequestsDue,
   markDeletionPurged,
   purgeRawEventsBefore,
@@ -440,6 +439,3 @@ async function postNotice(
 
 /** Every ten minutes: a team should learn on the same coffee break, not the next day. */
 export const CHANNEL_NOTICE_CRON = '*/10 * * * *';
-
-/** Re-exported so the retention page and the job cannot disagree about the last run. */
-export { latestPurgeRun };

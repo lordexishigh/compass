@@ -183,6 +183,29 @@ export function ReportDocument({ view }: { readonly view: ReportView }) {
             >
               Roster and configuration
             </a>
+            {/* What Compass holds about the reader, and every line above that names them.
+                On the report itself and not tucked inside a settings screen, because the
+                page is for the *subject* of the report rather than its audience: a member
+                who has just read their own name in Blockers has to be able to follow it
+                from there in one click, with nobody to ask. `/privacy` links here too, but
+                a member cannot open `/privacy` — so this is the only route that makes the
+                page genuinely self-serve. */}
+            <a
+              href="/me"
+              className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
+            >
+              What Compass says about you
+            </a>
+            {/* How long any of this is kept, which channels are read, and how to end it.
+                Owner and manager only, and it refuses in the product's own voice for
+                anybody else rather than 404ing — a privacy page that pretends not to
+                exist is the opposite of the point. */}
+            <a
+              href="/privacy"
+              className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
+            >
+              Privacy and retention
+            </a>
             {/* Reachable, never imposed. `/` gates nothing and never redirects here:
                 the zero-config promise is that a manager reads a report first and
                 decides about accounts afterwards. */}

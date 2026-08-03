@@ -1,5 +1,6 @@
 import js from '@eslint/js';
 import globals from 'globals';
+import jsxA11y from 'eslint-plugin-jsx-a11y';
 import tseslint from 'typescript-eslint';
 import compass from '@compass/eslint-plugin';
 
@@ -126,6 +127,69 @@ export default tseslint.config(
     languageOptions: {
       globals: { ...globals.browser, ...globals.node },
       parserOptions: { ecmaFeatures: { jsx: true } },
+    },
+    plugins: { 'jsx-a11y': jsxA11y },
+    /**
+     * WCAG at the markup site, beside the audit that runs over the rendered page.
+     *
+     * `tests/accessibility.test.tsx` runs axe over real renders and is the stronger check — it sees
+     * the tree a reader meets, including everything composed from props. It also only sees the
+     * surfaces it renders. This catches the other half: the mistakes that are visible in the JSX
+     * itself, in every component, including one added tomorrow that no test yet renders.
+     *
+     * The recommended set is taken as-is rather than curated, and then three rules are raised or
+     * added because they map to acceptance criteria for this product:
+     */
+    rules: {
+      ...jsxA11y.flatConfigs.recommended.rules,
+      /**
+       * A click handler with no key handler is the classic keyboard trap — the control works for a
+       * mouse and does not exist for a keyboard. "Every interactive element is reachable and operable
+       * by keyboard" is an acceptance criterion, so these are errors rather than warnings.
+       */
+      'jsx-a11y/click-events-have-key-events': 'error',
+      'jsx-a11y/no-static-element-interactions': 'error',
+      'jsx-a11y/interactive-supports-focus': 'error',
+      /**
+       * `aria-hidden` on something focusable produces a control a sighted keyboard user can tab to
+       * and a screen-reader user cannot hear. The report is full of legitimately hidden decoration —
+       * the ladder marks, the spine's separators — so the distinction has to be enforced rather than
+       * remembered.
+       */
+      'jsx-a11y/no-aria-hidden-on-focusable': 'error',
+      /**
+       * Turned off deliberately, with the reason recorded.
+       *
+       * `no-onchange` is about a long-obsolete IE/Safari behaviour and the rule is deprecated in the
+       * plugin itself; React's `onChange` is an input event, which is the accessible choice.
+       */
+      'jsx-a11y/no-onchange': 'off',
+      /**
+       * Look three levels down for a label's text, not two.
+       *
+       * The default depth of 2 rejects `<label><input/><span><span>Title</span></span></label>`, which
+       * is the shape every radio option on the privacy screen uses — a title line and a description
+       * line stacked beside the control. That markup is *correct*: the label wraps its input, so the
+       * label's whole text content becomes the control's accessible name, description included.
+       * Rewriting it to satisfy a depth counter would flatten a two-line option into one, so the
+       * counter moves instead. The rule still fails a label with no text at all, which is what it is
+       * for.
+       */
+      'jsx-a11y/label-has-associated-control': ['error', { depth: 3 }],
+      /**
+       * Police *mouse* handlers on non-interactive elements, not keyboard ones.
+       *
+       * The hazard this rule exists for is a `<div onClick>` that a keyboard cannot reach. A
+       * keyboard handler on a container is the opposite of that hazard — it is usually the remedy.
+       * The in-app feedback panel is a `<form>` with `onKeyDown` for Escape-to-close, where every
+       * control inside is natively interactive and the form itself is never the thing being
+       * activated; under the default handler list that correct pattern is an error and the only way
+       * to satisfy it is to make the panel less operable.
+       */
+      'jsx-a11y/no-noninteractive-element-interactions': [
+        'error',
+        { handlers: ['onClick', 'onMouseDown', 'onMouseUp'] },
+      ],
     },
   },
   {

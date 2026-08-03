@@ -11,8 +11,13 @@
   "devDependencies": {
     "@compass/analysis": "workspace:*",
     "@compass/clock": "workspace:*",
+    "@compass/db": "workspace:*",
     "@compass/eslint-plugin": "workspace:*",
     "@compass/narrator": "workspace:*",
+    "@compass/perf-budget": "workspace:*",
+    "@compass/smoke": "workspace:*",
+    "@compass/renderers": "workspace:*",
+    "@compass/seed-snapshot": "workspace:*",
     "eslint": "9.39.5",
     "typescript": "5.9.3",
     "vitest": "4.1.10"

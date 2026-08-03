@@ -592,6 +592,15 @@ export function renderReport(report: StructuredReport): RenderedReport {
     .filter((paragraph) => paragraph.length > 0)
     .join('\n\n');
   assertEveryQuantityInterpreted(prose);
+  /*
+    No word-budget assertion here, and that is a decision rather than an omission.
+
+    `DAILY_REPORT_WORD_BUDGET` is a ceiling asserted in the gate over the seeded dataset, not a throw
+    on the render path. Throwing was tried and is wrong: the seeded daily renders about 1,750 words,
+    so a hard limit here replaced a report that is longer than we would like with *no report at all*
+    at 06:00 — strictly worse for the person waiting for it. The merged report throws because it
+    exists only to be short; a daily that ran long is still the manager's report about their own team.
+  */
 
   const text = [
     masthead,

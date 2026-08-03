@@ -580,10 +580,14 @@ export {
 } from './generate.js';
 
 export {
+  DAILY_REPORT_READING_BUDGET,
+  DAILY_REPORT_WORD_BUDGET,
   MERGED_REPORT_WORD_BUDGET,
+  NARRATION_FALLBACK_ALERT_RATE,
   WordBudgetExceededError,
   assertWithinWordBudget,
   countWords,
+  narrationFallbackAlert,
 } from './budgets.js';
 
 export {

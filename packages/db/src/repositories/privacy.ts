@@ -2,6 +2,7 @@ import type { Instant } from '@compass/clock';
 import { and, eq, inArray, isNull, lt, sql } from 'drizzle-orm';
 import type { PgTable } from 'drizzle-orm/pg-core';
 
+import { deterministicUuid } from '../entity-id.js';
 import { appFeedback } from '../schema/app-feedback.js';
 import { authTokens, membershipTeamScopes } from '../schema/auth.js';
 import { fromDatabaseInstant, fromNullableDatabaseInstant, toDatabaseInstant } from '../schema/columns.js';
@@ -107,6 +108,43 @@ export const PRIVACY_DEFAULTS = Object.freeze({
   derivedRetentionYears: 3 as DerivedRetentionYears,
   llmMinimizationMode: 'redacted' as LlmMinimizationMode,
 });
+
+/**
+ * The row ids the privacy tables use, derived rather than random.
+ *
+ * Same reasoning as every other derived id in this package, and here it is load-bearing twice
+ * over. The settings row is created by *both* the boot script and the first page load, so
+ * `onConflictDoNothing` can only do its job if the two agree on the id — a random uuid would
+ * make the race produce two rows and the unique constraint reject the loser with an error
+ * instead of a no-op. And the channel and anonymization ids let the same act be replayed onto
+ * the same row rather than accumulating.
+ *
+ * These live here rather than beside their callers because `apps/web` and `apps/worker` both
+ * derive them, and two copies of a hash is two ids.
+ */
+export const privacySettingsRowId = (organizationId: string): string =>
+  deterministicUuid(`org_privacy_settings:${organizationId}`);
+
+export const slackChannelRowId = (organizationId: string, conversationKey: string): string =>
+  deterministicUuid(`slack_channel_ingestion:${organizationId}:${conversationKey}`);
+
+export const anonymizationRowId = (organizationId: string, developerKey: string): string =>
+  deterministicUuid(`anonymizations:${organizationId}:${developerKey}`);
+
+/**
+ * A deletion request's id, namespaced by the instant it was requested at.
+ *
+ * The instant is in the key on purpose: a person may delete, undo, and delete again, and those
+ * are two requests with two undo tokens and two sets of deadlines. Keying on
+ * `(organization, subject)` alone would make the second request overwrite the first and lose
+ * the record that the first was cancelled.
+ */
+export const deletionRequestRowId = (
+  organizationId: string,
+  subjectKind: string,
+  subjectId: string,
+  requestedAtIso: string,
+): string => deterministicUuid(`deletion_requests:${organizationId}:${subjectKind}:${subjectId}:${requestedAtIso}`);
 
 export interface PrivacySettingsRow {
   readonly id: string;
@@ -974,14 +1012,15 @@ export const ERASURE_TABLE_ORDER: readonly PgTable[] = Object.freeze([
   reportItems,
   reportSections,
   narrationTraces,
-  // Share links reference reports, so they go before them.
+  // Share links and the delivery log both reference reports, so all of them go before it.
+  // `delivery_log` in particular records which report was sent to whom, and a delete that
+  // reached `reports` first would fail on that reference rather than on anything conceptual.
   shareLinkAccess,
   shareLinks,
-  reports,
-  // Delivery.
   deliveryLog,
   feedbackLinkUses,
   subscriptions,
+  reports,
   // Integrations and their keys.
   integrationTokens,
   organizationDataKeys,

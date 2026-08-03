@@ -37,6 +37,97 @@
 export const MERGED_REPORT_WORD_BUDGET = 400;
 
 /**
+ * What ninety seconds of reading is, in words: **450**.
+ *
+ * ## Two numbers about the daily, and why they are both real
+ *
+ * `DAILY_REPORT_WORD_BUDGET` below is **900**, and it is a *fail-closed ceiling*: the point at which
+ * a narrated report is discarded in favour of the deterministic renderer. This is a different
+ * quantity with a different job — the length the daily is *designed* to be, asserted over the
+ * reference dataset rather than thrown at a manager at 06:00.
+ *
+ * Collapsing them into one number would lose something either way round. At 450 as a hard ceiling,
+ * a legitimately busy day for a three-project team fails closed and the manager gets a templated
+ * report for no reason. At 900 as the design target, the seeded corpus could double in length before
+ * anything complained — and "the report got gradually longer" is exactly the regression nobody
+ * notices in review, because no single change causes it.
+ *
+ * So: 900 is what Compass refuses to send. 450 is what Compass is trying to write, checked against
+ * the seeded dataset on every CI run by `tools/quality-gates/tests/budgets.test.ts`.
+ *
+ * ## Why 450
+ *
+ * The read is ninety seconds — the walk from a desk to a standup, which is when this is read. At the
+ * unhurried 200 words a minute the merged budget is set against, ninety seconds is 300 words; 450 is
+ * that with the headroom a per-team report legitimately needs, because unlike the merged digest it
+ * carries the evidence chain a manager acts on. `docs/budgets.md` states this number and the gate
+ * fails if the two stop agreeing.
+ */
+export const DAILY_REPORT_READING_BUDGET = 450;
+
+/**
+ * The daily's fail-closed ceiling: **900 words**.
+ *
+ * The other half of the pair the constant above describes. 450 is what Compass is *trying* to write;
+ * this is what Compass refuses to *send*. A narrated report longer than this is discarded and the
+ * deterministic render goes out in its place, marked as a fallback — the same treatment a grounding
+ * failure gets, for the same reason: a complete templated report beats a well-written one nobody
+ * finishes.
+ *
+ * ## Why it is checked on the narration path and nowhere else
+ *
+ * Because narration is the only path that can run long. This was first tried inside `renderReport`,
+ * over the templated prose, and that was wrong in a way worth recording: the seeded dataset's daily
+ * renders about **1,750** words, so the check fired on the deterministic renderer — the thing that
+ * *is* the fallback. There was nothing left to fall back to, and every worker suite went red at once.
+ *
+ * The template renderer's length is a structural fact (`MAX_SENTENCES_PER_ITEM` times a bounded item
+ * count) and is left to `DAILY_REPORT_READING_BUDGET`'s assertion over the reference dataset, which
+ * reports a regression to a build rather than to a manager at 06:00. A model, by contrast, is asked
+ * for six sections and has no notion of a global ceiling.
+ *
+ * 900 is twice the reading budget: enough headroom that a genuinely busy three-project day is never
+ * refused, low enough that a model which has started enumerating rather than summarising is caught.
+ */
+export const DAILY_REPORT_WORD_BUDGET = 900;
+
+/**
+ * The narration-fallback alert rate: **0.20**.
+ *
+ * The share of a day's generated reports that may fall back to the deterministic renderer before the
+ * condition stops being noise and becomes an incident. Above one report in five, the likely cause is
+ * not a model having an odd day — it is a prompt, a schema or a grounding rule that has broken for
+ * *every* report and is being masked by the fallback working correctly.
+ *
+ * That masking is the whole reason there is a number here. Fail-closed narration degrades so
+ * gracefully that a total narration outage looks, from the outside, like a product that has quietly
+ * decided to be templated. The rate is what turns "everything still renders" into an alert.
+ *
+ * A rate rather than a count, because a deployment with three teams and one with thirty should not
+ * need different thresholds; and evaluated per day rather than per report, because a single fallback
+ * is an expected event that must never page anybody.
+ */
+export const NARRATION_FALLBACK_ALERT_RATE = 0.2;
+
+/**
+ * Whether a day's fallback share has crossed the alert threshold.
+ *
+ * Pure, and takes both counts rather than a pre-divided rate, so the zero-report case is decided here
+ * instead of producing `NaN` at a call site. No reports generated is not an alert: it is a different
+ * condition — the scheduler did not run — with its own signal.
+ */
+export function narrationFallbackAlert(input: {
+  readonly reportsGenerated: number;
+  readonly reportsFellBack: number;
+}): { readonly rate: number; readonly alerting: boolean } {
+  if (input.reportsGenerated <= 0) return { rate: 0, alerting: false };
+
+  const rate = input.reportsFellBack / input.reportsGenerated;
+  // Strictly greater: exactly one in five is the documented ceiling, not the first failure.
+  return { rate, alerting: rate > NARRATION_FALLBACK_ALERT_RATE };
+}
+
+/**
  * Words in a rendered string, counted the way a reader would count them.
  *
  * Whitespace-separated tokens, with no exclusions. That is a deliberate refusal to be clever: any

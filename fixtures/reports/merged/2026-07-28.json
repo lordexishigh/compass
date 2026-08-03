@@ -1,0 +1,161 @@
+{
+  "changeLine": "This is the first merged report for these teams, so everything below is stated for the first time rather than as news.",
+  "instant": 1785229200000,
+  "items": [
+    {
+      "changeTag": "new",
+      "headline": "Oskar Lindqvist — Push the requested changes to #8117, or say in one line why they are not happening.",
+      "impact": {
+        "changeWeight": 100,
+        "score": 6100200,
+        "sectionWeight": 6,
+        "severityContribution": 200
+      },
+      "sectionKey": "recommendations",
+      "seenDays": 0,
+      "stableId": "v1:0f37ebb527b06e95",
+      "teamKey": "insights"
+    },
+    {
+      "changeTag": "new",
+      "headline": "Priya Raman — Ask what PLAT-443 is waiting on and write the answer on the ticket.",
+      "impact": {
+        "changeWeight": 100,
+        "score": 6100200,
+        "sectionWeight": 6,
+        "severityContribution": 200
+      },
+      "sectionKey": "recommendations",
+      "seenDays": 0,
+      "stableId": "v1:175308c8a2bb4890",
+      "teamKey": "platform"
+    },
+    {
+      "changeTag": "new",
+      "headline": "Rafael Lima — Push the requested changes to #8067, or say in one line why they are not happening.",
+      "impact": {
+        "changeWeight": 100,
+        "score": 6100200,
+        "sectionWeight": 6,
+        "severityContribution": 200
+      },
+      "sectionKey": "recommendations",
+      "seenDays": 0,
+      "stableId": "v1:1f4d4cddcaad1491",
+      "teamKey": "checkout"
+    },
+    {
+      "changeTag": "new",
+      "headline": "Aisha Bello — Ask what PLAT-465 is waiting on and write the answer on the ticket.",
+      "impact": {
+        "changeWeight": 100,
+        "score": 6100200,
+        "sectionWeight": 6,
+        "severityContribution": 200
+      },
+      "sectionKey": "recommendations",
+      "seenDays": 0,
+      "stableId": "v1:20782ec3310582c8",
+      "teamKey": "platform"
+    },
+    {
+      "changeTag": "new",
+      "headline": "Oskar Lindqvist — Ask what INS-105 is waiting on and write the answer on the ticket.",
+      "impact": {
+        "changeWeight": 100,
+        "score": 6100200,
+        "sectionWeight": 6,
+        "severityContribution": 200
+      },
+      "sectionKey": "recommendations",
+      "seenDays": 0,
+      "stableId": "v1:2242fc044082ea53",
+      "teamKey": "insights"
+    },
+    {
+      "changeTag": "new",
+      "headline": "Yusuf Demir — Ask what INS-119 is waiting on and write the answer on the ticket.",
+      "impact": {
+        "changeWeight": 100,
+        "score": 6100200,
+        "sectionWeight": 6,
+        "severityContribution": 200
+      },
+      "sectionKey": "recommendations",
+      "seenDays": 0,
+      "stableId": "v1:380dcd3c01b4c76c",
+      "teamKey": "insights"
+    },
+    {
+      "changeTag": "new",
+      "headline": "Marcus Hale — Review #8021 today or reassign it to Elena Sokolova.",
+      "impact": {
+        "changeWeight": 100,
+        "score": 6100200,
+        "sectionWeight": 6,
+        "severityContribution": 200
+      },
+      "sectionKey": "recommendations",
+      "seenDays": 0,
+      "stableId": "v1:5ac49f02cd616df1",
+      "teamKey": "platform"
+    },
+    {
+      "changeTag": "new",
+      "headline": "Priya Raman — Ask what PLAT-415 is waiting on and write the answer on the ticket.",
+      "impact": {
+        "changeWeight": 100,
+        "score": 6100200,
+        "sectionWeight": 6,
+        "severityContribution": 200
+      },
+      "sectionKey": "recommendations",
+      "seenDays": 0,
+      "stableId": "v1:5dac03e780806fa1",
+      "teamKey": "platform"
+    },
+    {
+      "changeTag": "new",
+      "headline": "Clara Mbeki — Ask what INS-106 is waiting on and write the answer on the ticket.",
+      "impact": {
+        "changeWeight": 100,
+        "score": 6100200,
+        "sectionWeight": 6,
+        "severityContribution": 200
+      },
+      "sectionKey": "recommendations",
+      "seenDays": 0,
+      "stableId": "v1:8a948e3394752ad4",
+      "teamKey": "insights"
+    }
+  ],
+  "omittedItemCount": 68,
+  "organizationId": "00000000-0000-4000-8000-000000000001",
+  "schemaVersion": 1,
+  "teams": [
+    {
+      "itemCount": 22,
+      "mergedItemCount": 1,
+      "reportId": null,
+      "teamKey": "checkout"
+    },
+    {
+      "itemCount": 23,
+      "mergedItemCount": 4,
+      "reportId": null,
+      "teamKey": "insights"
+    },
+    {
+      "itemCount": 32,
+      "mergedItemCount": 4,
+      "reportId": null,
+      "teamKey": "platform"
+    }
+  ],
+  "timezone": "Europe/London",
+  "window": {
+    "end": 1785193200000,
+    "start": 1785106800000
+  },
+  "wordBudget": 400
+}

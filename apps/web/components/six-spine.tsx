@@ -52,12 +52,24 @@ export function SixSpine({ entries, initialActiveKey }: SixSpineProps) {
   }, [entries]);
 
   return (
-    <>
+    /**
+     * One landmark, two presentations.
+     *
+     * The strip and the rail used to be two sibling `<nav>` elements, each labelled "Report
+     * sections". Only one is ever *displayed* — the other is `display:none` at that breakpoint — so
+     * on a real page a screen reader only ever announced one. But the duplicate is a genuine defect
+     * all the same: two landmarks with the same role and the same accessible name are
+     * indistinguishable in a rotor, and any tool reading the DOM without the stylesheet (axe in
+     * jsdom, a crawler, a reader-mode extension) sees both and offers the user a choice between two
+     * things with one name.
+     *
+     * So the landmark is declared once, here, and the breakpoint switch happens on plain elements
+     * inside it. The accessible name is now unambiguous at every width, and
+     * `tests/accessibility.test.tsx` asserts exactly one navigation landmark exists.
+     */
+    <nav aria-label="Report sections">
       {/* Phone: a 44px sticky strip of six numerals. */}
-      <nav
-        aria-label="Report sections"
-        className="sticky top-0 z-20 -mx-5 flex h-11 items-stretch border-b border-rule bg-surface/95 backdrop-blur lg:hidden"
-      >
+      <div className="sticky top-0 z-20 -mx-5 flex h-11 items-stretch border-b border-rule bg-surface/95 backdrop-blur lg:hidden">
         {entries.map((entry) => {
           const isActive = entry.key === activeKey;
           return (
@@ -80,10 +92,10 @@ export function SixSpine({ entries, initialActiveKey }: SixSpineProps) {
             </a>
           );
         })}
-      </nav>
+      </div>
 
       {/* Desktop: the left rail. */}
-      <nav aria-label="Report sections" className="hidden lg:sticky lg:top-16 lg:block lg:self-start">
+      <div className="hidden lg:sticky lg:top-16 lg:block lg:self-start">
         <ul className="space-y-0">
           {entries.map((entry) => {
             const isActive = entry.key === activeKey;
@@ -119,7 +131,7 @@ export function SixSpine({ entries, initialActiveKey }: SixSpineProps) {
             );
           })}
         </ul>
-      </nav>
-    </>
+      </div>
+    </nav>
   );
 }

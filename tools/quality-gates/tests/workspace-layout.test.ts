@@ -58,6 +58,13 @@ describe('the pnpm workspace holds every layer as its own package', () => {
       'pipeline',
       'renderers',
       'seed-connector',
+      // Not a layer in the pipeline: the seeded organization projected into an
+      // `AnalysisSnapshot` for any `(team, instant)`. It is a package rather than a test
+      // helper because three consumers need it — the analysis suites, the golden fixture
+      // suite and the determinism gate — and a helper reachable only by a relative path
+      // into `packages/analysis/tests` could not serve the last two without the sort of
+      // cross-package relative import the architecture rules forbid.
+      'seed-snapshot',
     ]);
   });
 
@@ -70,6 +77,14 @@ describe('the pnpm workspace holds every layer as its own package', () => {
       'apps/web',
       'apps/worker',
       'tools/eslint-plugin-compass',
+      // The golden report fixtures, their per-field diff and the determinism gate. A
+      // package rather than a directory of tests because it also owns the *writer* —
+      // `golden:update` — and a fixture format is only reviewable if exactly one thing
+      // produces it.
+      'tools/golden',
+      // The throttled-profile performance runner that owns the LCP and time-travel
+      // budgets, beside the numbers it measures.
+      'tools/perf-budget',
       'tools/quality-gates',
       // The cold-start smoke test. A package rather than a shell step in a
       // workflow file, so that its assertions are unit-tested and so that
