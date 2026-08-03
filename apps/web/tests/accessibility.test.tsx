@@ -590,16 +590,83 @@ describe('every interactive element is reachable and operable by keyboard', () =
 
     expect(suppressors.length, 'no rule suppresses an outline, so this asserts nothing').toBeGreaterThan(0);
 
+    /**
+     * The body of one rule, found by its selector.
+     *
+     * Matching the block and *then* testing its body — rather than doing both in one
+     * concatenated regex — is what makes the two shapes distinguishable. `.goal-input` sets
+     * `outline: none` on `:focus` and restores it in a **separate** `:focus-visible` rule, while
+     * `.feedback-reason` and `.app-feedback__field` suppress and restore **inside the same
+     * `:focus-visible` block**. One regex spanning `{[^}]*outline:` cannot express both, and the
+     * previous attempt to make it do so was worse than wrong: `outline:\s*[^n]` let `\s*` match
+     * empty so `[^n]` matched the *space* after the colon, which `outline: none` satisfies. Every
+     * selector passed and nothing was checked.
+     */
+    const bodyOf = (selector: string): string | null => {
+      const at = css.indexOf(`${selector} {`);
+      if (at === -1) return null;
+      const open = css.indexOf('{', at);
+      const close = css.indexOf('}', open);
+      return open === -1 || close === -1 ? null : css.slice(open + 1, close);
+    };
+
+    /**
+     * One declaration's value, or null when the property is not declared.
+     *
+     * Read the value out and *then* judge it. Trying to express "declared and not `none`" as a
+     * single regex is what produced both of this test's previous bugs: `outline:\s*[^n]` matched
+     * the space after the colon, and a `(?!none\b)` lookahead placed after `\s*` is defeated by
+     * the engine backtracking `\s*` to empty so the negative lookahead sees ` none` instead of
+     * `none`. A parse cannot be fooled that way.
+     *
+     * `outline\s*:` does not also match `outline-offset:` — the colon has to follow the property
+     * name with only whitespace between.
+     */
+    const valueOf = (body: string, property: string): string | null => {
+      const found = new RegExp(`(?:^|;)\\s*${property}\\s*:\\s*([^;]+)`).exec(body);
+      return found === null ? null : found[1]!.trim();
+    };
+
+    /**
+     * A visible keyboard indicator, in any of the three forms WCAG 2.4.7 accepts.
+     *
+     * It does not require `outline` specifically — a 2px box-shadow ring and a colour change on
+     * the border are both perceivable focus indicators, and both are what this sheet actually
+     * uses for the two teal-ringed text fields. What it does require is that *something* visible
+     * is declared, so a rule that removes the outline and offers nothing still fails.
+     */
+    const isVisible = (value: string | null): boolean =>
+      value !== null && value.length > 0 && value !== 'none';
+
+    const declaresIndicator = (body: string): boolean =>
+      isVisible(valueOf(body, 'outline')) ||
+      isVisible(valueOf(body, 'box-shadow')) ||
+      isVisible(valueOf(body, 'border-color'));
+
     for (const selector of suppressors) {
       const base = selector.replace(/:focus(-visible)?$/, '').trim();
-      const restored = new RegExp(
-        `${base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:focus-visible\\s*\\{[^}]*outline:\\s*[^n]`,
-      );
+
+      // Either the suppressing block restores an indicator itself, or a sibling
+      // `:focus-visible` rule does. Both are legitimate; neither being true is not.
+      const ownBody = bodyOf(selector) ?? '';
+      const keyboardBody = bodyOf(`${base}:focus-visible`) ?? '';
+
       expect(
-        restored.test(css),
-        `${selector} removes the outline and nothing restores one for keyboard focus`,
+        declaresIndicator(ownBody) || declaresIndicator(keyboardBody),
+        `${selector} removes the outline and nothing restores a visible indicator for keyboard focus`,
       ).toBe(true);
     }
+
+    /**
+     * And the predicate is not vacuous, proved on a fixture rather than asserted.
+     *
+     * This is the guard the old version needed and did not have: a rule that suppresses the
+     * outline and offers nothing back must be *rejected*. Without this, any future weakening of
+     * `declaresIndicator` goes unnoticed exactly as the `[^n]` bug did.
+     */
+    expect(declaresIndicator('\n  outline: none;\n  color: red;\n')).toBe(false);
+    expect(declaresIndicator('\n  outline: none;\n  box-shadow: 0 0 0 2px teal;\n')).toBe(true);
+    expect(declaresIndicator('\n  outline: 2px solid var(--focus-ring);\n')).toBe(true);
   });
 });
 
