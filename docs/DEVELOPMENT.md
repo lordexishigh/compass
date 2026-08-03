@@ -23,3 +23,71 @@ The exact commands depend on the tech stack (see `docs/ARCHITECTURE.md`). Genera
 - `docs/` — project brief, architecture, and the build plan
 - source code is organised per the architecture document
 - `.nous/` — pipeline session state (safe to ignore / not part of the product)
+
+## Privacy: retention, anonymization, deletion and LLM minimization
+
+Every number in this section is a constant in the code, and
+`tools/quality-gates/tests/privacy-documentation.test.ts` diffs this file against those
+constants — so the documentation cannot drift from the behaviour.
+
+### Retention defaults
+
+A row in `org_privacy_settings` is created for every organization when it is created, and
+migration `0013` backfilled every organization that already existed. The defaults are:
+
+- **Raw events (chat message bodies): 90 days.** Choices are 30, 90, 180 or 365. Long enough
+  that a manager investigating last quarter's slip can still see the conversation, short
+  enough that Compass is not a permanent archive of what a team said to each other.
+- **Derived data and reports: 3 years.** Choices are 1, 3, 7 years, or indefinite. A report is
+  the product; deleting it early destroys the continuity every "day 6" in the product is
+  counted from.
+- **LLM minimization mode: `redacted`.** Choices are `full`, `redacted` and `none`. Redacted
+  mode sends pseudonyms to the model and substitutes the real names back locally, so the
+  reader's page is identical to full mode while the provider never learns a name. It is the
+  default because it costs the reader nothing.
+
+The setting is stored rather than defaulted at read time, deliberately: an owner has to be
+able to tell a deliberate choice from an absent one, and a later change to these defaults must
+not silently re-date an existing tenant's data.
+
+### The three scheduled jobs
+
+Registered in `apps/worker/src/index.ts`, defined in `apps/worker/src/privacy.ts`.
+
+| Job | Cron | What it does |
+| --- | --- | --- |
+| `privacy.retention-purge` | `17 3 * * *` | Deletes raw events past the raw window and reports past the derived window, and writes a `purge_runs` row **whether or not it deleted anything** — a page reading "never purged" would be indistinguishable from a dead scheduler. |
+| `privacy.deletion-sweep` | `23 * * * *` | Completes every deletion request whose 7-day grace period has ended, then mails a confirmation enumerating the categories actually deleted. |
+| `privacy.channel-notice` | `*/10 * * * *` | Posts "Compass reads this channel" in every enabled channel that has not been told, retrying until it lands. |
+
+### Deletion deadlines
+
+- **Grace period: 7 days.** The undo link works until then and not after.
+- **Hard deletion: within 30 days.** The sweep runs on the grace deadline, so in practice
+  completion is within an hour of day 7; 30 days is the outer bound.
+
+Both deadlines are frozen onto the `deletion_requests` row at request time rather than derived
+on read, for the same reason `sessions.expires_at` is: "you have seven days" is a promise made
+to a person, not a configuration value that may be edited later.
+
+An organization erasure empties every mutable tenant table **and** the append-only history,
+through the one GUC-gated path (`ScopedDb.eraseWithin`, plus the `compass.erasure` check in
+`compass_reject_history_mutation()`). It keeps four things, and the confirmation email says so:
+the `organizations` tombstone row, the deletion record itself, `purge_runs`, and
+`anonymizations` — none of which carries a name.
+
+### What never reaches a language model
+
+In every mode, including `full`: no commit message, no pull request body, no ticket comment and
+no chat message. That is structural rather than careful — `assertNoRawIngestedText` fails the
+build if a field carrying raw text is added to the narration payload.
+
+### Chat ingestion
+
+Opt-in per named channel, and public channels only. Three independent guards:
+
+1. `slack_channel_ingestion_public_only`, a CHECK constraint, makes a private conversation
+   unenablable by any path including psql.
+2. `/api/privacy/channels` refuses with a sentence a manager can read.
+3. `isIngestibleKind` in `packages/ingest/src/chat.ts` drops a record whose own stamped kind is
+   not `public_channel`, even if its conversation is on the allowlist.

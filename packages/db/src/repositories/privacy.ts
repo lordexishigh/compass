@@ -1,8 +1,54 @@
 import type { Instant } from '@compass/clock';
 import { and, eq, inArray, isNull, lt, sql } from 'drizzle-orm';
+import type { PgTable } from 'drizzle-orm/pg-core';
 
+import { appFeedback } from '../schema/app-feedback.js';
+import { authTokens, membershipTeamScopes } from '../schema/auth.js';
 import { fromDatabaseInstant, fromNullableDatabaseInstant, toDatabaseInstant } from '../schema/columns.js';
+import { deliveryLog, feedbackLinkUses, shareLinkAccess, shareLinks, subscriptions } from '../schema/delivery.js';
+import {
+  absences,
+  blockers,
+  branchRefs,
+  commits,
+  companies,
+  developers,
+  feedbackEntries,
+  features,
+  identityLinks,
+  managerMemos,
+  objectives,
+  projects,
+  pullRequests,
+  recommendations,
+  releaseTags,
+  repositories,
+  reviews,
+  risks,
+  sprints,
+  teamMemberships,
+  teams,
+  tickets,
+  trackedProjects,
+  trackedRepositories,
+  unmatchedIdentities,
+  wins,
+  workingCalendars,
+} from '../schema/entities.js';
+import { objectiveLinks, objectiveScopeLinks, objectiveVersions } from '../schema/goals.js';
+import { corrections, entityVersions, sprintScopeChanges, ticketStatusTransitions } from '../schema/history.js';
 import { narrationTraces } from '../schema/narration.js';
+import { integrationTokens, organizationDataKeys } from '../schema/security.js';
+import {
+  auditLogEntries,
+  ingestRuns,
+  ingestSourceCoverage,
+  memberships,
+  organizations,
+  sessions,
+  sourceConfigs,
+  users,
+} from '../schema/tables.js';
 import {
   anonymizations,
   deletionRequests,
@@ -903,6 +949,217 @@ export async function markExportDownloaded(
       eq(deletionRequests.id, input.id),
     )
     .execute();
+}
+
+// ---------------------------------------------------------------------------
+// Erasure
+// ---------------------------------------------------------------------------
+
+/**
+ * Every table an organization erasure empties, children before parents.
+ *
+ * Written out rather than derived, and held to completeness by a test:
+ * `packages/db/tests/erasure.test.ts` walks every table in the drizzle schema and fails
+ * if it is neither in this list nor in `ERASURE_SURVIVORS`. So a table added six months
+ * from now is a build failure until somebody decides, in writing, whether an erasure
+ * deletes it — which is the only way a promise this specific stays true.
+ *
+ * The order is dependency order. There are no `ON DELETE CASCADE` clauses anywhere in
+ * this schema (a stray delete taking four tables with it is exactly what the design
+ * avoids), so the order here *is* the referential integrity of the operation.
+ */
+export const ERASURE_TABLE_ORDER: readonly PgTable[] = Object.freeze([
+  // Reports and their children.
+  reportItemEvidence,
+  reportItems,
+  reportSections,
+  narrationTraces,
+  // Share links reference reports, so they go before them.
+  shareLinkAccess,
+  shareLinks,
+  reports,
+  // Delivery.
+  deliveryLog,
+  feedbackLinkUses,
+  subscriptions,
+  // Integrations and their keys.
+  integrationTokens,
+  organizationDataKeys,
+  // Product feedback about Compass itself.
+  appFeedback,
+  // Chat bodies and the chat opt-in.
+  rawEvents,
+  slackChannelIngestion,
+  // Append-only history. Reachable only from an `eraseWithin` handle.
+  entityVersions,
+  corrections,
+  ticketStatusTransitions,
+  sprintScopeChanges,
+  // The goal store.
+  objectiveLinks,
+  objectiveScopeLinks,
+  objectiveVersions,
+  // Knowledge entities.
+  feedbackEntries,
+  managerMemos,
+  absences,
+  blockers,
+  risks,
+  recommendations,
+  wins,
+  reviews,
+  commits,
+  pullRequests,
+  branchRefs,
+  releaseTags,
+  tickets,
+  features,
+  sprints,
+  identityLinks,
+  unmatchedIdentities,
+  teamMemberships,
+  workingCalendars,
+  developers,
+  trackedRepositories,
+  trackedProjects,
+  repositories,
+  projects,
+  teams,
+  objectives,
+  companies,
+  // Ingest journal. Reports referenced these, so they go after reports.
+  ingestSourceCoverage,
+  ingestRuns,
+  sourceConfigs,
+  // Accounts and the audit trail.
+  auditLogEntries,
+  authTokens,
+  membershipTeamScopes,
+  sessions,
+  memberships,
+  users,
+  // Settings last: the retention window is what said this erasure was allowed to happen.
+  orgPrivacySettings,
+]);
+
+/**
+ * What an erasure deliberately keeps, and why each one.
+ *
+ *  - **`organizations`** — the tenant row is kept as a tombstone. `deletion_requests`
+ *    references it, and removing it would take the record of the deletion with it. It
+ *    holds a name, a slug and a timezone and no personal data; the erasure renames it so
+ *    a reader can see what happened.
+ *  - **`deletion_requests`** — the record of the request, its deadlines and what was
+ *    deleted. Deleting the receipt for the deletion is not a coherent operation.
+ *  - **`purge_runs`** and **`anonymizations`** — records of irreversible acts the
+ *    acceptance criteria require to survive. Neither carries a name: a purge row is
+ *    counts and cutoffs, and an anonymization row is a developer *key* and a pseudonym.
+ */
+export const ERASURE_SURVIVORS: readonly PgTable[] = Object.freeze([
+  organizations,
+  deletionRequests,
+  purgeRuns,
+  anonymizations,
+]);
+
+/**
+ * The data categories the confirmation email enumerates.
+ *
+ * Written from the tables above rather than typed out beside them, so the email cannot
+ * name a category the code did not delete. Grouped the way a person thinks about their
+ * data, not the way the schema is laid out.
+ */
+export const ERASURE_CATEGORIES: readonly string[] = Object.freeze([
+  'daily and weekly reports, their sections, items and evidence',
+  'chat message bodies Compass had read from opted-in channels',
+  'the knowledge model: tickets, pull requests, commits, reviews, releases, sprints and branches',
+  'the roster: people, identity links, team memberships, working calendars and absences',
+  'blockers, risks, recommendations, wins and manager memos',
+  'the goal hierarchy and every alignment link',
+  'email and Slack subscriptions, share links and their access log',
+  'integration tokens and the organization data key that wrapped them',
+  'accounts, seats, sessions, sign-in tokens and the audit log',
+  'the append-only version history behind all of the above',
+]);
+
+/**
+ * Empties an organization, inside one transaction.
+ *
+ * Returns the categories deleted, which is what the confirmation email is built from.
+ *
+ * The whole thing runs through `eraseWithin`, so it is atomic: an erasure that fails
+ * half-way leaves the tenant intact rather than in a state where four of its six report
+ * sections exist. That also means the append-only permission is scoped to the block and
+ * dies with it.
+ */
+export async function eraseOrganizationData(
+  scoped: ScopedDb,
+  input: { readonly at: Instant; readonly tombstoneName: string },
+): Promise<readonly string[]> {
+  await scoped.eraseWithin(async (erasing) => {
+    for (const table of ERASURE_TABLE_ORDER) {
+      await erasing.deleteFrom(table as unknown as Parameters<ScopedDb['deleteFrom']>[0]).execute();
+    }
+
+    // The tombstone. A reader who finds the row learns that it was erased rather than
+    // that Compass forgot the name — and the slug is freed under a new value so the
+    // organization can be re-created later.
+    await erasing
+      .updateIn(organizations, {
+        name: input.tombstoneName,
+        slug: `erased-${scoped.organizationId}`,
+        updatedAt: toDatabaseInstant(input.at),
+      })
+      .execute();
+  });
+
+  return ERASURE_CATEGORIES;
+}
+
+/** The categories an account erasure covers. A subset, and honestly a small one. */
+export const ACCOUNT_ERASURE_CATEGORIES: readonly string[] = Object.freeze([
+  'your account: name, email address and password hash',
+  'your seat, its role and its team scopes',
+  'every signed-in session and every outstanding sign-in or reset token',
+  'your email and Slack subscriptions',
+]);
+
+/**
+ * Deletes one person's account, leaving the organization standing.
+ *
+ * ## What this does not delete, and why saying so matters
+ *
+ * The reports remain, and so do the tickets, pull requests and commits attributed to the
+ * person — because those are the *organization's* records of work that happened, not the
+ * account holder's personal data to withdraw. Deleting them would rewrite the team's
+ * history, and a manager would open last Tuesday's report to find a day's work missing.
+ *
+ * The right instrument for the name in those records is anonymization, which is a
+ * separate act with its own audit row. The deletion route offers it alongside, and the
+ * confirmation email says which one was done.
+ */
+export async function eraseAccountData(
+  scoped: ScopedDb,
+  input: { readonly userId: string },
+): Promise<readonly string[]> {
+  const membership = await scoped.selectFrom(memberships, eq(memberships.userId, input.userId));
+
+  await scoped.eraseWithin(async (erasing) => {
+    await erasing.deleteFrom(subscriptions, eq(subscriptions.userId, input.userId)).execute();
+    await erasing.deleteFrom(authTokens, eq(authTokens.userId, input.userId)).execute();
+    await erasing.deleteFrom(sessions, eq(sessions.userId, input.userId)).execute();
+
+    for (const seat of membership) {
+      await erasing
+        .deleteFrom(membershipTeamScopes, eq(membershipTeamScopes.membershipId, seat.id))
+        .execute();
+    }
+
+    await erasing.deleteFrom(memberships, eq(memberships.userId, input.userId)).execute();
+    await erasing.deleteFrom(users, eq(users.id, input.userId)).execute();
+  });
+
+  return ACCOUNT_ERASURE_CATEGORIES;
 }
 
 export async function markDeletionPurged(

@@ -24,6 +24,7 @@ import {
   sourceCoverageCursors,
   type CompassDatabase,
 } from '@compass/db';
+import { ConsoleMailer } from '@compass/auth';
 import { KnowledgeStore, readRosterView } from '@compass/knowledge-model';
 import { narratorFromEnvironment } from '@compass/narrator';
 import { ensureDailyReport } from '@compass/pipeline';
@@ -56,6 +57,15 @@ import {
 } from './generation.js';
 import { describeFirstRun, ensureFirstRun } from './first-run.js';
 import { describeIngestWindow, nextIngestWindows } from './ingest-schedule.js';
+import {
+  CHANNEL_NOTICE_CRON,
+  DELETION_CRON,
+  PURGE_CRON,
+  runChannelNotices,
+  runDeletionSweep,
+  runRetentionPurge,
+  type PrivacyDependencies,
+} from './privacy.js';
 import { JOB_NAMES, handleIngestWindow, type IngestRunIds, type WorkerDependencies } from './jobs.js';
 import { storedReportToRendered } from './stored-report.js';
 
@@ -234,6 +244,28 @@ export function createDeliveryDependencies(clock: Clock, db: CompassDatabase): D
     // then carries no feedback links, which is the honest degradation — signing with a default key
     // would put forgeable dismissal links in every inbox.
     feedbackLinkSecret: process.env[FEEDBACK_LINK_SECRET_ENV_VAR],
+    newId: () => randomUUID(),
+    logger: console,
+  };
+}
+
+/**
+ * Everything the three privacy jobs need, resolved once at the process edge.
+ *
+ * The mailer is `ConsoleMailer` when no transport is configured, which is the same
+ * arrangement the web app's sign-in mail uses: a deployment with no `RESEND_API_KEY` puts
+ * the deletion confirmation in the process log rather than failing the erasure. That is the
+ * right trade — a person who asked to be deleted is deleted whether or not Compass can post
+ * them a receipt — and `deletion_requests.confirmation_sent_at` records which happened.
+ */
+export function createPrivacyDependencies(db: CompassDatabase): PrivacyDependencies {
+  const baseUrl = (process.env['COMPASS_BASE_URL'] ?? 'http://localhost:3000').replace(/\/+$/, '');
+
+  return {
+    scopedFor: (organizationId: string) => new ScopedDb(db, orgScope(organizationId)),
+    mailer: new ConsoleMailer(),
+    slack: new SlackApiTransport({ botToken: process.env[SLACK_BOT_TOKEN_ENV_VAR] }),
+    baseUrl,
     newId: () => randomUUID(),
     logger: console,
   };
@@ -432,6 +464,49 @@ export async function startWorker(): Promise<RunningWorker> {
       }
     },
   );
+
+  /**
+   * The three privacy schedules.
+   *
+   * Registered together and last, because they are one commitment: a retention window
+   * nobody purges, a deletion nobody completes and a channel nobody was told about are the
+   * same failure — a policy stated in the product with no scheduled work behind it. Keeping
+   * the three registrations in one block is what lets a reviewer check that at a glance.
+   *
+   * Each resolves `now` once from the process clock and hands it down, exactly as the
+   * ingest, generation and delivery ticks do.
+   */
+  const privacyDependencies = createPrivacyDependencies(runtime.db);
+
+  await boss.work(JOB_NAMES.retentionPurge, async () => {
+    const now = clock.now();
+    await runRetentionPurge(privacyDependencies, resolveSeededRun({ hostNow: now }).organizationId, now);
+  });
+
+  await boss.schedule(JOB_NAMES.retentionPurge, PURGE_CRON, {}, { singletonKey: 'retention-purge' });
+
+  await boss.work(JOB_NAMES.deletionSweep, async () => {
+    const now = clock.now();
+    const result = await runDeletionSweep(
+      privacyDependencies,
+      resolveSeededRun({ hostNow: now }).organizationId,
+      now,
+    );
+    // Only when something happened: an hourly tick that logs "0 deletions" every hour is a
+    // log nobody reads, and this is a line an operator must not miss when it appears.
+    if (result.purged > 0 || result.failed > 0) {
+      console.info(`[compass] deletion sweep: ${result.purged} completed, ${result.failed} failed`);
+    }
+  });
+
+  await boss.schedule(JOB_NAMES.deletionSweep, DELETION_CRON, {}, { singletonKey: 'deletion-sweep' });
+
+  await boss.work(JOB_NAMES.channelNotice, async () => {
+    const now = clock.now();
+    await runChannelNotices(privacyDependencies, resolveSeededRun({ hostNow: now }).organizationId, now);
+  });
+
+  await boss.schedule(JOB_NAMES.channelNotice, CHANNEL_NOTICE_CRON, {}, { singletonKey: 'channel-notice' });
 
   console.info(`[compass] worker listening on ${Object.values(JOB_NAMES).join(', ')}`);
 

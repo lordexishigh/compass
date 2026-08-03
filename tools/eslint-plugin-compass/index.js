@@ -2,6 +2,7 @@ import noSystemClock from './rules/no-system-clock.js';
 import noTimeLibraryImports from './rules/no-time-library-imports.js';
 import noClockInstantiation from './rules/no-clock-instantiation.js';
 import noAnalysisIo from './rules/no-analysis-io.js';
+import noSecretDisclosure from './rules/no-secret-disclosure.js';
 
 /**
  * Compass build gates. Registered in the root `eslint.config.js`; the guarded
@@ -17,6 +18,7 @@ const plugin = {
     'no-time-library-imports': noTimeLibraryImports,
     'no-clock-instantiation': noClockInstantiation,
     'no-analysis-io': noAnalysisIo,
+    'no-secret-disclosure': noSecretDisclosure,
   },
 };
 

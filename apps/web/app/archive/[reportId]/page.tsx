@@ -6,6 +6,7 @@ import { StatedFailure } from '../../../components/stated-failure';
 import { TimeTravelScrubber } from '../../../components/time-travel-scrubber';
 import { loadArchivedReport, simulatedClockAvailable, timeTravelBounds } from '../../../lib/archive-source';
 import { pageAccess } from '../../../lib/auth/guard';
+import { withdrawnNames } from '../../../lib/privacy-source';
 import { buildReportView } from '../../../lib/view-model';
 
 /**
@@ -106,6 +107,16 @@ export default async function ArchivedReportPage({
     timeShiftNote:
       `This is the stored report for ${bundle.report.reportDate}, rendered exactly as Compass wrote it. ` +
       'Nothing on this page was recomputed.',
+    /**
+     * The one thing that *is* changed on the way out: a name withdrawn since this report was
+     * written renders as "a former team member".
+     *
+     * It does not contradict the sentence above. Nothing was recomputed — every ticket key,
+     * pull request number, count and age is the stored value — and the stored row still says
+     * exactly what it said, which is why the content hash still matches. What changed is one
+     * label, at render time, because the person it named asked to stop being named.
+     */
+    withdrawnNames: await withdrawnNames(access.scoped, access.now),
   });
 
   const bounds = timeTravelBounds(access.organizationId, bundle.report.reportDate);

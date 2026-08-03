@@ -2,7 +2,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { resolveOwnerCredentials, type OwnerEnvironment } from '@compass/auth';
+import { DEMO_ACCOUNT_LOGIN_PATH, resolveOwnerCredentials, type OwnerEnvironment } from '@compass/auth';
 import { findRepositoryRoot } from '@compass/seed-connector';
 
 /**
@@ -47,11 +47,15 @@ export const DEMO_ACCOUNT_FILE_NAME = 'demo_account.json';
 /**
  * Where the credentials are POSTed.
  *
- * `/login` rather than `/api/auth/login`, and that is the point of naming it here: the
- * two are the same handler reached by two addresses, and this is the stable one. See
- * `apps/web/app/login/route.ts` for why the alias exists.
+ * `/login` rather than `/api/auth/login`: the two are the same handler reached by two
+ * addresses, and this is the stable one. See `apps/web/app/login/route.ts` for why the alias
+ * exists.
+ *
+ * Re-exported rather than declared. The value lives in `@compass/auth` because three packages
+ * have to agree on it — this writer, the role matrix, and the route on disk — and a literal in
+ * each would be three chances for a harness to POST at a 404.
  */
-export const DEMO_ACCOUNT_LOGIN_PATH = '/login';
+export { DEMO_ACCOUNT_LOGIN_PATH };
 
 /** Exactly the shape the file holds. No optional fields, no extras. */
 export interface DemoAccountFile {

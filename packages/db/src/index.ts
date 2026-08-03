@@ -243,8 +243,14 @@ export {
 } from './schema/privacy.js';
 
 export {
+  ACCOUNT_ERASURE_CATEGORIES,
   CONVERSATION_KINDS,
   DERIVED_RETENTION_CHOICES,
+  ERASURE_CATEGORIES,
+  ERASURE_SURVIVORS,
+  ERASURE_TABLE_ORDER,
+  eraseAccountData,
+  eraseOrganizationData,
   LLM_MINIMIZATION_MODES,
   PRIVACY_DEFAULTS,
   PrivateConversationError,

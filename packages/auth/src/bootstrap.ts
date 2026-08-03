@@ -43,6 +43,21 @@ export const DEMO_OWNER_EMAIL = 'owner@compass.demo';
 export const DEMO_OWNER_PASSWORD = 'compass-demo-owner';
 export const DEMO_OWNER_NAME = 'Demo Owner';
 
+/**
+ * The address these credentials are POSTed to, named once.
+ *
+ * Three places need to agree on this string and they are in three different packages: the seed
+ * writes it into `.nous/demo_account.json` as `login_path`, the role matrix carries the route
+ * rule for it, and the App Router serves it from `apps/web/app/login/route.ts`. A literal in
+ * each would be three chances for a harness to POST at a 404 — and the symptom of that is
+ * "Compass cannot authenticate", which is the worst possible thing to be wrong about by a typo.
+ *
+ * It lives here rather than in the web app because the *writer* of the file is the worker, and
+ * `@compass/auth` is the one package both processes already depend on for exactly this kind of
+ * shared fact.
+ */
+export const DEMO_ACCOUNT_LOGIN_PATH = '/login';
+
 export interface OwnerCredentials {
   readonly email: string;
   readonly password: string;

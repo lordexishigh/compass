@@ -422,6 +422,67 @@ export const ROLE_MATRIX: readonly RouteRule[] = [
   },
 
   // -------------------------------------------------------------------------
+  // Privacy: retention, anonymization, chat opt-in, deletion and the export.
+  //
+  // The split between owner-only and owner-plus-manager is not arbitrary. A setting that
+  // decides what Compass *keeps or sends* is the organization's own posture and belongs to
+  // an owner: retention windows, the narration mode, deleting the tenant, downloading the
+  // whole export. The two acts a manager needs are the two that are about the team in front
+  // of them — withdrawing a departed colleague's name from tomorrow's report, and turning a
+  // channel's ingestion on or off — and routing either through an owner would mean the wrong
+  // name stayed in the report, or a team went unread, while a request sat in a queue.
+  //
+  // Members and viewers are absent from every row here, and `/me` is the reason that is not
+  // a gap: the one privacy surface a member needs is their own, and it is theirs by right.
+  // -------------------------------------------------------------------------
+  {
+    route: '/api/privacy/settings',
+    summary: 'The retention windows and the narration mode. Owner only: it is the organization’s posture.',
+    allow: { PATCH: ['owner'] },
+  },
+  {
+    route: '/api/privacy/anonymize',
+    summary: 'Withdraw a person’s name from future reports, or restore it. Both acts are audited.',
+    allow: { POST: ['owner', 'manager'], DELETE: ['owner', 'manager'] },
+  },
+  {
+    route: '/api/privacy/channels',
+    summary: 'Turn chat ingestion on or off for one named public channel. Never a DM, never private.',
+    allow: { PATCH: ['owner', 'manager'] },
+  },
+  {
+    /**
+     * Every seat may ask, and the handler decides *what* they may ask for.
+     *
+     * `account` is any seat's own account; `organization` is owner-only and the handler
+     * enforces that separately, because the matrix decides who may call a route and not
+     * which body they may send. The subject id is never read from the request — it is the
+     * caller's own user id — so a manager cannot delete a colleague's account with a curl.
+     */
+    route: '/api/privacy/deletion',
+    summary: 'Request deletion of your own account, or — for an owner — of the whole organization.',
+    allow: { POST: EVERY_SEAT },
+  },
+  {
+    /**
+     * `public`, and narrower than a session rather than wider.
+     *
+     * The undo link arrives from a mail client with no cookies, and the whole point of the
+     * message is that it works when the account holder cannot sign in — a pending deletion
+     * may be exactly why they cannot. What authorises it is a 32-byte token mailed once,
+     * stored as a digest, good for one act on one request until the grace period ends.
+     */
+    route: '/api/privacy/deletion/undo',
+    summary: 'Spends a mailed undo link and cancels a pending deletion. POST only, never a session.',
+    allow: { POST: ANYONE },
+  },
+  {
+    route: '/api/privacy/export',
+    summary: 'Everything Compass holds, as one JSON file. Audited, because a full copy leaving is an act.',
+    allow: { GET: ['owner'] },
+  },
+
+  // -------------------------------------------------------------------------
   // The audit trail. Owner only, and append-only underneath.
   // -------------------------------------------------------------------------
   {
@@ -440,6 +501,28 @@ export const ROLE_MATRIX: readonly RouteRule[] = [
   {
     route: '/goals',
     summary: 'The goal hierarchy screen — the chain alignment verdicts resolve against.',
+    allow: { GET: ANYONE },
+    demoOnlyPublic: true,
+  },
+  /**
+   * The evidence page every superscript marker lands on.
+   *
+   * This entry was **missing** until `apps/web/tests/two-org-isolation.test.ts` began enumerating
+   * page routes as well as endpoints: the coverage test had only ever walked `app/api`, so a screen
+   * that renders one organization's commits, pull requests and Jira issues had no row here and
+   * nothing in the matrix decided who could read it. Worth recording plainly, because it is exactly
+   * the failure the "fail the build when a route has no entry" rule exists to catch, and the rule
+   * only caught it once its enumeration matched the routes the app actually serves.
+   *
+   * `ANYONE` with `demoOnlyPublic`, on the same terms as `/` and the archive, and for the same
+   * reason: a receipt is only useful if the reader of the claim can open it, so it gets exactly the
+   * posture of the report the claim is in — readable without a seat on the demonstration tenant,
+   * closed the moment Compass holds a real organization's work. It is a read with no verb but GET,
+   * so nothing here can be written through it.
+   */
+  {
+    route: '/artifact/[kind]/[artifactId]',
+    summary: 'One artifact — commit, PR, review, ticket — as the receipt behind a claim.',
     allow: { GET: ANYONE },
     demoOnlyPublic: true,
   },
@@ -485,6 +568,45 @@ export const ROLE_MATRIX: readonly RouteRule[] = [
     route: '/roster',
     summary: 'Configuration: teams, tracked repositories and projects, the identity roster and absences.',
     allow: { GET: ['owner', 'manager'] },
+  },
+  {
+    /**
+     * The privacy screen. Owner and manager, matching the two routes a manager may call.
+     *
+     * A manager who can turn a channel's ingestion off but cannot see which channels are on
+     * is being asked to administer something they cannot read. The owner-only *controls* on
+     * the page — the retention windows, the narration mode, deleting the organization — are
+     * refused by their own routes, and the page renders them as stated facts rather than as
+     * editable fields for anyone else.
+     */
+    route: '/privacy',
+    summary: 'What Compass keeps, what it reads, whose name it prints, and how to end all of it.',
+    allow: { GET: ['owner', 'manager'] },
+  },
+  {
+    /**
+     * "What does Compass say about me". Every seat, and no approval.
+     *
+     * The whole point is that a member opens it and it works. There is no request to make,
+     * no queue and nobody to ask — a transparency page you have to be granted is not one.
+     * It is not `demoOnlyPublic` and not `ANYONE`: the answer is computed from the reader's
+     * own session, so an anonymous reader has no question for it to answer.
+     */
+    route: '/me',
+    summary: 'Everything Compass stores about you, and every report line that names you.',
+    allow: { GET: EVERY_SEAT },
+  },
+  {
+    /**
+     * The undo landing page, reached from an email.
+     *
+     * `ANYONE`, on the same terms as `/api/privacy/deletion/undo`: it exists to be opened by
+     * somebody who may not be able to sign in, and it holds no organization data — it reads
+     * a token out of the query string, posts it, and prints the outcome.
+     */
+    route: '/account/deletion',
+    summary: 'Cancels a pending deletion from a mailed link. Holds no data of its own.',
+    allow: { GET: ANYONE },
   },
   {
     route: '/corrections',

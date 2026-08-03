@@ -15,6 +15,12 @@
 export { DELIVERED_SECTION_KEYS, DeliverySpineError, orderedSections } from './spine.js';
 
 export {
+  channelNoticeText,
+  renderChannelNotice,
+  type ChannelNoticeInput,
+} from './channel-notice.js';
+
+export {
   emailSubject,
   listUnsubscribeHeaders,
   renderEmail,

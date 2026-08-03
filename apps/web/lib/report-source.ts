@@ -5,11 +5,12 @@ import { ensureDailyReport, loadFreshnessFor, type EnsuredReport } from '@compas
 import { SeedConnector, resolveSeededRun, type SeededRun } from '@compass/seed-connector';
 
 import {
-  organizationIsUnprovisioned,
+  organizationHasSubject,
   readFirstRunReadiness,
   type FirstRunStep,
 } from './first-run-source';
 import { resolveProvider } from './foundation-report';
+import { withdrawnNames } from './privacy-source';
 import { buildReportView, type ReportView } from './view-model';
 
 /**
@@ -114,6 +115,16 @@ export async function loadReportView(): Promise<ReportView> {
     bundle: ensured.bundle,
     freshness: ensured.freshness,
     timeShiftNote: notes.length === 0 ? null : notes.join(' '),
+    /**
+     * Names withdrawn since a report was written.
+     *
+     * Read on every render rather than baked in at generation, because withdrawal happens
+     * *after* the reports it has to affect. A report generated this morning and anonymised
+     * this afternoon has to stop printing the name this afternoon, and the stored row is
+     * deliberately never rewritten — so the only place this can happen is here, on the way
+     * to the page.
+     */
+    withdrawnNames: await withdrawnNames(new ScopedDb(database(), orgScope(run.organizationId)), run.now),
   });
 }
 
@@ -148,17 +159,21 @@ export async function loadHomeView(): Promise<HomeView> {
   const run = requestedRun();
   const scoped = new ScopedDb(database(), orgScope(run.organizationId));
 
+  // Two indexed reads, not the whole readiness model. On every deployment that has been
+  // configured — which is every one that matters — this returns true and the report path is
+  // reached having paid almost nothing for the question.
+  if (await organizationHasSubject(scoped)) {
+    return { kind: 'report', view: await loadReportView() };
+  }
+
+  // Only now, on the branch that is going to render the step list, is the full model built.
   const readiness = await readFirstRunReadiness({
     scoped,
     organizationId: run.organizationId,
     now: run.now,
   });
 
-  if (organizationIsUnprovisioned(readiness)) {
-    return { kind: 'unprovisioned', steps: readiness.steps, reportExists: readiness.reportExists };
-  }
-
-  return { kind: 'report', view: await loadReportView() };
+  return { kind: 'unprovisioned', steps: readiness.steps, reportExists: readiness.reportExists };
 }
 
 /** Freshness on its own, for a surface that must not generate anything. */

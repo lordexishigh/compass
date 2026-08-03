@@ -77,6 +77,19 @@ export default tseslint.config(
       'no-console': ['error', { allow: ['warn', 'error', 'info'] }],
       eqeqeq: ['error', 'always', { null: 'ignore' }],
       'prefer-const': 'error',
+      /**
+       * No credential in a log line and none in a response body, anywhere in the workspace.
+       *
+       * Applied to *every* file rather than to a guarded path list, unlike the clock and purity
+       * rules above. Those describe a property of one layer; this one describes a property of the
+       * product, and a leak is unrecoverable wherever it happens — a token in a worker log is
+       * exactly as shipped, indexed and retained as a token in a route's response.
+       *
+       * The rule reads positions rather than words: a secret-named property inside a `console.*`
+       * argument or inside something being serialised. That is why `tokenHash`, `token_digest` and
+       * the `/api/share/[token]` route segment do not trip it, and why a `masked` token would.
+       */
+      'compass/no-secret-disclosure': 'error',
     },
   },
   {

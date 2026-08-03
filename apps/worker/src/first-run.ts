@@ -44,6 +44,17 @@ import { describeDemoAccountFile, writeDemoAccountFile, type WrittenDemoAccount 
 /** Set to `1` to boot the worker without seeding, whatever state the database is in. */
 export const DISABLE_FIRST_RUN_ENV_VAR = 'COMPASS_DISABLE_FIRST_RUN_SEED';
 
+/**
+ * Whether the environment has switched the first-run seed off.
+ *
+ * Exactly `'1'`, and nothing else — not "any non-empty value", which would make
+ * `COMPASS_DISABLE_FIRST_RUN_SEED=0` disable the seed and mean the opposite of what somebody
+ * typing that intended. Its own exported function so a test can assert the parsing rule without
+ * calling `ensureFirstRun`, which would otherwise reach for a database.
+ */
+export const firstRunDisabled = (env: Readonly<Record<string, string | undefined>>): boolean =>
+  env[DISABLE_FIRST_RUN_ENV_VAR] === '1';
+
 export type FirstRunOutcome =
   /** This process seeded the database and generated the first report. */
   | 'seeded'
@@ -78,7 +89,10 @@ export interface FirstRunOptions {
 export async function ensureFirstRun(options: FirstRunOptions = {}): Promise<FirstRunResult> {
   const env = options.env ?? process.env;
 
-  if (env[DISABLE_FIRST_RUN_ENV_VAR] === '1') {
+  // Read before anything else, and before any connection string is resolved: an operator who
+  // set this flag because their database is unreachable must not get a boot failure from the
+  // very check they switched off.
+  if (firstRunDisabled(env)) {
     return { outcome: 'disabled', coldStart: null, demoAccount: null };
   }
 

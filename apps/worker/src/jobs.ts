@@ -39,6 +39,29 @@ export const JOB_NAMES = {
    */
   deliveryTick: 'delivery.tick',
   reportDeliver: 'report.deliver',
+  /**
+   * The retention purge.
+   *
+   * Daily rather than hourly: the shortest window Compass offers is 30 days, so an hourly
+   * purge would be 23 no-op rows a day on the retention page and no earlier a deletion.
+   */
+  retentionPurge: 'privacy.retention-purge',
+  /**
+   * The deletion sweep: completes every request whose seven-day grace period has ended.
+   *
+   * Hourly. The promise is "your data is gone after seven days, and certainly within
+   * thirty"; an hour of lateness on the seventh day breaks neither, and a tick that runs
+   * while nothing is due costs one indexed read.
+   */
+  deletionSweep: 'privacy.deletion-sweep',
+  /**
+   * The channel notice: announces Compass in every ingested channel that has not been told.
+   *
+   * Its own job rather than part of the enable request, so that Slack being unreachable
+   * cannot turn a manager's settings change into an error page — and so the announcement is
+   * retried until it lands instead of being lost.
+   */
+  channelNotice: 'privacy.channel-notice',
 } as const;
 
 export type JobName = (typeof JOB_NAMES)[keyof typeof JOB_NAMES];

@@ -91,6 +91,8 @@ export {
   ConsoleMailer,
   RecordingMailer,
   composeAuthMail,
+  composeDeletionConfirmationMail,
+  composeDeletionUndoMail,
   composeLockoutMail,
   type AuthMailMessage,
   type AuthMailPurpose,
@@ -146,6 +148,7 @@ export {
 } from './seats.js';
 
 export {
+  DEMO_ACCOUNT_LOGIN_PATH,
   DEMO_OWNER_EMAIL,
   DEMO_OWNER_NAME,
   DEMO_OWNER_PASSWORD,

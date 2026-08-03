@@ -1,9 +1,15 @@
 import type { Instant } from '@compass/clock';
-import type { ScopedDb } from '@compass/db';
+import {
+  countEntityRows,
+  developers,
+  loadGoalStore,
+  teams,
+  type GoalNodeRevisionRow,
+  type ScopedDb,
+} from '@compass/db';
 
 import { loadArchiveIndex } from './archive-source';
 import { isDemoOrganization } from './auth/guard';
-import { listGoals } from './goal-source';
 import { readRoster } from './roster-source';
 
 /**
@@ -74,6 +80,38 @@ export const outstandingSteps = (readiness: FirstRunReadiness): readonly FirstRu
   readiness.steps.filter((step) => step.state === 'todo');
 
 /**
+ * How many goals are in force: the latest revision of each node, not archived.
+ *
+ * Computed here from the stored revisions rather than by calling `listGoals`, for two reasons
+ * that happen to point the same way.
+ *
+ * The first is a cycle: `goal-source` imports `report-source`, and `report-source` imports this
+ * module to decide whether it has a report to render — so importing `goal-source` here closes a
+ * loop that `depcruise` rejects, and rightly, because the layering says a read model does not
+ * depend on the page that reads it.
+ *
+ * The second is a genuine bug the cycle exposed. `listGoals(at)` resolves its own scope through
+ * `goalScope()` and ignores any that is handed to it, so it would have answered about whichever
+ * organization the request edge resolved rather than the one `input.scoped` names. Those are the
+ * same tenant in this deployment and would not be in the next one — and a readiness check that
+ * silently reads another org's goals is precisely the kind of thing that is discovered late.
+ *
+ * The full hierarchy resolution is not needed for a count. "Is there an objective at all" is
+ * answered by the newest revision of each node and whether it is archived; an archived-only
+ * hierarchy resolves to nothing, so alignment would still have nothing to judge against.
+ */
+export function liveGoalCount(nodes: readonly GoalNodeRevisionRow[]): number {
+  const newest = new Map<string, GoalNodeRevisionRow>();
+
+  for (const node of nodes) {
+    const seen = newest.get(node.nodeId);
+    if (seen === undefined || node.revision > seen.revision) newest.set(node.nodeId, node);
+  }
+
+  return [...newest.values()].filter((node) => !node.archived).length;
+}
+
+/**
  * Reads the organization's configuration and turns it into the path.
  *
  * One instant, passed in rather than resolved here: this is called from a page that already
@@ -87,7 +125,7 @@ export async function readFirstRunReadiness(input: {
 }): Promise<FirstRunReadiness> {
   const [roster, goals, archive] = await Promise.all([
     readRoster(input.scoped, input.now),
-    listGoals(input.now),
+    loadGoalStore(input.scoped),
     // One row is enough to answer "has Compass ever written a report here".
     loadArchiveIndex(input.scoped, 1),
   ]);
@@ -96,9 +134,7 @@ export async function readFirstRunReadiness(input: {
     roster.repositories.filter((entry) => entry.tracked).length +
     roster.projects.filter((entry) => entry.tracked).length;
 
-  // Archived goal revisions do not count: a hierarchy whose only node is archived resolves
-  // to nothing, so alignment would still have nothing to judge against.
-  const liveGoals = goals.nodes.filter((node) => !node.archived);
+  const goalCount = liveGoalCount(goals.nodes);
   const demonstration = isDemoOrganization(input.organizationId);
 
   const steps: readonly FirstRunStep[] = [
@@ -128,11 +164,11 @@ export async function readFirstRunReadiness(input: {
       id: 'goals',
       ordinal: '03',
       title: 'Enter the objective the work is measured against',
-      state: liveGoals.length > 0 ? 'done' : 'todo',
+      state: goalCount > 0 ? 'done' : 'todo',
       minutes: 3,
       summary:
-        liveGoals.length > 0
-          ? `${liveGoals.length} goal${liveGoals.length === 1 ? '' : 's'} recorded, so alignment has a chain to resolve against.`
+        goalCount > 0
+          ? `${goalCount} goal${goalCount === 1 ? '' : 's'} recorded, so alignment has a chain to resolve against.`
           : 'No objective is recorded. Without one Compass reports the work and declines to judge whether it serves anything.',
     },
     {
@@ -158,7 +194,7 @@ export async function readFirstRunReadiness(input: {
     demonstration,
     teamKeys: roster.teams.map((team) => team.key),
     developerCount: roster.developers.length,
-    goalCount: liveGoals.length,
+    goalCount,
     trackedSourceCount,
     unmatchedCount: roster.unmatched.length,
   };
@@ -182,3 +218,28 @@ export const organizationIsUnprovisioned = (readiness: {
   readonly teamKeys: readonly string[];
   readonly developerCount: number;
 }): boolean => readiness.teamKeys.length === 0 && readiness.developerCount === 0;
+
+/**
+ * The same question, asked cheaply, for the report route.
+ *
+ * `/` is the hottest page in the product and the one with a stated time budget, so it must not
+ * pay for the whole readiness model to find out that it does not need it. `readFirstRunReadiness`
+ * builds the full roster view — eleven entity reads, identity links, sample artifacts — plus the
+ * goal hierarchy and the archive index, all to answer a question that two small tables settle.
+ *
+ * So the report path calls this, and only reaches for the full model on the branch that is going
+ * to render the step list anyway. On the seeded tenant — every request that matters — the cost is
+ * two indexed reads that both return early.
+ *
+ * The condition is the same one `organizationIsUnprovisioned` applies, and deliberately expressed
+ * once in each place rather than shared through a helper that took both counts: the point is that
+ * *both* have to be empty, and `tests/first-run.test.tsx` asserts that on the predicate.
+ */
+export async function organizationHasSubject(scoped: ScopedDb): Promise<boolean> {
+  const [teamCount, developerCount] = await Promise.all([
+    countEntityRows(scoped, teams),
+    countEntityRows(scoped, developers),
+  ]);
+
+  return teamCount > 0 || developerCount > 0;
+}

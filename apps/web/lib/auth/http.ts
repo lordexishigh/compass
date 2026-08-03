@@ -1,9 +1,11 @@
 import { AuthRequestError, WeakPasswordError } from '@compass/auth';
 import { LastOwnerError, SeatNotFoundError } from '@compass/auth';
+import { PrivateConversationError } from '@compass/db';
 import {
   IdentityClaimedError,
   InvalidAbsenceError,
   InvalidCalendarError,
+  UnknownDeveloperError,
   UnmatchedIdentityNotFoundError,
 } from '@compass/knowledge-model';
 import { NextResponse } from 'next/server';
@@ -151,6 +153,44 @@ export class MergeRecordNotFoundError extends Error {
 }
 
 /**
+ * A retention or anonymization request Compass will not carry out.
+ *
+ * Declared here rather than in `lib/privacy-source.ts` for the same reason
+ * `MergeRecordNotFoundError` is: `failure()` has to recognise it, and this module is
+ * imported by `guard.ts` — so an import in the other direction would be a cycle. Both
+ * classes are re-exported from `privacy-source.ts`, which is where a caller expects them.
+ */
+export class InvalidRetentionError extends Error {
+  readonly detail: string;
+
+  constructor(detail: string) {
+    super(detail);
+    this.name = 'InvalidRetentionError';
+    this.detail = detail;
+  }
+}
+
+/**
+ * A second deletion was requested while one was already in its grace period.
+ *
+ * A 409 naming the existing deadline, because two overlapping requests would mean two undo
+ * links of which only one worked — and the person holding the dead one would believe they
+ * had cancelled.
+ */
+export class DeletionAlreadyPendingError extends Error {
+  readonly detail: string;
+
+  constructor(graceEndsOn: string) {
+    const detail =
+      `A deletion is already pending and its grace period ends on ${graceEndsOn}. Cancel that one first if you ` +
+      'want to start over — two overlapping requests would mean two undo links, only one of which worked.';
+    super(detail);
+    this.name = 'DeletionAlreadyPendingError';
+    this.detail = detail;
+  }
+}
+
+/**
  * The one sentence an unexpected failure is allowed to say.
  *
  * A driver or connection error's `message` carries host, port, user and sometimes the
@@ -222,6 +262,35 @@ export function failure(error: unknown): NextResponse {
   }
   if (error instanceof UnmatchedIdentityNotFoundError) {
     return jsonError('unmatched_identity_not_found', error.detail, 404);
+  }
+
+  /**
+   * The privacy refusals.
+   *
+   * Statuses on the same rule as the ones above. `PrivateConversationError` is a **409**
+   * rather than a 400: the body is well formed and the state of the world is the problem —
+   * the conversation is private, and no correction to the JSON changes that. A 400 would
+   * send a manager looking at their request when what they need to read is that direct
+   * messages are outside what Compass reads at all.
+   *
+   * `DeletionAlreadyPendingError` is a 409 for the same reason, and it names the date the
+   * existing grace period ends, which is the one fact that makes the refusal actionable.
+   *
+   * `UnknownDeveloperError` is a 404 — the key names nobody — and it says that anonymization
+   * is keyed on the person rather than on a name precisely so two people called Marcus
+   * cannot be confused.
+   */
+  if (error instanceof PrivateConversationError) {
+    return jsonError('private_conversation', error.message, 409);
+  }
+  if (error instanceof DeletionAlreadyPendingError) {
+    return jsonError('deletion_already_pending', error.detail, 409);
+  }
+  if (error instanceof InvalidRetentionError) {
+    return jsonError('invalid_retention', error.detail, 400);
+  }
+  if (error instanceof UnknownDeveloperError) {
+    return jsonError('developer_not_found', error.detail, 404);
   }
 
   // Logged, never returned. `no-console` allows `error` for exactly this.

@@ -53,6 +53,19 @@ export const AUDIT_ACTIONS = [
   'share_link.revoked',
   'report.exported',
   'data.deleted',
+  // Privacy. Every one of these changes what Compass keeps, shows or sends about a person,
+  // so every one of them is on the record with the actor who did it. `person.anonymized`
+  // in particular is required to be auditable and non-silently-reversible, which is why
+  // the reversal is its own action rather than the absence of the first.
+  'privacy.retention_changed',
+  'privacy.llm_mode_changed',
+  'privacy.channel_ingestion_enabled',
+  'privacy.channel_ingestion_disabled',
+  'person.anonymized',
+  'person.anonymization_reverted',
+  'data.deletion_requested',
+  'data.deletion_cancelled',
+  'data.exported',
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
@@ -89,6 +102,15 @@ export const AUDIT_ACTION_LABEL: Readonly<Record<AuditAction, string>> = {
   'share_link.revoked': 'revoked a share link',
   'report.exported': 'exported a report',
   'data.deleted': 'deleted data',
+  'privacy.retention_changed': 'changed how long Compass keeps data',
+  'privacy.llm_mode_changed': 'changed how much a language model is shown',
+  'privacy.channel_ingestion_enabled': 'turned on reading of a chat channel',
+  'privacy.channel_ingestion_disabled': 'turned off reading of a chat channel',
+  'person.anonymized': 'withdrew a person’s name from future reports',
+  'person.anonymization_reverted': 'restored a person’s name to future reports',
+  'data.deletion_requested': 'asked Compass to delete data',
+  'data.deletion_cancelled': 'cancelled a deletion inside the grace period',
+  'data.exported': 'exported everything Compass holds',
 };
 
 export interface AuditRecordInput {
@@ -112,7 +134,13 @@ export interface AuditRecordInput {
     | 'developer'
     | 'identity'
     | 'absence'
-    | 'manager_memo';
+    | 'manager_memo'
+    // Privacy targets. `organization` is the tenant itself — the target of a retention
+    // change, a narration-mode change and an organization deletion. `conversation` is a
+    // chat channel, identified by the provider's own opaque key.
+    | 'organization'
+    | 'conversation'
+    | 'deletion_request';
   readonly targetId: string;
   readonly before: Record<string, unknown> | null;
   readonly after: Record<string, unknown> | null;

@@ -2,7 +2,13 @@ import { SECTIONS, feedbackOffersFor, wholeDaysBetween, type SectionKey } from '
 import { formatCivilDateTime, type TimeWindow } from '@compass/clock';
 import type { FreshnessReport, SourceFreshness, StoredReportBundle } from '@compass/db';
 import { artifactHref } from '@compass/pipeline';
-import { collapseWhitespace, parseProse, type ProseParagraph } from '@compass/renderers';
+import {
+  collapseWhitespace,
+  parseProse,
+  substituteFormerMembers,
+  substituteFormerMembersIn,
+  type ProseParagraph,
+} from '@compass/renderers';
 
 /**
  * The read model the report page renders.
@@ -667,12 +673,40 @@ export interface BuildReportViewInput {
   readonly freshness: FreshnessReport;
   /** Stated when the page is showing a day other than the host's own today. */
   readonly timeShiftNote?: string | null;
+  /**
+   * Names withdrawn from reports since this one was written.
+   *
+   * Applied here, at the one place a stored report becomes something a page renders, and
+   * nowhere else. Two consequences follow from that placement and both are the point: every
+   * screen that reads a stored report — `/`, `/archive/[reportId]`, `/weekly`, the merged
+   * view — is covered by one change, and the *rows stay exactly as written*, so the content
+   * hash still matches and a manager comparing the page against the copy in their inbox
+   * finds Compass agreeing with itself about everything except the name.
+   *
+   * A report generated *after* the withdrawal never contains the name at all —
+   * `developerName` in `@compass/analysis` returns the pseudonym — so this list only ever
+   * has work to do on the archive.
+   */
+  readonly withdrawnNames?: readonly string[];
 }
 
 export function buildReportView(input: BuildReportViewInput): ReportView {
   const { report, sections } = input.bundle;
   const timezone = report.timezone;
   const numerals = new Map<string, string>(SECTIONS.map((section) => [section.key, section.numeral]));
+  const withdrawn = input.withdrawnNames ?? [];
+
+  /**
+   * Every reader-facing string passes through here; nothing else does.
+   *
+   * Deliberately *not* applied to `stableId`, `causeEntityRef`, evidence labels, hrefs or any
+   * quantity. A ticket key, a pull request number, a SHA and a count are the report's
+   * receipts, and a redaction that took them with it would turn withdrawing a name into
+   * deleting a day of the team's evidence — which is the failure this whole feature has to
+   * avoid being.
+   */
+  const withoutName = (text: string): string => substituteFormerMembers(text, withdrawn);
+  const withoutNameIn = (text: string | null): string | null => substituteFormerMembersIn(text, withdrawn);
 
   return {
     reportId: report.id,
@@ -697,10 +731,10 @@ export function buildReportView(input: BuildReportViewInput): ReportView {
       numeral: numerals.get(section.sectionKey) ?? String(section.ordinal).padStart(2, '0'),
       ordinal: section.ordinal,
       title: section.title,
-      prose: section.prose,
-      paragraphs: parseProse(section.prose),
+      prose: withoutName(section.prose),
+      paragraphs: parseProse(withoutName(section.prose)),
       narrated: report.rendererId === 'narrated',
-      summary: section.summary,
+      summary: withoutNameIn(section.summary),
       emptyStatement: section.emptyStatement,
       items: section.items.map((item) => ({
         stableId: item.stableId,
@@ -721,11 +755,11 @@ export function buildReportView(input: BuildReportViewInput): ReportView {
         // accessible name and as the fallback when a claim has no prose — and a
         // ticket titled `fine\r\nBcc: …` would otherwise carry a bare CR into an
         // attribute. No words are removed; only the whitespace between them.
-        headline: collapseWhitespace(item.headline),
-        detail: collapseWhitespace(item.detail),
-        prose: item.prose,
+        headline: withoutName(collapseWhitespace(item.headline)),
+        detail: withoutName(collapseWhitespace(item.detail)),
+        prose: withoutName(item.prose),
         ageDays: item.ageDays,
-        changeClause: item.changeClause,
+        changeClause: withoutNameIn(item.changeClause),
         changeTag: item.changeTag,
         ladder: ladderView(item.ladder),
         // The resolution path rides on the item payload, so both renderers read the

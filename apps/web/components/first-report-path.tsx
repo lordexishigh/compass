@@ -217,7 +217,7 @@ export function TeamQuickSetup({ defaultTimezone }: { readonly defaultTimezone: 
  * order to satisfy a shape they cannot see, is the wrong trade: Compass knows what quarter it
  * is.
  */
-function currentQuarter(today: string): { readonly key: string; readonly title: string } {
+export function currentQuarter(today: string): { readonly key: string; readonly title: string } {
   const [year, month] = today.split('-');
   const quarter = Math.floor((Number.parseInt(month ?? '1', 10) - 1) / 3) + 1;
   return { key: `${year}-q${quarter}`, title: `${year} Q${quarter}` };

@@ -134,12 +134,65 @@ describe('the first request to / passes no gate', () => {
     }
   });
 
-  it('has no middleware that could redirect the first request', () => {
-    // Next.js middleware is the one thing that can gate `/` without appearing in
-    // `page.tsx`, so its absence is asserted rather than assumed.
-    for (const candidate of ['middleware.ts', 'middleware.tsx', 'middleware.js', join('app', 'middleware.ts')]) {
-      expect(existsSync(join(WEB_ROOT, candidate)), `${candidate} exists and could gate /`).toBe(false);
+  /**
+   * The middleware cannot gate the first request.
+   *
+   * ## What this assertion used to say, and why it changed
+   *
+   * It used to say *no middleware file exists*. That was the right rule for as long as there was
+   * nothing a middleware was needed for: middleware runs before `/`, so an authorization check
+   * there would need an exception for the zero-config report — an exception in the one layer no
+   * test can see the inside of — and Argon2id cannot load on the Edge runtime.
+   *
+   * Then `beta-security-hardening` needed a per-response CSP nonce, which has no other home:
+   * `next.config.ts`'s `headers()` is evaluated once at build time and cannot vary per response,
+   * and a `<meta>` CSP is ignored for `frame-ancestors`. So the file exists.
+   *
+   * The rule it replaces is the *property* the old one was standing in for, asserted directly: the
+   * middleware has no database, no session lookup, no redirect, no rewrite, and no branch on the
+   * path at all. A file that cannot decide anything cannot gate `/`, and that is now checked rather
+   * than inferred from the file's absence.
+   */
+  it('has a middleware that sets headers and cannot gate anything', () => {
+    const middlewarePath = join(WEB_ROOT, 'middleware.ts');
+    expect(existsSync(middlewarePath), 'the security headers have to come from somewhere').toBe(true);
+
+    // No other spelling of it, so there is exactly one file with this power.
+    for (const candidate of ['middleware.tsx', 'middleware.js', join('app', 'middleware.ts')]) {
+      expect(existsSync(join(WEB_ROOT, candidate)), `${candidate} is a second middleware`).toBe(false);
     }
+
+    const source = codeOf('middleware.ts');
+
+    for (const forbidden of [
+      'redirect',
+      'rewrite',
+      'NextResponse.json',
+      'getSession',
+      'resolveIdentity',
+      'authorize',
+      'guard',
+      'cookies',
+      'database',
+      // A branch on the path is how an exception for `/` would be written.
+      'pathname',
+    ]) {
+      expect(source, `\`${forbidden}\` in middleware could gate the first request`).not.toContain(forbidden);
+    }
+
+    // `NextResponse.next()` on every request, unconditionally — the only exit it has.
+    expect(source).toContain('NextResponse.next(');
+    expect(source).not.toContain('if (');
+  });
+
+  it('lets its matcher cover `/`, which is safe only because it cannot gate', () => {
+    // Stated as a pair on purpose. Matching `/` is what gives the report its CSP; it is harmless
+    // only in combination with the assertion above, and reading them together is the point.
+    const source = readWebFile('middleware.ts');
+    const matcher = /matcher: \[\s*'([^']+)'/.exec(source)?.[1];
+
+    expect(matcher, 'the middleware must declare which paths it runs on').toBeDefined();
+    expect(new RegExp(`^${matcher!}$`).test('/'), '`/` must receive the security headers').toBe(true);
   });
 
   it('serves / as the report route, with no setup or onboarding screen in front of it', () => {

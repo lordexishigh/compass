@@ -9,6 +9,12 @@
  * rather than a placeholder.
  */
 export {
+  FORMER_MEMBER_PHRASE,
+  substituteFormerMembers,
+  substituteFormerMembersIn,
+} from './former-member.js';
+
+export {
   INTERPRETATION_TEMPLATES,
   INTERPRETATION_TEMPLATE_IDS,
   interpretation,

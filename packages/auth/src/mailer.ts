@@ -29,7 +29,21 @@ import { TOKEN_TTL_LABEL } from './secrets.js';
  * and silently drop the other. `AuthTokenPurpose` stays the narrower type on
  * `composeAuthMail`, so a token flow still cannot ask for a purpose there is no token for.
  */
-export type AuthMailPurpose = AuthTokenPurpose | 'lockout_notice';
+export type AuthMailPurpose =
+  | AuthTokenPurpose
+  | 'lockout_notice'
+  /**
+   * The two deletion messages, for the same reason `lockout_notice` is here: they are
+   * Compass telling a person something about their own account, and a separate port would
+   * mean a deployment could configure mail for sign-in and silently drop the message that
+   * says "your data is being deleted, here is how to stop it".
+   *
+   * `deletion_undo` carries the undo link and goes out the moment deletion is requested.
+   * `deletion_confirmation` carries no link — there is nothing left to click — and
+   * enumerates what was deleted.
+   */
+  | 'deletion_undo'
+  | 'deletion_confirmation';
 
 export interface AuthMailMessage {
   readonly to: string;
@@ -110,6 +124,116 @@ export function composeAuthMail(input: {
       };
     }
   }
+}
+
+/**
+ * The two deletion messages, composed in one place so their two senders agree.
+ *
+ * The undo notice is sent by the web edge the moment deletion is requested; the
+ * confirmation is sent by the worker once the purge has run, up to thirty days later.
+ * Different processes, weeks apart — which is exactly the situation where two copies of
+ * the wording drift and a person is told a category was deleted that was not.
+ *
+ * ## What the undo notice deliberately does
+ *
+ * It states the deadline as a date the reader can check, offers the export *before* the
+ * purge rather than after (after is too late by construction), and puts the undo link on
+ * its own line so every mail client makes it clickable. It does not ask the reader to
+ * confirm they meant it: they already did that in the product, and a second confirmation
+ * would make the first one meaningless.
+ */
+export function composeDeletionUndoMail(input: {
+  readonly to: string;
+  readonly organizationName: string;
+  readonly subjectKind: 'account' | 'organization';
+  readonly undoLink: string;
+  readonly exportLink: string;
+  /** The grace deadline, already formatted in the reader's own zone by the caller. */
+  readonly graceEndsOn: string;
+  readonly hardDeleteBy: string;
+}): AuthMailMessage {
+  const what =
+    input.subjectKind === 'organization'
+      ? `the whole of ${input.organizationName} on Compass`
+      : `your Compass account in ${input.organizationName}`;
+
+  return {
+    to: input.to,
+    purpose: 'deletion_undo',
+    link: input.undoLink,
+    subject:
+      input.subjectKind === 'organization'
+        ? `${input.organizationName} is scheduled for deletion — you have until ${input.graceEndsOn}`
+        : `Your Compass account is scheduled for deletion — you have until ${input.graceEndsOn}`,
+    body: [
+      `Somebody asked Compass to delete ${what}.`,
+      '',
+      `Nothing has been deleted yet. You have until ${input.graceEndsOn} to change your mind, and until then`,
+      'everything works exactly as it did. Open this to cancel:',
+      '',
+      input.undoLink,
+      '',
+      'Take a copy first if you want one. This downloads everything Compass holds, as JSON:',
+      '',
+      input.exportLink,
+      '',
+      `After ${input.graceEndsOn} the deletion runs and cannot be undone. It will have finished by`,
+      `${input.hardDeleteBy}, and Compass will send one more message listing exactly what was deleted.`,
+    ].join('\n'),
+  };
+}
+
+/**
+ * The confirmation, sent once the purge has actually run.
+ *
+ * `categories` comes from the erasure itself rather than from a constant beside this
+ * function, so the message cannot claim a category the code did not touch. That is the
+ * whole reason `deletion_requests.deleted_categories` is a column: the email is generated
+ * from what happened, not from what was meant to happen.
+ */
+export function composeDeletionConfirmationMail(input: {
+  readonly to: string;
+  readonly organizationName: string;
+  readonly subjectKind: 'account' | 'organization';
+  readonly categories: readonly string[];
+  readonly completedOn: string;
+  /** Anything deliberately kept, stated plainly. Empty when nothing was. */
+  readonly retained?: readonly string[];
+}): AuthMailMessage {
+  const what =
+    input.subjectKind === 'organization'
+      ? `${input.organizationName} has been deleted from Compass.`
+      : `Your Compass account in ${input.organizationName} has been deleted.`;
+
+  const retained = input.retained ?? [];
+
+  return {
+    to: input.to,
+    purpose: 'deletion_confirmation',
+    // No link: there is nothing left to open. The field is on the message for the token
+    // flows, and an empty string is the honest value rather than a URL to a dead page.
+    link: '',
+    subject:
+      input.subjectKind === 'organization'
+        ? `${input.organizationName} has been deleted from Compass`
+        : 'Your Compass account has been deleted',
+    body: [
+      what,
+      `Completed ${input.completedOn}. This is what was deleted:`,
+      '',
+      ...input.categories.map((category) => `  - ${category}`),
+      ...(retained.length === 0
+        ? []
+        : [
+            '',
+            'Compass has kept the following, and this is why:',
+            '',
+            ...retained.map((entry) => `  - ${entry}`),
+          ]),
+      '',
+      'Nothing further is required from you, and this address will not be contacted again.',
+    ].join('\n'),
+  };
 }
 
 /**

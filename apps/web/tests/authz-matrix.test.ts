@@ -1,7 +1,3 @@
-import { readdirSync } from 'node:fs';
-import { dirname, join, relative, sep } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
 import {
   ACTIONS,
   MATRIX_ROUTES,
@@ -18,51 +14,34 @@ import {
 } from '@compass/auth';
 import { describe, expect, it } from 'vitest';
 
+import { allRoutesOnDisk, apiRoutesOnDisk, pageRoutesOnDisk } from './helpers/routes';
+
 /**
  * The role matrix, held to the acceptance criteria.
  *
- * Three separate claims are proved here and they are separate on purpose:
+ * Four separate claims are proved here and they are separate on purpose:
  *
  *  1. **Every (role × route × action) triple decides the way it is meant to.** The
  *     expectation is written out below as a second, independent statement of the intent, so
  *     a careless edit to `ROLE_MATRIX` fails rather than redefining the intent along with
  *     the table.
- *  2. **Every API route on disk has an entry.** Enumerated from the filesystem, so a new
- *     `route.ts` is a build failure until it declares who may call it.
- *  3. **Deny is the default at every step** — unknown route, undeclared verb, unlisted
+ *  2. **Every route on disk has an entry** — endpoints *and* rendered screens. Enumerated
+ *     from the filesystem, so a new `route.ts` or `page.tsx` is a build failure until it
+ *     declares who may call it.
+ *  3. **`public` is only ever explicit.** The documented set of public routes is asserted to
+ *     be exactly what the matrix says, so public access can never be inferred, defaulted or
+ *     acquired by a route that forgot to say otherwise.
+ *  4. **Deny is the default at every step** — unknown route, undeclared verb, unlisted
  *     principal, inactive seat, wrong team.
- */
-
-const WEB_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-
-/**
- * Every route the App Router actually serves under `app/api`, spelled the way the
- * filesystem spells it.
  *
- * Derived rather than listed: a hand-maintained list here would be a third place to forget
- * a route, which is the failure this test exists to prevent.
+ * ## Why the enumeration moved out of this file
+ *
+ * `tests/helpers/routes.ts` owns the walk now, because `two-org-isolation.test.ts` needs the
+ * same list and a second copy would drift silently — both suites would keep passing while one
+ * stopped covering a directory. Moving it also fixed a real gap: the walk here only ever
+ * looked under `app/api`, so `/artifact/[kind]/[artifactId]` had served one organization's
+ * commits and tickets with no matrix entry at all, and no test could see it.
  */
-function apiRoutesOnDisk(): readonly string[] {
-  const found: string[] = [];
-
-  const walk = (directory: string): void => {
-    for (const entry of readdirSync(directory, { withFileTypes: true })) {
-      const full = join(directory, entry.name);
-      if (entry.isDirectory()) {
-        walk(full);
-        continue;
-      }
-      if (entry.name !== 'route.ts' && entry.name !== 'route.tsx') continue;
-
-      // `app/api/goals/[nodeId]/route.ts` -> `/api/goals/[nodeId]`
-      const segments = relative(join(WEB_ROOT, 'app'), dirname(full)).split(sep);
-      found.push(`/${segments.join('/')}`);
-    }
-  };
-
-  walk(join(WEB_ROOT, 'app', 'api'));
-  return found.sort();
-}
 
 /**
  * The intent, restated.
@@ -115,6 +94,33 @@ const EXPECTED: Readonly<Record<string, Partial<Record<Action, readonly Principa
   },
 
   '/api/audit': { GET: ['owner'] },
+
+  /**
+   * Privacy, restated as intent.
+   *
+   * The line worth stating is where it falls. Anything that decides what Compass *keeps or
+   * sends* is owner-only — the retention windows, the narration mode, the whole-organization
+   * export. The two acts a manager gets are the two about the team in front of them:
+   * withdrawing a departed colleague's name from tomorrow's report, and turning a channel's
+   * ingestion on or off. A manager who had to file a request for either would leave the wrong
+   * name in the report, or a team unread, for as long as the request sat.
+   *
+   * `/api/privacy/deletion` is `EVERY_SEAT` and that is not a widening: the *subject* is never
+   * read from the body, so a seat can only ever delete their own account, and the handler
+   * refuses `subjectKind: 'organization'` to anyone but an owner. `feedback-routes`-style
+   * handler-level checks are asserted in `privacy.test.ts`, not here — this table is only
+   * about who may reach the route at all.
+   *
+   * `/api/privacy/deletion/undo` is `public` for the same reason the feedback link is: it
+   * arrives from a mail client with no cookies, and it has to work when the account holder
+   * cannot sign in — which a pending deletion may be exactly why they cannot.
+   */
+  '/api/privacy/settings': { PATCH: ['owner'] },
+  '/api/privacy/anonymize': { POST: ['owner', 'manager'], DELETE: ['owner', 'manager'] },
+  '/api/privacy/channels': { PATCH: ['owner', 'manager'] },
+  '/api/privacy/deletion': { POST: ['owner', 'manager', 'member', 'viewer'] },
+  '/api/privacy/deletion/undo': { POST: ['public', 'owner', 'manager', 'member', 'viewer'] },
+  '/api/privacy/export': { GET: ['owner'] },
 
   /**
    * Delivery and share links: token-authorised rather than session-authorised.
@@ -182,6 +188,19 @@ const EXPECTED: Readonly<Record<string, Partial<Record<Action, readonly Principa
   '/api/slack/actions': { POST: ['public', 'owner', 'manager', 'member', 'viewer'] },
 
   /**
+   * Inbound provider webhooks, and why `public` here is the narrowest entry in this table rather
+   * than the widest.
+   *
+   * A delivery arrives from GitHub's or Jira's own infrastructure with no cookie it could send, so a
+   * session requirement would mean the feature cannot exist. What admits it instead is an HMAC over
+   * the raw bytes under a secret only Compass and the provider hold, compared in constant time,
+   * inside a five-minute window — a bar an authenticated *manager* cannot clear. `POST` only: there
+   * is nothing to GET here, and the matrix refusing the other four verbs is what makes that
+   * structural rather than a property of the handler.
+   */
+  '/api/webhooks/[provider]': { POST: ['public', 'owner', 'manager', 'member', 'viewer'] },
+
+  /**
    * Configuration and the identity roster: owner *and* manager on every verb.
    *
    * Restated here as intent rather than copied as fact. The widening to managers is
@@ -202,7 +221,37 @@ const EXPECTED: Readonly<Record<string, Partial<Record<Action, readonly Principa
   '/api/roster/merges': { POST: ['owner', 'manager'], DELETE: ['owner', 'manager'] },
   '/api/roster/absences': { POST: ['owner', 'manager'], PATCH: ['owner', 'manager'] },
 
+  /**
+   * The two privacy screens, and the undo landing page.
+   *
+   * `/privacy` is owner and manager, matching the two routes a manager may call: a manager who
+   * can turn a channel off but cannot see which channels are on is being asked to administer
+   * something they cannot read.
+   *
+   * `/me` is every seat and *not* `public`. The answer is computed from the reader's own
+   * session, so there is no question an anonymous reader could be asking — and the criterion
+   * that matters is the other one: no manager approval and no admin action, which is satisfied
+   * by every seat being on this row.
+   *
+   * `/account/deletion` is `ANYONE` and carries no `demoOnlyPublic`, because it holds no
+   * organization data at all: it reads a token from the query string, posts it, and prints the
+   * outcome.
+   */
+  '/privacy': { GET: ['owner', 'manager'] },
+  '/me': { GET: ['owner', 'manager', 'member', 'viewer'] },
+  '/account/deletion': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
+
   '/goals': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
+  /**
+   * The evidence page, on the same terms as the report the claim is in.
+   *
+   * This row was **absent** until the enumeration above began walking page routes as well as
+   * endpoints: a screen rendering one organization's commits, pull requests and tickets had no entry
+   * in the matrix and nothing decided who could read it. Restated here as intent rather than copied
+   * as fact — a receipt is only useful if the reader of the claim can open it, so it gets the posture
+   * of the report, not a stricter or looser one of its own.
+   */
+  '/artifact/[kind]/[artifactId]': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
   '/account': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
   '/account/invite': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
   '/account/reset': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
@@ -280,7 +329,7 @@ const unconstrained = (principal: Principal, route: string) =>
 // 1. Every route has an entry
 // ---------------------------------------------------------------------------
 
-describe('every API route has an entry in the matrix', () => {
+describe('every route has an entry in the matrix', () => {
   it('finds the routes on disk at all, so an empty walk cannot pass this file', () => {
     const routes = apiRoutesOnDisk();
 
@@ -291,8 +340,27 @@ describe('every API route has an entry in the matrix', () => {
     expect(routes).toContain('/api/goals/[nodeId]');
   });
 
-  it('has no route on disk that the matrix does not describe', () => {
-    const undeclared = apiRoutesOnDisk().filter((route) => findRouteRule(route) === null);
+  it('finds the rendered screens too, which is where a route once hid', () => {
+    const pages = pageRoutesOnDisk();
+
+    // `/` is the report, and its presence here is what proves the page walk reaches the root
+    // `page.tsx` rather than only nested ones.
+    expect(pages).toContain('/');
+    expect(pages).toContain('/account');
+    // The route that had no matrix entry until this walk existed.
+    expect(pages).toContain('/artifact/[kind]/[artifactId]');
+    expect(pages.length).toBeGreaterThan(5);
+  });
+
+  it('has no route on disk that the matrix does not describe — endpoint or screen', () => {
+    /**
+     * The acceptance criterion, and now over the whole surface.
+     *
+     * A `page.tsx` renders organization data exactly as an endpoint returns it, so a screen with no
+     * entry here is the same hole as an endpoint with none. This assertion covering only `app/api`
+     * is how `/artifact/[kind]/[artifactId]` shipped unlisted.
+     */
+    const undeclared = allRoutesOnDisk().filter((route) => findRouteRule(route) === null);
 
     expect(
       undeclared,
@@ -300,11 +368,11 @@ describe('every API route has an entry in the matrix', () => {
     ).toEqual([]);
   });
 
-  it('has no API entry in the matrix that no route serves', () => {
+  it('has no entry in the matrix that no route serves', () => {
     // The other direction. A stale entry is not a security hole, but it is a lie about
     // the product's surface, and it makes the matrix untrustworthy to read.
-    const onDisk = new Set(apiRoutesOnDisk());
-    const stale = MATRIX_ROUTES.filter((route) => route.startsWith('/api/') && !onDisk.has(route));
+    const onDisk = new Set(allRoutesOnDisk());
+    const stale = MATRIX_ROUTES.filter((route) => !onDisk.has(route));
 
     expect(stale, 'these matrix entries name routes that do not exist').toEqual([]);
   });
@@ -458,10 +526,93 @@ describe('the seeded demo report route stays publicly readable', () => {
       '/archive',
       '/archive/[reportId]',
       '/archive/merged/[reportDate]',
+      // The receipt behind a claim, on the same terms as the claim.
+      '/artifact/[kind]/[artifactId]',
       '/goals',
       '/merged',
       '/weekly',
     ]);
+  });
+
+  /**
+   * `public` may only ever be an explicit entry, and the set of them is exactly this.
+   *
+   * The acceptance criterion is "a route may be marked public only via the explicit public entry,
+   * and a test asserts exactly the documented set of public routes exists". Both halves are here:
+   *
+   *  - **Exactly this set.** Enumerated below, so widening the public surface is an edit to this
+   *     list that a reviewer reads, rather than one word added to a row nobody diffs.
+   *  - **Only explicitly.** `authorize` reaches `public` through one branch — `permitted.includes`
+   *    on the row's own `allow` map — so there is no default, no wildcard and no inference. The
+   *    assertion below that every unlisted route refuses an anonymous caller is the behavioural
+   *    proof of that.
+   *
+   * `docs/ENGINEERING.md` lists the same set in prose, and
+   * `tools/quality-gates/tests/security-posture.test.ts` diffs the two.
+   */
+  it('has exactly the documented set of routes that name `public` at all', () => {
+    const publicRoutes = ROLE_MATRIX.filter(isPublicRoute).map((rule) => rule.route).sort();
+
+    expect(publicRoutes).toEqual([
+      // The report and its receipts, world-readable on the demonstration tenant only.
+      '/',
+      '/archive',
+      '/archive/[reportId]',
+      '/archive/merged/[reportDate]',
+      '/artifact/[kind]/[artifactId]',
+      '/goals',
+      '/merged',
+      '/weekly',
+      '/api/goals',
+      '/api/goals/[nodeId]',
+      '/api/reports/[teamKey]',
+      // How a session is obtained. Public by definition: requiring one would be circular.
+      '/account',
+      '/account/deletion',
+      '/account/invite',
+      '/account/reset',
+      '/api/auth/login',
+      '/api/auth/logout',
+      '/api/auth/magic-link',
+      '/api/auth/magic-link/consume',
+      '/api/auth/password-reset',
+      '/api/auth/password-reset/consume',
+      '/api/auth/register',
+      '/api/auth/session',
+      '/api/seats/accept',
+      '/login',
+      // The container's own probe. Public in every tenant, and carries no organization data.
+      '/api/health',
+      // Token-authorised, and each token is narrower than a session: one unsubscribe, one shared
+      // report, one verdict on one item, one deletion to undo, one signed provider delivery.
+      '/api/delivery/unsubscribe',
+      '/api/privacy/deletion/undo',
+      '/api/feedback/app',
+      '/api/feedback/link/[token]',
+      '/api/share/[token]',
+      '/api/slack/actions',
+      '/api/webhooks/[provider]',
+    ].sort());
+  });
+
+  it('refuses an anonymous caller every route that is not in that set', () => {
+    // The behavioural half: `public` is never inferred, so a route that does not name it refuses.
+    const publicRoutes = new Set(ROLE_MATRIX.filter(isPublicRoute).map((rule) => rule.route));
+
+    for (const rule of ROLE_MATRIX) {
+      if (publicRoutes.has(rule.route)) continue;
+
+      for (const action of ACTIONS) {
+        if ((rule.allow[action]?.length ?? 0) === 0) continue;
+        const decision = authorize({
+          route: rule.route,
+          action,
+          principal: 'public',
+          demoOrganization: true,
+        });
+        expect(decision.allowed, `${action} ${rule.route} admitted an anonymous caller`).toBe(false);
+      }
+    }
   });
 
   it('keeps `/api/health` public in every tenant, because the container calls it', () => {

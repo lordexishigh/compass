@@ -128,6 +128,7 @@ export function SeatManager(props: SeatManagerProps) {
       */}
       {props.seats.length === 0 && <EmptyState copy={EMPTY_STATES.seats} />}
 
+      {props.seats.length > 0 && (
       <ul className="grid gap-8">
         {props.seats.map((seat) => (
           <li
@@ -237,6 +238,7 @@ export function SeatManager(props: SeatManagerProps) {
           </li>
         ))}
       </ul>
+      )}
 
       {props.canManage && (
         // The anchor the empty state's primary action points at.

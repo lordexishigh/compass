@@ -50,6 +50,74 @@ The complete product this is being built toward — every feature tier, the qual
 
 ## Getting started
 
+Either of these ends with a fully generated six-section report at
+[`http://localhost:3000`](http://localhost:3000). There is no login wall on it, no connector
+wizard and no empty state.
+
+```bash
+docker compose up            # the canonical cold start: database, seed, web, worker
+```
+
+```bash
+pnpm install                 # or, without Docker
+pnpm run seed                # generate the dataset, load it, write the first report
+pnpm run dev
+```
+
+**`pnpm run seed` is the one seed command.** It generates the declared dataset, applies
+migrations, provisions the roster, creates the first owner and runs the real pipeline to leave
+today's report in the database. **Expect it to finish in under 60 seconds** on a laptop — the
+generated report is the substrate for everything else, so the first page load after it is a read
+rather than a generation.
+
+It is **idempotent**. Running it against an already-seeded database appends no rows: applied
+migrations are recorded, the organization and roster are found rather than recreated, an
+unchanged roster produces no new entity versions, a password an operator has changed is never
+reset, and the day's report is found rather than written twice. Add `--force` to regenerate
+today's report into the same row. The worker also performs this seed **automatically on first
+boot** if it finds a database with no report in it, under a Postgres advisory lock so two
+containers starting together cannot both do it.
+
+### Signing in
+
+The seed provisions one owner seat with published demonstration credentials, and writes them to
+`.nous/demo_account.json` (gitignored, and excluded from the Docker image) for automated
+verification:
+
+| | |
+|---|---|
+| Email | `owner@compass.demo` |
+| Password | `compass-demo-owner` |
+| Login | `POST /login` with `{"email": "...", "password": "..."}` |
+
+They are also printed at boot and shown on [`/account`](http://localhost:3000/account). Set
+`COMPASS_OWNER_EMAIL` and `COMPASS_OWNER_PASSWORD` before this deployment holds real data —
+`/api/health` says out loud while the published defaults are still in use.
+
+### A new organization: from nothing to a first report
+
+For an org that is *not* the seeded demonstration tenant, [`/start`](http://localhost:3000/start)
+is the whole path. Roughly nine minutes of typing, and no step needs anybody from Compass:
+
+1. **Choose where the facts come from** (~1 min) — read the seeded dataset, or name your own
+   repositories and projects. Both go through the same connector port, so nothing downstream can
+   tell which answered.
+2. **Declare the team the report is about** (~3 min) — name, cadence, timezone and tracker
+   project. Compass will not infer a team from who commits together; that would put somebody
+   else's merge in this team's Yesterday.
+3. **Enter the objective the work is measured against** (~3 min) — a company objective and the
+   current sprint goal, on one screen. The quarter between them is filled in for you, because
+   alignment resolves through parents and a chain with a hole in it produces unattributed
+   verdicts rather than aligned ones.
+4. **Match the people to their identifiers** (~2 min) — one person, several git addresses, one
+   tracker account, one chat handle. Unclaimed identifiers wait in a queue instead of being
+   guessed at.
+
+Until a team and at least one person exist, `/` says which of those four things are missing
+rather than rendering six empty headings — an empty report about an unconfigured organization
+would imply a quiet team where there is none. A team that genuinely shipped nothing yesterday
+still gets all six sections, with the absences stated in prose.
+
 See [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) for how to install dependencies,
 run, and verify the project. Architecture is documented in
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md); the build plan is in
