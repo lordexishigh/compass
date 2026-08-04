@@ -4,7 +4,7 @@ import {
   type FeedbackOffer,
   type SectionKey,
 } from '@compass/analysis';
-import type { Instant } from '@compass/clock';
+import { toEpochMillis, type Instant } from '@compass/clock';
 import {
   findSubscriptionById,
   hasBeenSent,
@@ -28,6 +28,7 @@ import {
   type SlackItemActions,
   type SlackTransport,
 } from '@compass/delivery';
+import { logDeliveryFailure, type LogSink } from '@compass/observability';
 import type { RenderedReport } from '@compass/renderers';
 import { z } from 'zod';
 
@@ -118,6 +119,15 @@ export interface DeliveryDependencies {
   readonly feedbackLinkSecret?: string | undefined;
   readonly newId: () => string;
   readonly logger: Pick<Console, 'info' | 'warn' | 'error'>;
+  /**
+   * Where the `delivery.failure` structured event goes. Defaults to the console.
+   *
+   * Separate from `logger` on purpose. `logger` carries the human sentences this handler has always
+   * written — "already delivered for this date and scope" — while this is the queryable event, with
+   * the organization, the team and the instant as fields. One is read once by a person tailing the
+   * worker; the other answers "which organizations missed a daily this week".
+   */
+  readonly logSink?: LogSink;
 }
 
 export type DeliveryResultStatus =
@@ -265,6 +275,33 @@ export async function handleReportDeliver(
   }
 
   if (outcome.status === 'failed') {
+    /**
+     * The structured event, emitted before the throw for the same reason the row is written before
+     * it: the throw is how pg-boss learns to back off, and anything after it does not happen.
+     *
+     * `skipped` deliberately does not emit one. A missing provider key is a documented deployment
+     * state — the transport says so and the row records it — and an `error`-level event on every
+     * tick of a deployment that has no mailer configured is how an operator learns to ignore the
+     * event that matters. A `deferred` attempt is likewise not a failure: it is Compass declining to
+     * send an empty message, which is the product working.
+     */
+    logDeliveryFailure(
+      {
+        organizationId: payload.organizationId,
+        // `merged` has no team; a team-scoped delivery's scope key *is* the team key.
+        teamKey: payload.scopeKind === 'team' ? payload.scopeKey : null,
+        at: toEpochMillis(now),
+        detail: outcome.detail,
+      },
+      {
+        channel: subscription.channel,
+        // pg-boss's own retry count, so the event agrees with the `delivery_log` row it sits beside.
+        attempt,
+        status: 'failed',
+      },
+      dependencies.logSink,
+    );
+
     // Thrown so pg-boss counts the attempt and applies the backoff. The row is already written.
     throw new Error(outcome.error ?? outcome.detail);
   }

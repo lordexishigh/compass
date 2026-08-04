@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-import { instantFromIso, type Instant } from '@compass/clock';
+import { instantFromIso, toEpochMillis, type Instant } from '@compass/clock';
 import {
   ScopedDb,
   listDeliveryAttempts,
@@ -15,6 +15,7 @@ import {
 } from '@compass/db';
 import { createTestDatabase, type TestDatabase } from '@compass/db/testing';
 import { FakeEmailTransport, FakeSlackTransport } from '@compass/delivery/testkit';
+import { RecordingSink } from '@compass/observability';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 import {
@@ -228,7 +229,18 @@ beforeEach(async () => {
   email = new FakeEmailTransport();
   slack = new FakeSlackTransport();
   dayCounter += 1;
-  testDate = `2026-09-${String(dayCounter).padStart(2, '0')}`;
+  /**
+   * Rolled through months rather than counted up within one.
+   *
+   * `2026-09-${n}` was fine at seventeen tests and became a trap at thirty: the thirty-first case
+   * would have produced `2026-09-31` and failed on an invalid date at the insert rather than on an
+   * assertion, which is the kind of failure that costs an afternoon to read. Twenty-eight days per
+   * month keeps every generated date valid in every month, so the only cost of adding a test here is
+   * the test.
+   */
+  const dayOfMonth = ((dayCounter - 1) % 28) + 1;
+  const month = 9 + Math.floor((dayCounter - 1) / 28);
+  testDate = `2026-${String(month).padStart(2, '0')}-${String(dayOfMonth).padStart(2, '0')}`;
 
   await upsertSubscription(
     scoped(),
@@ -429,6 +441,109 @@ describe('when the provider refuses', () => {
       deliveryDate: testDate,
     });
     expect(attempts.map((row) => row.status)).toEqual(['failed', 'sent']);
+  });
+
+  /**
+   * The fourth of the four structured events the observability criterion names.
+   *
+   * > Pipeline runs, narration fallbacks, ingest coverage gaps and delivery failures each emit a
+   * > structured log event with the org, team and instant.
+   *
+   * The other three belong to the pipeline and are asserted in
+   * `packages/pipeline/tests/observability.test.ts`. This one is the worker's, because the worker is
+   * the layer that knows the attempt number and whether the provider actually refused.
+   *
+   * Asserted on an injected `RecordingSink` rather than on captured console output, so the objects a
+   * hosted log product would receive are the objects the test reads.
+   */
+  it('emits delivery.failure with the organization, the team and the instant', async () => {
+    const sink = new RecordingSink();
+    const failing = new FakeEmailTransport().answerWith({
+      status: 'failed',
+      providerMessageId: null,
+      error: 'Resend answered 503',
+      detail: 'Resend refused the message.',
+    });
+
+    await expect(
+      handleReportDeliver(dependencies({ email: failing, logSink: sink }), payload(), NOW, 2),
+    ).rejects.toThrow();
+
+    const record = sink.last('delivery.failure');
+    expect(record, 'a failed delivery emitted no structured event').not.toBeNull();
+    expect(record?.organizationId).toBe(ORG);
+    // A team-scoped delivery's scope key *is* the team key, which is what makes "which teams missed
+    // a daily this week" answerable.
+    expect(record?.teamKey).toBe('platform');
+    expect(record?.at).toBe(toEpochMillis(NOW));
+    expect(record?.extras['channel']).toBe('email');
+    // pg-boss's own retry count, so the event agrees with the `delivery_log` row beside it.
+    expect(record?.extras['attempt']).toBe(2);
+    expect(record?.extras['status']).toBe('failed');
+    // A missed daily is a failure, not a degradation: nobody got the report.
+    expect(record?.level).toBe('error');
+  });
+
+  it('emits the event before the throw, so a failure is never lost to it', async () => {
+    // The throw is how pg-boss learns to back off, and anything sequenced after it does not happen.
+    // This is the same argument the `delivery_log` row is written first for.
+    const sink = new RecordingSink();
+    const failing = new FakeEmailTransport().answerWith({
+      status: 'failed',
+      providerMessageId: null,
+      error: 'transient',
+      detail: 'transient',
+    });
+
+    await expect(
+      handleReportDeliver(dependencies({ email: failing, logSink: sink }), payload(), NOW, 1),
+    ).rejects.toThrow();
+
+    expect(sink.records.filter((entry) => entry.event === 'delivery.failure')).toHaveLength(1);
+  });
+});
+
+describe('the states that are not failures emit no failure event', () => {
+  /**
+   * `skipped` and `deferred` are deliberately silent on this event.
+   *
+   * A missing provider key is a documented deployment state — the transport says so and the row
+   * records it — and an `error`-level event on every tick of a deployment that has no mailer is how
+   * an operator learns to ignore the event that matters. A deferral is Compass declining to send an
+   * empty message, which is the product working correctly.
+   */
+  it('emits nothing when the provider key is absent, so the signal stays the exception', async () => {
+    const sink = new RecordingSink();
+    const unconfigured = new FakeEmailTransport().answerWith({
+      status: 'skipped',
+      providerMessageId: null,
+      error: null,
+      detail: 'No RESEND_API_KEY is set, so no email was sent.',
+    });
+
+    const result = await handleReportDeliver(
+      dependencies({ email: unconfigured, logSink: sink }),
+      payload(),
+      NOW,
+      1,
+    );
+
+    expect(result.status).toBe('skipped');
+    expect(sink.last('delivery.failure')).toBeNull();
+  });
+
+  it('emits nothing when there is no report yet, because a deferral is not a failure', async () => {
+    const sink = new RecordingSink();
+
+    const result = await handleReportDeliver(
+      dependencies({ loadReport: async () => null, logSink: sink }),
+      payload(),
+      NOW,
+      1,
+    );
+
+    expect(result.status).toBe('deferred');
+    expect(sink.last('delivery.failure')).toBeNull();
   });
 });
 

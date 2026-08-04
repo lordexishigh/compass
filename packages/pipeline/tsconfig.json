@@ -16,6 +16,7 @@
     { "path": "../ingest" },
     { "path": "../knowledge-model" },
     { "path": "../narrator" },
+    { "path": "../observability" },
     { "path": "../renderers" }
   ]
 }

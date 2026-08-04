@@ -103,6 +103,7 @@ export {
   type NarrateReportOptions,
   type NarrationAttemptOutcome,
   type NarrationFallback,
+  type NarrationFallbackCause,
   type NarrationResult,
   type NarrationTraceRecord,
 } from './narrate.js';

@@ -1,6 +1,29 @@
 import type { FreshnessView } from '../lib/view-model';
 
 /**
+ * What a source of each kind would have contributed, had it answered.
+ *
+ * Naming the source is not the whole of the criterion — "`legacy-code` returned 429" tells a manager
+ * something is missing without telling them *what*. A reader deciding whether to trust this morning's
+ * report needs to know that the silent source is the one that would have carried the merges, because
+ * that is what tells them which of the six sections is thin.
+ *
+ * Keyed on `sourceKind` rather than on the source key, because the kind is the provider-neutral fact
+ * the port already guarantees — `code`, `tracker`, `chat` — and a map keyed on `github` or `jira`
+ * would need an entry per provider Compass ever adds. The kind was already on
+ * `FreshnessSourceView` and was never rendered; this is the consumer it was fetched for.
+ */
+const CONTRIBUTION_OF: Readonly<Record<string, string>> = {
+  code: 'commits, pull requests, reviews and release tags',
+  tracker: 'tickets, their status changes and sprint scope',
+  chat: 'the discussion that names blockers',
+};
+
+/** Deliberately not a fallback sentence: an unknown kind states the honest shape of the gap. */
+const contributionOf = (sourceKind: string): string =>
+  CONTRIBUTION_OF[sourceKind] ?? `whatever this ${sourceKind} source carries`;
+
+/**
  * What was ingested, when, and from where — per source, from `IngestRun` rows.
  *
  * The rule this component exists to keep is negative. **No fabricated freshness
@@ -66,7 +89,19 @@ export function FreshnessPanel({ freshness }: { readonly freshness: FreshnessVie
                 <span className="pl-[18px] font-mono text-[11px] tabular-nums text-ink-faint">
                   covered {source.coveredLabel ?? 'nothing of'} {source.coveredLabel === null ? source.windowLabel : ''}
                 </span>
-                {!source.answered && <span className="stated-absence pl-[18px] text-[13px]">{source.detail}</span>}
+                {!source.answered && (
+                  <>
+                    <span className="stated-absence pl-[18px] text-[13px]">{source.detail}</span>
+                    {/*
+                      The other half of the disclosure: which source, *and* what is therefore absent
+                      from the report above. Set in the same stated-absence voice as the reason, so
+                      the two read as one sentence about a gap rather than a reason and a footnote.
+                    */}
+                    <span data-testid="missing-contribution" className="stated-absence pl-[18px] text-[13px]">
+                      Without it this report is missing {contributionOf(source.sourceKind)}.
+                    </span>
+                  </>
+                )}
               </li>
             ))}
           </ul>

@@ -429,6 +429,9 @@ importers:
       '@compass/narrator':
         specifier: workspace:*
         version: link:../narrator
+      '@compass/observability':
+        specifier: workspace:*
+        version: link:../observability
       '@compass/renderers':
         specifier: workspace:*
         version: link:../renderers

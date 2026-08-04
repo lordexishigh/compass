@@ -101,12 +101,51 @@ export interface NarratedSection {
   readonly attempts: number;
 }
 
+/**
+ * Which *kind* of thing sent the report down the fallback path.
+ *
+ * Deliberately a second axis rather than a re-use of `NarrationAttemptOutcome`. `outcome` is the
+ * reader-facing disposition and it is *coarse on purpose*: a grounding rejection and a report over
+ * the word ceiling are both `rejected`, because from the reader's side they are the same event — the
+ * model wrote something Compass would not publish — and two disclosure notes saying that differently
+ * would be worse writing for no gain.
+ *
+ * An operator needs the opposite. "One report in five fell back" is the alert; *why* decides who is
+ * woken and what they change, and the remedies do not overlap at all:
+ *
+ *  - `grounding` — the prompt, the schema or a validator rule has broken. A real incident.
+ *  - `word-budget` — Compass's own prose got longer. A `maxItemsPerSection` decision, not an outage.
+ *  - `transport` / `refusal` — the provider. Wait, or check the key.
+ *  - `redaction` — a real name would have left the process. The most serious of the seven.
+ *  - `not-configured` — nothing is wrong; there is no narrator, or the org turned narration off.
+ *
+ * Folding those into one number is what makes a fallback-rate alert unactionable, so the cause is a
+ * closed union carried on the fallback and emitted on the `narration.fallback` log event.
+ */
+export type NarrationFallbackCause =
+  /** The validator found a token the payload does not contain. */
+  | 'grounding'
+  /** The narrated report ran over `DAILY_REPORT_WORD_BUDGET`. */
+  | 'word-budget'
+  /** The provider errored or timed out. */
+  | 'transport'
+  /** The provider declined to answer. */
+  | 'refusal'
+  /** No attempt produced prose that was even the right shape. */
+  | 'malformed'
+  /** A real name would have reached the wire in `redacted` mode. */
+  | 'redaction'
+  /** No narrator was supplied, or minimization is `none`. Not a degradation. */
+  | 'not-configured';
+
 /** Why a report was rendered by the template renderer instead of narrated. */
 export interface NarrationFallback {
   readonly reason: string;
   /** The section that could not be grounded, when one section is to blame. */
   readonly sectionKey: SectionKey | null;
   readonly outcome: NarrationAttemptOutcome;
+  /** The machine-readable half of `reason`. See `NarrationFallbackCause`. */
+  readonly cause: NarrationFallbackCause;
 }
 
 export interface NarrationResult {
@@ -275,7 +314,7 @@ async function narrateSection(
     } catch (cause) {
       const detail = cause instanceof Error ? cause.message : String(cause);
       traces.push(trace(1, 'unavailable', detail));
-      return finish(null, { reason: detail, sectionKey, outcome: 'unavailable' });
+      return finish(null, { reason: detail, sectionKey, outcome: 'unavailable', cause: 'redaction' });
     }
   }
 
@@ -296,7 +335,7 @@ async function narrateSection(
           ? cause.message
           : `the narrator threw while writing \`${sectionKey}\`: ${cause instanceof Error ? cause.message : String(cause)}`;
       traces.push(trace(attempt, 'unavailable', detail));
-      return finish(null, { reason: detail, sectionKey, outcome: 'unavailable' });
+      return finish(null, { reason: detail, sectionKey, outcome: 'unavailable', cause: 'transport' });
     }
 
     if (response.refusal !== null) {
@@ -308,7 +347,7 @@ async function narrateSection(
           outputTokens: response.outputTokens,
         }),
       );
-      return finish(null, { reason: detail, sectionKey, outcome: 'refused' });
+      return finish(null, { reason: detail, sectionKey, outcome: 'refused', cause: 'refusal' });
     }
 
     const prose = normalize(response.prose);
@@ -357,7 +396,15 @@ async function narrateSection(
       : `\`${sectionKey}\` could not be grounded in ${maxAttempts} attempts; ` +
         `last rejection named ${lastVerdict.untraceable.map((token) => `\`${token.text}\``).join(', ')}`;
 
-  return finish(null, { reason, sectionKey, outcome: lastVerdict === null ? 'malformed' : 'rejected' });
+  return finish(null, {
+    reason,
+    sectionKey,
+    outcome: lastVerdict === null ? 'malformed' : 'rejected',
+    // The two travel together: no usable prose at all is `malformed`, prose the validator refused is
+    // `grounding`. They are the same distinction `outcome` draws, kept in step by being derived from
+    // the same condition rather than restated.
+    cause: lastVerdict === null ? 'malformed' : 'grounding',
+  });
 }
 
 /**
@@ -396,7 +443,7 @@ export async function narrateReport(
   if (minimization === 'none') {
     return {
       rendererId: TEMPLATE_RENDERER_ID,
-      fallback: { reason: NO_LLM_STATEMENT, sectionKey: null, outcome: 'unavailable' },
+      fallback: { reason: NO_LLM_STATEMENT, sectionKey: null, outcome: 'unavailable', cause: 'not-configured' },
       sections: templateSections(),
       rendered,
       traces: [],
@@ -412,6 +459,7 @@ export async function narrateReport(
           'Every section, figure and link is complete; only the wording is templated.',
         sectionKey: null,
         outcome: 'unavailable',
+        cause: 'not-configured',
       },
       sections: templateSections(),
       rendered,
@@ -443,6 +491,7 @@ export async function narrateReport(
         reason: `\`${request.section.key}\` could not be narrated`,
         sectionKey: request.section.key,
         outcome: 'rejected' as const,
+        cause: 'grounding' as const,
       };
       return {
         rendererId: TEMPLATE_RENDERER_ID,
@@ -497,6 +546,10 @@ export async function narrateReport(
           'wording is templated.',
         sectionKey: null,
         outcome: 'rejected',
+        // The one cause that is about Compass's own prose rather than the model's. See
+        // `NarrationFallbackCause`: same `outcome` as a grounding rejection, deliberately, and a
+        // different `cause`, because the remedy is `maxItemsPerSection` and not a prompt fix.
+        cause: 'word-budget',
       },
       sections: templateSections(),
       rendered,

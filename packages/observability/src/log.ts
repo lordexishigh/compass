@@ -129,6 +129,47 @@ export const consoleSink: LogSink = createConsoleSink(
 );
 
 /**
+ * An elapsed-milliseconds measurement, for a log line and nothing else.
+ *
+ * ## Why this is allowed to exist here, when `packages/pipeline` may not measure its own duration
+ *
+ * The clock rules — `compass/no-system-clock`, the textual scan, and the one sanctioned
+ * `Date.now()` in `SystemClock` — exist so that a *report* is a pure function of `(snapshot,
+ * instant)`. `performance.now()` is banned in the guarded layers for that reason, and the ban is
+ * right: a stage that timed itself and put the number in a finding would make the determinism gate
+ * meaningless.
+ *
+ * "How long did this run take" is not that kind of fact. It never enters a report, a section, an
+ * item or a content hash — it goes on one log line, which nothing reads back. So the measurement
+ * lives in this package, which is not clock-guarded and is the one layer whose whole job is to
+ * describe a run rather than to compute one. `packages/pipeline` calls `startTimer()` and never
+ * names a time source, which keeps its own gate honest instead of routing around it.
+ *
+ * **Monotonic, not wall-clock.** `performance.now()` cannot go backwards, so an NTP correction
+ * mid-run yields a slow report rather than a negative duration. It also cannot be turned into an
+ * instant, which is the property that makes it unusable for anything but a duration — the type
+ * system enforces the intent, since the only thing this returns is an elapsed number.
+ */
+export interface PerformanceLike {
+  now(): number;
+}
+
+export type ElapsedMillis = () => number;
+
+export function startTimer(): ElapsedMillis {
+  // Resolved off `globalThis` for the same reason `consoleSink` is: this package keeps `types: []`,
+  // and one duration measurement is not a reason to take on `@types/node`.
+  const timer = (globalThis as unknown as { performance?: PerformanceLike }).performance;
+  if (timer === undefined) {
+    // No monotonic source: report zero rather than throwing. A log line is never worth failing a
+    // pipeline run for, and `durationMillis: 0` is visibly wrong in a way a fabricated number is not.
+    return () => 0;
+  }
+  const startedAt = timer.now();
+  return () => Math.round(timer.now() - startedAt);
+}
+
+/**
  * Builds a record without writing it.
  *
  * Separate from `emit` so a test can assert the *shape* without capturing a stream, and so the
@@ -197,9 +238,23 @@ export const logPipelineRun = (
   sink?: LogSink,
 ): LogRecord => emit('pipeline.run', fields, extras, sink);
 
+/**
+ * `cause` is what makes the fallback *rate* alert actionable.
+ *
+ * `outcome` is the reader-facing disposition and is coarse by design — a grounding rejection and a
+ * report over the word ceiling are both `rejected`. That is right for the note a manager reads and
+ * useless for the person paged at 2am: a broken prompt and prose that got too long need different
+ * people and different fixes. `@compass/narrator`'s `NarrationFallbackCause` is the closed union, so
+ * this field's vocabulary cannot drift from the thing producing it.
+ */
 export const logNarrationFallback = (
   fields: LogFields,
-  extras: { readonly sectionKey: string | null; readonly outcome: string; readonly attempts: number },
+  extras: {
+    readonly sectionKey: string | null;
+    readonly outcome: string;
+    readonly attempts: number;
+    readonly cause?: string;
+  },
   sink?: LogSink,
 ): LogRecord => emit('narration.fallback', fields, extras, sink);
 
