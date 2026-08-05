@@ -35,3 +35,6 @@ coverage/
 
 # nous provisioning secrets
 .env*.local
+
+# nous provisioning secrets
+.env*.local
