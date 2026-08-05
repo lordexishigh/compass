@@ -15,6 +15,7 @@ import { SEEDED_ORGANIZATION_ID } from '@compass/seed-connector';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { POST } from '../app/api/webhooks/[provider]/route';
+import { fixtureCredential } from './helpers/fixture-credentials';
 
 /**
  * The webhook route, end to end through the handler.
@@ -25,7 +26,7 @@ import { POST } from '../app/api/webhooks/[provider]/route';
  * covers what a provider and an operator actually see.
  */
 
-const SECRET = 'a-signing-secret-nobody-else-holds';
+const SECRET = fixtureCredential('webhook-signing');
 const BODY = JSON.stringify({ action: 'opened', number: 9201 });
 
 /**

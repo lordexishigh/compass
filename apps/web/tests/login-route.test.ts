@@ -6,6 +6,7 @@ import { SEEDED_ORGANIZATION_ID } from '@compass/seed-connector';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { SESSION_COOKIE_NAME } from '../lib/auth/cookies';
+import { FIXTURE_PASSPHRASE, WRONG_PASSPHRASE } from './helpers/fixture-credentials';
 
 /**
  * The login endpoint, executed.
@@ -42,7 +43,7 @@ const ORGANIZATION_ID = SEEDED_ORGANIZATION_ID;
 
 const T0 = instantFromIso('2026-07-31T09:00:00Z');
 
-const PASSWORD = 'a-long-enough-passphrase';
+const PASSWORD = FIXTURE_PASSPHRASE;
 const EMAIL = 'priya@example.com';
 
 // Hoisted, because `vi.mock` is hoisted above the imports and the factory closes over it.
@@ -165,7 +166,7 @@ describe('POST /api/auth/login', () => {
   it('answers 401 with no cookie for a wrong password', async () => {
     const { POST } = await import('../app/api/auth/login/route');
 
-    const response = await POST(loginRequest({ email: EMAIL, password: 'not-the-right-passphrase' }));
+    const response = await POST(loginRequest({ email: EMAIL, password: WRONG_PASSPHRASE }));
 
     expect(response.status).toBe(401);
     expect(sessionCookie(response)).toBeNull();
@@ -176,7 +177,7 @@ describe('POST /api/auth/login', () => {
     const { POST } = await import('../app/api/auth/login/route');
 
     const unknown = await POST(loginRequest({ email: 'nobody@example.com', password: PASSWORD }));
-    const wrong = await POST(loginRequest({ email: EMAIL, password: 'not-the-right-passphrase' }));
+    const wrong = await POST(loginRequest({ email: EMAIL, password: WRONG_PASSPHRASE }));
 
     expect(unknown.status).toBe(wrong.status);
     expect(await unknown.json()).toEqual(await wrong.json());

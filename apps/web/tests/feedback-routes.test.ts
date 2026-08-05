@@ -28,6 +28,11 @@ import { SEEDED_ORGANIZATION_ID } from '@compass/seed-connector';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { SESSION_COOKIE_NAME } from '../lib/auth/cookies';
+import {
+  FIXTURE_FEEDBACK_LINK_SECRET,
+  FIXTURE_OTHER_SIGNING_SECRET,
+  FIXTURE_SLACK_SIGNING_SECRET,
+} from './helpers/fixture-credentials';
 
 /**
  * The two feedback routes, executed.
@@ -63,8 +68,8 @@ const CHECKOUT_SECTION = '9e9e9e9e-9e9e-4e9e-8e9e-9e9e9e9e9ecc';
 const ITEM_ID = 'v1:8f2c1a0b3d4e5f60';
 /** An item on the checkout team's report. Same organization, different team. */
 const CHECKOUT_ITEM_ID = 'v1:00000000000000cc';
-const LINK_SECRET = 'a-long-random-string-that-is-not-a-default';
-const SLACK_SECRET = 'slack-signing-secret-not-a-default';
+const LINK_SECRET = FIXTURE_FEEDBACK_LINK_SECRET;
+const SLACK_SECRET = FIXTURE_SLACK_SIGNING_SECRET;
 
 /** The manager's mapped Slack user, and a colleague who has no Compass seat at all. */
 const MAPPED_SLACK_USER = 'U-PRIYA';
@@ -386,7 +391,7 @@ describe('GET /api/feedback/link/<token>', () => {
 
   it('refuses a forged signature with 400 and writes nothing', async () => {
     const { GET } = await import('../app/api/feedback/link/[token]/route');
-    const forged = token('snooze', T0, 'somebody-elses-secret');
+    const forged = token('snooze', T0, FIXTURE_OTHER_SIGNING_SECRET);
 
     const before = await ledgerSize();
     const response = await GET(linkRequest(forged), linkContext(forged));
@@ -543,7 +548,7 @@ describe('POST /api/slack/actions', () => {
     const { POST } = await import('../app/api/slack/actions/route');
 
     const before = await ledgerSize();
-    const response = await POST(slackRequest(slackBody(MAPPED_SLACK_USER), { secret: 'not-the-secret' }));
+    const response = await POST(slackRequest(slackBody(MAPPED_SLACK_USER), { secret: FIXTURE_OTHER_SIGNING_SECRET }));
 
     expect(response.status).toBe(401);
     expect(await ledgerSize()).toBe(before);

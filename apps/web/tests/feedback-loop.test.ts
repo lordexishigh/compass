@@ -30,6 +30,7 @@ import { feedbackRecordFrom } from '@compass/pipeline';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { applyManagerFeedback } from '../lib/feedback-source';
+import { FIXTURE_FEEDBACK_LINK_SECRET } from './helpers/fixture-credentials';
 
 /**
  * The feedback loop, end to end, against a real migrated database.
@@ -492,7 +493,7 @@ describe('a snooze recorded from Slack expires against the injected clock', () =
 });
 
 describe('an email feedback link is single-use for a state-changing action', () => {
-  const SECRET = 'a-long-random-string-that-is-not-a-default';
+  const SECRET = FIXTURE_FEEDBACK_LINK_SECRET;
 
   it('is claimed once and refused the second time', async () => {
     const minted = mintFeedbackToken(

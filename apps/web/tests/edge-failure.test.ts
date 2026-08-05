@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { SESSION_COOKIE_NAME } from '../lib/auth/cookies';
+import { FIXTURE_PASSPHRASE } from './helpers/fixture-credentials';
 
 /**
  * What every route does when the database is not there.
@@ -130,7 +131,7 @@ describe('a route whose database throws', () => {
       new Request('https://compass.example.com/api/auth/login', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email: 'priya@example.com', password: 'a-long-enough-passphrase' }),
+        body: JSON.stringify({ email: 'priya@example.com', password: FIXTURE_PASSPHRASE }),
       }),
     );
 
@@ -146,7 +147,7 @@ describe('a route whose database throws', () => {
       new Request('https://compass.example.com/api/auth/login', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email: 'priya@example.com', password: 'a-long-enough-passphrase' }),
+        body: JSON.stringify({ email: 'priya@example.com', password: FIXTURE_PASSPHRASE }),
       }),
     );
 
