@@ -1,6 +1,6 @@
 # App-store privacy answers — Compass
 
-Pre-filled answers for **Apple's Privacy Nutrition Label** and **Google Play's Data Safety** form, derived from what this codebase ACTUALLY does (detected: ai, analytics, auth, email, stripe). Where the code can't answer, there's a TODO instead of a guess.
+Pre-filled answers for **Apple's Privacy Nutrition Label** and **Google Play's Data Safety** form, derived from what this codebase ACTUALLY does (detected: ai, analytics, auth, email, stripe, supabase). Where the code can't answer, there's a TODO instead of a guess.
 
 > Informational, not legal advice. Re-generate after significant changes — answers must match the shipped build.
 
@@ -30,6 +30,7 @@ Pre-filled answers for **Apple's Privacy Nutrition Label** and **Google Play's D
 - the content you submit to AI features (to generate a response)
 
 **Shared with third parties (detected integrations):**
+- Supabase (database, auth & hosting)
 - Stripe (payment processing)
 - an analytics provider (usage analytics)
 - an email delivery provider (transactional email)

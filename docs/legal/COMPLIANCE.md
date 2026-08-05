@@ -14,6 +14,7 @@
   - the content you submit to AI features (to generate a response)
 
 **Shares with (third parties that run the product):**
+  - Supabase (database, auth & hosting)
   - Stripe (payment processing)
   - an analytics provider (usage analytics)
   - an email delivery provider (transactional email)

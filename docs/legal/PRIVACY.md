@@ -33,6 +33,7 @@ Payments are handled by our payment provider. We do not store your full card det
 
 We share data with the third-party service providers that run the product:
 
+- Supabase (database, auth & hosting)
 - Stripe (payment processing)
 - an analytics provider (usage analytics)
 - an email delivery provider (transactional email)

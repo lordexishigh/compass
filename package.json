@@ -19,7 +19,7 @@
     "lint": "eslint .",
     "arch": "depcruise --config .dependency-cruiser.cjs packages apps tools",
     "verify": "pnpm run lint && pnpm run arch && pnpm run typecheck && pnpm run test",
-    "dev": "pnpm run build:packages && pnpm --filter @compass/web run dev",
+    "dev": "node tools/dev.mjs",
     "worker": "pnpm --filter @compass/worker run start",
     "db:generate": "pnpm --filter @compass/db run generate",
     "db:migrate": "pnpm --filter @compass/db run migrate",
