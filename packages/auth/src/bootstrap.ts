@@ -26,6 +26,11 @@ import { recordAudit } from './audit.js';
  * this deployment's data is a fixture. The defaults are printed at boot and shown on
  * `/account`, and `ownerCredentialsAreDefault` is what the readiness endpoint reads to
  * say, out loud, that a real deployment must change them.
+ *
+ * Both, or neither. The defaults exist for the deployment that configures *nothing*, not as
+ * per-variable fallbacks: one of the two set is a misconfiguration, `ownerConfigurationProblem`
+ * is the sentence for it, and `bootstrapOwner` refuses to provision on it. See that function
+ * for why pairing a configured address with a published password is worse than either choice.
  */
 
 export const OWNER_EMAIL_ENV_VAR = 'COMPASS_OWNER_EMAIL';
@@ -96,6 +101,60 @@ export function resolveOwnerCredentials(env: OwnerEnvironment = process.env): Ow
 export const ownerCredentialsAreDefault = (env: OwnerEnvironment = process.env): boolean =>
   resolveOwnerCredentials(env).isDefault;
 
+/**
+ * Half-configured owner credentials, which are a misconfiguration and not a fallback.
+ *
+ * `resolveOwnerCredentials` fills each of the three values in independently, so setting
+ * `COMPASS_OWNER_EMAIL` and forgetting `COMPASS_OWNER_PASSWORD` used to resolve to a real
+ * organization's address protected by the *published* demonstration password — the worst
+ * combination of the two, and a silent one. The deployment looked configured to whoever set
+ * the variable, `/account` printed the demonstration email rather than the address that
+ * actually had the seat, and the only signal was `seats: not_configured` on `/api/health`.
+ *
+ * Both set is a configured deployment. Neither set is the demonstration, which is a
+ * supported state the whole zero-config path depends on. One of the two is neither, and this
+ * is the sentence that says so, naming the variable that is missing.
+ *
+ * A predicate rather than a throw so it stays usable from `/account` and `/api/health`, which
+ * must render a diagnosis rather than raise one. `bootstrapOwner` is where it becomes fatal.
+ */
+export function ownerConfigurationProblem(env: OwnerEnvironment = process.env): string | null {
+  const set = (name: string): boolean => {
+    const value = env[name];
+    return value !== undefined && value.length > 0;
+  };
+
+  const hasEmail = set(OWNER_EMAIL_ENV_VAR);
+  const hasPassword = set(OWNER_PASSWORD_ENV_VAR);
+
+  if (hasEmail === hasPassword) return null;
+
+  const missing = hasEmail ? OWNER_PASSWORD_ENV_VAR : OWNER_EMAIL_ENV_VAR;
+  const present = hasEmail ? OWNER_EMAIL_ENV_VAR : OWNER_PASSWORD_ENV_VAR;
+
+  return (
+    `${present} is set but ${missing} is not, so Compass cannot tell whether this deployment wants its own ` +
+    `owner seat or the published demonstration one. Set both to configure the owner, or neither to use the ` +
+    `demonstration credentials. Compass will not pair a configured value with a published default: an owner ` +
+    `seat at a real address protected by a password printed in this repository's README is worse than either ` +
+    'choice made deliberately.'
+  );
+}
+
+/**
+ * A named error, so the boot script can tell this apart from a database that is not up yet.
+ *
+ * The two failures need opposite responses — one is retried, the other is fixed by an
+ * operator — and a bare `Error` would make the entrypoint's retry loop wait out a
+ * misconfiguration that no amount of waiting resolves.
+ */
+export class OwnerConfigurationError extends Error {
+  constructor(detail: string) {
+    super(detail);
+    this.name = 'OwnerConfigurationError';
+  }
+}
+
 export interface BootstrapOwnerResult {
   readonly user: UserRow;
   readonly membership: MembershipRow;
@@ -123,7 +182,15 @@ export async function bootstrapOwner(input: {
   readonly teamKeys?: readonly string[];
   readonly env?: OwnerEnvironment;
 }): Promise<BootstrapOwnerResult> {
-  const credentials = resolveOwnerCredentials(input.env ?? process.env);
+  const env = input.env ?? process.env;
+
+  // Before the first query, so a half-configured deployment fails on its configuration rather
+  // than after provisioning a seat whose password it did not choose. Every other secret in
+  // Compass fails closed on a partial configuration; this one used to fail open.
+  const problem = ownerConfigurationProblem(env);
+  if (problem !== null) throw new OwnerConfigurationError(problem);
+
+  const credentials = resolveOwnerCredentials(env);
   const alreadyOwned = await hasOwner(input.scoped);
 
   const registered = await registerAccount({

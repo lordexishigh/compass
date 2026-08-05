@@ -23,7 +23,18 @@ import { describe, expect, it } from 'vitest';
  * hashes of one password differ, and the round trip is one-way.
  */
 
-const PASSWORD = 'a-long-enough-passphrase';
+/**
+ * The fixture input every hash in this file is computed from.
+ *
+ * Not a credential: nothing in Compass accepts it, no account is provisioned with it, and it
+ * exists only to be fed to `hashPassword` and then searched for in the output. The value says
+ * so in as many words, because a plausible-looking passphrase sitting next to the identifier
+ * `PASSWORD` is the shape a reader and a secret scanner both have to stop and rule out.
+ *
+ * It stays lowercase and longer than `PASSWORD_MIN_LENGTH` on purpose — the case-sensitivity
+ * assertion below compares against `.toUpperCase()`, which needs letters that change.
+ */
+const PASSWORD = 'fixture-passphrase-not-a-real-password';
 
 describe('Argon2id, with the documented parameters', () => {
   it('produces a PHC string that encodes exactly the documented cost', async () => {

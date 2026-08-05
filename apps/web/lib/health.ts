@@ -1,4 +1,10 @@
-import { OWNER_EMAIL_ENV_VAR, OWNER_PASSWORD_ENV_VAR, ownerCredentialsAreDefault, seatReadiness } from '@compass/auth';
+import {
+  OWNER_EMAIL_ENV_VAR,
+  OWNER_PASSWORD_ENV_VAR,
+  ownerConfigurationProblem,
+  ownerCredentialsAreDefault,
+  seatReadiness,
+} from '@compass/auth';
 import { SystemClock, previousCivilDayWindow, toEpochMillis, toIso, type Instant } from '@compass/clock';
 import { logReadinessUnavailable } from '@compass/observability';
 import {
@@ -150,8 +156,25 @@ async function checkDatabase(): Promise<ReadinessCheck> {
  * `degraded`, because nothing is broken — but not `ready` either, because a real
  * deployment on a published password is a state an operator must be told about in the
  * one place they look when something seems wrong.
+ *
+ * Also `not_configured`, and reported ahead of everything else, for an owner environment with
+ * one of the two variables set: that one refuses to provision a seat at all, so it is a
+ * misconfiguration rather than a warning about one.
  */
 async function checkSeats(): Promise<ReadinessCheck> {
+  /**
+   * Before the database, because this needs no database and outranks what one would say.
+   *
+   * A half-configured owner environment makes the worker's boot refuse, so the seat is never
+   * provisioned and the check below would report "no owner — run `pnpm run seed`" — advice
+   * that fails again the same way and never mentions the variable that caused it. The web
+   * process starts regardless of the worker, so this endpoint is where an operator finds out.
+   */
+  const configurationProblem = ownerConfigurationProblem();
+  if (configurationProblem !== null) {
+    return { name: 'seats', status: 'not_configured', detail: configurationProblem };
+  }
+
   const connection = pooledConnection();
   if (!connection.ok) {
     return {

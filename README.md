@@ -96,6 +96,11 @@ They are also printed at boot and shown on [`/account`](http://localhost:3000/ac
 `COMPASS_OWNER_EMAIL` and `COMPASS_OWNER_PASSWORD` before this deployment holds real data —
 `/api/health` says out loud while the published defaults are still in use.
 
+Set **both or neither**. The two used to be filled in independently, so setting the email and
+forgetting the password gave you an owner seat at your real address protected by the password
+in the table above. The boot script now refuses that combination and names the variable you
+are missing, and `/api/health` reports it ahead of every other check.
+
 ### A new organization: from nothing to a first report
 
 For an org that is *not* the seeded demonstration tenant, [`/start`](http://localhost:3000/start)

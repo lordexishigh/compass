@@ -4,6 +4,7 @@ import {
   DEMO_OWNER_PASSWORD,
   OWNER_EMAIL_ENV_VAR,
   OWNER_PASSWORD_ENV_VAR,
+  OwnerConfigurationError,
   RecordingMailer,
   bootstrapOwner,
   describeBootstrapOwner,
@@ -92,6 +93,16 @@ const scoped = () => database.scopedFor(run.organizationId);
 let warmed: Awaited<ReturnType<typeof warmDailyReport>>;
 
 /**
+ * The passphrase standing in for "one the operator chose themselves".
+ *
+ * Named rather than written twice: the test that proves the boot script does not reset a
+ * changed password has to hash this value and then sign in with it, and two copies of a
+ * literal that must match is a way for the test to pass for the wrong reason. It is a
+ * fixture input, not a credential — no deployment has ever accepted it.
+ */
+const OPERATOR_CHOSEN_PASSPHRASE = 'fixture-operator-chosen-passphrase';
+
+/**
  * A bootstrap result as a literal, for the two assertions that are about the *sentence*
  * rather than about the database.
  *
@@ -104,6 +115,10 @@ const ownerResult: BootstrapOwnerResult = {
     id: '00000000-0000-4000-8000-0000000000aa',
     email: DEMO_OWNER_EMAIL,
     displayName: 'Demo Owner',
+    // A syntactically valid Argon2id PHC string whose salt and tag are the base64 of the
+    // words "saltsaltsalta" and "tag" repeated. It is the hash of nothing — no plaintext
+    // produces it — and it is here because `UserRow.passwordHash` is typed as a PHC string
+    // and these two assertions are about the log sentence, which never reads it.
     passwordHash: '$argon2id$v=19$m=19456,t=2,p=1$c2FsdHNhbHRzYWx0c2E$dGFndGFndGFndGFndGFndGFndGFndGFndGFndGFndGFn',
   },
   membership: {
@@ -459,14 +474,34 @@ describe('the boot script leaves an owner who can sign in', () => {
     // A restart, after the operator set their own password directly.
     const { setUserPasswordHash } = await import('@compass/db');
     const owner = await findUserByEmail(scoped(), DEMO_OWNER_EMAIL);
-    await setUserPasswordHash(scoped(), owner?.id ?? '', await hashPassword('the-operators-own-passphrase'), run.now);
+    await setUserPasswordHash(scoped(), owner?.id ?? '', await hashPassword(OPERATOR_CHOSEN_PASSPHRASE), run.now);
 
     await bootstrapOwner({ scoped: scoped(), now: run.now, teamKeys: [run.teamKey], env: {} });
 
     expect(
-      (await verifyLogin({ scoped: scoped(), email: DEMO_OWNER_EMAIL, password: 'the-operators-own-passphrase' })).ok,
+      (await verifyLogin({ scoped: scoped(), email: DEMO_OWNER_EMAIL, password: OPERATOR_CHOSEN_PASSPHRASE })).ok,
       'the boot script overwrote a password the operator had set',
     ).toBe(true);
+  }, 120_000);
+
+  /**
+   * Half-configured is refused, and refused *before* the seat exists.
+   *
+   * The second assertion is the one that matters. A guard that threw after `registerAccount`
+   * would leave behind exactly the row it exists to prevent — a real address holding the
+   * published password — and the operator would fix their environment and never know.
+   */
+  it('refuses to provision an owner from a half-configured environment', async () => {
+    const halfConfigured = { [OWNER_EMAIL_ENV_VAR]: 'half@configured.example' };
+
+    await expect(
+      bootstrapOwner({ scoped: scoped(), now: run.now, teamKeys: [run.teamKey], env: halfConfigured }),
+    ).rejects.toThrow(OwnerConfigurationError);
+
+    expect(
+      await findUserByEmail(scoped(), 'half@configured.example'),
+      'the guard threw only after writing the seat it exists to prevent',
+    ).toBeNull();
   }, 120_000);
 
   it('says out loud when the published demonstration credentials are still in use', () => {

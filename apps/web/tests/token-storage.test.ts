@@ -30,6 +30,20 @@ import { apiRoutesOnDisk } from './helpers/routes';
 
 const WEB_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
+/**
+ * The fixture credential this file feeds through `describeIntegrationToken`.
+ *
+ * Named rather than inline so the assertions below can derive from it instead of repeating
+ * fragments of it — the last-four check used to hardcode its own copy of the final four
+ * characters, which is a second literal to keep in step for no benefit.
+ *
+ * It keeps the `ghp_` prefix, which the assertions are about, and deliberately not the
+ * shape of a live GitHub token (`ghp_` plus 36 `[0-9a-zA-Z]`): a fixture in that shape is
+ * indistinguishable from a real leaked credential to a reader or a secret scanner. The same
+ * value and the same reasoning as `packages/auth/tests/integration-tokens.test.ts`.
+ */
+const FIXTURE_TOKEN = 'ghp_EXAMPLE-FIXTURE-NOT-A-REAL-CREDENTIAL';
+
 /** The route file for a route path — the inverse of the enumerator's mapping. */
 const routeSourceFor = (route: string): string => {
   const segments = route.slice(1).split('/');
@@ -98,17 +112,17 @@ describe('what the API may say about a credential', () => {
       id: 'row-1',
       sourceKey: 'primary-code',
       tokenKind: 'refresh',
-      sealedValue: 'v1:aes-256-gcm.a.b.ghp_9tKq2mXn4bZr7wLpV3sHdY8cA1eF6gJ0uT5i',
+      sealedValue: `v1:aes-256-gcm.a.b.${FIXTURE_TOKEN}`,
       keyVersion: 1,
       expiresAt: null,
     });
 
     expect(described.present).toBe(true);
-    expect(Object.values(described)).not.toContain('ghp_9tKq2mXn4bZr7wLpV3sHdY8cA1eF6gJ0uT5i');
+    expect(Object.values(described)).not.toContain(FIXTURE_TOKEN);
     for (const value of Object.values(described)) {
       if (typeof value !== 'string') continue;
       expect(value, 'no field may carry a fragment of the credential').not.toContain('ghp_');
-      expect(value).not.toContain('uT5i');
+      expect(value).not.toContain(FIXTURE_TOKEN.slice(-4));
     }
   });
 });

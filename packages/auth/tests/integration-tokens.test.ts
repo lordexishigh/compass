@@ -38,9 +38,21 @@ const ORG_B = '22222222-2222-4222-8222-222222222222';
 const NOW = instantFromIso('2026-08-03T09:00:00Z');
 const LATER = instantFromIso('2026-08-03T10:00:00Z');
 
-/** A credential that looks like the real thing, so a substring search for it is meaningful. */
-const GITHUB_TOKEN = 'ghp_9tKq2mXn4bZr7wLpV3sHdY8cA1eF6gJ0uT5i';
-const REFRESH_TOKEN = 'ghr_R8xW2vN5bQ7mK1tZ9pL4jH6dS3fY0aC8eU';
+/**
+ * Fixture credentials: distinctive enough that a substring search for one is meaningful,
+ * and unmistakably not a credential.
+ *
+ * They keep the `ghp_`/`ghr_` provider prefix, because that prefix is what several
+ * assertions below are *about* — a leak of the tell is a leak. What they deliberately do
+ * not keep is the shape of a live GitHub token, `ghp_` followed by 36 characters of
+ * `[0-9a-zA-Z]`. A test fixture written in that shape is indistinguishable from a real
+ * leaked credential to every reader and every scanner, including GitHub's own push
+ * protection, so it costs a reviewer real time to rule out and trains everyone to wave
+ * through the pattern that matters. The hyphens break that shape while the prefix and the
+ * distinctiveness — the only two properties these tests need — survive intact.
+ */
+const GITHUB_TOKEN = 'ghp_EXAMPLE-FIXTURE-NOT-A-REAL-CREDENTIAL';
+const REFRESH_TOKEN = 'ghr_EXAMPLE-FIXTURE-REFRESH-NOT-A-CREDENTIAL';
 
 let database: TestDatabase;
 const originalMasterKey = process.env[MASTER_KEY_ENV_VAR];
