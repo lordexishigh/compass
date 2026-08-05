@@ -382,3 +382,168 @@ describe('compass/no-secret-disclosure is wired into the build', () => {
     expect(offenders, 'these files disable the secret-disclosure gate').toEqual([]);
   });
 });
+
+// ---------------------------------------------------------------------------
+// The credential-literal check, read as text rather than as syntax
+// ---------------------------------------------------------------------------
+
+/**
+ * The second opinion on `compass/no-credential-literal`, and it reads the half that rule cannot.
+ *
+ * ESLint sees an abstract syntax tree, in which a comment is not a node. A secret scanner sees
+ * bytes, in which it is. So a credential-shaped literal written *inside a comment* passes lint
+ * and is reported by the scanner — and that is not hypothetical: the rule file's own doc comment
+ * illustrated the four banned binding forms by writing them out, and an automated secret scan
+ * reported `tools/eslint-plugin-compass/rules/no-credential-literal.js` as holding four hardcoded
+ * secrets. The rule documenting the ban tripped the scanner enforcing it.
+ *
+ * The tempting fix is a `paths` allowlist in `.gitleaks.toml` for the directory. That file argues
+ * against exactly that and is right to: a path exemption switches scanning off for a whole file
+ * rather than for a known-harmless string, and the directory it would switch it off for is the
+ * one holding the credential rules. This gate is the alternative — the shipped tree must not
+ * *contain the shape*, in code or in prose, so there is nothing for a scanner to report and no
+ * exemption for a real credential to hide behind later.
+ *
+ * Its vocabulary is written out here rather than imported from the rule, for the same reason
+ * `scan.ts` restates the clock patterns instead of importing them: a second opinion that shares
+ * the first one's definitions agrees with it by construction and checks nothing.
+ */
+
+/** A binding name as lower-cased words: `OWNER_PASSWORD` and `ownerPassword` both give `owner password`. */
+const nameWords = (rawName: string): readonly string[] =>
+  rawName
+    .replace(/[_\-#$]+/g, ' ')
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((word) => word.length > 0);
+
+/**
+ * Trailing words that make a name a claim to hold a credential.
+ *
+ * Matched as words, never as a substring: `ORGANIZATION_METADATA_KEY` ends with the characters
+ * `datakey` and is a Stripe metadata field, and bare `key` is `sourceKey`, `teamKey`, `itemKey`
+ * and a hundred other identity strings in the seed data. Word-splitting is what separates them.
+ */
+const CREDENTIAL_PHRASES = [
+  'password',
+  'passphrase',
+  'secret',
+  'token',
+  'api key',
+  'private key',
+  'master key',
+  'data key',
+  'signing key',
+  'client secret',
+] as const;
+
+/** Last words that make a credential-named binding safe — the storage form, or prose about one. */
+const SAFE_LAST_WORDS = new Set([
+  'hash',
+  'digest',
+  'kind',
+  'version',
+  'problem',
+  'label',
+  'message',
+  'placeholder',
+  'pattern',
+  'prefix',
+  'regex',
+  'length',
+  'name',
+  'names',
+  'path',
+  'field',
+  'header',
+  'error',
+  'reason',
+  'statement',
+  'var',
+  'vars',
+]);
+
+const claimsToHoldCredential = (rawName: string): boolean => {
+  const parts = nameWords(rawName);
+  if (parts.length === 0) return false;
+  if (SAFE_LAST_WORDS.has(parts[parts.length - 1]!)) return false;
+
+  return CREDENTIAL_PHRASES.some((phrase) => {
+    const phraseWords = phrase.split(' ');
+    if (phraseWords.length > parts.length) return false;
+    return phraseWords.every((word, index) => parts[parts.length - phraseWords.length + index] === word);
+  });
+};
+
+/** A name, an assignment or a colon, and a quoted value — the shape every secret scanner keys on. */
+const CREDENTIAL_ASSIGNMENT = /([A-Za-z_$#][\w$#]*)\s*[:=]\s*(['"`])([^'"`\n]+)\2/g;
+
+/** A value that names a location rather than opens one. `{ password: '/api/auth/login' }` is a route. */
+const namesALocation = (value: string): boolean => /^(?:\/|https?:\/\/|mailto:)/.test(value);
+
+const scanForCredentialShapes = (relativePath: string, text: string): readonly string[] => {
+  const found: string[] = [];
+
+  text.split(/\r?\n/).forEach((line, index) => {
+    CREDENTIAL_ASSIGNMENT.lastIndex = 0;
+    let match: RegExpExecArray | null;
+    while ((match = CREDENTIAL_ASSIGNMENT.exec(line)) !== null) {
+      const [whole, name, , value] = match;
+      if (!claimsToHoldCredential(name!)) continue;
+      // An interpolated template is not a literal, and neither the rule nor a scanner reports one.
+      if (value!.includes('${')) continue;
+      if (namesALocation(value!)) continue;
+      found.push(`${relativePath}:${index + 1}  ${whole.trim()}`);
+    }
+  });
+
+  return found;
+};
+
+describe('no credential-shaped literal survives in shipped text, comments included', () => {
+  /**
+   * Test trees are excluded, exactly as `SHIPPED_SOURCES` excludes them for the ESLint rule. A
+   * handful of suites hold fixture credentials whose whole job is to be a credential — the
+   * RuleTester cases proving this very rule reports are among them — and pointing the gate at
+   * them would either flood or force the fixtures into a shape that proves nothing.
+   */
+  const shipped = allAuthoredSourceFiles().filter(
+    (file) => !/(^|\/)tests?\//.test(file.relativePath) && !/\.(test|spec)\.[jt]sx?$/.test(file.relativePath),
+  );
+
+  it('found a shipped tree to scan, so an empty file list cannot pass', () => {
+    expect(shipped.length, 'the shipped source tree could not be read').toBeGreaterThan(100);
+  });
+
+  it('reports the shape, so a broken pattern cannot pass vacuously', () => {
+    expect(scanForCredentialShapes('probe.ts', "const DEMO_OWNER_PASSWORD = 'a-literal-password';")).toHaveLength(1);
+    expect(scanForCredentialShapes('probe.ts', "const config = { apiKey: 'sk_live_notreal' };")).toHaveLength(1);
+    expect(scanForCredentialShapes('probe.ts', 'class C { #signingSecret = "shhh"; }')).toHaveLength(1);
+    // The one that matters here: the same text inside a comment, which ESLint's AST cannot see.
+    expect(scanForCredentialShapes('probe.js', " * function f(password = 'letmein') {}")).toHaveLength(1);
+  });
+
+  it('grants the exemptions the rule grants, or it would ban the remedy', () => {
+    // The fix for a credential literal is to name the variable that holds it.
+    expect(scanForCredentialShapes('probe.ts', "const OWNER_PASSWORD_ENV_VAR = 'COMPASS_OWNER_PASSWORD';")).toEqual([]);
+    // The storage form, a route table, an interpolation, and a metadata field that is not a data key.
+    expect(scanForCredentialShapes('probe.ts', "log({ tokenHash: 'abc123', tokenDigest: 'def456' });")).toEqual([]);
+    expect(scanForCredentialShapes('probe.ts', "const routes = { password: '/api/auth/login' };")).toEqual([]);
+    expect(scanForCredentialShapes('probe.ts', 'const secret = `${prefix}-${suffix}`;')).toEqual([]);
+    expect(scanForCredentialShapes('probe.ts', "const ORGANIZATION_METADATA_KEY = 'compass_organization_id';")).toEqual(
+      [],
+    );
+    expect(scanForCredentialShapes('probe.ts', "const sourceKey = 'primary-code';")).toEqual([]);
+  });
+
+  it('finds none anywhere in the shipped tree', () => {
+    const sightings = shipped.flatMap((file) => scanForCredentialShapes(file.relativePath, file.text));
+
+    expect(
+      sightings,
+      'a credential-shaped literal is in shipped source — if it is an illustration in a comment, name the shape and leave the value to the fixtures',
+    ).toEqual([]);
+  });
+});
