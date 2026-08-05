@@ -13,6 +13,7 @@ import { SEEDED_ORGANIZATION_ID } from '@compass/seed-connector';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { SESSION_COOKIE_NAME } from '../lib/auth/cookies';
+import { WRONG_PASSPHRASE } from './helpers/fixture-credentials';
 
 /**
  * `POST /login` with the credentials the seed publishes.
@@ -140,7 +141,7 @@ describe('the published demo credentials sign in at the published path', () => {
   it('refuses a wrong password at this address exactly as at the other one', async () => {
     const { POST } = await import('../app/login/route');
 
-    const response = await POST(loginRequest({ email: DEMO_OWNER_EMAIL, password: 'not-the-published-password' }));
+    const response = await POST(loginRequest({ email: DEMO_OWNER_EMAIL, password: WRONG_PASSPHRASE }));
 
     expect(response.status).toBe(401);
     expect(sessionCookie(response)).toBeNull();

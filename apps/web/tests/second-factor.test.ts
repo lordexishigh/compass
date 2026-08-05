@@ -24,6 +24,7 @@ import { SEEDED_ORGANIZATION_ID } from '@compass/seed-connector';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { SESSION_COOKIE_NAME } from '../lib/auth/cookies';
+import { FIXTURE_PASSPHRASE, WRONG_PASSPHRASE, fixtureCredential } from './helpers/fixture-credentials';
 
 /**
  * Two-factor sign-in, executed against a real migrated database.
@@ -47,9 +48,9 @@ let database: TestDatabase;
 const ORGANIZATION_ID = SEEDED_ORGANIZATION_ID;
 const T0 = instantFromIso('2026-08-05T09:00:00Z');
 
-const PASSWORD = 'a-long-enough-passphrase';
+const PASSWORD = FIXTURE_PASSPHRASE;
 const EMAIL = 'priya@example.com';
-const CHALLENGE_SECRET = 'test-challenge-signing-secret';
+const CHALLENGE_SECRET = fixtureCredential('second-factor-challenge-signing');
 
 const pool = vi.hoisted(() => ({ current: null as CompassDatabase | null }));
 
@@ -332,7 +333,7 @@ describe('recovery codes', () => {
     const { POST } = await import('../app/api/auth/2fa/recovery-codes/route');
 
     const refused = await POST(
-      await signedInRequest('/api/auth/2fa/recovery-codes', { password: 'not-the-password' }),
+      await signedInRequest('/api/auth/2fa/recovery-codes', { password: WRONG_PASSPHRASE }),
     );
     // A session is not enough: the output is ten credentials that each bypass the authenticator app.
     expect(refused.status).toBe(403);
@@ -355,7 +356,7 @@ describe('turning 2FA off', () => {
     const { DELETE } = await import('../app/api/auth/2fa/route');
 
     const response = await DELETE(
-      await signedInRequest('/api/auth/2fa', { password: 'not-the-password' }, 'DELETE'),
+      await signedInRequest('/api/auth/2fa', { password: WRONG_PASSPHRASE }, 'DELETE'),
     );
 
     expect(response.status).toBe(403);

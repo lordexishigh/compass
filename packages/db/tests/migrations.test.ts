@@ -198,6 +198,84 @@ describe('pnpm db:migrate', () => {
     expect(() => scoped.updateIn(tickets, { status: 'Done' })).not.toThrow();
   });
 
+  /**
+   * Row-level security, asserted per table rather than per migration.
+   *
+   * Migration 0018 enables RLS by looping over the tables that carry `organization_id`, which covers
+   * every table that exists *at that point*. Nothing in the migration can cover the table somebody
+   * adds in 0019 — `drizzle-kit generate` does not emit `ENABLE ROW LEVEL SECURITY`, so the generated
+   * SQL for a new table will look complete and arrive with no policy at all. These tests are what
+   * makes that a build failure rather than a silent gap, which is why they are stated over the
+   * migrated database and not over a list.
+   */
+  describe('row-level security', () => {
+    const POLICY_SUFFIX = '_tenant_isolation';
+
+    it('is enabled on every table, with no exemption list', async () => {
+      const rows = await database.client.query<{ table_name: string; enabled: boolean }>(
+        `select c.relname as table_name, c.relrowsecurity as enabled
+           from pg_class c
+           join pg_namespace n on n.oid = c.relnamespace
+          where n.nspname = 'public' and c.relkind = 'r'
+          order by c.relname`,
+      );
+
+      expect(rows.rows.length, 'no tables were found at all').toBeGreaterThan(0);
+      expect(
+        rows.rows.filter((row) => !row.enabled).map((row) => row.table_name),
+        'these tables have no row-level security — add them to a migration like 0018',
+      ).toEqual([]);
+    });
+
+    it('gives every table one tenant policy, on reads and on writes alike', async () => {
+      const policies = await database.client.query<{
+        tablename: string;
+        policyname: string;
+        cmd: string;
+        qual: string | null;
+        with_check: string | null;
+      }>(
+        `select tablename, policyname, cmd, qual, with_check
+           from pg_policies where schemaname = 'public' order by tablename, policyname`,
+      );
+      const tables = await database.client.query<{ table_name: string }>(
+        `select c.relname as table_name
+           from pg_class c
+           join pg_namespace n on n.oid = c.relnamespace
+          where n.nspname = 'public' and c.relkind = 'r'
+          order by c.relname`,
+      );
+
+      for (const { table_name: tableName } of tables.rows) {
+        const forTable = policies.rows.filter((row) => row.tablename === tableName);
+
+        expect(forTable.map((row) => row.policyname), `${tableName} has no tenant policy`).toEqual([
+          `${tableName}${POLICY_SUFFIX}`,
+        ]);
+        // `FOR ALL`: a row a caller cannot read must not be one it can write either.
+        expect(forTable[0]?.cmd, `${tableName}'s policy does not cover every command`).toBe('ALL');
+
+        for (const predicate of [forTable[0]?.qual, forTable[0]?.with_check]) {
+          expect(predicate, `${tableName}'s policy is missing a predicate`).not.toBeNull();
+          expect(predicate).toContain('organization_id');
+          expect(predicate).toContain('compass_current_organization');
+        }
+      }
+    });
+
+    it('reads an unset tenant as NULL rather than raising, so the predicate fails closed', async () => {
+      // `organization_id = NULL` is NULL, never true. A connection that has not said which tenant it
+      // is therefore sees nothing — which is the whole reason the third argument to
+      // `current_setting` is there. Were it to raise instead, every query would error and somebody
+      // would be tempted to make the policy permissive to get the app working again.
+      const result = await database.client.query<{ tenant: string | null }>(
+        'select compass_current_organization() as tenant',
+      );
+
+      expect(result.rows[0]?.tenant).toBeNull();
+    });
+  });
+
   it('holds the tenant root to its own check constraint', async () => {
     await expect(
       database.client.query(
@@ -419,5 +497,136 @@ describe('two organizations sharing one database', () => {
     expect(coverage.rows[0]?.status).toBe('complete');
     expect(Number(coverage.rows[0]?.record_count)).toBe(4);
     expect(coverage.rows[1]?.source_key).toBe('primary-code');
+  });
+
+  /**
+   * The same isolation, proved without `ScopedDb` in the picture at all.
+   *
+   * Everything above this asserts that the *application* adds `organization_id = $1`. This asserts
+   * that the database refuses a cross-tenant read on its own, to a caller that never went through
+   * `ScopedDb` and could not be made to — a psql session, a BI tool, a managed provider's REST API,
+   * a connection string with lesser privileges. Without it, migration 0018's policies are text that
+   * nothing ever evaluates: PostgreSQL exempts a table's owner from its own policies, and every other
+   * test in this file (and in the app) runs as the owner, so a policy with a broken predicate would
+   * pass every one of them.
+   *
+   * The probe role is therefore not a convenience — it is the only way to execute the policy at all.
+   */
+  describe('a role that does not own the tables', () => {
+    const PROBE_ROLE = 'compass_rls_probe';
+
+    beforeAll(async () => {
+      await database.client.exec(
+        `create role ${PROBE_ROLE} nologin;
+         grant usage on schema public to ${PROBE_ROLE};
+         grant select on all tables in schema public to ${PROBE_ROLE};`,
+      );
+    });
+
+    /**
+     * The email addresses `users` yields to the probe role for a given tenant.
+     *
+     * `SET LOCAL` inside a transaction, exactly as migration 0013's erasure flag and the production
+     * code path do it: the role and the tenant both die with the `rollback`, so one case cannot leak
+     * its setting into the next.
+     */
+    const emailsVisibleTo = async (organizationId: string | null): Promise<readonly string[]> => {
+      const declareTenant =
+        organizationId === null ? '' : `set local compass.organization_id = '${organizationId}';`;
+
+      try {
+        const statements = await database.client.exec(
+          `begin;
+           set local role ${PROBE_ROLE};
+           ${declareTenant}
+           select email from users order by email;
+           rollback;`,
+        );
+        // Second to last: the `rollback` is last, and the shape holds whether or not a tenant was set.
+        const rows = (statements[statements.length - 2]?.rows ?? []) as { email: string }[];
+        return rows.map((row) => row.email);
+      } finally {
+        // A failed statement leaves the transaction open and aborted. This closes it either way, so
+        // one broken expectation cannot take the rest of the file with it.
+        await database.client.exec('rollback').catch(() => undefined);
+      }
+    };
+
+    it('sees only the tenant it declares', async () => {
+      expect(await emailsVisibleTo(ORG_A)).toEqual(['priya@example.com']);
+      expect(await emailsVisibleTo(ORG_B)).toEqual(['marcus@example.com']);
+    });
+
+    it('sees nothing at all when it declares no tenant', async () => {
+      // The fail-closed half. An unset GUC must not mean "everything" — that is the default a
+      // permissive policy would produce, and it would be indistinguishable from working.
+      expect(await emailsVisibleTo(null)).toEqual([]);
+    });
+
+    it('sees nothing for a tenant that does not exist', async () => {
+      expect(await emailsVisibleTo('88888888-8888-4888-8888-888888888888')).toEqual([]);
+    });
+
+    it('still reads everything as the owner, which is what keeps the app and the worker working', async () => {
+      // Stated rather than assumed. Migration 0018 deliberately does not FORCE row-level security,
+      // because the worker's pipeline and the seed tooling query with no request context to take a
+      // tenant from. If a future migration forces it, this test fails and names the reason.
+      const owner = await database.client.query<{ email: string }>('select email from users order by email');
+
+      expect(owner.rows.map((row) => row.email)).toEqual(['marcus@example.com', 'priya@example.com']);
+    });
+  });
+});
+
+/**
+ * Migration 0018's other half, on a database where the roles it names exist.
+ *
+ * The REVOKE is guarded by `pg_roles`, because `anon` and `authenticated` are Supabase's and exist on
+ * no developer machine — so on every database anybody actually migrates during development, that
+ * branch is skipped. Which makes it the one branch in the migration that would first execute in
+ * production, and `REVOKE`/`ALTER DEFAULT PRIVILEGES` are built as strings and parsed at runtime, so a
+ * typo in one is invisible until then. That is worth a second engine.
+ *
+ * Its own database, and its own migration run: the roles have to exist *before* the migration for the
+ * branch to be taken at all, which the shared harness above cannot arrange for itself.
+ */
+describe('pnpm db:migrate against a managed provider’s roles', () => {
+  let provider: TestDatabase;
+
+  beforeAll(async () => {
+    provider = await createTestDatabase();
+    await provider.client.exec(
+      `create role anon nologin;
+       create role authenticated nologin;
+       grant usage on schema public to anon, authenticated;`,
+    );
+    await provider.migrate();
+  });
+
+  afterAll(async () => {
+    await provider.close();
+  });
+
+  it('applies, and leaves the API roles no privilege on any table', async () => {
+    const grants = await provider.client.query<{ grantee: string; table_name: string }>(
+      `select grantee, table_name from information_schema.role_table_grants
+        where table_schema = 'public' and grantee in ('anon', 'authenticated')`,
+    );
+
+    expect(grants.rows, 'PostgREST can still address these tables').toEqual([]);
+  });
+
+  it('withdraws the default privilege too, so the next table does not arrive granted', async () => {
+    // The half that is easy to miss. Revoking on existing tables and leaving the schema default in
+    // place means the fix silently expires the next time a migration adds a table.
+    await provider.client.exec('create table default_privilege_probe (organization_id uuid not null)');
+
+    const grants = await provider.client.query<{ grantee: string }>(
+      `select grantee from information_schema.role_table_grants
+        where table_schema = 'public' and table_name = 'default_privilege_probe'
+          and grantee in ('anon', 'authenticated')`,
+    );
+
+    expect(grants.rows).toEqual([]);
   });
 });

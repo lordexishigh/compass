@@ -264,6 +264,46 @@ provider prefix. What the API returns is `IntegrationTokenDescription`: `present
 build if a credential-named field appears inside a `console.*` argument or a response body
 anywhere in the workspace.
 
+### Tenant isolation in the database
+
+`ScopedDb` adds `organization_id = $1` to every statement it builds, and `packages/db/tests/scoped-db.test.ts`
+inspects the emitted SQL to prove it. That is the enforced path. It binds only callers that go
+through it, so migration `0018_row_level_security.sql` puts the same predicate in the database:
+
+- **Row-level security is enabled on every table**, with no exemption list. Every table in the schema
+  carries a non-null `organization_id`, so the migration keys off the column rather than a
+  hand-written list that would silently miss the next table.
+- **One policy per table**, `<table>_tenant_isolation`, `FOR ALL` — the same predicate on reads and on
+  writes, so a row a caller cannot see is not one it can create either.
+- **The tenant comes from `compass.organization_id`**, read by `compass_current_organization()` and set
+  with `SET LOCAL` inside a transaction, the same mechanism migration 0013 uses for `compass.erasure`.
+  An unset setting reads as NULL, `organization_id = NULL` is NULL rather than true, and the policy
+  therefore **fails closed**: a connection that has not said which tenant it is reads nothing.
+- **`anon` and `authenticated` lose their grants** where those roles exist, including the default
+  privileges, so a managed provider's auto-generated REST API cannot address the tables at all. If the
+  migration role may not alter them, the migration raises a warning naming the role and the operator
+  runs the `REVOKE` in the provider's SQL console.
+
+**`FORCE ROW LEVEL SECURITY` is deliberately not set, and that is a limitation rather than an
+oversight.** PostgreSQL exempts a table's owner from its own policies, and Compass runs migrations and
+application queries as the same role, so RLS today binds every role *except* the application's own —
+`anon`, a read-only analyst, a BI tool, a lesser-privileged connection string. Forcing it would break
+the pg-boss worker, the seed and the golden-fixture tooling in the same commit, because those query
+with no request to take a tenant from; the failure would present as "every report is empty".
+
+To promote RLS from the second lock to the first, a deployment needs three things: a runtime role that
+does not own the tables, `ALTER TABLE … FORCE ROW LEVEL SECURITY`, and `SET LOCAL
+compass.organization_id` in the transaction that serves each request. `compass_current_organization()`
+is the seam, so that is a configuration change and not a schema change. Note that the role grants
+themselves cannot be run over a transaction-mode connection pooler — use `DATABASE_URL_DIRECT` or the
+provider's SQL console.
+
+`packages/db/tests/migrations.test.ts` is the regression gate. `drizzle-kit generate` does not emit
+`ENABLE ROW LEVEL SECURITY`, so a new table's generated SQL looks complete while arriving with no
+policy; the gate fails the build for any table without RLS and a policy. It also proves the policy is
+*evaluated* rather than merely present, by creating a non-owning role and reading `users` through it —
+which is the only way to execute a policy the owner is exempt from.
+
 ## Roles in the build
 
 - **Discovery / PM** — turns the idea into a precise spec and a phased plan.

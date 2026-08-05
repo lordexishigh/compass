@@ -30,6 +30,7 @@ import { buildReportDiffView } from '../lib/diff-source';
 import { EMPTY_STATES } from '../lib/empty-states';
 import { buildReportView } from '../lib/view-model';
 
+import { FIXTURE_PASSPHRASE } from './helpers/fixture-credentials';
 import {
   diffPairFixture,
   emptyBundle,
@@ -204,7 +205,9 @@ describe('axe reports no critical or serious violations', () => {
   it('on the sign-in panel, which is the one form an unauthenticated reader meets', async () => {
     await expectNoBlockingViolations(
       'the sign-in panel',
-      renderToStaticMarkup(<SignInPanel demoCredentials={{ email: 'owner@example.com', password: 'a-long-password' }} />),
+      renderToStaticMarkup(
+        <SignInPanel demoCredentials={{ email: 'owner@example.com', password: FIXTURE_PASSPHRASE }} />,
+      ),
     );
   });
 
