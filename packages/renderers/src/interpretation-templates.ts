@@ -44,6 +44,7 @@ export const INTERPRETATION_TEMPLATE_IDS = [
   'sectionCount',
   'coverage',
   'collar',
+  'aging',
   'alignment',
   'unattributed',
   'calibration',
@@ -178,6 +179,13 @@ export const INTERPRETATION_TEMPLATES: readonly InterpretationTemplateDefinition
     pattern: /\band the collar on that date is (?:low|medium|high) confidence from (?:trailing velocity|cycle time)\b/,
   },
   {
+    id: 'aging',
+    purpose:
+      "An item still in flight past this board's own measured P85 cycle time. Names the baseline as a measurement of the team's own history rather than a deadline, because a Kanban team never committed to a date and must not be read as having missed one.",
+    example: 'and that is measured against the 8-day P85 this board finished its own work in',
+    pattern: /\band that is measured against the \d+-day P85 this board finished its own work in\b/,
+  },
+  {
     id: 'alignment',
     purpose:
       'An alignment verdict. Names the tier that actually resolved it and the confidence against the threshold it was compared with, so an OFF-GOAL flag arrives as an argument a manager can check rather than as a pronouncement.',
@@ -307,6 +315,17 @@ export const interpretation = {
         method === 'trailing_velocity' ? 'trailing velocity' : 'cycle time'
       }`,
     ),
+
+  /**
+   * The aging clause: the P85 the item is late against, named as a measurement.
+   *
+   * "8-day P85 this board finished its own work in" rather than "8-day target", because
+   * the number is the team's own observed distribution and calling it a target would
+   * invent a commitment nobody made. A Kanban team has no dates to miss, which is the
+   * whole reason `KanbanFlow` carries no percentage.
+   */
+  aging: (p85Days: number): InterpretationClause =>
+    clause('aging', `and that is measured against the ${p85Days}-day P85 this board finished its own work in`),
 
   /**
    * Both numbers, always, in the same clause.

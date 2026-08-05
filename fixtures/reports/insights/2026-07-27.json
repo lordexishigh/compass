@@ -2,7 +2,7 @@
   "changeSummary": {
     "counts": {
       "improved": 0,
-      "new": 37,
+      "new": 40,
       "resolved": 0,
       "unchanged": 0,
       "worsened": 0
@@ -3917,11 +3917,326 @@
     ],
     "progress": {
       "flow": {
+        "aging": {
+          "evidence": [
+            {
+              "kind": "issue",
+              "label": "INS-105",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-105"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-106",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-106"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-118",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-118"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-119",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-119"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-120",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-120"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-126",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-126"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-135",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-135"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-138",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-138"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-139",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-139"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-144",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-144"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-146",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-146"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-148",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-148"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-149",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-149"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-152",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-152"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-153",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-153"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-154",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-154"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-156",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-156"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-157",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-157"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-158",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-158"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-159",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-159"
+            }
+          ],
+          "items": [
+            {
+              "ageDays": 65,
+              "column": "In Progress",
+              "ticketKey": "INS-105",
+              "title": "Timezone conversion shifts the settlement date"
+            },
+            {
+              "ageDays": 64,
+              "column": "In Review",
+              "ticketKey": "INS-106",
+              "title": "Report job silently skips an empty partition"
+            },
+            {
+              "ageDays": 52,
+              "column": "In Progress",
+              "ticketKey": "INS-118",
+              "title": "Loader holds the warehouse lock for an hour"
+            },
+            {
+              "ageDays": 50,
+              "column": "In Progress",
+              "ticketKey": "INS-119",
+              "title": "Partition pruning is disabled by a cast"
+            },
+            {
+              "ageDays": 49,
+              "column": "In Progress",
+              "ticketKey": "INS-120",
+              "title": "Data contract has no owner recorded"
+            },
+            {
+              "ageDays": 44,
+              "column": "In Progress",
+              "ticketKey": "INS-126",
+              "title": "Report job silently skips an empty partition on the retry path"
+            },
+            {
+              "ageDays": 34,
+              "column": "In Review",
+              "ticketKey": "INS-135",
+              "title": "Freshness check reports green on a stale table on the retry path"
+            },
+            {
+              "ageDays": 31,
+              "column": "In Progress",
+              "ticketKey": "INS-138",
+              "title": "Loader holds the warehouse lock for an hour on the retry path"
+            },
+            {
+              "ageDays": 31,
+              "column": "In Progress",
+              "ticketKey": "INS-139",
+              "title": "Partition pruning is disabled by a cast on the retry path"
+            },
+            {
+              "ageDays": 25,
+              "column": "In Review",
+              "ticketKey": "INS-144",
+              "title": "Merchant dimension is missing a natural key for large merchants"
+            },
+            {
+              "ageDays": 24,
+              "column": "In Progress",
+              "ticketKey": "INS-146",
+              "title": "Report job silently skips an empty partition for large merchants"
+            },
+            {
+              "ageDays": 23,
+              "column": "In Review",
+              "ticketKey": "INS-148",
+              "title": "Column rename breaks the downstream view for large merchants"
+            },
+            {
+              "ageDays": 20,
+              "column": "In Review",
+              "ticketKey": "INS-149",
+              "title": "Extract runs before the upstream snapshot lands for large merchants"
+            },
+            {
+              "ageDays": 17,
+              "column": "In Review",
+              "ticketKey": "INS-152",
+              "title": "Backfill rewrites rows it should have left alone for large merchants"
+            },
+            {
+              "ageDays": 17,
+              "column": "In Review",
+              "ticketKey": "INS-153",
+              "title": "Schedule drifts an hour after the clock change for large merchants"
+            },
+            {
+              "ageDays": 16,
+              "column": "In Review",
+              "ticketKey": "INS-154",
+              "title": "Ledger join fans out on duplicate keys for large merchants"
+            },
+            {
+              "ageDays": 13,
+              "column": "In Progress",
+              "ticketKey": "INS-156",
+              "title": "Currency conversion uses the wrong rate date for large merchants"
+            },
+            {
+              "ageDays": 13,
+              "column": "In Review",
+              "ticketKey": "INS-157",
+              "title": "Payout summary omits negative adjustments for large merchants"
+            },
+            {
+              "ageDays": 11,
+              "column": "In Review",
+              "ticketKey": "INS-158",
+              "title": "Loader holds the warehouse lock for an hour for large merchants"
+            },
+            {
+              "ageDays": 10,
+              "column": "In Progress",
+              "ticketKey": "INS-159",
+              "title": "Partition pruning is disabled by a cast for large merchants"
+            }
+          ],
+          "kind": "measured",
+          "p85Days": 8,
+          "percentile": 0.85,
+          "statement": "20 items have been in flight longer than the 8-day P85: INS-105 at 65 days in In Progress, INS-106 at 64 days in In Review, INS-118 at 52 days in In Progress, INS-119 at 50 days in In Progress, INS-120 at 49 days in In Progress, and 15 more.",
+          "unmeasurableTicketKeys": []
+        },
         "cycleTime": {
+          "evidence": [
+            {
+              "kind": "issue",
+              "label": "INS-132",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-132"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-136",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-136"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-141",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-141"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-145",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-145"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-150",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-150"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-151",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-151"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-155",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-155"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-160",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-160"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-162",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-162"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-163",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-163"
+            }
+          ],
           "kind": "measured",
           "medianDays": 6,
           "p85Days": 8,
+          "percentile": 0.85,
           "sampleSize": 10,
+          "statement": "Over the last 28 days the median item took 6 days from start to finish and the slowest sixth took 8 or more, across 10 finished items.",
           "ticketKeys": [
             "INS-132",
             "INS-136",
@@ -3934,7 +4249,18 @@
             "INS-162",
             "INS-163"
           ],
-          "trailingDays": 28
+          "trailingDays": 28,
+          "trend": {
+            "changeBasisPoints": -769,
+            "direction": "steady",
+            "earlierMedianDays": 6.5,
+            "earlierSampleSize": 4,
+            "halfDays": 14,
+            "kind": "measured",
+            "laterMedianDays": 6,
+            "laterSampleSize": 6,
+            "statement": "Cycle time is steady: a median of 6.5 days over the earlier 14-day half, against 6 days over the later half."
+          }
         },
         "evidence": [
           {
@@ -4077,7 +4403,178 @@
         },
         "windowDays": 1,
         "workInProgress": {
+          "byColumn": [
+            {
+              "column": "In Progress",
+              "items": 11,
+              "ticketKeys": [
+                "INS-105",
+                "INS-118",
+                "INS-119",
+                "INS-120",
+                "INS-126",
+                "INS-138",
+                "INS-139",
+                "INS-146",
+                "INS-156",
+                "INS-159",
+                "INS-165"
+              ]
+            },
+            {
+              "column": "In Review",
+              "items": 11,
+              "ticketKeys": [
+                "INS-106",
+                "INS-135",
+                "INS-144",
+                "INS-148",
+                "INS-149",
+                "INS-152",
+                "INS-153",
+                "INS-154",
+                "INS-157",
+                "INS-158",
+                "INS-167"
+              ]
+            }
+          ],
+          "evidence": [
+            {
+              "kind": "issue",
+              "label": "INS-105",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-105"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-106",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-106"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-118",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-118"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-119",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-119"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-120",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-120"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-126",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-126"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-135",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-135"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-138",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-138"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-139",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-139"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-144",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-144"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-146",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-146"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-148",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-148"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-149",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-149"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-152",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-152"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-153",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-153"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-154",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-154"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-156",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-156"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-157",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-157"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-158",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-158"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-159",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-159"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-165",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-165"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-167",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-167"
+            }
+          ],
           "items": 22,
+          "statement": "22 items are in flight across 2 columns — In Progress 11, In Review 11.",
           "ticketKeys": [
             "INS-105",
             "INS-106",
@@ -4105,8 +4602,8 @@
         }
       },
       "mode": "kanban",
-      "reason": "no_sprints_observed",
-      "statement": "This team runs no sprints, so this section reports flow — throughput, work in progress and cycle time. There is no completion percentage, no story-point total and no sprint goal to report, and Compass will not invent one."
+      "reason": "team_runs_kanban",
+      "statement": "This team runs Kanban, so this section reports flow — work in progress by column, cycle time and the items aging past it. There is no completion percentage, no story-point total and no sprint goal to report, and Compass will not invent one."
     },
     "projection": {
       "calibration": {
@@ -5231,7 +5728,7 @@
             "entityRef": "progress:insights"
           },
           "changeTag": "new",
-          "detail": "This team runs no sprints, so this section reports flow — throughput, work in progress and cycle time. There is no completion percentage, no story-point total and no sprint goal to report, and Compass will not invent one.",
+          "detail": "This team runs Kanban, so this section reports flow — work in progress by column, cycle time and the items aging past it. There is no completion percentage, no story-point total and no sprint goal to report, and Compass will not invent one.",
           "evidence": [
             {
               "kind": "issue",
@@ -5371,6 +5868,369 @@
           "severityScore": 0,
           "signalOnsetAt": 1785142800000,
           "stableId": "v1:77b1606c0cde209c"
+        },
+        {
+          "ageDays": 0,
+          "cause": {
+            "causeDiscriminator": "",
+            "causeKind": "kanban_wip",
+            "entityRef": "progress:insights"
+          },
+          "changeTag": "new",
+          "detail": "In Progress: INS-105, INS-118, INS-119, INS-120, INS-126, INS-138, INS-139, INS-146, INS-156, INS-159, INS-165. In Review: INS-106, INS-135, INS-144, INS-148, INS-149, INS-152, INS-153, INS-154, INS-157, INS-158, INS-167.",
+          "evidence": [
+            {
+              "kind": "issue",
+              "label": "INS-105",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-105"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-106",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-106"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-118",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-118"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-119",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-119"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-120",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-120"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-126",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-126"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-135",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-135"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-138",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-138"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-139",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-139"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-144",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-144"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-146",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-146"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-148",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-148"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-149",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-149"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-152",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-152"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-153",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-153"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-154",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-154"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-156",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-156"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-157",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-157"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-158",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-158"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-159",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-159"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-165",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-165"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-167",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-167"
+            }
+          ],
+          "firstSeenAt": 1785142800000,
+          "headline": "22 items are in flight across 2 columns — In Progress 11, In Review 11.",
+          "severityScore": 0,
+          "signalOnsetAt": 1785142800000,
+          "stableId": "v1:400ef2ca3c1620ff"
+        },
+        {
+          "ageDays": 0,
+          "cause": {
+            "causeDiscriminator": "",
+            "causeKind": "kanban_cycle_time",
+            "entityRef": "progress:insights"
+          },
+          "changeTag": "new",
+          "detail": "Measured over the trailing 28 days from INS-132, INS-136, INS-141, INS-145, INS-150, INS-151, INS-155, INS-160, INS-162, INS-163.",
+          "evidence": [
+            {
+              "kind": "issue",
+              "label": "INS-132",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-132"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-136",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-136"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-141",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-141"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-145",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-145"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-150",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-150"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-151",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-151"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-155",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-155"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-160",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-160"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-162",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-162"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-163",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-163"
+            }
+          ],
+          "firstSeenAt": 1785142800000,
+          "headline": "Over the last 28 days the median item took 6 days from start to finish and the slowest sixth took 8 or more, across 10 finished items. Cycle time is steady: a median of 6.5 days over the earlier 14-day half, against 6 days over the later half.",
+          "severityScore": 0,
+          "signalOnsetAt": 1785142800000,
+          "stableId": "v1:09a6472cb92f604c"
+        },
+        {
+          "ageDays": 0,
+          "cause": {
+            "causeDiscriminator": "",
+            "causeKind": "kanban_aging",
+            "entityRef": "progress:insights"
+          },
+          "changeTag": "new",
+          "detail": "INS-105 \"Timezone conversion shifts the settlement date\" has been in In Progress for 65 days; INS-106 \"Report job silently skips an empty partition\" has been in In Review for 64 days; INS-118 \"Loader holds the warehouse lock for an hour\" has been in In Progress for 52 days; INS-119 \"Partition pruning is disabled by a cast\" has been in In Progress for 50 days; INS-120 \"Data contract has no owner recorded\" has been in In Progress for 49 days; INS-126 \"Report job silently skips an empty partition on the retry path\" has been in In Progress for 44 days; INS-135 \"Freshness check reports green on a stale table on the retry path\" has been in In Review for 34 days; INS-138 \"Loader holds the warehouse lock for an hour on the retry path\" has been in In Progress for 31 days; INS-139 \"Partition pruning is disabled by a cast on the retry path\" has been in In Progress for 31 days; INS-144 \"Merchant dimension is missing a natural key for large merchants\" has been in In Review for 25 days; INS-146 \"Report job silently skips an empty partition for large merchants\" has been in In Progress for 24 days; INS-148 \"Column rename breaks the downstream view for large merchants\" has been in In Review for 23 days; INS-149 \"Extract runs before the upstream snapshot lands for large merchants\" has been in In Review for 20 days; INS-152 \"Backfill rewrites rows it should have left alone for large merchants\" has been in In Review for 17 days; INS-153 \"Schedule drifts an hour after the clock change for large merchants\" has been in In Review for 17 days; INS-154 \"Ledger join fans out on duplicate keys for large merchants\" has been in In Review for 16 days; INS-156 \"Currency conversion uses the wrong rate date for large merchants\" has been in In Progress for 13 days; INS-157 \"Payout summary omits negative adjustments for large merchants\" has been in In Review for 13 days; INS-158 \"Loader holds the warehouse lock for an hour for large merchants\" has been in In Review for 11 days; INS-159 \"Partition pruning is disabled by a cast for large merchants\" has been in In Progress for 10 days.",
+          "evidence": [
+            {
+              "kind": "issue",
+              "label": "INS-105",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-105"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-106",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-106"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-118",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-118"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-119",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-119"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-120",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-120"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-126",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-126"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-135",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-135"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-138",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-138"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-139",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-139"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-144",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-144"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-146",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-146"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-148",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-148"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-149",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-149"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-152",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-152"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-153",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-153"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-154",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-154"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-156",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-156"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-157",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-157"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-158",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-158"
+            },
+            {
+              "kind": "issue",
+              "label": "INS-159",
+              "sourceKey": "tracker",
+              "sourceRecordId": "INS-159"
+            }
+          ],
+          "firstSeenAt": 1785142800000,
+          "headline": "20 items have been in flight longer than the 8-day P85: INS-105 at 65 days in In Progress, INS-106 at 64 days in In Review, INS-118 at 52 days in In Progress, INS-119 at 50 days in In Progress, INS-120 at 49 days in In Progress, and 15 more.",
+          "severityScore": 0,
+          "signalOnsetAt": 1785142800000,
+          "stableId": "v1:02f1899f44b2de25"
         },
         {
           "ageDays": 0,
@@ -5523,7 +6383,7 @@
         }
       ],
       "key": "progress",
-      "summary": "This team runs no sprints, so this section reports flow — throughput, work in progress and cycle time. There is no completion percentage, no story-point total and no sprint goal to report, and Compass will not invent one.",
+      "summary": "This team runs Kanban, so this section reports flow — work in progress by column, cycle time and the items aging past it. There is no completion percentage, no story-point total and no sprint goal to report, and Compass will not invent one.",
       "title": "Progress"
     },
     {

@@ -17,7 +17,7 @@ import {
   renderSectionProse,
 } from '@compass/renderers';
 
-import { emptyReport, fullReport, withItems } from './helpers/reports.js';
+import { emptyReport, fullReport, kanbanReport, withItems } from './helpers/reports.js';
 
 describe('byte-identical output', () => {
   it('emits the same bytes for the same structured payload', () => {
@@ -206,6 +206,55 @@ describe('the interpretation each section reaches for', () => {
 
   it('offers the evidence chain as something openable', () => {
     expect(prose('yesterday')).toContain('traced to 3 artifacts you can open');
+  });
+});
+
+/**
+ * A Kanban team's Progress section, in the voice a manager reads.
+ *
+ * The same six sections and the same rules, with one shape swapped underneath: no
+ * percentage, no points, no pace verdict, and three flow figures the renderer has to have
+ * a clause for. It is asserted through `renderReport` rather than over the payload because
+ * the failure this guards against is a *rendering* one — a flow figure whose cause kind no
+ * clause matches falls through to "Compass records it as unchanged", which passes every
+ * interpretation check while telling the reader nothing about the number in front of them.
+ */
+describe('a Kanban team reads as flow rather than as a sprint that lost its percentage', () => {
+  const rendered = renderReport(kanbanReport());
+  const progress = rendered.sections.find((section) => section.key === 'progress')?.prose ?? '';
+
+  it('names the work in progress column by column', () => {
+    expect(progress).toContain('In Progress 12');
+    expect(progress).toContain('In Review 10');
+  });
+
+  it('states which way cycle time moved, and over what', () => {
+    expect(progress).toContain('the median item took 6 days');
+    expect(progress).toContain('the slowest sixth took 8 or more');
+    // The trend itself, in the prose and not only in the payload. It has to travel in the
+    // headline: the deterministic renderer emits a claim's headline, its change clause and
+    // its evidence, so a trend left in `detail` would be a metric that exists in the report
+    // object and never appears on the page.
+    expect(progress).toContain('Cycle time is lengthening');
+    expect(progress).toContain('a median of 5 days over the earlier 14-day half');
+  });
+
+  it('reads an aging item against the board’s own P85 rather than a deadline', () => {
+    expect(progress).toContain('and that is measured against the 8-day P85 this board finished its own work in');
+  });
+
+  it('reads every flow figure as a measured rate, never as a target the team missed', () => {
+    // Three of the four flow claims take the `rate` clause, so it appears more than once.
+    expect(progress.split('and that is the measured rate rather than a target').length - 1).toBeGreaterThanOrEqual(3);
+  });
+
+  it('offers no pace verdict and no completion percentage, because neither exists', () => {
+    expect(progress).not.toContain('the pace the elapsed schedule implies');
+    expect(progress).not.toContain('% complete');
+  });
+
+  it('interprets every quantity it states, exactly as the sprint voice must', () => {
+    expect(() => assertEveryQuantityInterpreted(rendered.prose)).not.toThrow();
   });
 });
 

@@ -301,8 +301,25 @@ function progressClause(report: StructuredReport, item: ReportItem): Interpretat
       ? interpretation.collar(projection.band.confidence, projection.method)
       : interpretation.threshold(projection.threshold.id, false);
   }
-  if (causeKind === PROGRESS_CAUSE_KINDS.velocity || causeKind === PROGRESS_CAUSE_KINDS.kanbanFlow) {
+  // Throughput, work in progress by column, cycle time and a velocity are all
+  // measurements of a rate with no schedule to read them against — which is exactly what
+  // the `rate` template exists to say, and is why a Kanban team's figures never acquire a
+  // pace verdict they could not have earned.
+  if (
+    causeKind === PROGRESS_CAUSE_KINDS.velocity ||
+    causeKind === PROGRESS_CAUSE_KINDS.kanbanFlow ||
+    causeKind === PROGRESS_CAUSE_KINDS.kanbanWip ||
+    causeKind === PROGRESS_CAUSE_KINDS.kanbanCycleTime
+  ) {
     return interpretation.rate();
+  }
+  // The aging item is the one flow claim with a baseline, so it gets the clause that names
+  // it. The baseline is read off the payload rather than out of the headline: the sentence
+  // and its interpretation must state the same P85, and only one of them can be the source.
+  if (causeKind === PROGRESS_CAUSE_KINDS.kanbanAging) {
+    return progress.mode === 'kanban' && progress.flow.aging.kind === 'measured'
+      ? interpretation.aging(progress.flow.aging.p85Days)
+      : interpretation.rate();
   }
   if (progress.mode === 'sprint' && causeKind === PROGRESS_CAUSE_KINDS.sprint) {
     const sprint = progress.sprint;
