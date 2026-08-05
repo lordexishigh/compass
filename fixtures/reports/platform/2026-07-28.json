@@ -10476,7 +10476,7 @@
             "entityRef": "progress:primary-tracker:sprint-PLAT-6"
           },
           "changeTag": "new",
-          "detail": "21 items were committed at the start and 0 were added since, so the denominator is 21. Measured in items because 7 of 21 items carry no estimate. Completed: PLAT-745, PLAT-753, PLAT-754, PLAT-755. Remaining: PLAT-742, PLAT-743, PLAT-744, PLAT-746, PLAT-747, PLAT-748, PLAT-749, PLAT-750, PLAT-751, PLAT-752, PLAT-790, PLAT-791, PLAT-792, PLAT-793, PLAT-794, PLAT-795, PLAT-796.",
+          "detail": "21 tickets and 48 points were committed at the start, and nothing has entered since, so that is still the current scope. Measured in items because 7 of 21 items carry no estimate. Completed: PLAT-745, PLAT-753, PLAT-754, PLAT-755. Remaining: PLAT-742, PLAT-743, PLAT-744, PLAT-746, PLAT-747, PLAT-748, PLAT-749, PLAT-750, PLAT-751, PLAT-752, PLAT-790, PLAT-791, PLAT-792, PLAT-793, PLAT-794, PLAT-795, PLAT-796.",
           "evidence": [
             {
               "kind": "sprint",
@@ -10486,7 +10486,7 @@
             }
           ],
           "firstSeenAt": 1785229200000,
-          "headline": "Sprint 46 is 19% complete — 4 of 21 items, against \"Cut p95 payment gateway latency below 400 ms\"",
+          "headline": "Sprint 46 is 19% complete by ticket count — 4 of 21 tickets and 11 of 48 points, against \"Cut p95 payment gateway latency below 400 ms\"",
           "severityScore": 81,
           "signalOnsetAt": 1785142800000,
           "stableId": "v1:1f97fdfc3d463509"

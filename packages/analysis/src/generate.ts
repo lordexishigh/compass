@@ -20,6 +20,7 @@ import {
   PROGRESS_ENTITY_KEY,
   assessProgress,
   type ProgressAssessment,
+  type SprintCompletion,
 } from './progress.js';
 import { calibrationVerdictFrom, projectCompletion } from './projection.js';
 import { assertNoIndividualRanking } from './ranking-guard.js';
@@ -391,6 +392,84 @@ function yesterdayItem(instant: Instant, item: YesterdayItem): ReportItem {
   };
 }
 
+/** `1 ticket` / `4 tickets` — a count and its noun, agreeing. */
+const countOf = (value: number, noun: string): string => `${value} ${noun}${value === 1 ? '' : 's'}`;
+
+/**
+ * The sprint claim, stated in **both** units.
+ *
+ * A percentage is computed on one basis — points when the scope is estimated, ticket
+ * count when it is not — and for a long time the claim printed only that basis's pair.
+ * That made the headline unreconcilable in the one way that matters: a manager with the
+ * board open sees both numbers on Jira's own sprint report, and being handed "19% — 4 of
+ * 21 items" gives them nothing to check the point total against. Worse, it hid which
+ * quantity the percentage came from, so a reader who divided the *other* pair got a
+ * different answer and had no way to know why.
+ *
+ * So the claim now names the basis explicitly and states both pairs.
+ * `packages/jira-connector/tests/sprint-reconciliation.test.ts` is what holds these figures
+ * to the tracker's own sprint report for the same sprint, field by field.
+ *
+ * The zero-point case is a *stated absence* rather than `0 of 0 points`: a sprint whose
+ * items carry no estimate has no point total, and printing zero would read as a team that
+ * committed to nothing.
+ */
+function sprintHeadline(sprint: SprintCompletion): string {
+  const basisLabel = sprint.basis === 'story_points' ? 'story points' : 'ticket count';
+  const goalClause = sprint.goal === null ? '' : `, against "${sprint.goal}"`;
+  const pointsClause =
+    sprint.currentScope.points === 0
+      ? ' and no item in it carries a story-point estimate'
+      : ` and ${sprint.completed.points} of ${sprint.currentScope.points} points`;
+
+  return (
+    `${sprint.sprintName} is ${sprint.completionPercent}% complete by ${basisLabel} — ` +
+    `${sprint.completed.tickets} of ${sprint.currentScope.tickets} tickets${pointsClause}${goalClause}`
+  );
+}
+
+/**
+ * The reconciliation the claim above is derived from: commitment, scope creep and
+ * current scope, each in tickets *and* points, then the basis and the keys.
+ *
+ * The two lines a manager compares against their board are `committed` and
+ * `completed`, so both appear in both units — the commitment here, the completion in
+ * the headline. Stating the commitment only in tickets, as this used to, left the
+ * point column of Jira's own sprint report with nothing to check against.
+ */
+function sprintDetail(sprint: SprintCompletion, unit: string): string {
+  const estimated = sprint.currentScope.points > 0;
+
+  // A single ticket takes a singular verb; the compound "tickets and points" never does.
+  const commitment = estimated
+    ? `${countOf(sprint.committed.tickets, 'ticket')} and ${sprint.committed.points} points were committed at the start`
+    : `${countOf(sprint.committed.tickets, 'ticket')} ${
+        sprint.committed.tickets === 1 ? 'was' : 'were'
+      } committed at the start`;
+
+  // With nothing added, restating the current scope would print the commitment twice; the
+  // useful fact is that the two are the same, so that is what it says.
+  const creep =
+    sprint.addedMidSprint.tickets === 0
+      ? 'and nothing has entered since, so that is still the current scope'
+      : `and ${countOf(sprint.addedMidSprint.tickets, 'ticket')}${
+          estimated ? ` worth ${sprint.addedMidSprint.points} points` : ''
+        } entered after it started, so current scope is ${countOf(sprint.currentScope.tickets, 'ticket')}${
+          estimated ? ` and ${sprint.currentScope.points} points` : ''
+        }`;
+
+  const because =
+    sprint.basis === 'story_points'
+      ? 'the scope is estimated'
+      : `${sprint.unestimatedTicketKeys.length} of ${sprint.currentScope.tickets} items carry no estimate`;
+
+  return (
+    `${commitment}, ${creep}. Measured in ${unit} because ${because}. ` +
+    `Completed: ${sprint.completed.ticketKeys.join(', ') || 'nothing yet'}. ` +
+    `Remaining: ${sprint.remaining.ticketKeys.join(', ') || 'nothing'}.`
+  );
+}
+
 function progressItems(
   organizationId: string,
   instant: Instant,
@@ -406,18 +485,12 @@ function progressItems(
 
   const sprint = progress.sprint;
   const unit = sprint.basis === 'story_points' ? 'points' : 'items';
-  const done = sprint.basis === 'story_points' ? sprint.completed.points : sprint.completed.tickets;
-  const total = sprint.basis === 'story_points' ? sprint.currentScope.points : sprint.currentScope.tickets;
 
   const items: ReportItem[] = [
     {
       ...identified(progressCause(scope, PROGRESS_CAUSE_KINDS.sprint, sprint.sprintKey)),
-      headline: `${sprint.sprintName} is ${sprint.completionPercent}% complete — ${done} of ${total} ${unit}${sprint.goal === null ? '' : `, against "${sprint.goal}"`}`,
-      detail: `${sprint.committed.tickets} items were committed at the start and ${sprint.addedMidSprint.tickets} were added since, so the denominator is ${sprint.currentScope.tickets}. Measured in ${unit} because ${
-        sprint.basis === 'story_points'
-          ? 'the scope is estimated'
-          : `${sprint.unestimatedTicketKeys.length} of ${sprint.currentScope.tickets} items carry no estimate`
-      }. Completed: ${sprint.completed.ticketKeys.join(', ') || 'nothing yet'}. Remaining: ${sprint.remaining.ticketKeys.join(', ') || 'nothing'}.`,
+      headline: sprintHeadline(sprint),
+      detail: sprintDetail(sprint, unit),
       changeTag: 'unchanged',
       ageDays: sprint.elapsedWorkingDays,
       firstSeenAt: instant,

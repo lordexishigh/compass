@@ -114,7 +114,10 @@ describe('the characters this repo actually writes survive a round trip', () => 
     // lines are built from, so a corruption here shows on the one page with a word budget.
     const source = generate();
 
-    expect(source, 'the sprint headline').toContain(`% complete ${EM_DASH} `);
+    // The sprint claim states the basis it measured in before its dash — `19% complete by
+    // ticket count — 4 of 21 tickets and 11 of 48 points` — so the dash sits after the
+    // interpolated basis label rather than after the percentage.
+    expect(source, 'the sprint headline').toContain(`complete by \${basisLabel} ${EM_DASH} `);
     expect(source, 'the Yesterday detail').toContain(`${EM_DASH} evidence: `);
     expect(source, 'the recommendation headline').toContain(`displayName} ${EM_DASH} `);
     expect(source, 'the projection detail').toContain(`confidence ${EM_DASH} `);

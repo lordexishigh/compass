@@ -5660,7 +5660,7 @@
             "entityRef": "progress:primary-tracker:sprint-CHK-5"
           },
           "changeTag": "new",
-          "detail": "23 items were committed at the start and 0 were added since, so the denominator is 23. Measured in points because the scope is estimated. Completed: CHK-297, CHK-299, CHK-300, CHK-301, CHK-303, CHK-304, CHK-305, CHK-306, CHK-307, CHK-308, CHK-309, CHK-310, CHK-311, CHK-312, CHK-313, CHK-315, CHK-316, CHK-317, CHK-318, CHK-319, CHK-320. Remaining: CHK-302, CHK-314.",
+          "detail": "23 tickets and 120 points were committed at the start, and nothing has entered since, so that is still the current scope. Measured in points because the scope is estimated. Completed: CHK-297, CHK-299, CHK-300, CHK-301, CHK-303, CHK-304, CHK-305, CHK-306, CHK-307, CHK-308, CHK-309, CHK-310, CHK-311, CHK-312, CHK-313, CHK-315, CHK-316, CHK-317, CHK-318, CHK-319, CHK-320. Remaining: CHK-302, CHK-314.",
           "evidence": [
             {
               "kind": "sprint",
@@ -5670,7 +5670,7 @@
             }
           ],
           "firstSeenAt": 1784883600000,
-          "headline": "Sprint 16 is 89% complete — 107 of 120 points, against \"Roll guest checkout out to the first merchant cohort\"",
+          "headline": "Sprint 16 is 89% complete by story points — 21 of 23 tickets and 107 of 120 points, against \"Roll guest checkout out to the first merchant cohort\"",
           "severityScore": 11,
           "signalOnsetAt": 1783933200000,
           "stableId": "v1:ffee39a640300e14"
