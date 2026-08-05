@@ -157,6 +157,14 @@ const formPost = (path: string, session = sessions.owner): Request =>
     body: '',
   });
 
+/**
+ * The dynamic segment, as the App Router hands it to a handler.
+ *
+ * One route serves all three providers now, so every call names which one it is. Declared once here
+ * rather than inline, so a change to how Next passes params is a one-line edit rather than a dozen.
+ */
+const routeParams = (provider = 'github') => ({ params: Promise.resolve({ provider }) });
+
 // ---------------------------------------------------------------------------
 // The scopes on the screen are the scopes in the request
 // ---------------------------------------------------------------------------
@@ -171,7 +179,15 @@ describe('the connect screen shows the requested permissions verbatim', () => {
   it('renders every permission from GITHUB_SCOPES, and no others', async () => {
     document.body.innerHTML = await renderConnect();
 
-    const rendered = [...document.body.querySelectorAll('[data-testid="connect-scope"]')].map((node) =>
+    /**
+     * Scoped to the code host's own section.
+     *
+     * The page now states all three providers, each rendering its own connector package's scope list, so an
+     * unscoped query would compare GitHub's permissions against every provider's. The assertion is
+     * unchanged in what it proves: this section shows exactly `GITHUB_SCOPES`, in order, and nothing else.
+     */
+    const githubSection = document.body.querySelector('[data-provider="github"]');
+    const rendered = [...(githubSection?.querySelectorAll('[data-testid="connect-scope"]') ?? [])].map((node) =>
       node.getAttribute('data-permission'),
     );
 
@@ -183,7 +199,7 @@ describe('the connect screen shows the requested permissions verbatim', () => {
      * test agreeing with each other and disagreeing with the install request. Comparing to the exported
      * array is what makes the screen and the request one fact.
      */
-    expect(rendered).toEqual(GITHUB_SCOPES.map((scope) => scope.permission));
+    expect(rendered).toEqual(GITHUB_SCOPES.map((scope) => `${scope.permission}:${scope.access}`));
   });
 
   it('shows each permission with the access level and the reason it is asked for', async () => {
@@ -204,22 +220,22 @@ describe('the connect screen shows the requested permissions verbatim', () => {
     await clearToken();
     document.body.innerHTML = await renderConnect();
 
-    expect(document.body.querySelector('[data-testid="install-submit"]')).not.toBeNull();
-    expect(document.body.querySelector('[data-testid="disconnect-submit"]')).toBeNull();
-    expect(
-      document.body.querySelector('[data-testid="connect-provider"]')?.getAttribute('data-connected'),
-    ).toBe('false');
+    const section = document.body.querySelector('[data-provider="github"]');
+    expect(section?.querySelector('[data-testid="install-submit"]')).not.toBeNull();
+    expect(section?.querySelector('[data-testid="disconnect-submit"]')).toBeNull();
+    expect(section?.getAttribute('data-connected')).toBe('false');
   });
 
   it('states which variable is missing rather than offering a button that cannot work', async () => {
     vi.stubEnv(GITHUB_APP_SLUG_ENV_VAR, '');
     document.body.innerHTML = await renderConnect();
 
-    const stated = document.body.querySelector('[data-testid="connect-unavailable"]');
+    const section = document.body.querySelector('[data-provider="github"]');
+    const stated = section?.querySelector('[data-testid="connect-unavailable"]');
     expect(stated?.textContent).toContain(GITHUB_APP_SLUG_ENV_VAR);
     // Honest degradation: it also says what is *not* broken.
     expect(stated?.textContent).toContain('is unaffected');
-    expect(document.body.querySelector('[data-testid="install-submit"]')).toBeNull();
+    expect(section?.querySelector('[data-testid="install-submit"]')).toBeNull();
   });
 });
 
@@ -229,8 +245,8 @@ describe('the connect screen shows the requested permissions verbatim', () => {
 
 describe('starting an install', () => {
   it('redirects to GitHub with the permissions built from the same list', async () => {
-    const { POST } = await import('../app/api/connect/github/install/route');
-    const response = await POST(formPost('/api/connect/github/install'));
+    const { POST } = await import('../app/api/connect/[provider]/install/route');
+    const response = await POST(formPost('/api/connect/github/install'), routeParams());
 
     expect(response.status).toBe(303);
     const location = response.headers.get('location') ?? '';
@@ -246,16 +262,16 @@ describe('starting an install', () => {
   });
 
   it('refuses a manager: connecting decides what Compass reads for the whole organization', async () => {
-    const { POST } = await import('../app/api/connect/github/install/route');
-    const response = await POST(formPost('/api/connect/github/install', sessions.manager));
+    const { POST } = await import('../app/api/connect/[provider]/install/route');
+    const response = await POST(formPost('/api/connect/github/install', sessions.manager), routeParams());
 
     expect(response.status).toBe(403);
   });
 
   it('answers 503 naming the variables when the deployment cannot verify a return', async () => {
     vi.stubEnv(CONNECT_STATE_SECRET_ENV_VAR, '');
-    const { POST } = await import('../app/api/connect/github/install/route');
-    const response = await POST(formPost('/api/connect/github/install'));
+    const { POST } = await import('../app/api/connect/[provider]/install/route');
+    const response = await POST(formPost('/api/connect/github/install'), routeParams());
 
     expect(response.status).toBe(503);
     expect(((await response.json()) as { detail: string }).detail).toContain(CONNECT_STATE_SECRET_ENV_VAR);
@@ -315,8 +331,8 @@ describe('the install return is authorised by a signed state, never by a query p
 
   it('stores nothing and says so when the state is rejected', async () => {
     await clearToken();
-    const { GET } = await import('../app/api/connect/github/callback/route');
-    const response = await GET(callbackRequest('state=forged&installation_id=42'));
+    const { GET } = await import('../app/api/connect/[provider]/callback/route');
+    const response = await GET(callbackRequest('state=forged&installation_id=42'), routeParams());
 
     expect(response.status).toBe(303);
     expect(response.headers.get('location')).toContain('github=state-rejected');
@@ -339,9 +355,10 @@ describe('the install return is authorised by a signed state, never by a query p
     const realNow = instantFromEpochMillis(Date.now());
     const state = issueConnectState({ organizationId: ORGANIZATION_ID, now: realNow }) ?? '';
 
-    const { GET } = await import('../app/api/connect/github/callback/route');
+    const { GET } = await import('../app/api/connect/[provider]/callback/route');
     const response = await GET(
       callbackRequest(`state=${encodeURIComponent(state)}&installation_id=87654321`),
+      routeParams(),
     );
 
     expect(response.headers.get('location')).toContain('github=connected');
@@ -371,8 +388,8 @@ describe('disconnecting stops the reading without destroying what was read', () 
   });
 
   it('deletes the credential', async () => {
-    const { POST } = await import('../app/api/connect/github/disconnect/route');
-    const response = await POST(formPost('/api/connect/github/disconnect'));
+    const { POST } = await import('../app/api/connect/[provider]/disconnect/route');
+    const response = await POST(formPost('/api/connect/github/disconnect'), routeParams());
 
     expect(response.status).toBe(303);
     expect(response.headers.get('location')).toContain('github=disconnected');
@@ -421,8 +438,8 @@ describe('disconnecting stops the reading without destroying what was read', () 
 
     const before = await scoped().selectFrom(reports);
 
-    const { POST } = await import('../app/api/connect/github/disconnect/route');
-    await POST(formPost('/api/connect/github/disconnect'));
+    const { POST } = await import('../app/api/connect/[provider]/disconnect/route');
+    await POST(formPost('/api/connect/github/disconnect'), routeParams());
 
     const after = await scoped().selectFrom(reports);
     expect(after.length).toBe(before.length);
@@ -430,8 +447,8 @@ describe('disconnecting stops the reading without destroying what was read', () 
   });
 
   it('writes an audit entry naming the act', async () => {
-    const { POST } = await import('../app/api/connect/github/disconnect/route');
-    await POST(formPost('/api/connect/github/disconnect'));
+    const { POST } = await import('../app/api/connect/[provider]/disconnect/route');
+    await POST(formPost('/api/connect/github/disconnect'), routeParams());
 
     const audit = await listAuditLogEntries(scoped());
     const entry = audit.find((row) => row.action === 'connector.disconnected');
@@ -450,26 +467,28 @@ describe('disconnecting stops the reading without destroying what was read', () 
       (await ConnectPage({ searchParams: Promise.resolve({}) })) as React.ReactElement,
     );
     document.body.innerHTML = connected;
+    expect(document.body.querySelector('[data-provider="github"]')?.getAttribute('data-connected')).toBe('true');
     expect(
-      document.body.querySelector('[data-testid="connect-provider"]')?.getAttribute('data-connected'),
-    ).toBe('true');
-    expect(document.body.querySelector('[data-testid="disconnect-submit"]')).not.toBeNull();
+      document.body.querySelector('[data-provider="github"]')?.querySelector('[data-testid="disconnect-submit"]'),
+    ).not.toBeNull();
 
-    const { POST } = await import('../app/api/connect/github/disconnect/route');
-    await POST(formPost('/api/connect/github/disconnect'));
+    const { POST } = await import('../app/api/connect/[provider]/disconnect/route');
+    await POST(formPost('/api/connect/github/disconnect'), routeParams());
 
     document.body.innerHTML = renderToStaticMarkup(
       (await ConnectPage({ searchParams: Promise.resolve({}) })) as React.ReactElement,
     );
-    expect(
-      document.body.querySelector('[data-testid="connect-provider"]')?.getAttribute('data-connected'),
-    ).toBe('false');
-    expect(document.body.querySelector('[data-testid="install-submit"]')).not.toBeNull();
+    const after = document.body.querySelector('[data-provider="github"]');
+    expect(after?.getAttribute('data-connected')).toBe('false');
+    expect(after?.querySelector('[data-testid="install-submit"]')).not.toBeNull();
+    // And it says so: a disconnected source is a stated state, not merely an unconnected one.
+    expect(after?.getAttribute('data-disconnected')).toBe('true');
+    expect(after?.querySelector('[data-testid="connect-status"]')?.textContent).toBe('disconnected');
   });
 
   it('refuses a manager', async () => {
-    const { POST } = await import('../app/api/connect/github/disconnect/route');
-    const response = await POST(formPost('/api/connect/github/disconnect', sessions.manager));
+    const { POST } = await import('../app/api/connect/[provider]/disconnect/route');
+    const response = await POST(formPost('/api/connect/github/disconnect', sessions.manager), routeParams());
 
     expect(response.status).toBe(403);
     // And the credential is untouched.

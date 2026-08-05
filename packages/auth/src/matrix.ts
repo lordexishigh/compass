@@ -218,6 +218,59 @@ export const ROLE_MATRIX: readonly RouteRule[] = [
     summary: 'Replaces your recovery codes with a fresh batch, shown once.',
     allow: { POST: EVERY_SEAT },
   },
+  /**
+   * Single sign-on with Google and GitHub.
+   *
+   * `ANYONE` on the start and the callback, `EVERY_SEAT` on unlink, and the split is the design:
+   *
+   *  - **`/api/auth/sso/[provider]`** begins a round-trip and grants nothing — no session, no row, one
+   *    short-lived nonce cookie. It is also the *link* entry point for somebody already signed in, which
+   *    is why a session is optional rather than forbidden.
+   *  - **`/api/auth/sso/[provider]/callback`** arrives as a top-level navigation from the provider with
+   *    no cookie it could send, so requiring a session would be circular. What authorises it is narrower
+   *    than one: an HMAC-signed `state` naming the single organization the identity may attach to, plus a
+   *    nonce cookie binding the callback to the browser that started the flow.
+   *  - **`/api/auth/sso/unlink`** removes a way into your own account, so it needs a seat *and* the
+   *    current password — a requirement this table cannot express, asserted in the route's own tests.
+   */
+  {
+    route: '/api/auth/sso/[provider]',
+    summary: 'Begins a Google or GitHub sign-in, or links one to the signed-in account.',
+    allow: { GET: ANYONE },
+  },
+  {
+    route: '/api/auth/sso/[provider]/callback',
+    summary: 'Where Google and GitHub return: signs in, or links the identity, or states why not.',
+    allow: { GET: ANYONE },
+  },
+  {
+    route: '/api/auth/sso/unlink',
+    summary: 'Removes one single-sign-on link from your own account. Requires the current password.',
+    allow: { POST: EVERY_SEAT },
+  },
+  /**
+   * SAML, and why both rows are `public`.
+   *
+   * **`/api/auth/saml/metadata`** is fetched by identity providers from their own infrastructure, and
+   * pasted into consoles by administrators who have no Compass account yet. It carries an entity id, an
+   * ACS URL and two flags — no organizational data and no credential.
+   *
+   * **`/api/auth/saml/acs`** is a form POST from the user's browser, redirected there by the identity
+   * provider, with no Compass session — that is the whole mechanism. What admits it is an RSA-SHA256
+   * signature over the assertion verified against the certificate an owner configured, an issuer match,
+   * an audience match, a validity window, and a one-shot claim against the replay ledger. That is a bar
+   * an authenticated manager cannot clear, which is the same argument the provider webhooks make.
+   */
+  {
+    route: '/api/auth/saml/metadata',
+    summary: 'This deployment’s SAML service-provider metadata, for an identity provider to consume.',
+    allow: { GET: ANYONE },
+  },
+  {
+    route: '/api/auth/saml/acs',
+    summary: 'The SAML Assertion Consumer Service: a signed, audience-bound, single-use assertion in, a session out.',
+    allow: { POST: ANYONE },
+  },
   {
     route: '/api/auth/magic-link',
     summary: 'Mails a 15-minute single-use sign-in link.',
@@ -448,21 +501,32 @@ export const ROLE_MATRIX: readonly RouteRule[] = [
     summary: 'What Compass would read, listed verbatim from the connector package before consent.',
     allow: { GET: ['owner'] },
   },
+  // One entry covers all three providers, because one route handler serves all three: the logic is
+  // identical and every difference between them is configuration. A route per provider is how the fourth
+  // one ends up with a subtly different state lifetime, or quietly stops checking the role.
   {
-    route: '/api/connect/github/install',
-    summary: 'Mints a signed state and sends the owner to the GitHub App install.',
+    route: '/api/connect/[provider]/install',
+    summary: 'Mints a signed state and sends the owner to the provider’s install or consent screen.',
     allow: { POST: ['owner'] },
   },
   {
-    route: '/api/connect/github/disconnect',
-    summary: 'Deletes the stored credential, keeps every row already read, writes an audit entry.',
+    route: '/api/connect/[provider]/disconnect',
+    summary: 'Deletes the stored credentials, keeps every row already read, writes an audit entry.',
+    allow: { POST: ['owner'] },
+  },
+  // Per-repository, per-project and per-channel scoping. Owner only for the same reason the install is:
+  // it decides what Compass reads about the whole organization, and widening it is exactly as consequential
+  // as connecting in the first place.
+  {
+    route: '/api/connect/[provider]/scope',
+    summary: 'Sets which repositories, projects or channels Compass may read. Nothing partial is saved.',
     allow: { POST: ['owner'] },
   },
   /**
    * The OAuth return, which arrives cookie-less.
    *
-   * `ANYONE`, and it is the same case `/api/webhooks/[provider]` is: a top-level navigation from
-   * github.com carries no cookie it could possibly send, so a session requirement would mean the feature
+   * `ANYONE`, and it is the same case `/api/webhooks/[provider]` is: a top-level navigation from the
+   * provider carries no cookie it could possibly send, so a session requirement would mean the feature
    * cannot exist. What authorises it instead is strictly *narrower* than a session — an HMAC-signed
    * `state` this deployment minted minutes earlier, naming the one organization the credential may be
    * stored against, compared in constant time inside a ten-minute window. With no state secret
@@ -476,8 +540,8 @@ export const ROLE_MATRIX: readonly RouteRule[] = [
    * back to its caller. It answers a redirect naming an outcome and nothing else.
    */
   {
-    route: '/api/connect/github/callback',
-    summary: 'GitHub App install return. Authorised by a signed state, never by a session.',
+    route: '/api/connect/[provider]/callback',
+    summary: 'Provider grant return. Authorised by a signed state naming the org *and* the flow, never by a session.',
     allow: { GET: ANYONE },
   },
 
@@ -576,6 +640,52 @@ export const ROLE_MATRIX: readonly RouteRule[] = [
     route: '/api/billing/cancel',
     summary: 'Cancels at period end, so access is retained for what has already been paid for.',
     allow: { POST: ['owner'] },
+  },
+  /**
+   * Enterprise identity: SAML configuration and SCIM tokens.
+   *
+   * Owner only on both the screen and the writes, and not a manager. Same judgement `/billing` makes and
+   * for a sharper reason: configuring an identity provider decides *who can become a member of this
+   * organization*, and issuing a SCIM token hands a machine the ability to create and remove seats.
+   *
+   * The plan gate is deliberately *not* in this table. The matrix decides who may reach a route; whether
+   * the organization's plan includes SAML is a different question with a different answer — a 402 naming
+   * the plan — and expressing it here would mean an owner on the Starter plan could not even read the
+   * screen that explains what they would get.
+   */
+  {
+    route: '/enterprise',
+    summary: 'SAML single sign-on and SCIM provisioning: what to paste where, and which tokens are live.',
+    allow: { GET: ['owner'] },
+  },
+  {
+    route: '/api/enterprise/identity',
+    summary: 'Saves the SAML identity provider, issues a SCIM token, or withdraws either.',
+    allow: { POST: ['owner'], DELETE: ['owner'] },
+  },
+  /**
+   * The SCIM 2.0 endpoints, and why `public` here is among the narrowest rows in this table.
+   *
+   * A SCIM client is an identity provider's backend service. There is no browser and no person in the
+   * loop, so it holds no cookie and could not obtain one — a session requirement would mean the feature
+   * cannot exist. What admits it instead is a 256-bit bearer token compared by SHA-256 digest in
+   * constant time against a row an owner created and can revoke, *plus* the Business-plan gate. Exactly
+   * the shape of the four webhook rows: `public` in this table means "no session needed", never "no
+   * proof needed".
+   *
+   * `PUT` and `PATCH` are both declared on the item route because identity providers disagree about
+   * which one deprovisioning is — Okta patches, some providers replace — and a verb absent from this map
+   * is served to nobody, so omitting either would silently break half the market's offboarding.
+   */
+  {
+    route: '/api/scim/v2/Users',
+    summary: 'SCIM 2.0: lists seats as users, and provisions a new one. Bearer-token authorised.',
+    allow: { GET: ANYONE, POST: ANYONE },
+  },
+  {
+    route: '/api/scim/v2/Users/[scimUserId]',
+    summary: 'SCIM 2.0: reads one seat, and deprovisions it — which revokes every session and frees the seat.',
+    allow: { GET: ANYONE, PATCH: ANYONE, PUT: ANYONE, DELETE: ANYONE },
   },
   /**
    * Stripe's webhook endpoint.

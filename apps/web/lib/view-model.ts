@@ -270,6 +270,36 @@ export interface SourceFreshnessView {
   readonly answered: boolean;
 }
 
+/**
+ * A disconnected source, as this module needs to see one.
+ *
+ * Declared structurally rather than imported from `lib/connect-source`, which is the module that knows the
+ * three providers by name. Importing it here would drag every connector package into the view model — the
+ * one file in the web app whose whole job is to turn stored rows into something a page renders, and which
+ * has no business knowing a provider exists. It is the same move `@compass/analysis` makes at its own
+ * boundary: a narrow structural contract is cheaper than a coupling.
+ */
+export interface DisconnectedSource {
+  readonly sourceKey: string;
+  readonly sourceKind: string;
+  readonly retainedSelectionCount: number;
+}
+
+/**
+ * A source a manager knowingly stopped: a configuration with no credential.
+ *
+ * Its own type rather than a `status` on `SourceFreshnessView`, because the two facts come from different
+ * places and one of them is not in the journal at all. A disconnected source simply stops appearing in
+ * coverage, which renders identically to a source that was never configured — so it is stated from the
+ * configuration and printed beside the journal's rows rather than inferred from an absence.
+ */
+export interface DisconnectedSourceView {
+  readonly sourceKey: string;
+  readonly sourceKind: string;
+  /** One sentence: that it is disconnected, and that nothing already read was lost. */
+  readonly statement: string;
+}
+
 export interface FreshnessView {
   readonly hasIngestRecord: boolean;
   /** False whenever any configured source did not answer. */
@@ -280,6 +310,8 @@ export interface FreshnessView {
   readonly runWindowLabel: string | null;
   readonly sources: readonly SourceFreshnessView[];
   readonly missingSourceKeys: readonly string[];
+  /** Sources a manager disconnected. Empty on every deployment that has not disconnected one. */
+  readonly disconnected: readonly DisconnectedSourceView[];
 }
 
 export interface ReportView {
@@ -632,7 +664,33 @@ function sourceView(source: SourceFreshness, timezone: string): SourceFreshnessV
   };
 }
 
-export function freshnessView(freshness: FreshnessReport, timezone: string): FreshnessView {
+/**
+ * A disconnected source, in the product's own voice.
+ *
+ * Says the two things a reader needs in one breath: that Compass has stopped reading it, and that nothing
+ * it already read was lost. The second half matters because "disconnected" alone reads like data loss, and
+ * a manager who believes disconnecting destroys their archive will not disconnect a source they should.
+ */
+const disconnectedView = (source: DisconnectedSource): DisconnectedSourceView => ({
+  sourceKey: source.sourceKey,
+  sourceKind: source.sourceKind,
+  statement:
+    `${source.sourceKey} is disconnected, so nothing after this was read from it. Everything Compass ` +
+    `already read is unchanged and every report it wrote still renders` +
+    (source.retainedSelectionCount === 0
+      ? '.'
+      : `, and the ${source.retainedSelectionCount} ` +
+        `${source.retainedSelectionCount === 1 ? 'selection' : 'selections'} made for it are kept for a ` +
+        'reconnect.'),
+});
+
+export function freshnessView(
+  freshness: FreshnessReport,
+  timezone: string,
+  disconnectedSources: readonly DisconnectedSource[] = [],
+): FreshnessView {
+  const disconnected = disconnectedSources.map(disconnectedView);
+
   if (!freshness.hasIngestRecord) {
     return {
       hasIngestRecord: false,
@@ -643,34 +701,55 @@ export function freshnessView(freshness: FreshnessReport, timezone: string): Fre
       runWindowLabel: null,
       sources: [],
       missingSourceKeys: [],
+      disconnected,
     };
   }
 
   const sources = freshness.sources.map((source) => sourceView(source, timezone));
   const missing = sources.filter((source) => !source.answered);
-  const complete = sources.length > 0 && missing.length === 0;
+  /**
+   * A disconnected source makes the report incomplete, and that is the point rather than a side effect.
+   *
+   * The journal cannot say this: a source nobody is reading contributes no coverage row, so on the
+   * journal's evidence alone every remaining source answered and the report looks finished. Letting the
+   * configuration undercut `complete` is what stops a page reading as a complete picture of an
+   * organization whose tracker has been switched off for a week.
+   */
+  const complete = sources.length > 0 && missing.length === 0 && disconnected.length === 0;
 
   return {
     hasIngestRecord: true,
     complete,
     statement: complete
       ? `Every configured source answered for this window, so this report is a complete picture of ${sources.length} sources.`
-      : missing.length === sources.length
+      : disconnected.length > 0 && missing.length === 0
+        ? `${disconnected.length} ${disconnected.length === 1 ? 'source is' : 'sources are'} disconnected, so ` +
+          `this report is not a complete picture: ${disconnected.map((entry) => entry.sourceKey).join(', ')}.`
+        : missing.length === sources.length
         ? 'No configured source answered for this window, so this report is not a complete picture.'
-        : `${missing.length} of ${sources.length} configured sources did not answer, so this report is not complete: ${missing
-            .map((source) => source.sourceKey)
-            .join(', ')}.`,
+          : `${missing.length} of ${sources.length} configured sources did not answer, so this report is not complete: ${missing
+              .map((source) => source.sourceKey)
+              .join(', ')}.`,
     lastIngestLabel:
       freshness.completedAt === null ? null : formatCivilDateTime(freshness.completedAt, timezone),
     runWindowLabel: freshness.window === null ? null : windowLabel(freshness.window, timezone),
     sources,
     missingSourceKeys: missing.map((source) => source.sourceKey),
+    disconnected,
   };
 }
 
 export interface BuildReportViewInput {
   readonly bundle: StoredReportBundle;
   readonly freshness: FreshnessReport;
+  /**
+   * Sources with a configuration and no credential.
+   *
+   * Optional, and its absence means "none" rather than "unknown": a caller that does not read the
+   * configuration is a caller on a deployment where nothing has been connected, and defaulting to an empty
+   * list there is correct rather than merely convenient.
+   */
+  readonly disconnectedSources?: readonly DisconnectedSource[];
   /** Stated when the page is showing a day other than the host's own today. */
   readonly timeShiftNote?: string | null;
   /**
@@ -774,7 +853,7 @@ export function buildReportView(input: BuildReportViewInput): ReportView {
         })),
       })),
     })),
-    freshness: freshnessView(input.freshness, timezone),
+    freshness: freshnessView(input.freshness, timezone, input.disconnectedSources ?? []),
     collar: calibrationCollarView(report.payload),
     timeShiftNote: input.timeShiftNote ?? null,
   };

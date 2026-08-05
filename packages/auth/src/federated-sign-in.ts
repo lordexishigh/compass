@@ -143,7 +143,12 @@ export async function resolveFederatedSignIn(input: FederatedSignInInput): Promi
     // The account was erased while the provider still knows the subject. Treated as no seat rather
     // than as a broken link: there is nothing to sign into and nothing to repair.
     if (user === null || membership === null) return { kind: 'refused', reason: 'no_seat' };
-    if (membership.status === 'revoked') return { kind: 'refused', reason: 'seat_revoked' };
+    if (membership.status === 'revoked' && !mayReinstate(input)) {
+      return { kind: 'refused', reason: 'seat_revoked' };
+    }
+    if (membership.status === 'revoked') {
+      await reinstateSeat({ scoped, membershipId: membership.id, now, provider: assertion.provider });
+    }
 
     /**
      * The stored email is refreshed, and the *verification state* with it.
@@ -202,7 +207,12 @@ export async function resolveFederatedSignIn(input: FederatedSignInInput): Promi
       null;
 
     if (membership === null) return { kind: 'refused', reason: 'no_seat' };
-    if (membership.status === 'revoked') return { kind: 'refused', reason: 'seat_revoked' };
+    if (membership.status === 'revoked' && !mayReinstate(input)) {
+      return { kind: 'refused', reason: 'seat_revoked' };
+    }
+    if (membership.status === 'revoked') {
+      await reinstateSeat({ scoped, membershipId: membership.id, now, provider: assertion.provider });
+    }
 
     const identity = await linkIdentity(
       scoped,
@@ -312,6 +322,50 @@ export async function resolveFederatedSignIn(input: FederatedSignInInput): Promi
     seatActivated: false,
     linked: true,
   };
+}
+
+/**
+ * Whether a *revoked* seat may be brought back by this assertion.
+ *
+ * Only when the caller allows provisioning — which means SAML or SCIM, where the assertion comes from
+ * the organization's own directory. The asymmetry is the whole point:
+ *
+ *  - **Signing in with Google must not revive a removed seat.** Somebody was deliberately taken off the
+ *    product; their consumer Google account arriving at the door is not a decision to reinstate them, and
+ *    treating it as one would make `removeSeat` reversible by the removed person.
+ *  - **A directory re-adding somebody is exactly that decision.** Re-hires and readmissions happen, and a
+ *    SCIM client that could never re-add a person it had removed would leave an administrator with a seat
+ *    they can see, cannot use and cannot repair — the acceptance criterion's "frees a seat" only makes
+ *    sense if the seat can be filled again.
+ */
+const mayReinstate = (input: FederatedSignInInput): boolean => input.allowProvisioning === true;
+
+/**
+ * Brings a revoked seat back, at the role it held.
+ *
+ * The role is deliberately *not* reset to the provisioning default: the organization decided what this
+ * person's role was, and a re-add from a directory is not a re-grading. Team scopes are **not** restored
+ * — `removeSeat` cleared them and there is nothing to restore them from — so this is recorded as a
+ * provisioning act rather than as an undo, and the audit row says so.
+ */
+async function reinstateSeat(input: {
+  readonly scoped: ScopedDb;
+  readonly membershipId: string;
+  readonly now: Instant;
+  readonly provider: IdentityProvider;
+}): Promise<void> {
+  await setMembershipStatus(input.scoped, input.membershipId, 'active', input.now);
+
+  await recordAudit(input.scoped, {
+    action: 'seat.provisioned',
+    // Null actor, and honest: a directory push carries no Compass session to attribute the act to.
+    actorUserId: null,
+    targetKind: 'membership',
+    targetId: input.membershipId,
+    before: { status: 'revoked' },
+    after: { status: 'active', provider: input.provider, reinstated: true, teamKeys: [] },
+    occurredAt: input.now,
+  });
 }
 
 /**

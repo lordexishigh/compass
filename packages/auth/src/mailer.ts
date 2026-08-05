@@ -68,7 +68,33 @@ export type AuthMailPurpose =
    * link and the date the change takes effect.
    */
   | 'subprocessor_notice_confirmation'
-  | 'subprocessor_change_notice';
+  | 'subprocessor_change_notice'
+  /**
+   * The SCIM provisioning token, and the one purpose in this union that carries a *credential*.
+   *
+   * ## Why it is mailed rather than returned by the API that creates it
+   *
+   * A bearer token has to reach the administrator somehow, and the obvious channel — the response body
+   * of `POST /api/enterprise/identity` — is closed by design. `compass/no-secret-disclosure` refuses a
+   * credential in any response, and `tools/quality-gates/tests/security-posture.test.ts` additionally
+   * asserts that **no file anywhere disables that rule**, precisely so the next person cannot decide
+   * their case is the exception. That gate is right even about this case, and the reasoning is worth
+   * stating rather than worked around:
+   *
+   *  - a token in a response body is in the browser's memory, in any proxy that terminated TLS, and in
+   *    whatever the operator's console had open — and this one can create and remove seats;
+   *  - the screen that would display it is the screen an administrator is most likely to be
+   *    screen-sharing, because they are configuring an integration with somebody from IT on a call.
+   *
+   * Mail is the channel this product already uses to deliver a one-time secret — a magic link and a
+   * password-reset link are both credentials in an inbox — so this is the established idiom rather than
+   * a new one. It also gives the token an audit trail that a response body does not: the delivery is a
+   * message to a named address.
+   *
+   * Only the SHA-256 is stored, so this message is the one and only time the value exists outside the
+   * identity provider's configuration.
+   */
+  | 'scim_token';
 
 export interface AuthMailMessage {
   readonly to: string;
@@ -444,6 +470,56 @@ export function composeSubprocessorChangeMail(input: {
       input.link,
       '',
       `To stop receiving these notices: ${input.unsubscribeLink}`,
+    ].join('\n'),
+  };
+}
+
+/**
+ * The SCIM provisioning token, to the owner who asked for it.
+ *
+ * The module header on `scim_token` explains why this is a message rather than a response body. Two
+ * things about the shape of it:
+ *
+ *  - **The token is in the body and not in a link.** There is nothing to click: the value is pasted into
+ *    an identity provider's console. Putting it in a URL would additionally leave it in whatever the
+ *    mail client turned into a preview.
+ *  - **The message says what to do if it was not expected.** A provisioning token that arrives unasked
+ *    means somebody with owner access issued one, which is exactly the moment the owner should look at
+ *    the audit log — so the message points there rather than only congratulating them.
+ */
+export function composeScimTokenMail(input: {
+  readonly to: string;
+  readonly organizationName: string;
+  /** What the operator called this token, so a rotation can be told apart from a first issue. */
+  readonly label: string;
+  /** The token itself. This message is the only place it will ever appear. */
+  readonly token: string;
+  /** The SCIM base URL to configure alongside it. */
+  readonly scimUrl: string;
+  /** Where to go to revoke it — the enterprise screen. */
+  readonly link: string;
+}): AuthMailMessage {
+  return {
+    to: input.to,
+    purpose: 'scim_token',
+    link: input.link,
+    subject: `SCIM provisioning token for ${input.organizationName}`,
+    body: [
+      `A SCIM provisioning token was issued for ${input.organizationName}, labelled "${input.label}".`,
+      '',
+      'Paste this into your identity provider’s SCIM configuration:',
+      '',
+      `  SCIM base URL:  ${input.scimUrl}`,
+      `  Bearer token:   ${input.token}`,
+      '',
+      'This is the only copy. Compass stores only a SHA-256 of the token, so it cannot be shown or',
+      'recovered again — if it is lost, issue a new one and revoke this one.',
+      '',
+      'The token can create and remove seats in this organization, so treat it as a password. Revoke it',
+      `from the enterprise screen the moment it is no longer needed: ${input.link}`,
+      '',
+      'If you did not ask for this, somebody with owner access to your organization did. The audit log',
+      'records who issued it and when.',
     ].join('\n'),
   };
 }

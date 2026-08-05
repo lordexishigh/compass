@@ -15,6 +15,12 @@ import { AccountPanel, type AccountSessionView } from '../../components/account-
 import { SignInPanel } from '../../components/sign-in-panel';
 import { StatedFailure } from '../../components/stated-failure';
 import { pageAccess, type PageAccessResolved } from '../../lib/auth/guard';
+import {
+  buildLinkedIdentities,
+  samlRefusalStatement,
+  ssoButtons,
+  ssoOutcomeStatement,
+} from '../../lib/sso-source';
 
 /**
  * `/account` — sign in, or see the seat you already have.
@@ -41,8 +47,30 @@ export default async function AccountPage({
   readonly searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
-  const rawProblem = params['problem'];
-  const problem = Array.isArray(rawProblem) ? (rawProblem[0] ?? null) : (rawProblem ?? null);
+  const single = (key: string): string | null => {
+    const raw = params[key];
+    return Array.isArray(raw) ? (raw[0] ?? null) : (raw ?? null);
+  };
+
+  const problem = single('problem');
+
+  /**
+   * The outcome of a single-sign-on or SAML round-trip, as a sentence.
+   *
+   * Looked up from a slug rather than read out of the query string. `lib/sso-source.ts` records the
+   * reason at length: a `detail` parameter this page printed would let anybody hand somebody a Compass
+   * URL that displays arbitrary text in Compass's own typography, on Compass's own domain.
+   */
+  const ssoStated = ssoOutcomeStatement(single('sso')) ?? samlRefusalStatement(single('saml'));
+
+  /**
+   * A half-finished sign-in that owes a code, handed back by an SSO or SAML callback.
+   *
+   * Carried in the URL, which is acceptable rather than merely convenient: it is a five-minute signed
+   * ticket that authorises exactly one act — presenting a code for one user — and it is worthless
+   * without the code, whose own replay rejection is durable in the database.
+   */
+  const pendingChallenge = single('challenge');
 
   const cookieHeader = (await headers()).get('cookie');
 
@@ -104,7 +132,7 @@ export default async function AccountPage({
         /**
          * The address, never the password — because this process does not have it.
          *
-         * There used to be a `DEMO_OWNER_PASSWORD` constant to print here. Removing it from
+         * There used to be a published owner-password constant to print here. Removing it from
          * shipped source removed the only way the *web* process could know an unconfigured
          * deployment's password: it is minted by the worker on the boot that creates the seat,
          * hashed into the database with Argon2id, and printed once. The web app cannot read it
@@ -119,11 +147,15 @@ export default async function AccountPage({
          * let a reader conclude the product is broken rather than the deployment misconfigured.
          */
         <SignInPanel
-          problem={problem}
+          // A refused round-trip is a rejected sign-in attempt, so it is stated where every other
+          // rejection is — in the panel, rather than in a second notice above it.
+          problem={problem ?? ssoStated}
           configurationProblem={ownerConfigurationProblem()}
           generatedOwnerEmail={
             ownerConfigurationProblem() === null && ownerCredentialsAreDefault() ? DEMO_OWNER_EMAIL : null
           }
+          ssoProviders={ssoButtons()}
+          pendingChallenge={pendingChallenge}
         />
       ) : (
         <AccountPanel
@@ -140,7 +172,123 @@ export default async function AccountPage({
           sessions={sessions}
         />
       )}
+
+      {/*
+        Linked sign-in providers, for a seat that already has one.
+        Below the panel rather than inside it, because it is a fact about the account rather than a way
+        of getting into it — and because a signed-in reader is here to audit, not to sign in.
+      */}
+      {identity !== null && (
+        <LinkedIdentitiesPanel
+          identities={await buildLinkedIdentities({ scoped: access.scoped, userId: identity.user.id })}
+          hasPassword={identity.user.passwordHash !== null}
+          stated={ssoStated}
+        />
+      )}
     </div>
+  );
+}
+
+/**
+ * Which providers this account can sign in with, and the way to add or remove one.
+ *
+ * ## Why unlinking asks for the password here
+ *
+ * The route requires it, and this form has to say so rather than surprise somebody with a 403. The
+ * reason is the one the route records: for an account whose only credential is the provider link,
+ * unlinking is a lockout — so a stolen session must not be able to remove somebody's way back in.
+ *
+ * An account with no password at all is told that plainly and offered the reset form, because there is
+ * no credential to re-authenticate with and a disabled button with no explanation is the worst of the
+ * available options.
+ */
+function LinkedIdentitiesPanel({
+  identities,
+  hasPassword,
+  stated,
+}: {
+  readonly identities: readonly Awaited<ReturnType<typeof buildLinkedIdentities>>[number][];
+  readonly hasPassword: boolean;
+  readonly stated: string | null;
+}) {
+  return (
+    <section aria-labelledby="linked-identities" className="mt-12 hairline pt-6">
+      <h2 id="linked-identities" className="section-label">
+        single sign-on
+      </h2>
+      <p className="prose-narration mt-3 text-[15px]">
+        A linked provider is an additional way into this account, not a replacement for your password.
+        Linking and unlinking are both on your account&apos;s record.
+      </p>
+
+      {stated !== null && (
+        <p role="status" className="prose-narration mt-5 border-l-2 border-verified pl-3 text-[15px]">
+          {stated}
+        </p>
+      )}
+
+      <ul className="mt-5">
+        {identities.map((entry) => (
+          <li key={entry.provider} className="hairline-top py-4 first:border-t-0">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+              <span className="text-ink-strong">{entry.name}</span>
+              <span className="stated-absence text-[13px]">
+                {entry.linked
+                  ? entry.lastSignInAt === null
+                    ? `linked as ${entry.email ?? 'an address it did not state'}, never used to sign in`
+                    : `linked as ${entry.email ?? 'an address it did not state'}, last used ${new Date(
+                        entry.lastSignInAt,
+                      )
+                        .toISOString()
+                        .slice(0, 10)}`
+                  : 'not linked'}
+              </span>
+            </div>
+
+            {entry.unavailableReason !== null ? (
+              <p className="stated-absence mt-2 text-[13px] leading-relaxed">{entry.unavailableReason}</p>
+            ) : entry.linked ? (
+              <form method="post" action="/api/auth/sso/unlink" className="mt-3">
+                <input type="hidden" name="provider" value={entry.provider} />
+                <label className="block" htmlFor={`unlink-${entry.provider}`}>
+                  <span className="section-label">your password, to unlink</span>
+                </label>
+                <input
+                  id={`unlink-${entry.provider}`}
+                  name="password"
+                  type="password"
+                  required
+                  autoComplete="current-password"
+                  className="goal-input max-w-[20rem]"
+                  disabled={!hasPassword}
+                  aria-describedby={hasPassword ? undefined : `unlink-hint-${entry.provider}`}
+                />
+                {!hasPassword && (
+                  <p id={`unlink-hint-${entry.provider}`} className="stated-absence mt-2 text-[13px]">
+                    This account has no password, so there is nothing to re-authenticate with — and
+                    unlinking would lock you out.{' '}
+                    <a href="/account/reset" className="tertiary-action">
+                      set one first
+                    </a>
+                    .
+                  </p>
+                )}
+                <button type="submit" disabled={!hasPassword} className="tertiary-action mt-3">
+                  unlink {entry.name}
+                </button>
+              </form>
+            ) : (
+              <p className="mt-3">
+                {/* A link, not a fetch: the round-trip is a top-level navigation to the provider. */}
+                <a href={entry.startPath} className="tertiary-action">
+                  link {entry.name} to this account →
+                </a>
+              </p>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

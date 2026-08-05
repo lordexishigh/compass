@@ -36,17 +36,37 @@ import { packageSourceFiles, workspacePackageByDirectory } from './helpers/works
  * until it covers a real violation. Stripping comments first means the gate reads what *executes*,
  * which is the only thing that can branch.
  *
- * `slack` in `@compass/delivery` and `email | slack` as a *feedback source* are deliberately out of
- * scope: those are delivery channels, not data providers. Delivery is above the port and is supposed
- * to know what a Slack message is. The scanned list below is exactly the neutral set.
+ * ## Delivery channels are not data providers
+ *
+ * `@compass/delivery` is not scanned at all: it is above the port and is *supposed* to know what a Slack
+ * message is. But `memos` — which is scanned, because it is part of report generation — declares
+ * `MEMO_SOURCE_CHANNELS = ['email', 'slack', 'web']`, the channel a manager's memo *arrived on*. That is
+ * the same distinction, inside a package that does have to be neutral about data providers.
+ *
+ * So the carve-out is implemented as a **rule** rather than as an allowlist of files, because an
+ * allowlist is the thing that quietly grows until it covers a real violation. A line is exempt only if it
+ * declares a channel vocabulary *and* names `email` on the same line — see `isChannelVocabulary`. A
+ * provider branch cannot satisfy either half: `if (source === 'github')` names no channel and no email,
+ * and neither does a field named after a provider.
  */
 
-/** The layers a provider must be invisible to. */
+/**
+ * The layers a provider must be invisible to.
+ *
+ * The criterion names "the ingest, knowledge-model, analysis and report packages", and **report
+ * generation is not one package**: it is spread across `renderers` (the prose), `narrator` (the LLM
+ * narration and its fail-closed template fallback) and `memos` (the one write path into the org model).
+ * A gate that scanned only `renderers` would pass while being blind to two thirds of the thing it was
+ * meant to protect — so all three are listed, and `pipeline` with them because it is the layer that wires
+ * ingest to analysis to render and is therefore the most tempting place to put a provider branch.
+ */
 const NEUTRAL_PACKAGES = [
   'ingest',
   'knowledge-model',
   'analysis',
   'renderers',
+  'narrator',
+  'memos',
   'pipeline',
 ] as const;
 
@@ -70,6 +90,20 @@ const PROVIDER_PACKAGES = [
  */
 const stripComments = (text: string): string =>
   text.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1');
+
+/**
+ * Whether a line declares the channel a message arrived on, rather than a data provider.
+ *
+ * Both halves are required and each one alone would be too loose. The name has to say `CHANNEL`, which is
+ * what makes it a statement about transport; and the line has to also name `email`, which no data-provider
+ * list would ever contain — Compass does not ingest from email. Together they admit
+ * `MEMO_SOURCE_CHANNELS = ['email', 'slack', 'web']` and nothing that could branch on a provider.
+ */
+const isChannelVocabulary = (line: string): boolean =>
+  // No leading `\b`: the constant is `MEMO_SOURCE_CHANNELS`, and `_` is a word character, so a boundary
+  // between `_` and `C` never matches. Upper-case on purpose — it admits a SCREAMING_CASE vocabulary
+  // constant and not a local called `channels`, which is one more turn of narrowing for free.
+  /CHANNELS?\b/.test(line) && /\bemail\b/i.test(line);
 
 interface Violation {
   readonly file: string;
@@ -119,6 +153,7 @@ describe('no neutral layer names a provider in code', () => {
       const executable = stripComments(file.text).split('\n');
 
       executable.forEach((line, index) => {
+        if (isChannelVocabulary(line)) return;
         for (const token of PROVIDER_TOKENS) {
           // Word-bounded and case-insensitive, so `GithubConnector`, `'github'` and `sourceIsJira`
           // all trip it while `slackness` — were anybody to write it — does not.
@@ -161,6 +196,27 @@ describe('no neutral layer names a provider in code', () => {
     // The one line that executes is the one that is caught.
     expect(/\bgithub\b/i.test(executable)).toBe(true);
     expect(/\bjira\b/i.test(executable)).toBe(false);
+  });
+
+  it('exempts a channel vocabulary and nothing that merely resembles one', () => {
+    /**
+     * The guard the exemption needs, and would otherwise lack.
+     *
+     * An exemption nobody tests is an exemption that widens on its next edit. This pins both directions:
+     * the one line it exists for is admitted, and four lines a careless widening would also admit are not.
+     */
+    expect(isChannelVocabulary("export const MEMO_SOURCE_CHANNELS = ['email', 'slack', 'web'] as const;")).toBe(
+      true,
+    );
+
+    // A provider branch names no channel and no email.
+    expect(isChannelVocabulary("const provider = 'github';")).toBe(false);
+    // A channel-shaped name with no email is not a channel vocabulary; it is a provider list.
+    expect(isChannelVocabulary("const CHANNELS = ['slack', 'github'];")).toBe(false);
+    // An email mention with no channel declaration does not license a provider name either.
+    expect(isChannelVocabulary("const from = 'email'; const host = 'github';")).toBe(false);
+    // And the exemption is per line, so it cannot cover the statement after it.
+    expect(isChannelVocabulary("if (source === 'jira') return;")).toBe(false);
   });
 
   it('scans a non-empty set of files, so a renamed package cannot empty the gate', () => {

@@ -14,9 +14,11 @@ export {
 export {
   exchangeJiraAuthorizationCode,
   listJiraProjects,
+  refreshJiraAccessToken,
   type JiraExchangeInput,
   type JiraExchangeOutcome,
   type JiraProjectOption,
+  type JiraRefreshOutcome,
 } from './oauth.js';
 
 export {

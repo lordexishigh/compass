@@ -125,7 +125,7 @@ jobs:
               --filter @compass/clock --filter @compass/connector-port --filter @compass/ingest
               --filter @compass/knowledge-model --filter @compass/renderers --filter @compass/delivery
               --filter @compass/seed-connector --filter @compass/github-connector
-              --filter @compass/jira-connector
+              --filter @compass/jira-connector --filter @compass/slack-connector
               --filter @compass/seed-snapshot --filter @compass/smoke
               --filter @compass/perf-budget --filter @compass/eslint-plugin
     steps:

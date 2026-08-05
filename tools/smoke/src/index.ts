@@ -28,6 +28,23 @@ export {
 } from './report-html.js';
 
 export {
+  CONNECT_WALKTHROUGH,
+  DISQUALIFYING_PHRASES,
+  WALKTHROUGH_BUDGET_SECONDS,
+  WalkthroughNotSelfServe,
+  WalkthroughOverBudget,
+  assertSelfServe,
+  assertWithinBudget,
+  describeWalkthrough,
+  estimateWalkthrough,
+  selfServeProblems,
+  type StepActor,
+  type StepKind,
+  type WalkthroughEstimate,
+  type WalkthroughStep,
+} from './connect-walkthrough.js';
+
+export {
   COLD_START_BUDGET_MILLIS,
   ProbeTimeout,
   probeUntilReady,

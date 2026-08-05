@@ -14,10 +14,13 @@
     { "path": "../../packages/connector-port" },
     { "path": "../../packages/db" },
     { "path": "../../packages/delivery" },
+    { "path": "../../packages/github-connector" },
     { "path": "../../packages/ingest" },
+    { "path": "../../packages/jira-connector" },
     { "path": "../../packages/knowledge-model" },
     { "path": "../../packages/narrator" },
     { "path": "../../packages/pipeline" },
-    { "path": "../../packages/seed-connector" }
+    { "path": "../../packages/seed-connector" },
+    { "path": "../../packages/slack-connector" }
   ]
 }

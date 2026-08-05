@@ -38,9 +38,11 @@ import {
 } from '@compass/delivery';
 import { ingestWindowIntoModel, type IngestRunSummary } from '@compass/ingest';
 import { SeedConnector, resolveSeededRun } from '@compass/seed-connector';
+import type { ConnectorPort } from '@compass/connector-port';
 import { PgBoss } from 'pg-boss';
 
 import { SEED_TIMEZONE } from './bootstrap.js';
+import { describeConnector, resolveConnector } from './connectors.js';
 import {
   deliveryJobOptions,
   deliveryJobsDue,
@@ -85,6 +87,14 @@ export interface WorkerRuntime {
   readonly dependencies: WorkerDependencies;
   /** The process's pool, so the delivery dependencies can share it rather than open a second. */
   readonly db: CompassDatabase;
+  /**
+   * The connector one organization's configuration resolves to, read fresh on every call.
+   *
+   * Not memoised, and that is the whole point: a manager who connects a source at 09:05 must be read at
+   * 09:15, not after the next deploy. Two indexed reads and an unseal on a fifteen-minute tick is a price
+   * worth paying for a configuration change that takes effect when it is made.
+   */
+  connectorFor(organizationId: string, now: Instant): Promise<ConnectorPort>;
   close(): Promise<void>;
 }
 
@@ -112,11 +122,30 @@ export function createWorkerRuntime(clock: Clock): WorkerRuntime {
     );
   };
 
-  const connector = new SeedConnector();
+  /**
+   * Provider selection, resolved from configuration at this composition root.
+   *
+   * `connectors.ts` is the only file in the worker that names a provider; everything below the port
+   * receives an already-constructed `ConnectorPort` and cannot tell what it is. The skipped lines are
+   * logged rather than swallowed, because a configured source that silently failed to resolve would mean
+   * an organization believing Compass reads its tracker while the report was built without it.
+   */
+  const connectorFor = async (organizationId: string, now: Instant): Promise<ConnectorPort> => {
+    const resolved = await resolveConnector({ db, organizationId, now });
+    for (const line of resolved.skipped) console.warn(`[compass] ${line}`);
+    return resolved.connector;
+  };
 
   return {
     dependencies: {
-      connector,
+      /**
+       * The fallback port, for the one path that has no organization to resolve against.
+       *
+       * `handleIngestWindow` reads this only when `projectIntoModel` is absent, which is the shape the
+       * coverage-only tests use. In this process `projectIntoModel` is always supplied and resolves the
+       * real connector per organization, so nothing in production reads this field.
+       */
+      connector: new SeedConnector(),
       persistIngestRun,
       /**
        * The real ingest: pull the window, project it into the knowledge model, reconcile
@@ -128,6 +157,9 @@ export function createWorkerRuntime(clock: Clock): WorkerRuntime {
        */
       projectIntoModel: async (request) => {
         const scoped = new ScopedDb(db, orgScope(request.organizationId));
+        // Resolved per request, from this organization's own configuration. A tenant on a live code host
+        // and a tenant still on the seeded data are served by the same process and the same code path.
+        const connector = await connectorFor(request.organizationId, request.now);
         const { summary } = await ingestWindowIntoModel(connector, new KnowledgeStore(scoped), {
           organizationId: request.organizationId,
           window: request.window,
@@ -141,6 +173,7 @@ export function createWorkerRuntime(clock: Clock): WorkerRuntime {
       logger: console,
     },
     db,
+    connectorFor,
     close,
   };
 }
@@ -158,11 +191,27 @@ export interface RunningWorker {
  * `generation.ts`. The connector is resolved here for the same reason it is for ingest: nothing
  * downstream can tell whether the data came from the seeded provider or a live one.
  */
-export function createGenerationDependencies(db: CompassDatabase): GenerationDependencies {
-  const connector = new SeedConnector();
-
+export function createGenerationDependencies(clock: Clock, db: CompassDatabase): GenerationDependencies {
   return {
     ensureReport: async (request) => {
+      // Resolved from this organization's configuration, per request, exactly as ingest resolves it. The
+      // pipeline below takes a `ConnectorPort` and cannot tell whether it got live sources or the seeded
+      // provider, which is the property `provider-neutrality.test.ts` guards.
+      /**
+       * `clock.now()` and deliberately **not** `request.reportInstant`.
+       *
+       * The pinned report instant is the right time for everything the report is *about*, and the wrong one
+       * for deciding whether a stored credential has expired: regenerating last Tuesday's report would
+       * compare a live token against last Tuesday and conclude it had years left. Token lifetime is a fact
+       * about the wall clock, so it comes from the process clock — the one thing this edge is allowed to hold.
+       */
+      const { connector, skipped } = await resolveConnector({
+        db,
+        organizationId: request.organizationId,
+        now: clock.now(),
+      });
+      for (const line of skipped) console.warn(`[compass] ${line}`);
+
       const ensured = await ensureDailyReport({
         organizationId: request.organizationId,
         scope:
@@ -299,8 +348,25 @@ export async function startWorker(): Promise<RunningWorker> {
 
   const runtime = createWorkerRuntime(clock);
   const { dependencies } = runtime;
+
+  /**
+   * What this deployment is reading, said once at boot.
+   *
+   * Ahead of the queue subscriptions so an operator sees it before any job output. It names the sources,
+   * never the providers — the connector id is built from source keys for exactly that reason — and it says
+   * which configured sources were skipped and why.
+   */
+  for (const line of describeConnector(
+    await resolveConnector({
+      db: runtime.db,
+      organizationId: resolveSeededRun({ hostNow: clock.now() }).organizationId,
+      now: clock.now(),
+    }),
+  )) {
+    console.info(`[compass] ${line}`);
+  }
   const deliveryDependencies = createDeliveryDependencies(clock, runtime.db);
-  const generationDependencies = createGenerationDependencies(runtime.db);
+  const generationDependencies = createGenerationDependencies(clock, runtime.db);
 
   const boss = new PgBoss({ connectionString: resolveDatabaseUrl('direct'), schema: 'pgboss' });
 
@@ -334,7 +400,9 @@ export async function startWorker(): Promise<RunningWorker> {
     const organizationId = resolveSeededRun({ hostNow: now }).organizationId;
     const scoped = new ScopedDb(runtime.db, orgScope(organizationId));
 
-    const health = await dependencies.connector.reportSourceHealth({
+    // The organization's own connector, so the tick enumerates the sources it actually has rather than
+    // the seeded provider's. A source connected since the last tick appears here without a restart.
+    const health = await (await runtime.connectorFor(organizationId, now)).reportSourceHealth({
       organizationId,
       window: previousCivilDayWindow(now, SEED_TIMEZONE),
       now,

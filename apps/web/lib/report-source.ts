@@ -4,6 +4,7 @@ import { narratorFromEnvironment } from '@compass/narrator';
 import { ensureDailyReport, loadFreshnessFor, type EnsuredReport } from '@compass/pipeline';
 import { SeedConnector, resolveSeededRun, type SeededRun } from '@compass/seed-connector';
 
+import { listDisconnectedSources } from './connect-source';
 import {
   organizationHasSubject,
   readFirstRunReadiness,
@@ -125,6 +126,14 @@ export async function loadReportView(): Promise<ReportView> {
      * to the page.
      */
     withdrawnNames: await withdrawnNames(new ScopedDb(database(), orgScope(run.organizationId)), run.now),
+    /**
+     * Sources a manager disconnected.
+     *
+     * Read here rather than derived from the journal, because the journal cannot say it: a source nobody
+     * is reading contributes no coverage row, so on the journal's evidence alone every remaining source
+     * answered and the report looks finished. The configuration is the only place the fact exists.
+     */
+    disconnectedSources: await listDisconnectedSources(new ScopedDb(database(), orgScope(run.organizationId))),
   });
 }
 

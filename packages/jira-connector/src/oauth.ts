@@ -133,6 +133,86 @@ export async function exchangeJiraAuthorizationCode(input: JiraExchangeInput): P
 }
 
 /**
+ * A new access token from a refresh token.
+ *
+ * ## Why this is not optional
+ *
+ * An access token from this provider lives **one hour**. Without a refresh, a connection a manager made
+ * on Monday morning stops reading before lunch, and the only recovery is to notice a stated coverage gap
+ * and press Connect again — every hour, forever. That is not a connected source; it is a demonstration.
+ * `offline_access` is requested for exactly this, and storing a refresh token that nothing exchanges
+ * would be the shape where a feature looks present and is not.
+ *
+ * ## Refresh tokens rotate, and the old one dies
+ *
+ * This provider issues **rotating** refresh tokens: the response carries a *new* refresh token and
+ * invalidates the one that was sent. So a caller that kept the old one would have a credential that
+ * fails on its next use, and the failure would arrive an hour later looking like a revoked grant. The
+ * outcome therefore returns both tokens and the caller must store both — which is why `refreshToken`
+ * here is non-nullable, unlike on the authorization-code exchange.
+ */
+export type JiraRefreshOutcome =
+  | {
+      readonly ok: true;
+      readonly accessToken: string;
+      /** The replacement. The token that was sent is dead once this returns. */
+      readonly refreshToken: string;
+      readonly expiresInSeconds: number | null;
+    }
+  | { readonly ok: false; readonly reason: 'refresh_failed' | 'refresh_rejected' };
+
+export async function refreshJiraAccessToken(input: {
+  readonly http: HttpClient;
+  readonly clientId: string;
+  readonly clientSecret: string;
+  readonly refreshToken: string;
+  readonly tokenUrl?: string;
+}): Promise<JiraRefreshOutcome> {
+  const response = await input.http.send({
+    method: 'POST',
+    url: input.tokenUrl ?? TOKEN_URL,
+    headers: { 'content-type': 'application/json', accept: 'application/json' },
+    body: JSON.stringify({
+      grant_type: 'refresh_token',
+      client_id: input.clientId,
+      client_secret: input.clientSecret,
+      refresh_token: input.refreshToken,
+    }),
+  });
+
+  /**
+   * A 4xx is distinguished from everything else, and the distinction is what a manager reads.
+   *
+   * `refresh_rejected` means the grant is gone — revoked in the provider's own settings, or the refresh
+   * token was already spent — and the only fix is to reconnect. Anything else is transient, and telling
+   * somebody to reconnect over a 503 would send them to redo work that was never lost.
+   */
+  if (response.status >= 400 && response.status < 500) return { ok: false, reason: 'refresh_rejected' };
+  if (response.status !== 200) return { ok: false, reason: 'refresh_failed' };
+
+  let token: { access_token?: unknown; refresh_token?: unknown; expires_in?: unknown };
+  try {
+    token = JSON.parse(response.body) as typeof token;
+  } catch {
+    return { ok: false, reason: 'refresh_failed' };
+  }
+
+  const accessToken = typeof token.access_token === 'string' ? token.access_token : '';
+  const refreshToken = typeof token.refresh_token === 'string' ? token.refresh_token : '';
+  // Both or neither. A response with a new access token and no replacement refresh token would leave the
+  // connection working now and unrecoverable in an hour, which is worse than failing here.
+  if (accessToken.length === 0 || refreshToken.length === 0) return { ok: false, reason: 'refresh_failed' };
+
+  return {
+    ok: true,
+    accessToken,
+    refreshToken,
+    expiresInSeconds:
+      typeof token.expires_in === 'number' && Number.isFinite(token.expires_in) ? token.expires_in : null,
+  };
+}
+
+/**
  * The projects a granted token can actually see, so the connect screen offers a list to pick from
  * rather than a text box to type a key into.
  *

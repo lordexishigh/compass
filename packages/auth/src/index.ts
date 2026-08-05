@@ -158,6 +158,52 @@ export {
   type XmlText,
 } from './xml-signature.js';
 
+/**
+ * SAML 2.0 Web Browser SSO, service-provider side.
+ *
+ * Pure: `verifySamlResponse` takes `now` and returns a verdict. The replay check is deliberately
+ * *not* here — it needs a unique index, and `claimAssertionId` in `@compass/db` is where it lives.
+ */
+export {
+  SAML_ASSERTION_NAMESPACE,
+  SAML_CLOCK_SKEW_MILLIS,
+  SAML_PROTOCOL_NAMESPACE,
+  describeSamlRefusal,
+  samlServiceProviderMetadata,
+  verifySamlResponse,
+  type SamlAcceptance,
+  type SamlRefusal,
+  type SamlVerdict,
+  type SamlVerificationInput,
+} from './saml.js';
+
+/** SCIM 2.0 provisioning. A SCIM User *is* a Compass seat — see the module header for why. */
+export {
+  SCIM_ERROR_SCHEMA,
+  SCIM_LIST_SCHEMA,
+  SCIM_PATCH_SCHEMA,
+  SCIM_TOKEN_BYTES,
+  SCIM_USER_SCHEMA,
+  authenticateScim,
+  bearerTokenFrom,
+  externalIdFor,
+  generateScimToken,
+  hashScimToken,
+  parseScimFilter,
+  readScimPatch,
+  readScimUserWrite,
+  scimError,
+  scimListUsers,
+  scimUserResource,
+  type ScimAuthentication,
+  type ScimFilter,
+  type ScimListResponse,
+  type ScimPatchIntent,
+  type ScimUserResource,
+  type ScimUserWrite,
+  type ScimWriteResult,
+} from './scim.js';
+
 export {
   SESSION_ABSOLUTE_TTL_DAYS,
   SESSION_ABSOLUTE_TTL_MILLIS,
@@ -214,6 +260,7 @@ export {
   composeDeletionUndoMail,
   composeDunningMail,
   composeLockoutMail,
+  composeScimTokenMail,
   composeSubprocessorChangeMail,
   composeSubprocessorConfirmationMail,
   type AuthMailMessage,

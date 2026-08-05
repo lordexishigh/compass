@@ -112,6 +112,38 @@ export function FreshnessPanel({ freshness }: { readonly freshness: FreshnessVie
           show. Compass leaves this blank rather than filling it with the time the page was rendered.
         </p>
       )}
+
+      {/*
+        Disconnected sources, stated beside the journal's own rows.
+
+        A separate list rather than an extra row in the one above, because these two facts come from
+        different places and only one of them is in the journal. A source nobody is reading contributes no
+        coverage row at all — so on the journal's evidence it simply is not there, which renders exactly
+        like a source that was never configured. Printing it from the configuration is what makes
+        "disconnected" something the page says rather than something a reader has to notice.
+
+        Set in the same stated-absence voice as a missing source, and never colour-coded: this is not bad
+        news, it is a fact about what a manager chose.
+      */}
+      {freshness.disconnected.length > 0 && (
+        <ul className="mt-3 space-y-2" data-testid="disconnected-sources">
+          {freshness.disconnected.map((source) => (
+            <li key={source.sourceKey} className="flex flex-col gap-0.5" data-source-key={source.sourceKey}>
+              <span className="flex flex-wrap items-baseline gap-2">
+                <span className="inline-block h-[3px] w-[10px] rounded-[1px] bg-rule-strong" aria-hidden="true" />
+                <span className="data-token">{source.sourceKey}</span>
+                <span className="font-mono text-[11px] uppercase tracking-wide text-ink-faint">disconnected</span>
+              </span>
+              <span data-testid="disconnected-statement" className="stated-absence pl-[18px] text-[13px]">
+                {source.statement}
+              </span>
+              <span className="stated-absence pl-[18px] text-[13px]">
+                Without it this report is missing {contributionOf(source.sourceKind)}.
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   );
 }

@@ -57,7 +57,11 @@ export async function POST(
 
   try {
     const submitted = await readFormOrJsonObject(request);
-    const field = submitted['selections'];
+    // An unreadable body is already a response — a 400 naming the problem — so it is returned as-is
+    // rather than folded into "no selections", which would silently save an empty scope.
+    if ('response' in submitted) return submitted.response;
+
+    const field = submitted.body['selections'];
     const parsed = parseScopeSelections(raw, typeof field === 'string' ? field : '');
 
     if (parsed.rejected.length > 0) {

@@ -1,4 +1,4 @@
-import { createSign, generateKeyPairSync } from 'node:crypto';
+import { createHash, createSign, generateKeyPairSync } from 'node:crypto';
 
 import {
   XmlParseError,
@@ -251,12 +251,8 @@ function signedDocument(options: {
   return { xml: options.tamper ? options.tamper(xml) : xml, assertionId };
 }
 
-function createHashDigest(canonical: string): string {
-  // Local rather than imported so the test states its own expectation of the digest input.
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { createHash } = require('node:crypto') as typeof import('node:crypto');
-  return createHash('sha256').update(canonical, 'utf8').digest('base64');
-}
+const createHashDigest = (canonical: string): string =>
+  createHash('sha256').update(canonical, 'utf8').digest('base64');
 
 const verify = (xml: string, certificate = PUBLIC_KEY_PEM) => {
   const document = parseXml(xml);

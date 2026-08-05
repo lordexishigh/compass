@@ -226,7 +226,9 @@ export class CompositeConnector implements ConnectorPort {
   async reportSourceHealth(request: ConnectorRequest): Promise<SourceHealthReport> {
     const reports = await Promise.all(this.#members.map(async (member) => await member.reportSourceHealth(request)));
 
-    const sources: readonly SourceHealthEntry[] = reports.flatMap((report) => report.sources).sort(bySourceKey);
+    // A fresh mutable array on purpose: `SourceHealthReport.sources` is inferred from a zod schema, so it
+    // is a mutable `SourceHealthEntry[]` and a `readonly` local would not assign to it.
+    const sources: SourceHealthEntry[] = reports.flatMap((report) => report.sources).sort(bySourceKey);
 
     return {
       connectorId: this.connectorId,

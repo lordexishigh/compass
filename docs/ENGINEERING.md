@@ -158,7 +158,9 @@ Five groups, and each is public for a different reason:
 - **How a session is obtained** — `/account`, `/account/invite`, `/account/reset`,
   `/account/deletion`, `/login`, `/api/auth/register`, `/api/auth/login`, `/api/auth/logout`,
   `/api/auth/session`, `/api/auth/magic-link`, `/api/auth/magic-link/consume`,
-  `/api/auth/password-reset`, `/api/auth/password-reset/consume`, `/api/auth/2fa/challenge` and
+  `/api/auth/password-reset`, `/api/auth/password-reset/consume`, `/api/auth/2fa/challenge`,
+  `/api/auth/sso/[provider]`, `/api/auth/sso/[provider]/callback`, `/api/auth/saml/metadata`,
+  `/api/auth/saml/acs` and
   `/api/seats/accept`. Public
   by definition; requiring a session to sign in would be circular. Enumerated rather than written
   as a wildcard, because a wildcard here would mean the documented set is not the set the gate can
@@ -171,18 +173,49 @@ Five groups, and each is public for a different reason:
 - **Token-authorised, with no session involved** — `/api/share/[token]`,
   `/api/delivery/unsubscribe`, `/api/feedback/link/[token]`, `/api/privacy/deletion/undo`,
   `/api/slack/actions`, `/api/webhooks/[provider]`, `/api/stripe/webhook`,
-  `/api/connect/github/callback`. Each token is *narrower* than a session: one shared report, one
+  `/api/connect/[provider]/callback`, `/api/scim/v2/Users`, `/api/scim/v2/Users/[scimUserId]`. Each
+  token is *narrower* than a session: one shared report, one
   person's daily switched off, one verdict on one item, one deletion undone, one signed provider
-  delivery, one signed billing event, one signed install return.
+  delivery, one signed billing event, one signed install return, one organization's provisioning
+  client.
 
-  `/api/connect/github/callback` is the OAuth return, and it is cookie-less for a structural reason:
-  it is a top-level navigation from github.com, which sends no cookie Compass set. What authorises it
-  is an HMAC-signed `state` this deployment minted minutes earlier, naming **the one organization the
-  credential may be stored against**, compared in constant time inside a ten-minute window. The
-  organization therefore comes from the signed state and never from a query parameter — a caller who
-  could choose it would store their own token against somebody else's tenant. With no
-  `COMPASS_CONNECT_STATE_SECRET` set every callback is refused rather than trusted, which is the same
-  fail-closed posture the three provider webhooks take.
+  The two SCIM rows are the sharpest case in this list of `public` meaning "no *session* needed" rather
+  than "no proof needed". A SCIM client is an identity provider's backend service: there is no browser
+  and no person in the loop, so it holds no cookie and could not obtain one. What admits it is a
+  256-bit bearer token compared by SHA-256 digest in constant time against a row an owner created and
+  can revoke — plus the Business-plan gate, which is checked *before* the token, so an organization
+  that has not bought the feature never reaches the credential comparison at all. Only the digest is
+  stored, so a database dump yields no working provisioning credential.
+
+  `/api/auth/saml/acs` is authorised by an assertion rather than a token, and by four checks a
+  signature alone does not supply. A signature proves the identity provider said it; it does not prove
+  the provider said it **to Compass** (the audience restriction, whose absence is refused rather than
+  tolerated — otherwise an assertion minted for any other application federated to the same IdP would
+  be accepted here), **at this address** (the recipient), **recently** (the validity window, with sixty
+  seconds of clock skew), or **only once** (the replay ledger, whose unique index on
+  `(organization_id, assertion_id)` makes acceptance an INSERT rather than a check somebody could
+  race). Compass requires *assertion* signing rather than response signing, refuses SHA-1 and inclusive
+  canonicalisation, and refuses encrypted assertions outright.
+
+  `/api/auth/sso/[provider]` and its callback carry no token and no assertion, and the pair is
+  authorised by two things together: an HMAC-signed `state` naming the one organization an identity may
+  attach to, and a `SameSite=Lax` nonce cookie set when the flow began. The nonce is the login-CSRF
+  defence — without it a signed `state` is unforgeable but not *bound to a browser*, so an attacker
+  could start a flow with their own provider account, capture the callback URL, and hand it to a victim
+  who would then be silently signed in as the attacker.
+
+  `/api/connect/[provider]/callback` is the OAuth return for all three connectable sources, and it is
+  cookie-less for a structural reason: it is a top-level navigation from the provider, which sends no
+  cookie Compass set. What authorises it is an HMAC-signed `state` this deployment minted minutes
+  earlier, naming **the one organization the credential may be stored against** and **the one provider
+  flow it belongs to**, compared in constant time inside a ten-minute window. The organization
+  therefore comes from the signed state and never from a query parameter — a caller who could choose it
+  would store their own token against somebody else's tenant. The provider is bound into the same
+  signature for the neighbouring reason: without it, a state minted for the chat flow could be replayed
+  against the tracker's callback and store a chat credential under the tracker's source key, where the
+  tracker connector would then try to use it. With no `COMPASS_CONNECT_STATE_SECRET` set every callback
+  is refused rather than trusted, which is the same fail-closed posture the three provider webhooks
+  take.
 
   `/api/stripe/webhook` is the clearest case of why `public` does not mean open. Stripe posts from
   its own infrastructure with no cookie it could possibly send, so a session requirement would mean
@@ -258,6 +291,29 @@ key and touches no ciphertext — the one that runs on a schedule.
 `rotateOrganizationDataKey` replaces the data key and re-encrypts every token, writing the key
 row *last* so an interrupted rotation is still readable at both versions.
 
+#### Renewal
+
+An access token from a tracker lives **one hour**, so `expires_at` is stored *in the clear* — it says
+when, not what — and a credential is renewed at the moment it is about to be used rather than on a
+schedule of its own. `apps/worker/src/connectors.ts` is the only place this happens, because it is
+already the only place a sealed row becomes a configured client.
+
+The rule is: if `expires_at` is inside a five-minute margin, exchange the refresh token first. The margin
+is not caution for its own sake — a token valid for another ten seconds is expired by the time an ingest
+run reaches its second page, so a resolver that refreshed on `expires_at <= now` would hand out
+credentials that die mid-read and report a partial window as an authentication failure.
+
+Refresh tokens **rotate**: the exchange invalidates the token that was sent and issues a replacement, so
+both rows are rewritten in the same pass. Storing only the new access token would leave a connection that
+works now and is unrecoverable in an hour — the worst available outcome, because nothing is stated and
+the source goes quiet at a time nobody is watching.
+
+A refusal is distinguished from an outage. A 4xx means the grant is gone (revoked in the provider's own
+settings, or the refresh token already spent) and only reconnecting fixes it; anything else is transient.
+Neither throws: both become a sentence in the boot log and, through the same underlying fact, in the
+freshness indicator. A code host needs none of this — a GitHub App mints short-lived installation tokens
+on demand from an installation id, so there is nothing to refresh.
+
 **No API returns a token, masked or otherwise.** A mask still confirms existence, length and
 provider prefix. What the API returns is `IntegrationTokenDescription`: `present`, `sourceKey`,
 `tokenKind`, `expiresAt`, `keyVersion`. The ESLint rule `compass/no-secret-disclosure` fails the
@@ -303,6 +359,93 @@ provider's SQL console.
 policy; the gate fails the build for any table without RLS and a policy. It also proves the policy is
 *evaluated* rather than merely present, by creating a non-owning role and reading `users` through it —
 which is the only way to execute a policy the owner is exempt from.
+
+### Federated identity: SSO, SAML and SCIM
+
+Four ways in besides a password, and one set of account-matching rules behind all of them
+(`packages/auth/src/federated-sign-in.ts`). One implementation rather than four is the security
+decision here: "never auto-link an unverified address" written four times is four chances to get it
+subtly different, and the difference that matters is the one where two rows claim the same person.
+
+**The identity is the provider's subject, never the email.** Google's `sub`, GitHub's numeric `id`, the
+SAML `NameID`. An email address is mutable and reassignable — somebody changes their surname, or leaves
+and their address is handed to a new joiner — so keying on it means the second person inherits the
+first person's account. The address is what the *first* match is made on and is a stored fact
+afterwards. `user_identities` enforces it with a unique index on `(organization, provider, subject)`,
+and `linkIdentity` never updates `user_id`: a subject belongs permanently to the account it was first
+linked to, or the provider becomes an account-takeover primitive.
+
+**The four rules, in order.** A known subject is that person and the asserted email is not consulted.
+An unverified address never matches an existing account — refused, with the way back being to sign in
+through a channel you already control and link the provider from `/account`, which is an ownership
+confirmation made by somebody already known to be the account holder. A verified address matches and
+links, activating a *pending* invitation on the way, because a verified address is the proof an
+invitation asks for. No match and no provisioning means no account: Compass seats are invited, and a
+flow that minted one on first Google login would let anybody with a Google account take a seat in
+somebody else's organization.
+
+**Only a directory may provision, and never as an owner.** SAML and SCIM may create a seat because the
+assertion comes from the organization's own identity provider — the system that issues its mailboxes —
+rather than from a consumer account. `saml_connections.default_role` carries a CHECK excluding `owner`,
+so anybody who can add a user to a directory group still cannot take over the organization. A directory
+may also *reinstate* a revoked seat, at the role it held; a consumer SSO sign-in may not, or
+`removeSeat` would be reversible by the person who was removed.
+
+**Compass's own second factor is still enforced after a federated sign-in.** Deliberate: Compass cannot
+see whether the provider applied a second factor to *this* sign-in, so treating a federated sign-in as
+self-evidently two-factor would silently downgrade every account that had turned 2FA on. All three
+paths — password, OAuth, SAML — hand back the same signed challenge and mint the session from
+`startSession`, so rotation and both TTLs are inherited by construction rather than by three call sites
+agreeing.
+
+**SAML is one narrow profile, and everything else is refused with a named reason.** Signed *assertions*
+(not merely signed responses — a signature over the envelope says nothing about which assertion inside
+it to trust), RSA-SHA256, SHA-256 digests, exclusive canonicalisation, exactly one assertion, exactly
+one signature that is a direct child of what it signs, and no encrypted assertions. A signature proves
+the IdP said it; the audience, recipient, validity-window and replay checks are what establish that it
+was said *to Compass*, *now*, and *once*. A missing `AudienceRestriction` is refused rather than
+tolerated, because that is the check whose absence lets an assertion minted for any other application
+on the same IdP be replayed here.
+
+**The XML signature layer is first-party code, and that is a stated trade.**
+`packages/auth/src/xml-signature.ts` implements the exclusive canonicaliser and the DSIG verifier over
+`node:crypto`, because a dependency could not be added to this workspace — `pnpm add` fails with
+`ERR_PNPM_UNEXPECTED_VIRTUAL_STORE` (the per-package `node_modules` are junctions into a shared store)
+and the repair is a full reinstall that rewrites the whole checkout. The risk is contained by refusing
+rather than accommodating: DOCTYPEs, entity declarations, comments, CDATA and processing instructions
+are all parse *failures*, and anything outside the one algorithm profile is a named refusal. What this
+buys is that every deviation fails **closed** — the honest limitation is interoperability, not
+security. A canonicaliser that disagreed with some IdP in a corner produces a digest mismatch, which
+refuses a sign-in and says so; it does not admit anybody. `packages/auth/tests/xml-signature.test.ts`
+states this in its own header and asserts the refusals directly: tampered content, a duplicated
+reference id (the wrapping attack), a relocated signature, SHA-1, inclusive c14n, unknown transforms.
+Interoperability against a real IdP is an integration test, not something a unit suite can fake.
+
+**SCIM: a SCIM User *is* a Compass seat.** `id` is the membership id and there is no parallel SCIM user
+concept, which is what makes "deprovisioning frees a seat" true rather than approximately true — a
+separate table would fork the seat lifecycle from the one the seat count reads. Deprovisioning routes
+to the same `removeSeat` the owner-facing seat screen calls, so sessions are revoked, invitations
+revoked, team scopes cleared and an audit row written; it is satisfied **synchronously**, so there is
+no window rather than a cycle-long one. It is honoured on `DELETE`, on Okta's `PATCH {path: "active"}`
+and on Azure AD's pathless `PATCH {value: {active: false}}`, because all three are the same act and an
+implementation honouring only `DELETE` would leave sessions live for half the market's offboarding
+while the provider reported success. Roles are never taken from the payload.
+
+**SCIM tokens are mailed, not returned.** `compass/no-secret-disclosure` refuses a credential in any
+response body and the quality gate asserts that no file anywhere disables that rule — so there is no
+exception for "but a bearer token has to be delivered somehow". Mail is the channel this product
+already uses for a one-time secret, and it is the better answer on the merits: the screen that would
+display it is the screen an administrator is most likely to be screen-sharing while configuring an
+integration. Only the SHA-256 reaches the database.
+
+**SAML and SCIM are gated to the Business plan**, read from `includesEnterpriseIdentity` in
+`packages/billing/src/plans.ts` rather than by comparing a plan name — the version of that check that
+breaks the day a fourth plan is added. An organization with no subscription answers *false*, so an
+unconfigured deployment does not expose provisioning endpoints. The gate is checked before the bearer
+token and before any XML is parsed, and it returns a sentence naming the plan rather than a 404,
+because the caller is an administrator wiring up an integration who would otherwise hunt for a typo in
+a URL that is correct. Reading `/enterprise` is deliberately *not* gated: a page whose whole content
+explains a feature you might buy must not require having bought it.
 
 ## Roles in the build
 

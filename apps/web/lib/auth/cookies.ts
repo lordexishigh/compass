@@ -118,6 +118,87 @@ export function setSessionCookie(response: NextResponse, request: Request, secre
   return response;
 }
 
+// ---------------------------------------------------------------------------
+// The single-sign-on nonce
+// ---------------------------------------------------------------------------
+
+/**
+ * Where the SSO round-trip's nonce lives while the person is at the provider.
+ *
+ * ## Why a second cookie rather than reusing the session one
+ *
+ * Because there is usually no session. An SSO sign-in starts with a signed-out browser, so the value
+ * that binds the callback to *this* browser cannot live in a session — there is none to put it in.
+ *
+ * ## Why `SameSite=Lax` and not `Strict`
+ *
+ * The callback is a top-level navigation from accounts.google.com or github.com, and `Strict` would
+ * withhold the cookie on exactly that request — so the nonce would always appear absent and every
+ * sign-in would be refused. `Lax` sends it on a top-level GET, which is precisely this case and
+ * nothing wider.
+ *
+ * ## What it is for
+ *
+ * Login CSRF. The signed `state` is unforgeable but not *bound* to a browser: without a nonce, an
+ * attacker can start a flow with their own provider account, capture the resulting callback URL, and
+ * feed it to a victim — who would then be silently signed in as the attacker, in the attacker's
+ * account, and might go on to type something into it. Comparing the nonce makes a callback usable only
+ * in the browser that began the flow.
+ */
+export const SSO_NONCE_COOKIE_NAME = 'compass_sso_nonce';
+
+/** Ten minutes, matching `SSO_STATE_TTL_MILLIS` — the state expires with it either way. */
+export const SSO_NONCE_MAX_AGE_SECONDS = 10 * 60;
+
+export function setSsoNonceCookie(response: NextResponse, request: Request, nonce: string): NextResponse {
+  response.cookies.set(SSO_NONCE_COOKIE_NAME, nonce, {
+    httpOnly: true,
+    secure: requestIsSecure(request),
+    sameSite: 'lax',
+    path: '/',
+    maxAge: SSO_NONCE_MAX_AGE_SECONDS,
+  });
+  return response;
+}
+
+export function readSsoNonceCookie(request: Request): string | null {
+  const header = request.headers.get('cookie');
+  if (header === null) return null;
+
+  for (const part of header.split(';')) {
+    const separator = part.indexOf('=');
+    if (separator === -1) continue;
+    if (part.slice(0, separator).trim() !== SSO_NONCE_COOKIE_NAME) continue;
+
+    const value = part.slice(separator + 1).trim();
+    if (value.length === 0) return null;
+
+    try {
+      return decodeURIComponent(value);
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+/**
+ * Clears the nonce, which the callback does whatever the outcome.
+ *
+ * Single-use by construction: a nonce left on the browser after a completed round-trip is one that
+ * could be paired with a captured `state` a second time, which is the replay the nonce exists to stop.
+ */
+export function clearSsoNonceCookie(response: NextResponse, request: Request): NextResponse {
+  response.cookies.set(SSO_NONCE_COOKIE_NAME, '', {
+    httpOnly: true,
+    secure: requestIsSecure(request),
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 0,
+  });
+  return response;
+}
+
 /**
  * Clears the cookie.
  *

@@ -88,6 +88,34 @@ const EXPECTED: Readonly<Record<string, Partial<Record<Action, readonly Principa
     DELETE: ['owner', 'manager', 'member', 'viewer'],
   },
   '/api/auth/2fa/recovery-codes': { POST: ['owner', 'manager', 'member', 'viewer'] },
+  /**
+   * Single sign-on, restated as intent.
+   *
+   * `public` on the start *and* the callback. The start grants nothing — no session, no row, one
+   * short-lived nonce cookie — and is also how a signed-in person begins a *link*, so a session is
+   * optional rather than forbidden. The callback arrives as a top-level navigation from the provider
+   * with no cookie it could send, so requiring one would be circular; what authorises it is an
+   * HMAC-signed `state` naming the one organization the identity may attach to, plus a nonce cookie
+   * binding it to the browser that started the flow.
+   *
+   * Unlinking needs a seat *and* the current password — the second half is not expressible here and is
+   * asserted in `tests/sso-routes.test.ts`.
+   */
+  '/api/auth/sso/[provider]': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
+  '/api/auth/sso/[provider]/callback': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
+  '/api/auth/sso/unlink': { POST: ['owner', 'manager', 'member', 'viewer'] },
+  /**
+   * SAML. Both rows `public`, and both for reasons narrower than they look.
+   *
+   * Metadata is fetched by identity providers from their own infrastructure and pasted into consoles by
+   * administrators who have no Compass account yet; it carries an entity id, an ACS URL and two flags,
+   * with no organizational data and no credential. The ACS is a form POST from the user's browser
+   * redirected there by the provider, and what admits it is a signature over the assertion, an issuer
+   * match, an audience match, a validity window and a one-shot replay claim — a bar an authenticated
+   * manager cannot clear.
+   */
+  '/api/auth/saml/metadata': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
+  '/api/auth/saml/acs': { POST: ['public', 'owner', 'manager', 'member', 'viewer'] },
   '/api/auth/magic-link': { POST: ['public', 'owner', 'manager', 'member', 'viewer'] },
   '/api/auth/magic-link/consume': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
   '/api/auth/password-reset': { POST: ['public', 'owner', 'manager', 'member', 'viewer'] },
@@ -218,11 +246,15 @@ const EXPECTED: Readonly<Record<string, Partial<Record<Action, readonly Principa
    * Reading `/connect` is owner-only as well as writing it, because the page states which sources are
    * connected and when — the shape of the organization's integrations, which is not a manager's concern.
    *
-   * `/api/connect/github/callback` names `public` for exactly the reason `/api/webhooks/[provider]` and
-   * `/api/stripe/webhook` do: it is a top-level navigation from github.com with no cookie it could send,
+   * One dynamic route serves all three providers, because the handler's logic is identical for all three
+   * and every difference between them is configuration. A route per provider is how the fourth one ends up
+   * with a subtly different state lifetime, or quietly stops checking the role.
+   *
+   * `/api/connect/[provider]/callback` names `public` for exactly the reason `/api/webhooks/[provider]` and
+   * `/api/stripe/webhook` do: it is a top-level navigation from the provider with no cookie it could send,
    * and what authorises it is narrower than a session — an HMAC-signed `state` this deployment minted,
-   * naming the one organization the credential may be stored against, inside a ten-minute window and
-   * refused entirely when no state secret is set.
+   * naming the one organization the credential may be stored against *and the one provider flow it belongs
+   * to*, inside a ten-minute window and refused entirely when no state secret is set.
    */
   /**
    * The published legal and trust documents, public in every tenant.
@@ -242,9 +274,12 @@ const EXPECTED: Readonly<Record<string, Partial<Record<Action, readonly Principa
   },
 
   '/connect': { GET: ['owner'] },
-  '/api/connect/github/install': { POST: ['owner'] },
-  '/api/connect/github/disconnect': { POST: ['owner'] },
-  '/api/connect/github/callback': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
+  '/api/connect/[provider]/install': { POST: ['owner'] },
+  '/api/connect/[provider]/disconnect': { POST: ['owner'] },
+  // Per-repository, per-project and per-channel scoping. Owner only for the same reason the install is:
+  // widening what Compass reads is exactly as consequential as connecting in the first place.
+  '/api/connect/[provider]/scope': { POST: ['owner'] },
+  '/api/connect/[provider]/callback': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
 
   /**
    * Billing: every write is the owner's, and `/pricing` is the one page public in *every* tenant.
@@ -271,6 +306,33 @@ const EXPECTED: Readonly<Record<string, Partial<Record<Action, readonly Principa
   '/api/billing/plan': { POST: ['owner'] },
   '/api/billing/cancel': { POST: ['owner'] },
   '/api/stripe/webhook': { POST: ['public', 'owner', 'manager', 'member', 'viewer'] },
+
+  /**
+   * Enterprise identity, restated as intent.
+   *
+   * Owner only on both, and deliberately not a manager: configuring an identity provider decides who can
+   * become a member of this organization, and issuing a SCIM token hands a machine the power to create
+   * and remove seats. The *plan* gate is not in this table — reading the screen that explains what the
+   * Business plan would give you must not require the Business plan.
+   *
+   * The SCIM rows are `public` on every verb they serve, and that is among the narrowest entries here
+   * rather than the widest: a SCIM client is an IdP's backend service with no browser and no cookie, and
+   * what admits it is a 256-bit bearer token compared by digest in constant time plus the plan gate.
+   * `PUT` and `PATCH` are both declared because providers disagree about which verb a deprovision is,
+   * and a verb absent from the map is served to nobody.
+   */
+  '/enterprise': { GET: ['owner'] },
+  '/api/enterprise/identity': { POST: ['owner'], DELETE: ['owner'] },
+  '/api/scim/v2/Users': {
+    GET: ['public', 'owner', 'manager', 'member', 'viewer'],
+    POST: ['public', 'owner', 'manager', 'member', 'viewer'],
+  },
+  '/api/scim/v2/Users/[scimUserId]': {
+    GET: ['public', 'owner', 'manager', 'member', 'viewer'],
+    PATCH: ['public', 'owner', 'manager', 'member', 'viewer'],
+    PUT: ['public', 'owner', 'manager', 'member', 'viewer'],
+    DELETE: ['public', 'owner', 'manager', 'member', 'viewer'],
+  },
 
   /**
    * Configuration and the identity roster: owner *and* manager on every verb.
@@ -651,6 +713,18 @@ describe('the seeded demo report route stays publicly readable', () => {
       // The code step of a two-factor sign-in. Reached with no session by construction — the password
       // step deliberately mints none — and authorised by a signed challenge plus a valid code.
       '/api/auth/2fa/challenge',
+      // Single sign-on. The start grants nothing and the callback arrives from the provider with no
+      // cookie; both are authorised by a signed `state` plus a nonce cookie rather than by a session.
+      '/api/auth/sso/[provider]',
+      '/api/auth/sso/[provider]/callback',
+      // SAML. Metadata is a document with no tenant data in it; the ACS is admitted by a signed,
+      // audience-bound, single-use assertion, which is narrower than a session rather than weaker.
+      '/api/auth/saml/metadata',
+      '/api/auth/saml/acs',
+      // SCIM. An identity provider's backend service, admitted by a bearer token an owner issued and
+      // can revoke, plus the Business-plan gate.
+      '/api/scim/v2/Users',
+      '/api/scim/v2/Users/[scimUserId]',
       '/api/auth/login',
       '/api/auth/logout',
       '/api/auth/magic-link',
@@ -674,10 +748,11 @@ describe('the seeded demo report route stays publicly readable', () => {
       '/api/webhooks/[provider]',
       // Signature-authorised, like the three provider webhooks above and for the same reason.
       '/api/stripe/webhook',
-      // The OAuth install return. Cookie-less by nature — a top-level navigation from github.com —
-      // and authorised by an HMAC-signed `state` naming the one organization it may store against,
-      // which is narrower than a session rather than weaker than one.
-      '/api/connect/github/callback',
+      // The OAuth install return, for all three providers. Cookie-less by nature — a top-level
+      // navigation from the provider — and authorised by an HMAC-signed `state` naming the one
+      // organization it may store against and the one flow it belongs to, which is narrower than a
+      // session rather than weaker than one.
+      '/api/connect/[provider]/callback',
       // The public pricing page. Unlike every other entry in this list it is public in a *real*
       // tenant too, because it reads the plan table and nothing about the organization.
       '/pricing',

@@ -71,6 +71,19 @@ export interface Plan {
   readonly maxTeams: number | null;
   /** Named capabilities, for the pricing table. Prose, not feature flags. */
   readonly includes: readonly string[];
+  /**
+   * Whether this plan may configure SAML single sign-on and SCIM provisioning.
+   *
+   * A typed field rather than a string in `includes`, because it is the one entry in this table that
+   * a *route* consults: `/api/auth/saml/acs` and `/api/scim/v2/Users` refuse an organization whose
+   * plan does not carry it. Deriving the gate from prose would mean an editorial change to a pricing
+   * bullet silently opened or closed an endpoint.
+   *
+   * It is declared here, in the plan table, for the same reason the seat price is: so the auth layer
+   * asks "does this plan include enterprise identity" instead of comparing a plan *name*, which is
+   * the version of this check that breaks the day a fourth plan is added.
+   */
+  readonly includesEnterpriseIdentity: boolean;
   /** The environment variable holding this plan's Stripe price id. */
   readonly priceIdEnvVar: string;
 }
@@ -97,6 +110,7 @@ export const PLANS: readonly Plan[] = Object.freeze([
       'Email delivery',
       '3 years of report history',
     ]),
+    includesEnterpriseIdentity: false,
     priceIdEnvVar: 'STRIPE_PRICE_STARTER',
   }),
   Object.freeze({
@@ -113,6 +127,7 @@ export const PLANS: readonly Plan[] = Object.freeze([
       'Manager Memos',
       'Weekly digest',
     ]),
+    includesEnterpriseIdentity: false,
     priceIdEnvVar: 'STRIPE_PRICE_TEAM',
   }),
   Object.freeze({
@@ -127,8 +142,10 @@ export const PLANS: readonly Plan[] = Object.freeze([
       'GitHub and Jira connectors',
       'Process calibration audit',
       'Share links with expiry',
+      'SAML single sign-on and SCIM provisioning',
       'Priority support',
     ]),
+    includesEnterpriseIdentity: true,
     priceIdEnvVar: 'STRIPE_PRICE_BUSINESS',
   }),
 ]);
@@ -156,6 +173,33 @@ export function planById(planId: PlanId): Plan {
 /** The plan, or null — for a value off a webhook or a URL that has not been validated yet. */
 export const findPlan = (planId: string): Plan | null =>
   PLANS.find((plan) => plan.id === planId) ?? null;
+
+/**
+ * Whether this organization's plan may use SAML and SCIM.
+ *
+ * `null` — no subscription at all — answers **false**, and that is the deliberate direction. A
+ * deployment with no Stripe key has no plan, and an unconfigured Compass must not silently expose
+ * enterprise provisioning endpoints to the internet. The endpoints say so in the product's voice
+ * rather than 404ing, so an operator evaluating Compass is told what to do instead of guessing.
+ *
+ * Taking a `PlanId | null` rather than a `SubscriptionFacts` keeps this callable from a route that has
+ * only read the plan id, which is all the gate needs.
+ */
+export const planIncludesEnterpriseIdentity = (planId: PlanId | null): boolean =>
+  planId !== null && (findPlan(planId)?.includesEnterpriseIdentity ?? false);
+
+/**
+ * The one sentence every enterprise-identity refusal uses.
+ *
+ * Named here, beside the plan table, so the SAML route, the SCIM routes and the settings screen cannot
+ * describe the same gate three different ways — and so the plan it names is read from the table rather
+ * than typed into a string.
+ */
+export const ENTERPRISE_IDENTITY_REQUIRED_STATEMENT: string =
+  `SAML single sign-on and SCIM provisioning are part of the ${
+    PLANS.find((plan) => plan.includesEnterpriseIdentity)?.name ?? 'Business'
+  } plan. Every other way of signing in — password, emailed link, Google and GitHub — works on every ` +
+  'plan, and nothing about the reports changes. An owner can change the plan from the billing screen.';
 
 /** Cheapest-first position, so "is this an upgrade" is one comparison rather than a table. */
 export const planRank = (planId: PlanId): number => PLANS.findIndex((plan) => plan.id === planId);
