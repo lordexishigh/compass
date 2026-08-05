@@ -2,7 +2,7 @@
 
 [![nous score](https://img.shields.io/badge/nous%20score-55%2F100-red)](#) ![readiness](https://img.shields.io/badge/readiness-blocked-red)
 
-**Overall: 55/100** · readiness: **blocked** · build verified ✓
+**Overall: 55/100** · readiness: **blocked**
 
 **Live:** https://compass-in1avxuv1-lordexishighs-projects.vercel.app
 
@@ -10,25 +10,25 @@
 
 | Dimension | Score | |
 |---|---:|---|
-| Spec coverage | 88 | `██████████████████░░` |
+| Spec coverage | 84 | `█████████████████░░░` |
 | Code quality | 87 | `█████████████████░░░` |
-| Robustness & error handling | 82 | `████████████████░░░░` |
-| Builds & tests | 92 | `██████████████████░░` |
-| UX & design | 85 | `█████████████████░░░` |
+| Robustness & error handling | 76 | `███████████████░░░░░` |
+| Builds & tests | 26 | `█████░░░░░░░░░░░░░░░` |
+| UX & design | 82 | `████████████████░░░░` |
 
 ## Readiness checks
 
 **Security**
-- ❌ No hardcoded secrets — hardcoded secret in apps/web/tests/edge-failure.test.ts; hardcoded secret in apps/web/tests/feedback-loop.test.ts; hardcoded secret in apps/web/tests/feedback-routes.test.ts; hardcoded secret in apps/web/tests/login-path.test.ts; hardcoded secret in apps/web/tests/login-route.test.ts
+- ❌ No hardcoded secrets — GitHub token in apps/web/tests/token-storage.test.ts; hardcoded secret in apps/worker/tests/cold-start.test.ts; hardcoded secret in packages/auth/src/bootstrap.ts; GitHub token in packages/auth/tests/integration-tokens.test.ts; hardcoded secret in packages/auth/tests/password.test.ts
 - ✅ Secrets file ignored — .env present but gitignored
-- ❌ Row-Level Security — Supabase tables created but no 'enable row level security' — data may be public
+- ✅ Row-Level Security — RLS enabled on the schema
 
 **Quality**
 - ✅ Automated tests — test files present
 - ✅ No stub/placeholder code — no stub markers found
 - ✅ Dependencies pinned — lockfile/requirements present
 - ⚠️ License declared — no LICENSE file or declared license — ownership/reuse terms are ambiguous
-- ✅ Builds & tests pass — final smoke test passed
+- ❌ Builds & tests pass — final product smoke test did not pass
 - ✅ Accessibility basics — images have alt text
 
 **Compliance**
@@ -41,25 +41,25 @@
 
 ## Strengths
 
-- The determinism and purity promises are enforced mechanically, not asserted in prose: dependency-cruiser architecture rules, an arch test failing on I/O or time imports inside `packages/analysis`, byte-identical regeneration checked across processes, and 40 golden fixtures with a reviewable `golden:update` diff.
-- The hard differentiators are real implementations, not sketches — `packages/analysis/src/calibration.ts` computes the full statistic set against named thresholds in `thresholds.ts` and feeds projection confidence, and the completion ladder, memos, and report-diff engine each have their own module plus UI component.
-- Tenancy and authorization are tested at the boundary that matters: `tests/authz-matrix.test.ts` and `tests/two-org-isolation.test.ts` exercise the four-role matrix and cross-org isolation per route rather than trusting a middleware comment.
-- Security posture is documented and diffed against the code — middleware owns all six response headers with a per-response nonce, `next.config.ts` is asserted to declare none, and `security-posture.test.ts` fails when `docs/ENGINEERING.md` drifts from the module.
+- The pure/impure boundary is real and mechanically defended: `packages/analysis` takes a snapshot plus an instant (its own `instant.js`, no clock import), `packages/seed-snapshot` exists specifically so the golden-fixture and determinism gates can project the seeded org without a forbidden cross-package test import, and dependency-cruiser plus `workspace-layout.test.ts`/`provider-neutrality.test.ts` fail the build on violations.
+- Tenancy is enforced at one chokepoint rather than per-route: `ScopedInsert` structurally removes `organizationId` from caller-supplied values, `insertInto` re-checks at runtime with `CrossOrgWriteError`, `ScopedSelect.toSQL()` is exposed so tests can assert the org predicate is present, and append-only history tables reject updates via `AppendOnlyTableError`.
+- The Process Calibration Audit is fully implemented rather than gestured at — 53KB computing the trailing-sprint statistic set with evidence refs (`ticketEvidence`, `sprintEvidence`) and named threshold IDs, so projection confidence is derived from documented verdicts instead of asserted.
+- The seed dataset is a checked-in deterministic generator with a self-check: no host clock, no `Math.random`, no locale-sensitive comparison, and `pnpm seed:generate` followed by `git diff --exit-code` as the property test, with commit traceability deliberately classified into clean/branch-hint/semantic/untraceable classes.
 
 ## To improve
 
-- Row-Level Security: Supabase tables created but no 'enable row level security' — data may be public
-- No hardcoded secrets: hardcoded secret in apps/web/tests/edge-failure.test.ts; hardcoded secret in apps/web/tests/feedback-loop.test.ts; hardcoded secret in apps/web/tests/feedback-routes.test.ts; hardcoded secret in apps/web/tests/login-path.test.ts; hardcoded secret in apps/web/tests/login-route.test.ts
-- No Jira self-serve connect exists: add `apps/web/app/api/connect/jira/{install,callback,disconnect}/route.ts` mirroring the GitHub triple, a per-project/board scoping selector in `apps/web/app/connect/page.tsx`, and a `JiraConnector` implementing the `@compass/connector-port` query port so the ticket, sprint and transition records the report already cites can come from a manager's own board.
-- No Slack workspace install flow exists — only `api/slack/actions/route.ts` and the generic `api/webhooks/[provider]` receiver — so the Block Kit feedback and DM delivery paths cannot be authorized by a manager; add a Slack OAuth install/callback route pair plus channel and DM selection persisted alongside the delivery subscription rows in `apps/worker/src/delivery.ts`.
-- Add PostgreSQL row-level security to the Drizzle migrations as defense in depth behind the scoped-query layer: enable RLS on every `organization_id`-bearing table with a policy bound to a per-connection `app.current_org` setting, and have the scoped-query layer set it, so an unscoped query added later returns zero rows instead of another org's.
-- Remove the credential literals the secret scan still flags in `apps/web/tests/{edge-failure,feedback-loop,feedback-routes,login-path,login-route}.test.ts` — hoist them into a single `tests/helpers/test-secrets.ts` that derives values at runtime, so gitleaks passes without an allowlist entry per file.
-- Break up the three modules that have outgrown review: split `packages/seed-connector/src/generator.ts` (84KB) into per-record-family generators behind the existing self-check, split `packages/analysis/src/calibration.ts` (54KB) one file per statistic with the verdict mapping kept in a thin composer, and decompose `apps/web/components/roster-screen.tsx` (44KB) into identity-queue, merge/un-merge and absence panels.
-- Close the remaining launch-hygiene gaps the checks name: add a top-level LICENSE (and a `license` field in the workspace `package.json`), a cookie-consent gate for the analytics path, and `robots.txt` plus a sitemap route for the public `/pricing`, `/legal` and `/trust` pages.
+- Builds & tests pass: final product smoke test did not pass
+- No hardcoded secrets: GitHub token in apps/web/tests/token-storage.test.ts; hardcoded secret in apps/worker/tests/cold-start.test.ts; hardcoded secret in packages/auth/src/bootstrap.ts; GitHub token in packages/auth/tests/integration-tokens.test.ts; hardcoded secret in packages/auth/tests/password.test.ts
+- Move the hardcoded secret out of `packages/auth/src/bootstrap.ts` — it is production source, not a fixture — into a required environment variable that fails fast with a named-variable error at startup (mirroring the `RESEND_API_KEY` pattern in `packages/delivery/src/transport.ts`), and add a lint/test rule over `packages/*/src/**` so a literal credential in shipped source fails the build the way the architecture rules already fail a bad import.
+- The final smoke test is still red while `pnpm verify` is reported green, which means the gates do not cover the assembled artifact: add a smoke job that runs the documented cold-start path end to end (`apps/worker/src/cold-start.ts` → `packages/db/src/first-run.ts` → `next build` → GET `/` asserting a rendered six-section report) and make it a required check, so the build-versus-product gap cannot recur silently. Delete the committed `apps/web/tsconfig.tsbuildinfo` and gitignore it, since a stale incremental-build artifact in the tree can make a local typecheck disagree with a clean checkout.
+- Jira self-serve connect is still absent in the current tree — there is no `apps/web/app/api/connect/jira/` directory at all, only the GitHub triple. Add `install`/`callback`/`disconnect` routes for Atlassian 3LO with Cloud site selection, a board/project scoping selector in `apps/web/app/connect/page.tsx`, and a `JiraConnector` implementing the `@compass/connector-port` time-windowed query port so ticket ingest can come from a live board without touching the knowledge model.
+- Slack workspace install is still missing: `api/slack/actions/route.ts` handles interactions and `packages/delivery/src/slack.ts` renders Block Kit, but with no OAuth install/callback pair a manager cannot authorize the workspace, so DM delivery and Block Kit feedback are unreachable in a real deployment. Add `api/connect/slack/{install,callback}` with signed-state verification, store the bot token per organization, and add a channel/DM picker persisted alongside the delivery subscription.
+- Add per-repository scoping after GitHub install — nothing beyond `install`/`callback`/`disconnect` selects repos — so ingest can be restricted to the repos a team owns rather than the whole installation; persist the selection on `trackedRepositories` (already in the schema) and surface it in the connect page.
+- Close the two remaining launch-readiness gaps that are one file each: add a `LICENSE` file and a `license` field in the root `package.json` (ownership terms are currently ambiguous), and add `apps/web/app/robots.ts` plus `apps/web/app/sitemap.ts` covering `/pricing`, `/legal/*` and `/trust/subprocessors` so the public marketing surface is indexable.
 
 ## Summary
 
-A genuinely strong, verifiable build: the layered monorepo, injected clock, pure analysis layer, determinism gate and golden fixtures are enforced by the build rather than claimed, and the differentiators (calibration audit, completion ladder, manager memos, report diff) exist as real tested modules behind a coherent prose-document UI. The gaps are the failed live-connector work — no Jira or Slack self-serve install, so the product cannot yet leave the seeded org — plus a few hardening items: application-only org scoping with no RLS backstop, test-file secret literals, and three oversized modu
+A genuinely deep, architecturally disciplined build — the pure analysis layer, calibration audit, deterministic seed generator, scoped-query tenancy layer and golden-fixture suite are all real, substantial code rather than scaffolding — but it cannot be called shippable while the final product smoke test fails and a hardcoded secret sits in `packages/auth/src/bootstrap.ts`. The largest functional gap against its own pitch is connectivity: two of the three named sources (Jira, Slack) have no self-serve connect path, so the live-data story remains unbuilt.
 
 ---
-_Scored 2026-08-05 17:46 by [nous](https://github.com/lordexishigh/nous) — an LLM judge anchored by deterministic readiness checks; regenerated on every re-score._
+_Scored 2026-08-05 19:56 by [nous](https://github.com/lordexishigh/nous) — an LLM judge anchored by deterministic readiness checks; regenerated on every re-score._
