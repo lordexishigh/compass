@@ -5,6 +5,7 @@ import {
   CALIBRATION_VERDICTS,
   THRESHOLDS,
   assessProgress,
+  auditProcessCalibration,
   projectCompletion,
   resolveScope,
 } from '@compass/analysis';
@@ -278,6 +279,99 @@ describe('it refuses rather than guessing', () => {
         expect(['insufficient_history', 'no_remaining_scope', 'no_flow_history'], teamKey).toContain(projection.reason);
       }
     }
+  });
+});
+
+/**
+ * A Kanban team's date comes from cycle time, and never from a sprint count.
+ *
+ * The regression these pin: `insufficient_history` is `completed_sprint_count` against
+ * T7, and it used to refuse the date before the mode was consulted. A Kanban team's
+ * completed-sprint count is zero permanently and by design, so the refusal was
+ * unconditional — the cycle-time arm was unreachable code for exactly the teams whose
+ * primary method it is, and the sentence a Kanban manager read blamed them for missing
+ * sprints they had chosen not to run.
+ */
+describe('the Kanban projection is reachable and is not a sprint-count refusal', () => {
+  const kanban = () => {
+    const snapshot = buildSeedSnapshot({ scope: { kind: 'team', teamKey: 'insights' } });
+    const scope = resolveScope(snapshot);
+    const progress = assessProgress(snapshot, SEED_NOW, scope);
+    return { progress, projection: projectCompletion(snapshot, SEED_NOW, scope, progress) };
+  };
+
+  it('is measuring a genuinely sprintless team, so this suite cannot pass by accident', () => {
+    const { progress } = kanban();
+
+    expect(progress.mode).toBe('kanban');
+  });
+
+  it('carries the sprint-count verdict and still produces a date', () => {
+    // Both halves matter. The audit has not been silenced — `insufficient_history` is
+    // still true and still stated — it simply no longer decides a question it does not
+    // measure. A test that only checked for a date would also pass if the verdict had
+    // been suppressed, which would be a different and worse fix.
+    const snapshot = buildSeedSnapshot({ scope: { kind: 'team', teamKey: 'insights' } });
+    const scope = resolveScope(snapshot);
+    const audit = auditProcessCalibration(snapshot, SEED_NOW, scope);
+
+    expect(audit.verdictNames).toContain('insufficient_history');
+    expect(kanban().projection.kind).toBe('projected');
+  });
+
+  it('projects from measured cycle time, naming the method and the sample', () => {
+    const { projection } = kanban();
+    if (projection.kind !== 'projected') throw new Error('expected a Kanban date');
+
+    expect(projection.method).toBe('cycle_time');
+    expect(projection.reasoning.method).toBe('cycle_time');
+
+    const sample = projection.reasoning.inputs.find((input) => input.name === 'sampleSize');
+    expect(sample?.value, 'the flow sample is what this date rests on').toBeGreaterThan(0);
+    expect(projection.reasoning.inputs.map((input) => input.name)).toContain('medianCycleTimeDays');
+  });
+
+  it('never tells a Kanban team it is short of sprints', () => {
+    const { projection } = kanban();
+
+    // The exact framing that was wrong: a methodology choice reported as thin data.
+    expect(projection.statement).not.toMatch(/completed sprints/i);
+    expect(projection.statement).not.toMatch(/needs \d+ completed/i);
+  });
+
+  it('states low confidence rather than silence, which is how thin data degrades here', () => {
+    // The refusal was defended as caution about a small sample. This is the product's
+    // actual answer to that: a band, a stated confidence level, and type the web view
+    // sets lighter — not a withheld date.
+    const { projection } = kanban();
+    if (projection.kind !== 'projected') throw new Error('expected a Kanban date');
+
+    expect(['low', 'medium', 'high']).toContain(projection.band.confidence);
+    expect(projection.band.latestInstant).toBeGreaterThanOrEqual(projection.instant);
+  });
+
+  it('still refuses when nothing has been observed finishing at all', () => {
+    /**
+     * The guard that genuinely applies to flow, and the one the sprint count was
+     * standing in for. 2026-05-01 is early enough in the seed that no INS item has
+     * finished yet — by 2026-05-25 the first ones have, and the team projects.
+     *
+     * So the fix did not simply delete a refusal: a Kanban team with no observed
+     * finishes is still told so, in flow's own terms, with T13 rather than T7 cited.
+     */
+    const instant = instantFromIso('2026-05-01T09:00:00.000Z');
+    const snapshot = buildSeedSnapshot({
+      scope: { kind: 'team', teamKey: 'insights' },
+      instant,
+      window: timeWindow(instantFromIso('2026-05-01T00:00:00.000Z'), instant),
+    });
+    const scope = resolveScope(snapshot);
+    const projection = projectCompletion(snapshot, instant, scope, assessProgress(snapshot, instant, scope));
+
+    if (projection.kind !== 'undefined') throw new Error('expected a refusal with no flow history');
+    expect(projection.reason).toBe('no_flow_history');
+    expect(projection.threshold.id).not.toBe('T7');
+    expect(projection.statement).not.toMatch(/completed sprints/i);
   });
 });
 

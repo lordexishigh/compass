@@ -98,8 +98,30 @@ knows a verdict was refused rather than simply absent.
 | --- | --- |
 | `points_uninformative` | The date comes from **measured cycle time** and states, in these words, that it *is a cycle-time guess, not a velocity forecast*. This overrides the item-count velocity path too — see the note in `projection.ts`. |
 | `estimates_sparse` | Points are not used to forecast |
-| `insufficient_history` | **No date at all**, with the reason stated |
+| `insufficient_history` | **No date at all**, with the reason stated — for a team that runs sprints. A Kanban team is exempt; see below. |
 | any verdict | Costs the confidence band one level, so `high` is unreachable while the audit has anything to say |
+
+#### `insufficient_history` does not refuse a Kanban team's date
+
+The verdict counts **completed sprints** (`completed_sprint_count` against T7). That is the
+right sufficiency test for a velocity forecast and the wrong one for a Kanban team, whose
+completed-sprint count is zero permanently and by design. Applied unconditionally it made the
+cycle-time arm — the only method a Kanban team has — unreachable code, and produced the
+sentence *"Compass needs 2 completed sprints before it will give you a date, and it has 0"*,
+which reports a deliberate methodology choice as thin data and contradicts the Progress
+section directly above it.
+
+So `projectCompletion` consults `progress.mode` first: a `kanban` team skips the T7 refusal
+and projects from measured cycle time. The verdict is **not** suppressed — it is still emitted,
+still stated, and still costs the band a confidence level. It simply no longer decides a
+question it does not measure.
+
+Flow keeps its own sufficiency tests, which are the ones that apply: `no_flow_history` when
+nothing has been observed finishing, and `confidenceFor`, which cannot reach better than `low`
+on a sample under twenty before the per-verdict demotion. A thin flow sample therefore degrades
+to a low-confidence band set in lighter type, which is this product's stated answer to thin
+data. `no_signal` keeps the T7 refusal: a team Compass has no tracker signal for may well run
+sprints, and assuming otherwise would be the same error in the other direction.
 
 The projection's `reasoning` names the method, the formula, the inputs, the assumptions,
 `selectedByVerdicts`, and the confidence band. Both arms of the union carry

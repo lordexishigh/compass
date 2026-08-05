@@ -435,6 +435,135 @@ export function storedBundle(): StoredReportBundle {
 }
 
 /**
+ * The Progress section a Kanban team gets, and the collar that goes with it.
+ *
+ * Wording copied from what the analysis core actually emits for the seeded `insights`
+ * team — `fixtures/reports/insights/*.json` is the checked-in proof of that, and
+ * `packages/analysis/tests/progress.test.ts` owns whether the numbers are right. What
+ * this fixture is for is the other half: that the *view* renders a flow Progress section
+ * at all. The web tests deliberately do not run the pipeline, so a Kanban report has to
+ * be handed to them or the Kanban path is a thing only the pure layer has ever seen.
+ *
+ * Four items, because those are the four flow claims: the throughput summary, WIP by
+ * column, cycle time with its trend, and the items aging past the team's own P85. No
+ * completion percentage and no story-point total appear anywhere, which is the point —
+ * a Kanban team has neither and Compass will not invent one.
+ */
+const KANBAN_PROGRESS_ITEMS: readonly ItemSpec[] = [
+  {
+    stableId: 'progress:flow:insights',
+    headline: 'Flow: 1 finished, 22 in flight',
+    detail: '1 item finished in this window, 22 are in flight, and the median item has been taking 6.5 days.',
+    prose:
+      '1 item finished in this window, 22 are in flight, and the median item has been taking 6.5 days from start to finish.',
+    ageDays: 9,
+    evidence: [['issue', 'INS-105', 'issue-INS-105']],
+  },
+  {
+    stableId: 'progress:flow:insights:wip',
+    headline: '22 items are in flight across 2 columns',
+    detail: 'In Progress 11, In Review 11.',
+    prose: '22 items are in flight across 2 columns — In Progress 11, In Review 11.',
+    ageDays: 9,
+    evidence: [['issue', 'INS-106', 'issue-INS-106']],
+  },
+  {
+    stableId: 'progress:flow:insights:cycle_time',
+    headline: 'Median cycle time 6.5 days, P85 9 days',
+    detail: 'Cycle time is shortening.',
+    prose:
+      'Over the last 28 days the median item took 6.5 days from start to finish and the slowest sixth took 9 or more, across 14 finished items. Cycle time is shortening: a median of 7 days over the earlier 14-day half, against 6 days over the later half.',
+    ageDays: 9,
+    evidence: [['issue', 'INS-118', 'issue-INS-118']],
+  },
+  {
+    stableId: 'progress:flow:insights:aging',
+    headline: '16 items have been in flight longer than the 9-day P85',
+    detail: 'INS-105 at 60 days in In Progress, INS-106 at 59 days in In Review, and 14 more.',
+    prose:
+      '16 items have been in flight longer than the 9-day P85: INS-105 at 60 days in In Progress, INS-106 at 59 days in In Review, and 14 more.',
+    ageDays: 9,
+    evidence: [['issue', 'INS-105', 'issue-INS-105']],
+  },
+];
+
+/**
+ * The Kanban collar: a cycle-time date at low confidence, chosen partly *because* there
+ * is no sprint history.
+ *
+ * `insufficient_history` appears in `selectedByVerdicts` rather than as a refusal reason,
+ * which is the distinction the analysis fix turned on — a sprint-count verdict may explain
+ * why velocity was not used, and may not refuse a date to a team that has no sprints by
+ * design. See `docs/CALIBRATION.md` § `insufficient_history` does not refuse a Kanban team.
+ */
+const KANBAN_COLLAR_FINDINGS = {
+  projection: {
+    kind: 'projected',
+    utcDate: '2026-11-09',
+    method: 'cycle_time',
+    selectedByVerdicts: ['estimates_sparse', 'insufficient_history'],
+    band: { confidence: 'low', spanDays: 86 },
+    statement:
+      '2026-11-09 to 2027-02-03 — a 86-day band from measured cycle time over 29 finished items.',
+    calibration: {
+      verdict: 'unknown',
+      statement:
+        'Only 0 completed items carried both an estimate and a measurable duration, so Compass cannot yet tell you whether your points mean anything.',
+    },
+  },
+  calibrationAudit: {
+    statement:
+      'Compass audited the data behind this report and reached 3 verdicts: estimates_sparse, statuses_stale, insufficient_history.',
+    suppressed: ['scope_is_fiction', 'workflow_inconsistent'],
+    verdicts: [
+      {
+        name: 'insufficient_history',
+        statistic: 'completed_sprint_count',
+        value: 0,
+        sampleSize: 0,
+        threshold: { id: 'T7', value: 2, unit: 'sample_size' },
+        statement:
+          'This team has 0 completed sprints, so Compass has no trailing sprint sample and did not use one.',
+      },
+    ],
+  },
+} as const;
+
+/**
+ * A stored report for the seeded Kanban team.
+ *
+ * Only Progress and the payload differ from `storedBundle`: the other five sections are
+ * methodology-independent, and rebuilding them here would be a second fixture to keep in
+ * step for no added coverage.
+ */
+export function kanbanBundle(): StoredReportBundle {
+  const bundle = storedBundle();
+
+  return {
+    ...bundle,
+    report: {
+      ...bundle.report,
+      scopeKey: 'insights',
+      payloadJson: JSON.stringify({ findings: KANBAN_COLLAR_FINDINGS }),
+      payload: { findings: KANBAN_COLLAR_FINDINGS },
+    },
+    sections: bundle.sections.map((section) => {
+      if (section.sectionKey !== 'progress') return section;
+
+      const items = KANBAN_PROGRESS_ITEMS.map((spec, index) => item(spec, index + 1));
+      return {
+        ...section,
+        itemCount: items.length,
+        summary:
+          'This team runs Kanban, so this section reports flow — work in progress by column, cycle time and the items aging past it. There is no completion percentage, no story-point total and no sprint goal to report, and Compass will not invent one.',
+        prose: items.map((entry) => entry.prose).join('\n\n'),
+        items,
+      };
+    }),
+  };
+}
+
+/**
  * A narrated report: the same claims, with a model's prose over the top.
  *
  * The section prose is what a narrator would have written — one lead, then the

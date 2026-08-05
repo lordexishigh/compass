@@ -244,15 +244,35 @@ export function projectCompletion(
   const finished = completedSprints(scopedSprints(snapshot, scope), instant);
 
   /**
-   * `insufficient_history` refuses a date outright, wherever it appears.
+   * `insufficient_history` refuses a date outright — for a team that runs sprints.
    *
-   * Checked before the sprint arm rather than inside it, because the Kanban and
-   * new-team cases reach this function through the cycle-time path, and a cycle
-   * time computed from two finished items would happily produce a confident date
-   * for a team Compass has no history for at all. A date with a shrug next to it
-   * is still a date somebody will put in a plan.
+   * It is a **sprint-count** verdict: `completed_sprint_count` against T7. That is the
+   * right sufficiency test for a velocity forecast and the wrong one for a Kanban team,
+   * whose completed-sprint count is zero today, zero tomorrow and zero forever *by
+   * design*. Applying it to one had two consequences, and both were bugs rather than
+   * conservatism:
+   *
+   *  - The cycle-time arm below — documented in this very function as "the primary
+   *    method for a Kanban team" — was unreachable for every Kanban team there has
+   *    ever been. The code existed and no input could run it.
+   *  - The refusal it produced instead said "Compass needs 2 completed sprints before
+   *    it will give you a date, and it has 0", which frames a deliberate methodology
+   *    choice as a data deficiency, and contradicts the Progress section directly above
+   *    it — that one correctly says this team runs Kanban and has no sprint to report.
+   *
+   * The original concern behind the unconditional check was real: a cycle time computed
+   * from two finished items should not produce a confident date. But sprint count never
+   * measured that, and the flow arm has its own tests for it — `no_flow_history` when
+   * nothing has been observed finishing, and `confidenceFor`, which cannot reach better
+   * than `low` on a sample under twenty and is demoted once per active audit verdict. A
+   * thin flow sample therefore degrades to a low-confidence band that the web view sets
+   * in lighter type, which is this product's stated answer to thin data — not silence.
+   *
+   * `no_signal` keeps the sprint-count refusal: a team Compass has no tracker signal for
+   * may well run sprints, and guessing that it does not would be the same class of error
+   * in the other direction.
    */
-  if (hasProcessVerdict(audit, 'insufficient_history')) {
+  if (progress.mode !== 'kanban' && hasProcessVerdict(audit, 'insufficient_history')) {
     return {
       kind: 'undefined',
       reason: 'insufficient_history',
@@ -321,8 +341,10 @@ export function projectCompletion(
     }
   }
 
-  // Cycle time: the fallback that needs no estimates, and the primary method for
-  // a Kanban team, which has no sprint to burn down.
+  // Cycle time: the fallback that needs no estimates, and — now actually reachable as
+  // one — the primary and only method for a Kanban team, which has no sprint to burn
+  // down. `packages/analysis/tests/projection.test.ts` asserts a Kanban team arrives
+  // here rather than at the T7 refusal, because that is the guarantee that regressed.
   return cycleTimeProjection(snapshot, instant, scope, progress, calibration, audit);
 }
 

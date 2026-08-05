@@ -259,7 +259,13 @@ export function fieldDifferences(expected: string, actual: string, limit = 25): 
   const left = parseOrNull(expected);
   const right = parseOrNull(actual);
   if (left === null || right === null) {
-    return [{ path: '$', expected: describe(left), actual: describe(right) }];
+    return [
+      {
+        path: '$',
+        expected: left === null ? UNPARSEABLE : describe(left),
+        actual: right === null ? UNPARSEABLE : describe(right),
+      },
+    ];
   }
 
   const found: FieldDifference[] = [];
@@ -275,7 +281,31 @@ const parseOrNull = (json: string): unknown => {
   }
 };
 
-const describe = (value: unknown): string => (value === null ? '<unparseable>' : JSON.stringify(value).slice(0, 120));
+/** What `$` reads as when a whole document could not be parsed. */
+const UNPARSEABLE = '<unparseable>';
+
+/** What a field reads as when that side of the comparison does not have it at all. */
+const ABSENT = '<absent>';
+
+/**
+ * One value as the failure message shows it.
+ *
+ * Three cases, and the previous one-liner collapsed them into two with a bug in each:
+ *
+ *  - **A key one side does not have.** `JSON.stringify(undefined)` returns the *value*
+ *    `undefined`, not a string, so `.slice(0, 120)` threw
+ *    `Cannot read properties of undefined (reading 'slice')`. The gate could therefore
+ *    detect an added or removed field and then crash instead of naming it — on the
+ *    commonest kind of fixture change there is, which is why it went unnoticed: every
+ *    test here changes a value in place. `<absent>` is the honest rendering, and it
+ *    reads correctly on both sides: `<absent> → 3` is a field that appeared, `3 →
+ *    <absent>` is one that went away.
+ *  - **A JSON null that is really in the document.** It rendered as `<unparseable>`,
+ *    which sent a reader looking for corrupt bytes over a field that was legitimately
+ *    null. `<unparseable>` now belongs only to `$`, where it is true.
+ */
+const describe = (value: unknown): string =>
+  value === undefined ? ABSENT : (JSON.stringify(value)?.slice(0, 120) ?? ABSENT);
 
 function walk(left: unknown, right: unknown, path: string, found: FieldDifference[], limit: number): void {
   if (found.length >= limit) return;

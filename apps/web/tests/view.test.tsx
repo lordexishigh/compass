@@ -22,6 +22,7 @@ import {
   freshnessAbsent,
   freshnessComplete,
   freshnessWithMissingSource,
+  kanbanBundle,
   storedBundle,
 } from './helpers/report-fixture';
 
@@ -55,6 +56,66 @@ describe('the report view renders six sections in the fixed order', () => {
     expect(markup).toContain('which is behind the pace the elapsed schedule implies');
     expect(markup).toContain('and it is one step, finishable today');
     expect(markup).toContain('so it has held for 6 days');
+  });
+});
+
+/**
+ * A Kanban team's Progress section, on the rendered page.
+ *
+ * The flow metrics are computed in `packages/analysis/src/progress.ts` and pinned against
+ * the real seed by `fixtures/reports/insights/*.json`. This is the other half, and the half
+ * that had never been asserted: that the *view* renders a flow Progress section rather than
+ * silently dropping the items whose shape it was not written for. A WIP table computed and
+ * never printed is the same class of bug as a `rungSuffix` computed and never printed.
+ */
+describe('a Kanban team reads flow in Progress, not a sprint it does not have', () => {
+  const kanbanMarkup = renderToStaticMarkup(
+    <ReportDocument view={buildReportView({ bundle: kanbanBundle(), freshness: freshnessComplete() })} />,
+  );
+
+  it('states up front that this section reports flow, and why there is no percentage', () => {
+    expect(kanbanMarkup).toContain('This team runs Kanban');
+    expect(kanbanMarkup).toContain('Compass will not invent one');
+  });
+
+  it('renders work in progress broken down by column', () => {
+    expect(kanbanMarkup).toContain('22 items are in flight across 2 columns');
+    expect(kanbanMarkup).toContain('In Progress 11');
+    expect(kanbanMarkup).toContain('In Review 11');
+  });
+
+  it('renders the cycle-time measurement and the direction it is moving', () => {
+    expect(kanbanMarkup).toContain('the median item took 6.5 days from start to finish');
+    expect(kanbanMarkup).toContain('Cycle time is shortening');
+  });
+
+  it('renders the items aging past the team’s own P85, naming them', () => {
+    expect(kanbanMarkup).toContain('longer than the 9-day P85');
+    expect(kanbanMarkup).toContain('INS-105 at 60 days in In Progress');
+  });
+
+  it('carries no sprint vocabulary, because the team has no sprint', () => {
+    // The failure this guards is a renderer reaching for the sprint arm's wording on a
+    // flow report — "62% complete", "of 39 points", a sprint goal. All three would be
+    // inventions, and the section summary above promises Compass does not make them.
+    const progressSection = kanbanMarkup.slice(
+      kanbanMarkup.indexOf('id="section-progress"'),
+      kanbanMarkup.indexOf('id="section-blockers"'),
+    );
+
+    expect(progressSection.length).toBeGreaterThan(200);
+    expect(progressSection).not.toMatch(/\d+% complete/);
+    expect(progressSection).not.toMatch(/of \d+ points/);
+    expect(progressSection).not.toMatch(/completed sprints/i);
+  });
+
+  it('shows the collar with a cycle-time date at low confidence, not a refusal', () => {
+    // The design brief's answer to thin data: the date is present, and the collar beneath
+    // it is allowed to undercut it. `insufficient_history` explains why velocity was not
+    // the method — it is no longer a reason to withhold the date from a Kanban team.
+    expect(kanbanMarkup).toContain('2026-11-09');
+    expect(kanbanMarkup).toContain('measured cycle time');
+    expect(kanbanMarkup).not.toContain('No completion date');
   });
 });
 

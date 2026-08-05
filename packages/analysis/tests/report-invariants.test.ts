@@ -223,21 +223,60 @@ describe('the projection states its method, the verdicts that chose it and its b
     expect(projection.statement).toContain('cycle-time guess, not a velocity forecast');
   });
 
-  it('emits no date at all when there is not enough history, and says why', () => {
-    const projection = insights.findings.projection;
+  /**
+   * A sprint team with no trailing sprints gets no date, and this is where that is pinned.
+   *
+   * It used to be pinned on the *Kanban* team, which made it assert the bug: a Kanban team
+   * has 0 completed sprints permanently and by design, so `insufficient_history` refused its
+   * date forever and the sentence it read was "Compass needs 2 completed sprints before it
+   * will give you a date". The refusal is real and worth keeping — for a team that runs
+   * sprints and has not finished two yet, which is what the early instant below builds.
+   */
+  it('emits no date at all when a sprint team has not enough history, and says why', () => {
+    const early = generateStructuredReport(
+      buildSeedSnapshot({
+        scope: { kind: 'team', teamKey: 'platform' },
+        instant: instantFromIso('2026-05-25T09:00:00.000Z'),
+      }),
+      instantFromIso('2026-05-25T09:00:00.000Z'),
+    );
+    const projection = early.findings.projection;
 
-    expect(insights.findings.calibrationAudit.verdictNames).toContain('insufficient_history');
+    expect(early.findings.calibrationAudit.verdictNames).toContain('insufficient_history');
     expect(projection.kind).toBe('undefined');
     if (projection.kind !== 'undefined') return;
 
     expect(projection.reason).toBe('insufficient_history');
-    expect(projection.selectedByVerdicts).toEqual(['insufficient_history']);
     expect(projection.threshold.id).toBe('T7');
     expect(projection.statement).toContain('completed sprints');
     // And the refusal reaches the page rather than being left in `findings`.
-    const line = sectionOf(insights, 'progress').items.find((item) => item.headline === 'No completion date');
+    const line = sectionOf(early, 'progress').items.find((item) => item.headline === 'No completion date');
     expect(line, 'a report with no date must still carry the line that says so').toBeDefined();
     expect(line?.detail).toContain('insufficient_history');
+  });
+
+  /**
+   * The Kanban team's date comes from flow, and the sprint-count verdict only explains
+   * why velocity was not the method.
+   */
+  it('projects a Kanban team from cycle time rather than refusing it for want of sprints', () => {
+    const projection = insights.findings.projection;
+
+    // Not suppressed — still measured, still stated. It just no longer decides.
+    expect(insights.findings.calibrationAudit.verdictNames).toContain('insufficient_history');
+    expect(projection.kind).toBe('projected');
+    if (projection.kind !== 'projected') return;
+
+    expect(projection.method).toBe('cycle_time');
+    expect(projection.selectedByVerdicts).toContain('insufficient_history');
+    expect(projection.statement).not.toContain('completed sprints');
+
+    // And it reaches the page as a date rather than as the old refusal line.
+    const items = sectionOf(insights, 'progress').items;
+    expect(items.find((item) => item.headline === 'No completion date')).toBeUndefined();
+    const line = items.find((item) => item.headline.startsWith('Projected completion'));
+    expect(line, 'the Kanban team must carry its projected date on the page').toBeDefined();
+    expect(line?.detail).toContain('measured cycle time');
   });
 
   it('names the audit’s verdicts on the page beside the date', () => {

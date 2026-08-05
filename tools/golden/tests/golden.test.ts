@@ -141,6 +141,51 @@ describe('the failure a golden regression produces is readable', () => {
     expect(message).toContain('$.x');
   });
 
+  /**
+   * The case that used to crash the reporter instead of reporting.
+   *
+   * `JSON.stringify(undefined)` returns `undefined` rather than a string, so describing a
+   * key that exists on only one side threw. Every other test in this file changes a value
+   * in place, which is why a gate that could not describe an added or removed field stayed
+   * green — the crash only appeared when a real fixture change added one.
+   */
+  it('names a field that appeared, rather than throwing on it', () => {
+    const differences = fieldDifferences(
+      serializeFixture({ projection: { reason: 'insufficient_history' } }),
+      serializeFixture({ projection: { reason: 'insufficient_history', band: { spanDays: 4 } } }),
+    );
+
+    expect(differences.map((difference) => difference.path)).toContain('$.projection.band');
+    expect(differences.find((difference) => difference.path === '$.projection.band')).toMatchObject({
+      expected: '<absent>',
+      actual: '{"spanDays":4}',
+    });
+  });
+
+  it('names a field that went away, from the other side', () => {
+    const differences = fieldDifferences(
+      serializeFixture({ projection: { detail: 'needs 2 completed sprints' } }),
+      serializeFixture({ projection: {} }),
+    );
+
+    expect(differences).toEqual([
+      { path: '$.projection.detail', expected: '"needs 2 completed sprints"', actual: '<absent>' },
+    ]);
+  });
+
+  it('renders a real JSON null as null, not as unparseable bytes', () => {
+    // `<unparseable>` belongs to `$` alone. Using it for a nested null sent a reader
+    // looking for corrupt bytes over a field that was legitimately null.
+    const differences = fieldDifferences(
+      serializeFixture({ objectiveEffectiveUntil: null }),
+      serializeFixture({ objectiveEffectiveUntil: 1_784_710_800_000 }),
+    );
+
+    expect(differences).toEqual([
+      { path: '$.objectiveEffectiveUntil', expected: 'null', actual: '1784710800000' },
+    ]);
+  });
+
   it('does not silently print an unbounded diff', () => {
     const many = Object.fromEntries(Array.from({ length: 60 }, (_unused, index) => [`f${index}`, index]));
     const changed = Object.fromEntries(Array.from({ length: 60 }, (_unused, index) => [`f${index}`, index + 1]));

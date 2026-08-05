@@ -4799,6 +4799,14 @@
       "statement": "This team runs Kanban, so this section reports flow — work in progress by column, cycle time and the items aging past it. There is no completion percentage, no story-point total and no sprint goal to report, and Compass will not invent one."
     },
     "projection": {
+      "band": {
+        "confidence": "low",
+        "earliestInstant": 1794560400000,
+        "earliestUtcDate": "2026-11-13",
+        "latestInstant": 1801990800000,
+        "latestUtcDate": "2027-02-07",
+        "spanDays": 86
+      },
       "calibration": {
         "correlation": {
           "absoluteCoefficientBasisPoints": null,
@@ -4854,18 +4862,51 @@
         "ticketKeys": [],
         "verdict": "not_enough_data"
       },
-      "kind": "undefined",
-      "reason": "insufficient_history",
+      "instant": 1794560400000,
+      "kind": "projected",
+      "method": "cycle_time",
+      "reasoning": {
+        "assumptions": [
+          "Items are worked one flow at a time at the observed rate.",
+          "The remaining items are no harder than the ones already measured.",
+          "Story points are not used by this method."
+        ],
+        "confidence": "low",
+        "formula": "remaining items × median measured cycle time, banded to the 85th percentile",
+        "inputs": [
+          {
+            "name": "remainingItems",
+            "unit": "items",
+            "value": 22
+          },
+          {
+            "name": "medianCycleTimeDays",
+            "unit": "days",
+            "value": 5
+          },
+          {
+            "name": "p85CycleTimeDays",
+            "unit": "days",
+            "value": 8.9
+          },
+          {
+            "name": "sampleSize",
+            "unit": "items",
+            "value": 31
+          }
+        ],
+        "method": "cycle_time",
+        "selectedByVerdicts": [
+          "estimates_sparse",
+          "insufficient_history"
+        ]
+      },
       "selectedByVerdicts": [
+        "estimates_sparse",
         "insufficient_history"
       ],
-      "statement": "Compass needs 2 completed sprints before it will give you a date, and it has 0. It will not project one from a history this thin, and it will not dress a guess up as a forecast.",
-      "threshold": {
-        "id": "T7",
-        "statement": "Velocity, its trend and any projection need two completed sprints.",
-        "unit": "sample_size",
-        "value": 2
-      }
+      "statement": "2026-11-13 to 2027-02-07 — a 86-day band from measured cycle time over 31 finished items.",
+      "utcDate": "2026-11-13"
     },
     "recommendations": [
       {
@@ -6719,7 +6760,7 @@
             "entityRef": "progress:insights"
           },
           "changeTag": "new",
-          "detail": "Compass needs 2 completed sprints before it will give you a date, and it has 0. It will not project one from a history this thin, and it will not dress a guess up as a forecast. Method selected by the calibration audit: insufficient_history. Compass audited the data behind this report and reached 3 verdicts: estimates_sparse, statuses_stale, insufficient_history. It is withholding scope_is_fiction and workflow_inconsistent for want of trailing sprints.",
+          "detail": "2026-11-13 to 2027-02-07 — a 86-day band from measured cycle time over 31 finished items. Only 0 completed items carried both an estimate and a measurable duration, so Compass cannot yet tell you whether your points mean anything. Computed by measured cycle time at low confidence — remaining items × median measured cycle time, banded to the 85th percentile. Method selected by the calibration audit: estimates_sparse, insufficient_history. Compass audited the data behind this report and reached 3 verdicts: estimates_sparse, statuses_stale, insufficient_history. It is withholding scope_is_fiction and workflow_inconsistent for want of trailing sprints.",
           "evidence": [
             {
               "kind": "issue",
@@ -6861,7 +6902,7 @@
             }
           ],
           "firstSeenAt": 1785056400000,
-          "headline": "No completion date",
+          "headline": "Projected completion 2026-11-13",
           "severityScore": 0,
           "signalOnsetAt": 1785056400000,
           "stableId": "v1:e5fef51d2addc361"
