@@ -194,6 +194,36 @@ export default async function PrivacyPage() {
               roster
             </a>
           </p>
+
+          {/*
+            The published documents, linked from the page a manager arrives at with the question.
+
+            Criterion 002 is that the DPIA and the Article 22 statement are "published in-product and
+            linked from the privacy page" — so these are links rather than a paragraph mentioning that
+            such documents exist. The no-ranking stance is here too because it is the promise a team asks
+            about first when their manager shows them this screen, and the whole purpose of this page is
+            being able to have that conversation.
+          */}
+          <p
+            data-testid="privacy-legal-links"
+            className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-[13px]"
+          >
+            <a href="/legal/dpia" className="tertiary-action">
+              impact assessment (DPIA)
+            </a>
+            <a href="/legal/automated-decisions" className="tertiary-action">
+              automated decisions and Article 22
+            </a>
+            <a href="/legal/no-ranking" className="tertiary-action">
+              Compass does not rank individuals
+            </a>
+            <a href="/trust/subprocessors" className="tertiary-action">
+              subprocessors and data processing
+            </a>
+            <a href="/legal/privacy" className="tertiary-action">
+              privacy policy
+            </a>
+          </p>
         </>
       }
     >

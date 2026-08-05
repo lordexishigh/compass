@@ -52,7 +52,23 @@ export type AuthMailPurpose =
    * the session the owner already has, because a "fix your card" link that authenticated on its own
    * would be a payment-method-change credential sitting in an inbox.
    */
-  | 'dunning_notice';
+  | 'dunning_notice'
+  /**
+   * The two subprocessor-notice messages, and the one case in this union where the recipient is *not*
+   * an account holder.
+   *
+   * Compass publishes a 30-day advance-notice commitment on `/trust/subprocessors`, and the person who
+   * most needs it is a data protection officer evaluating the product who has no seat and never will.
+   * They are here rather than on a separate transport for the reason every other purpose is: a
+   * deployment configures one mailer, and a second one would mean an operator could configure sign-in
+   * mail and silently drop the notice they had contractually promised to send.
+   *
+   * `subprocessor_notice_confirmation` carries a confirmation link, because an address nobody confirmed
+   * is an address somebody else may have typed. `subprocessor_change_notice` carries the unsubscribe
+   * link and the date the change takes effect.
+   */
+  | 'subprocessor_notice_confirmation'
+  | 'subprocessor_change_notice';
 
 export interface AuthMailMessage {
   readonly to: string;
@@ -345,6 +361,89 @@ export function composeDunningMail(input: {
       'deleted. The usual cause is an expired card.',
       '',
       input.link,
+    ].join('\n'),
+  };
+}
+
+/**
+ * The confirmation an address gets when it asks for subprocessor change notices.
+ *
+ * ## Why a confirmation at all, for a list with nothing to send
+ *
+ * The endpoint is public — it has to be, because the audience is people without accounts — so anybody
+ * could type somebody else's address into it. Without a confirmation step, the first thing that address
+ * would receive from Compass is a notice it never asked for, which is indistinguishable from Compass
+ * having leaked it. So the row is stored unconfirmed and is never sent a notice until the link below is
+ * followed.
+ *
+ * The mail deliberately promises how little it will send: one confirmation, then nothing until the list
+ * actually changes. A subscription that turns out to be a newsletter is the reason people do not
+ * subscribe to things that matter.
+ */
+export function composeSubprocessorConfirmationMail(input: {
+  readonly to: string;
+  /** The absolute confirmation URL, carrying the token. Built by the caller. */
+  readonly link: string;
+  readonly noticeDays: number;
+}): AuthMailMessage {
+  return {
+    to: input.to,
+    purpose: 'subprocessor_notice_confirmation',
+    link: input.link,
+    subject: 'Confirm your Compass subprocessor change notices',
+    body: [
+      'Somebody — we hope you — asked to be told before Compass changes the list of companies that',
+      'process data on its behalf.',
+      '',
+      `Confirm below and Compass will email you at least ${input.noticeDays} days before it adds a`,
+      'subprocessor, removes one, or changes what any of them receives. That is the only thing this list',
+      'is used for: there is no newsletter and nothing else to send.',
+      '',
+      'If this was not you, ignore this email. Nothing has been subscribed — Compass does not send the',
+      'notice to an address that has not confirmed, precisely so that somebody typing your address',
+      'cannot sign you up to mail from us.',
+      '',
+      input.link,
+    ].join('\n'),
+  };
+}
+
+/**
+ * The 30-day advance notice itself.
+ *
+ * `effectiveLabel` is the date the change takes effect, already formatted by the caller that owns the
+ * timezone — the same division `composeDunningMail` uses. The body states *what* changed rather than
+ * only that something did, because a notice that requires the reader to go and diff a web page has not
+ * given them 30 days of anything useful.
+ */
+export function composeSubprocessorChangeMail(input: {
+  readonly to: string;
+  /** One line per change, already phrased: "Added: Acme (error tracking, EU)". */
+  readonly changes: readonly string[];
+  readonly effectiveLabel: string;
+  readonly noticeDays: number;
+  /** Where the current list lives. */
+  readonly link: string;
+  /** One-click unsubscribe, carrying the token. */
+  readonly unsubscribeLink: string;
+}): AuthMailMessage {
+  return {
+    to: input.to,
+    purpose: 'subprocessor_change_notice',
+    link: input.link,
+    subject: `Compass is changing its subprocessor list on ${input.effectiveLabel}`,
+    body: [
+      `Compass is changing the list of companies that process data on its behalf. The change takes`,
+      `effect on ${input.effectiveLabel}, which is at least ${input.noticeDays} days from today — you are`,
+      'being told in advance so you have time to object, ask a question, or stop using the product.',
+      '',
+      'What is changing:',
+      ...input.changes.map((change) => `  - ${change}`),
+      '',
+      'The full current list, with the data category and processing region for each entry:',
+      input.link,
+      '',
+      `To stop receiving these notices: ${input.unsubscribeLink}`,
     ].join('\n'),
   };
 }

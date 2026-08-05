@@ -443,11 +443,18 @@ describe('the report route still passes no gate', () => {
      * which is the one screen where credentials are typed.
      *
      * Everything else on the list stays forbidden outright, because none of them has a
-     * reason to exist: a connector wizard or a welcome screen is precisely the interception
+     * reason to exist: a welcome screen or a setup wizard is precisely the interception
      * the zero-config promise rules out. The guided first-report path lives at `/start`,
      * which is a destination somebody chooses from a report that told them why it is empty —
      * nothing redirects to it, and `page.tsx` on `/` cannot, having no `redirect(` in it at
      * all (asserted above).
+     *
+     * `app/connect` came off the list on the same terms as `/login`, and the terms are the
+     * point rather than the exception. A *connector wizard* is banned; `/connect` is not one.
+     * It is owner-only in `ROLE_MATRIX`, its own first paragraph states that nothing on it is
+     * required to read a report, and it is reached by an owner choosing it — like `/start`.
+     * What would make it a gate is something sending a reader there, so that is what is
+     * asserted below instead of the directory's absence.
      */
     const directories = readdirSync(join(WEB_ROOT, 'app'), { withFileTypes: true })
       .filter((entry) => entry.isDirectory())
@@ -455,9 +462,19 @@ describe('the report route still passes no gate', () => {
 
     expect(directories).toContain('account');
 
-    for (const gate of ['signin', 'sign-in', 'setup', 'onboarding', 'connect', 'welcome']) {
+    for (const gate of ['signin', 'sign-in', 'setup', 'onboarding', 'welcome']) {
       expect(directories, `app/${gate} would read as a gate on the way to the report`).not.toContain(gate);
     }
+
+    // Nothing in front of the report may send anybody to the connect screen. The one redirect
+    // that names it is the GitHub install return, which lands an owner back where they started.
+    for (const onTheReportPath of ['page.tsx', 'layout.tsx']) {
+      expect(
+        read('app', onTheReportPath),
+        `app/${onTheReportPath} sends a reader to /connect, which makes it a gate`,
+      ).not.toContain('/connect');
+    }
+    expect(read('middleware.ts')).not.toContain('/connect');
 
     // `/login` is an endpoint, and may never become a screen.
     expect(existsSync(join(WEB_ROOT, 'app', 'login', 'route.ts'))).toBe(true);

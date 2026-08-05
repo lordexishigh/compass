@@ -28,6 +28,13 @@ export const AUDIT_ACTIONS = [
   'seat.removed',
   'account.password_changed',
   'account.sessions_revoked',
+  // Second-factor acts. Disabling is the one that matters most on the record: it is the act an
+  // attacker who has stolen a password performs next, and it is indistinguishable from the account's
+  // rightful owner doing the same thing — so the row naming the actor and the time is the only thing
+  // that lets the owner tell those two apart afterwards.
+  'account.second_factor_enabled',
+  'account.second_factor_disabled',
+  'account.recovery_codes_regenerated',
   'config.changed',
   // Configuration and roster acts. `identity.merged` and `identity.unmerged` are the
   // pair the un-merge criterion names: a wrong merge corrupts attribution in every
@@ -84,6 +91,9 @@ export const AUDIT_ACTION_LABEL: Readonly<Record<AuditAction, string>> = {
   'seat.removed': 'removed a seat',
   'account.password_changed': 'changed a password',
   'account.sessions_revoked': 'signed out every device',
+  'account.second_factor_enabled': 'turned on two-factor authentication',
+  'account.second_factor_disabled': 'turned off two-factor authentication',
+  'account.recovery_codes_regenerated': 'generated new recovery codes',
   'config.changed': 'changed configuration',
   'config.team_changed': 'changed a team',
   'config.team_membership_changed': 'changed who is on a team',

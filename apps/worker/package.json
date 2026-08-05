@@ -28,6 +28,7 @@
     "@compass/observability": "workspace:*",
     "@compass/pipeline": "workspace:*",
     "@compass/seed-connector": "workspace:*",
+    "@compass/trust": "workspace:*",
     "@sentry/node": "^10.69.0",
     "pg-boss": "12.26.3",
     "zod": "4.4.3"

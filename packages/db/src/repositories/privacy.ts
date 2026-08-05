@@ -5,6 +5,7 @@ import type { PgTable } from 'drizzle-orm/pg-core';
 import { deterministicUuid } from '../entity-id.js';
 import { appFeedback } from '../schema/app-feedback.js';
 import { authTokens, membershipTeamScopes } from '../schema/auth.js';
+import { billingEvents, organizationSubscriptions } from '../schema/billing.js';
 import { fromDatabaseInstant, fromNullableDatabaseInstant, toDatabaseInstant } from '../schema/columns.js';
 import { deliveryLog, feedbackLinkUses, shareLinkAccess, shareLinks, subscriptions } from '../schema/delivery.js';
 import {
@@ -39,6 +40,7 @@ import {
 import { objectiveLinks, objectiveScopeLinks, objectiveVersions } from '../schema/goals.js';
 import { corrections, entityVersions, sprintScopeChanges, ticketStatusTransitions } from '../schema/history.js';
 import { narrationTraces } from '../schema/narration.js';
+import { userRecoveryCodes, userSecondFactors } from '../schema/second-factor.js';
 import { integrationTokens, organizationDataKeys } from '../schema/security.js';
 import {
   auditLogEntries,
@@ -59,6 +61,7 @@ import {
   slackChannelIngestion,
 } from '../schema/privacy.js';
 import { reportItemEvidence, reportItems, reportSections, reports } from '../schema/reports.js';
+import { subprocessorNoticeSubscribers } from '../schema/trust.js';
 import type { ScopedDb } from '../scoped-db.js';
 
 /**
@@ -1026,6 +1029,31 @@ export const ERASURE_TABLE_ORDER: readonly PgTable[] = Object.freeze([
   organizationDataKeys,
   // Product feedback about Compass itself.
   appFeedback,
+  /**
+   * What the tenant was paying for, and the ledger of Stripe events already applied.
+   *
+   * Erased rather than kept. The temptation is to treat billing as a financial record that has to
+   * survive, and the answer is that Stripe *is* that record: it holds the customer, the invoices and
+   * the payment history under its own retention, and Compass's copy of the current status exists only
+   * to answer "may this organization generate a report this morning" — a question with no meaning once
+   * the organization is gone.
+   *
+   * `billing_events` goes with it for the same reason. Its unique constraint stops a redelivered
+   * webhook being applied twice, and the state it would be applied *to* is being deleted here; keeping
+   * a row that names a Stripe customer id in order to protect a subscription that no longer exists
+   * would retain an identifier and guard nothing.
+   */
+  billingEvents,
+  organizationSubscriptions,
+  /**
+   * The subprocessor change-notice list.
+   *
+   * Every row is one person's email address, usually somebody with no account who asked to be told
+   * before the list changed. Deleting the tenant deletes the deployment they subscribed to, so the
+   * obligation the address was held for ends with it — and an address kept past that is an address
+   * held for no stated purpose, which is the thing the retention policy exists to refuse.
+   */
+  subprocessorNoticeSubscribers,
   // Chat bodies and the chat opt-in.
   rawEvents,
   slackChannelIngestion,
@@ -1075,6 +1103,19 @@ export const ERASURE_TABLE_ORDER: readonly PgTable[] = Object.freeze([
   authTokens,
   membershipTeamScopes,
   sessions,
+  /**
+   * The second factor, before `users` because both rows reference it.
+   *
+   * Erased rather than kept, and it is worth saying why explicitly: a TOTP secret and a set of recovery
+   * codes are credentials belonging to one person. Keeping them past an erasure would leave the means to
+   * authenticate as somebody whose account no longer exists — which is the opposite of what an erasure
+   * promises, and unlike the audit trail there is no accountability argument for retaining them.
+   *
+   * Recovery codes go first: they reference the user, and the enrollment does too, so both precede
+   * `users` in this dependency-ordered list.
+   */
+  userRecoveryCodes,
+  userSecondFactors,
   memberships,
   users,
   // Settings last: the retention window is what said this erasure was allowed to happen.
@@ -1117,6 +1158,8 @@ export const ERASURE_CATEGORIES: readonly string[] = Object.freeze([
   'the goal hierarchy and every alignment link',
   'email and Slack subscriptions, share links and their access log',
   'integration tokens and the organization data key that wrapped them',
+  'the subscription record, the plan it was on and the record of which Stripe events were applied',
+  'any address subscribed to the subprocessor change notice',
   'accounts, seats, sessions, sign-in tokens and the audit log',
   'the append-only version history behind all of the above',
 ]);

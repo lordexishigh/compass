@@ -68,6 +68,7 @@ import {
   type PrivacyDependencies,
 } from './privacy.js';
 import { JOB_NAMES, handleIngestWindow, type IngestRunIds, type WorkerDependencies } from './jobs.js';
+import { SUBPROCESSOR_NOTICE_CRON, handleSubprocessorNotice } from './trust-notices.js';
 import { storedReportToRendered } from './stored-report.js';
 
 /**
@@ -518,6 +519,36 @@ export async function startWorker(): Promise<RunningWorker> {
   });
 
   await boss.schedule(JOB_NAMES.channelNotice, CHANNEL_NOTICE_CRON, {}, { singletonKey: 'channel-notice' });
+
+  /**
+   * The subprocessor change notice.
+   *
+   * Reuses the privacy dependencies' mailer and scoping rather than building a second set: it is the same
+   * transport a deployment configures once, and the same `ConsoleMailer` fallback when none is — so a
+   * deployment with no mail key logs the notice instead of silently dropping the one message Compass has
+   * contractually promised to send.
+   *
+   * `now` comes from the clock here and is threaded down, like every other job. That is what lets
+   * `tests/trust-notices.test.ts` assert the thirty days by choosing an instant rather than waiting.
+   */
+  await boss.work(JOB_NAMES.subprocessorNotice, async () => {
+    const now = clock.now();
+    await handleSubprocessorNotice(
+      {
+        scopedFor: privacyDependencies.scopedFor,
+        mailer: privacyDependencies.mailer,
+        // The same expression the delivery and privacy dependencies use, so every mailed link on this
+        // process points at one origin.
+        baseUrl: (process.env['COMPASS_BASE_URL'] ?? 'http://localhost:3000').replace(/\/+$/, ''),
+        logger: console,
+      },
+      { organizationId: resolveSeededRun({ hostNow: now }).organizationId, now },
+    );
+  });
+
+  await boss.schedule(JOB_NAMES.subprocessorNotice, SUBPROCESSOR_NOTICE_CRON, {}, {
+    singletonKey: 'subprocessor-notice',
+  });
 
   console.info(`[compass] worker listening on ${Object.values(JOB_NAMES).join(', ')}`);
 

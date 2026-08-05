@@ -55,6 +55,13 @@ describe('the pnpm workspace holds every layer as its own package', () => {
       // `tests/provider-neutrality.test.ts` asserts over source text.
       'github-connector',
       'ingest',
+      // A live tracker connector, in exactly the same position as `github-connector` and under the same
+      // prohibition: nothing in ingest, the knowledge model, analysis or the renderers may import it.
+      // Its own package rather than a provider inside one `connectors` package, because the layer rule
+      // is enforced by package boundary — one package holding three providers would let a change to the
+      // tracker's response parsing reach the code host's tests, and `tests/provider-neutrality.test.ts`
+      // would have nothing to assert over.
+      'jira-connector',
       'knowledge-model',
       // Manager Memos: the one write path into the org model. Above `knowledge-model`
       // because it writes through the roster service — the single Absence writer — rather
@@ -81,6 +88,15 @@ describe('the pnpm workspace holds every layer as its own package', () => {
       // into `packages/analysis/tests` could not serve the last two without the sort of
       // cross-package relative import the architecture rules forbid.
       'seed-snapshot',
+      // Not a layer either: the published legal and trust content — the subprocessor list, the DPIA,
+      // the Article 22 position, the no-individual-ranking stance, terms and the privacy policy — as
+      // frozen constants and two pure functions over them. It sits at the very bottom beside `clock`
+      // and `observability`, depending on nothing (`types: []`, no npm imports), because three
+      // consumers need the same words: the web app renders them, the worker's 30-day notice job
+      // diffs the subprocessor digest, and its own suite asserts the claims the acceptance criteria
+      // name. Prose duplicated between a page and a job drifts, and the drift is invisible — both
+      // copies read correctly on their own.
+      'trust',
     ]);
   });
 

@@ -1,0 +1,27 @@
+{
+  "name": "@compass/trust",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The published legal and trust content: policies, the DPIA, the Article 22 statement and the subprocessor list.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "vitest": "4.1.10"
+  }
+}

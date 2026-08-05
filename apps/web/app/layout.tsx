@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { headers } from 'next/headers';
 
 import { AppFeedbackControl } from '../components/app-feedback-control';
 
@@ -19,7 +20,43 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({ children }: { readonly children: React.ReactNode }) {
+/**
+ * Reading the nonce is what keeps every page renderable under the CSP.
+ *
+ * ## Why a header read lives in the root layout
+ *
+ * The policy `middleware.ts` sends is nonce-based, and a nonce is minted per response. A page that
+ * Next *prerenders* has its HTML built at a moment when no middleware ran and no nonce existed, so
+ * its script tags carry none — and because the policy says `'strict-dynamic'`, which switches off
+ * the `'self'` host allowlist, the browser then refuses **every** script on it: the framework
+ * bootstrap, every chunk, hydration, the lot. That is not a theory. Before this read existed,
+ * `/pricing`, `/legal`, `/legal/[slug]`, `/trust/subprocessors` and the 404 shell were prerendered,
+ * and a production load of each one filled the console with about twenty refusals.
+ *
+ * `headers()` is a dynamic API, so reading it here — in the one layout every route is nested inside
+ * — opts the whole app out of static generation and makes "the nonce in the HTML is the nonce in the
+ * header" true by construction. Next.js documents this constraint the same way round: a
+ * middleware-generated nonce requires dynamic rendering.
+ *
+ * The alternative was `export const dynamic = 'force-dynamic'` on each content page. Rejected
+ * because it is the same fix written five times and forgotten on the sixth: the next static page
+ * somebody adds would ship with its JavaScript silently blocked, and nothing would say so.
+ *
+ * ## Nothing is taken out of the headers, on purpose
+ *
+ * The call is the mechanism; there is no value this layout needs. Next stamps the nonce onto its own
+ * script tags from the request CSP header, and this layout renders no inline script of its own — so
+ * the nonce is deliberately never bound or rendered here. Putting it in an attribute would undo what
+ * it is for: an attacker who can inject markup but not script can read an attribute back with a CSS
+ * selector, which is why browsers hide the `nonce` attribute on script tags in the first place. A
+ * layout that one day does render an inline script reads `NONCE_HEADER` from
+ * `lib/security-headers.ts` at this line and passes it to that tag, and nowhere else.
+ */
+export default async function RootLayout({ children }: { readonly children: React.ReactNode }) {
+  // The call is load-bearing and its value is not — deleting this line puts every content page back
+  // to being prerendered with a nonce it cannot have. See above.
+  await headers();
+
   return (
     <html lang="en">
       <body className="min-h-dvh bg-surface text-ink antialiased">

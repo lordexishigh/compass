@@ -3,11 +3,13 @@
   "files": [],
   "references": [
     { "path": "packages/clock" },
+    { "path": "packages/trust" },
     { "path": "packages/observability" },
     { "path": "packages/billing" },
     { "path": "packages/connector-port" },
     { "path": "packages/seed-connector" },
     { "path": "packages/github-connector" },
+    { "path": "packages/jira-connector" },
     { "path": "packages/db" },
     { "path": "packages/auth" },
     { "path": "packages/knowledge-model" },

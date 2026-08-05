@@ -140,6 +140,31 @@ const UNAUTHENTICATED_PAGES: readonly {
     showsCredentials: false,
     reaches: 'href="/"',
   },
+  /**
+   * The published legal and trust documents.
+   *
+   * Public in *every* tenant rather than only the demonstration one, on the same terms as `/pricing`:
+   * the content is a typed module in `@compass/trust` and nothing is read from a database, so there is
+   * no tenant data for `demoOnlyPublic` to confine. A privacy policy that required a session would be
+   * a document nobody could evaluate before signing up, which is the opposite of publishing one.
+   *
+   * These are the surfaces most likely to be a stranger's *first* page — a link in a procurement
+   * thread, or a search result — so a way in matters here more than anywhere else on this list. Each
+   * carries a footer naming `/account` directly rather than routing through the report.
+   */
+  { route: '/legal', file: ['app', 'legal', 'page.tsx'], showsCredentials: false },
+  /**
+   * `/legal/[slug]` renders whichever of the five documents the slug names, and its footer lives in
+   * `PolicyPage` — the page itself is a shell that resolves the slug and hands over. So the proof
+   * points at the component, exactly as `/artifact/[kind]/[artifactId]` does, because that is where
+   * the link somebody would delete actually is.
+   */
+  { route: '/legal/[slug]', file: ['components', 'policy-document.tsx'], showsCredentials: false },
+  {
+    route: '/trust/subprocessors',
+    file: ['app', 'trust', 'subprocessors', 'page.tsx'],
+    showsCredentials: false,
+  },
 ];
 
 describe('the published demonstration credentials are shown where they are needed', () => {

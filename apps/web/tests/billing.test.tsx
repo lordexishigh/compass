@@ -1,4 +1,7 @@
 // @vitest-environment jsdom
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import {
   NOT_CONFIGURED_STATEMENT,
   PLANS,
@@ -175,6 +178,42 @@ describe('the pricing page needs no Stripe key', () => {
       expect(text, `${plan.id} is missing from /pricing`).toContain(plan.name);
       expect(text, `${plan.id}'s price is missing`).toContain(formatPence(plan.seatPricePence));
     }
+  });
+
+  it('writes no price into the page source, so the numbers cannot be duplicated', () => {
+    /**
+     * The other half of "pricing must not duplicate numbers".
+     *
+     * The assertion above proves the rendered page *contains* what `PLANS` says. It would still pass if
+     * somebody had typed the prices into the JSX and they happened to agree today — which is exactly the
+     * state that goes wrong later, silently, when one copy is updated for a price change and the other is
+     * not. A reader of `/pricing` would then be quoted a figure checkout does not charge.
+     *
+     * So the page *source* is scanned for the digits. `packages/billing/src/config.ts` is the
+     * plan-definition module; the page's job is to read it.
+     */
+    const source = readFileSync(join(import.meta.dirname, '..', 'app', 'pricing', 'page.tsx'), 'utf8');
+
+    for (const plan of PLANS) {
+      /**
+       * Matched as a standalone number token rather than as a substring.
+       *
+       * `800` is a substring of the Tailwind class `text-zinc-800` and of `max-w-[1200px]`, so a plain
+       * `not.toContain` here would be a gate that fails the next time somebody restyles the page — which
+       * teaches a maintainer to delete it. The boundaries keep it aimed at a literal price.
+       */
+      const pence = new RegExp(String.raw`(?<![\w-])${plan.seatPricePence}(?![\w-])`);
+      const pounds = formatPence(plan.seatPricePence);
+
+      expect(source, `${plan.id}'s price in pence is written into the pricing page`).not.toMatch(pence);
+      expect(source, `${plan.id}'s formatted price is written into the pricing page`).not.toContain(pounds);
+      expect(source, `${plan.id}'s name is hard-coded rather than read from PLANS`).not.toContain(
+        `>${plan.name}<`,
+      );
+    }
+
+    // And it imports the module, which is the positive form of the same claim.
+    expect(source).toMatch(/from '@compass\/billing'/);
   });
 
   it('explains that a pending invitation counts as a seat', () => {

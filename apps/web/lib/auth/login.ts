@@ -1,5 +1,11 @@
-import { describeLoginFailure, startSession, verifyLogin } from '@compass/auth';
-import { normalizeEmail } from '@compass/db';
+import {
+  describeChallengeRejection,
+  describeLoginFailure,
+  issueSecondFactorChallenge,
+  startSession,
+  verifyLogin,
+} from '@compass/auth';
+import { findSecondFactor, normalizeEmail } from '@compass/db';
 import { NextResponse } from 'next/server';
 
 import { checkRateLimit, clearRateLimit, clientAddress, notifyLockout } from '../rate-limit';
@@ -36,6 +42,14 @@ import { failure, jsonError, readJsonObject, requiredPassword, requiredString } 
  * the harness's `redirect` and the form's own navigation cannot disagree.
  */
 export const SIGNED_IN_LANDING_PATH = '/';
+
+/**
+ * Where a half-finished sign-in presents its code.
+ *
+ * Named here rather than written into the response literal so the route and the sentence that points at
+ * it cannot drift — the same reason `SIGNED_IN_LANDING_PATH` exists.
+ */
+export const SECOND_FACTOR_CHALLENGE_PATH = '/api/auth/2fa/challenge';
 
 /**
  * Where the lockout notice points an owner.
@@ -126,6 +140,54 @@ export async function completeLogin(request: Request, admitted: GuardAllowed): P
     // A correct credential proves the caller was never guessing, so the pressure counters go.
     // `lib/rate-limit.ts` argues the case for this in full.
     clearRateLimit('auth_attempt', subjects);
+
+    /**
+     * The second factor, before any session exists.
+     *
+     * ## Why the session is not minted here and revoked later
+     *
+     * Because a session that exists is a session that works. If this returned a cookie and then asked for
+     * a code, every screen the cookie authorises would already be reachable and the code prompt would be
+     * a page somebody could simply navigate away from — which is the commonest way 2FA is implemented
+     * into uselessness. So a correct password with 2FA active yields no session at all: it yields a signed
+     * challenge that authorises exactly one further act, presenting a code for this one user.
+     *
+     * ## Why `activatedAt` and not the secret's presence
+     *
+     * A row exists from the moment somebody *starts* enrolling, and half-finished enrollment must not
+     * lock them out of their own account. `activatedAt` is the only field that means "this person has
+     * proved the app works", which is the condition under which demanding a code is safe.
+     */
+    const secondFactor = await findSecondFactor(admitted.scoped, result.user.id);
+
+    if (secondFactor !== null && secondFactor.activatedAt !== null) {
+      const challenge = issueSecondFactorChallenge({ userId: result.user.id, now: admitted.now });
+
+      /**
+       * Fails closed when the challenge cannot be signed.
+       *
+       * The alternative — mint the session because the second factor is inconvenient to ask for — would
+       * mean a missing environment variable silently downgrades every 2FA account to password-only. A
+       * refusal is visible and recoverable; a silent downgrade is neither.
+       */
+      if (challenge === null) {
+        return jsonError('second_factor_unconfigured', describeChallengeRejection('unconfigured'), 503);
+      }
+
+      return NextResponse.json(
+        {
+          signedIn: false,
+          secondFactorRequired: true,
+          challenge,
+          /** Where to send the code. Stated, so a harness does not have to know the route table. */
+          submitTo: SECOND_FACTOR_CHALLENGE_PATH,
+          detail:
+            'Enter the six-digit code from your authenticator app. If you cannot reach it, one of your ' +
+            'recovery codes works instead.',
+        },
+        { status: 200, headers: { 'cache-control': 'no-store' } },
+      );
+    }
 
     const started = await startSession({
       scoped: admitted.scoped,

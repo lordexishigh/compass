@@ -106,6 +106,20 @@
       "when": 1785548400000,
       "tag": "0015_billing_and_subscriptions",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1785555600000,
+      "tag": "0016_second_factor_and_recovery_codes",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1785562800000,
+      "tag": "0017_subprocessor_notice_subscribers",
+      "breakpoints": true
     }
   ]
 }

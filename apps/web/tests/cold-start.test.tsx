@@ -209,13 +209,26 @@ describe('the first request to / passes no gate', () => {
      * a report that has explained why it is empty. It is not on this list because it is not
      * an interception — and `/` cannot redirect to it, having no `redirect(` at all, which
      * the assertion above pins.
+     *
+     * `app/connect` is the same shape and came off the list for the same reason: an owner-only
+     * screen that says in its own opening paragraph that nothing on it is required to read a
+     * report. The zero-config promise is broken by a *wizard in the way*, not by a page an
+     * owner can choose to open, so what is asserted here is that nothing in front of the
+     * report names it.
      */
     const routes = readdirSync(join(WEB_ROOT, 'app'), { withFileTypes: true })
       .filter((entry) => entry.isDirectory())
       .map((entry) => entry.name);
 
-    for (const gate of ['signin', 'sign-in', 'setup', 'onboarding', 'connect', 'welcome']) {
+    for (const gate of ['signin', 'sign-in', 'setup', 'onboarding', 'welcome']) {
       expect(routes, `app/${gate} would be a gate on the way to the report`).not.toContain(gate);
+    }
+
+    for (const file of ['app/page.tsx', 'app/layout.tsx', 'middleware.ts']) {
+      expect(
+        codeOf(...file.split('/')),
+        `${file} names /connect, which would put a connector screen in front of the report`,
+      ).not.toContain('/connect');
     }
 
     expect(existsSync(join(WEB_ROOT, 'app', 'login', 'route.ts'))).toBe(true);

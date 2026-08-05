@@ -62,6 +62,19 @@ export const JOB_NAMES = {
    * retried until it lands instead of being lost.
    */
   channelNotice: 'privacy.channel-notice',
+  /**
+   * The subprocessor change notice.
+   *
+   * Compass promises at least 30 days' warning before the subprocessor list changes, and a promise with
+   * no job behind it is a sentence on a page. This one compares the digest of the published list against
+   * the digest each subscriber was last told and mails the difference — so editing the list *is* the
+   * trigger, and there is no human step to skip in the release where it matters.
+   *
+   * Daily rather than more often: the obligation is measured in days, a notice sent at 04:00 instead of
+   * 03:00 is indistinguishable to the recipient, and the job is a no-op on every day the list has not
+   * changed.
+   */
+  subprocessorNotice: 'trust.subprocessor-notice',
 } as const;
 
 export type JobName = (typeof JOB_NAMES)[keyof typeof JOB_NAMES];

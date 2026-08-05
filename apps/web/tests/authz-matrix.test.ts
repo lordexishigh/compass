@@ -76,6 +76,18 @@ const EXPECTED: Readonly<Record<string, Partial<Record<Action, readonly Principa
     GET: ['owner', 'manager', 'member', 'viewer'],
     DELETE: ['owner', 'manager', 'member', 'viewer'],
   },
+  /**
+   * The second factor. `public` on the challenge is the point, not an oversight: the caller has proved
+   * a password and been given no session, so requiring one here would be circular. Management needs a
+   * seat, and additionally a credential in the body that this table cannot express.
+   */
+  '/api/auth/2fa/challenge': { POST: ['public', 'owner', 'manager', 'member', 'viewer'] },
+  '/api/auth/2fa': {
+    POST: ['owner', 'manager', 'member', 'viewer'],
+    PUT: ['owner', 'manager', 'member', 'viewer'],
+    DELETE: ['owner', 'manager', 'member', 'viewer'],
+  },
+  '/api/auth/2fa/recovery-codes': { POST: ['owner', 'manager', 'member', 'viewer'] },
   '/api/auth/magic-link': { POST: ['public', 'owner', 'manager', 'member', 'viewer'] },
   '/api/auth/magic-link/consume': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
   '/api/auth/password-reset': { POST: ['public', 'owner', 'manager', 'member', 'viewer'] },
@@ -199,6 +211,40 @@ const EXPECTED: Readonly<Record<string, Partial<Record<Action, readonly Principa
    * structural rather than a property of the handler.
    */
   '/api/webhooks/[provider]': { POST: ['public', 'owner', 'manager', 'member', 'viewer'] },
+
+  /**
+   * Connecting a data source: owner only, except the cookie-less OAuth return.
+   *
+   * Reading `/connect` is owner-only as well as writing it, because the page states which sources are
+   * connected and when — the shape of the organization's integrations, which is not a manager's concern.
+   *
+   * `/api/connect/github/callback` names `public` for exactly the reason `/api/webhooks/[provider]` and
+   * `/api/stripe/webhook` do: it is a top-level navigation from github.com with no cookie it could send,
+   * and what authorises it is narrower than a session — an HMAC-signed `state` this deployment minted,
+   * naming the one organization the credential may be stored against, inside a ten-minute window and
+   * refused entirely when no state secret is set.
+   */
+  /**
+   * The published legal and trust documents, public in every tenant.
+   *
+   * Same reasoning as `/pricing`: the content is a typed module with no organizational data in it, so a
+   * session requirement would make a privacy policy unreadable by the people it is published for. The
+   * subscribe endpoint is public for the sharper version of the same argument — the person who most
+   * needs 30 days' notice before the subprocessor list changes is a DPO evaluating Compass, who has no
+   * account.
+   */
+  '/legal': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
+  '/legal/[slug]': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
+  '/trust/subprocessors': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
+  '/api/trust/subprocessor-notices': { POST: ['public', 'owner', 'manager', 'member', 'viewer'] },
+  '/api/trust/subprocessor-notices/confirm': {
+    GET: ['public', 'owner', 'manager', 'member', 'viewer'],
+  },
+
+  '/connect': { GET: ['owner'] },
+  '/api/connect/github/install': { POST: ['owner'] },
+  '/api/connect/github/disconnect': { POST: ['owner'] },
+  '/api/connect/github/callback': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
 
   /**
    * Billing: every write is the owner's, and `/pricing` is the one page public in *every* tenant.
@@ -602,6 +648,9 @@ describe('the seeded demo report route stays publicly readable', () => {
       '/account/deletion',
       '/account/invite',
       '/account/reset',
+      // The code step of a two-factor sign-in. Reached with no session by construction — the password
+      // step deliberately mints none — and authorised by a signed challenge plus a valid code.
+      '/api/auth/2fa/challenge',
       '/api/auth/login',
       '/api/auth/logout',
       '/api/auth/magic-link',
@@ -625,9 +674,21 @@ describe('the seeded demo report route stays publicly readable', () => {
       '/api/webhooks/[provider]',
       // Signature-authorised, like the three provider webhooks above and for the same reason.
       '/api/stripe/webhook',
+      // The OAuth install return. Cookie-less by nature — a top-level navigation from github.com —
+      // and authorised by an HMAC-signed `state` naming the one organization it may store against,
+      // which is narrower than a session rather than weaker than one.
+      '/api/connect/github/callback',
       // The public pricing page. Unlike every other entry in this list it is public in a *real*
       // tenant too, because it reads the plan table and nothing about the organization.
       '/pricing',
+      // The published legal and trust documents, public in every tenant for the same reason: the
+      // content is a typed module and carries no organizational data. The subscribe endpoint is the
+      // one public *write*, and it writes one email address behind an emailed confirmation.
+      '/legal',
+      '/legal/[slug]',
+      '/trust/subprocessors',
+      '/api/trust/subprocessor-notices',
+      '/api/trust/subprocessor-notices/confirm',
     ].sort());
   });
 

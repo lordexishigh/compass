@@ -1,0 +1,32 @@
+{
+  "name": "@compass/jira-connector",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A live tracker ConnectorPort implementation, read-only, proving the port is provider-neutral.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@compass/clock": "workspace:*",
+    "@compass/connector-port": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.3",
+    "typescript": "5.9.3",
+    "vitest": "4.1.10"
+  }
+}

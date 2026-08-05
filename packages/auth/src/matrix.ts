@@ -184,6 +184,40 @@ export const ROLE_MATRIX: readonly RouteRule[] = [
     summary: 'This account’s sessions, and "sign out all devices".',
     allow: { GET: EVERY_SEAT, DELETE: EVERY_SEAT },
   },
+  /**
+   * The second factor.
+   *
+   * `ANYONE` on the challenge and `EVERY_SEAT` on management, and the split is the whole design:
+   *
+   *  - **`/api/auth/2fa/challenge`** is reached by somebody who has proved their password and been
+   *    given *no session* — that is what makes the factor mandatory rather than advisory. Requiring
+   *    a session here would be circular in exactly the way `/api/auth/login` is. It is not
+   *    unauthorised: it demands a signed challenge plus a valid code, which together are stronger
+   *    than the cookie it declines to ask for.
+   *  - **`/api/auth/2fa`** and **`/api/auth/2fa/recovery-codes`** manage your own enrollment, so a
+   *    seat is the floor. There is no owner-only variant because a second factor belongs to the
+   *    person, not to the tenant: an owner who could disable a colleague's 2FA would be a way to
+   *    weaken an account from an adjacent one.
+   *
+   * Every management verb additionally demands *re-authentication* in the body — a password or a
+   * current code. That is not expressible in this matrix, which decides who may reach a route rather
+   * than what they must prove once there, and it is asserted in the routes' own tests.
+   */
+  {
+    route: '/api/auth/2fa/challenge',
+    summary: 'Second step of a two-factor sign-in: a signed challenge plus a code, session cookie out.',
+    allow: { POST: ANYONE },
+  },
+  {
+    route: '/api/auth/2fa',
+    summary: 'Enroll in, activate, or turn off your own second factor. Turning it off is audited.',
+    allow: { POST: EVERY_SEAT, PUT: EVERY_SEAT, DELETE: EVERY_SEAT },
+  },
+  {
+    route: '/api/auth/2fa/recovery-codes',
+    summary: 'Replaces your recovery codes with a fresh batch, shown once.',
+    allow: { POST: EVERY_SEAT },
+  },
   {
     route: '/api/auth/magic-link',
     summary: 'Mails a 15-minute single-use sign-in link.',
@@ -402,6 +436,52 @@ export const ROLE_MATRIX: readonly RouteRule[] = [
   },
 
   // -------------------------------------------------------------------------
+  // Connecting a data source.
+  //
+  // **Owner only**, for every surface that reads or changes it. Connecting decides what Compass reads
+  // about the whole organization and hands a third party a credential; a manager who could do it could
+  // point Compass at repositories they do not administer. Reading the page is owner-only too, because it
+  // states which sources are connected and when — the shape of the organization's integrations, which is
+  // not a manager's concern and is useful to somebody who should not have it.
+  {
+    route: '/connect',
+    summary: 'What Compass would read, listed verbatim from the connector package before consent.',
+    allow: { GET: ['owner'] },
+  },
+  {
+    route: '/api/connect/github/install',
+    summary: 'Mints a signed state and sends the owner to the GitHub App install.',
+    allow: { POST: ['owner'] },
+  },
+  {
+    route: '/api/connect/github/disconnect',
+    summary: 'Deletes the stored credential, keeps every row already read, writes an audit entry.',
+    allow: { POST: ['owner'] },
+  },
+  /**
+   * The OAuth return, which arrives cookie-less.
+   *
+   * `ANYONE`, and it is the same case `/api/webhooks/[provider]` is: a top-level navigation from
+   * github.com carries no cookie it could possibly send, so a session requirement would mean the feature
+   * cannot exist. What authorises it instead is strictly *narrower* than a session — an HMAC-signed
+   * `state` this deployment minted minutes earlier, naming the one organization the credential may be
+   * stored against, compared in constant time inside a ten-minute window. With no state secret
+   * configured, every callback is refused rather than trusted.
+   *
+   * The organization comes from that signed state and never from a query parameter, which is the whole
+   * point: a caller who could choose the organization would store their own token against somebody
+   * else's tenant.
+   *
+   * No `demoOnlyPublic`: the flag confines a public *read of tenant data*, and this route reads nothing
+   * back to its caller. It answers a redirect naming an outcome and nothing else.
+   */
+  {
+    route: '/api/connect/github/callback',
+    summary: 'GitHub App install return. Authorised by a signed state, never by a session.',
+    allow: { GET: ANYONE },
+  },
+
+  // -------------------------------------------------------------------------
   // Billing: the plan, the seats it covers, and Stripe's own callbacks.
   //
   // Every write here is **owner only**, and the line is not arbitrary. A plan change moves money and
@@ -417,6 +497,64 @@ export const ROLE_MATRIX: readonly RouteRule[] = [
   {
     route: '/pricing',
     summary: 'Public pricing: the plan table and the seat price, read from @compass/billing.',
+    allow: { GET: ANYONE },
+  },
+
+  // -------------------------------------------------------------------------
+  // The published legal and trust documents.
+  //
+  // Public in *every* tenant, for the same reason `/pricing` is: they carry no organizational data at
+  // all — the content is a typed module in `packages/trust` and nothing is read from a
+  // database. A privacy policy or an impact assessment that required a session would be a document
+  // nobody could evaluate before signing up, which is the opposite of what publishing one is for.
+  //
+  // There is deliberately no `demoOnlyPublic` on any of them. That flag confines a public *read of
+  // tenant data* to the demonstration organization, and there is no tenant data here to confine.
+  {
+    route: '/legal',
+    summary: 'Index of the published policies, the impact assessment and the Article 22 statement.',
+    allow: { GET: ANYONE },
+  },
+  {
+    route: '/legal/[slug]',
+    summary:
+      'One published document: terms, privacy, DPIA, the Article 22 statement or the no-ranking stance.',
+    allow: { GET: ANYONE },
+  },
+  {
+    route: '/trust/subprocessors',
+    summary: 'Every subprocessor, the data category it receives and its region, with a notice signup.',
+    allow: { GET: ANYONE },
+  },
+  /**
+   * Subscribing to the 30-day subprocessor change notice.
+   *
+   * `ANYONE`, and it must be: the whole point of the commitment is that somebody evaluating Compass —
+   * a data protection officer who will never hold a seat — can be told before the list changes.
+   * Requiring an account would restrict the notice to existing customers, who are the people least in
+   * need of it when deciding whether to become one.
+   *
+   * It writes one row holding one email address and nothing else, is rate limited at the request edge
+   * like every other public write, and confirms by email so an address cannot be subscribed by a third
+   * party who merely knows it.
+   */
+  {
+    route: '/api/trust/subprocessor-notices',
+    summary: 'Subscribes an address to the 30-day subprocessor change notice, and confirms by email.',
+    allow: { POST: ANYONE },
+  },
+  /**
+   * Spending a confirmation or unsubscribe link.
+   *
+   * `ANYONE`, and token-authorised rather than session-authorised — a GET from an email client carries no
+   * cookie and the subscriber has no account, so a session is not available even in principle. The token
+   * is *narrower* than a session: it authorises one address's subscription and nothing else, and it is
+   * compared by digest so the database never holds the value that would let somebody unsubscribe a third
+   * party. Same shape as `/api/delivery/unsubscribe`.
+   */
+  {
+    route: '/api/trust/subprocessor-notices/confirm',
+    summary: 'Spends a mailed confirmation or unsubscribe token for the subprocessor notice list.',
     allow: { GET: ANYONE },
   },
   {

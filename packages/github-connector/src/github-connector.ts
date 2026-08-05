@@ -1,10 +1,4 @@
-import {
-  instantFromEpochMillis,
-  toIso,
-  windowContains,
-  type Instant,
-  type TimeWindow,
-} from '@compass/clock';
+import { instantFromEpochMillis, toIso, windowContains, type Instant } from '@compass/clock';
 import {
   ARTIFACT_KINDS,
   ARTIFACT_SOURCE_KIND,

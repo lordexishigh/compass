@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16" role="img" aria-label="Compass">
+  <!--
+    The Six Spine at 16 pixels: the rail, its active emerald tick, and three rules of prose.
+
+    Drawn on a 16-unit grid so every edge lands on a device pixel at the size a tab actually
+    renders — a 32-unit grid would put a 3-unit rule on 1.5px and blur the one mark that has to
+    stay crisp. The three rules are the document, not a logo: this product is a page of prose with
+    a marked rail down its left side, and that is legible at this size in a way a compass needle
+    is not.
+
+    The values are the design tokens from `globals.css` rather than approximations of them —
+    zinc-300/zinc-700 for the rail, ink-strong for the rules, emerald-600 for the tick, with the
+    dark-theme values from the same file. A favicon is a standalone document and cannot read a CSS
+    variable, so the numbers are repeated here; they are the only place in the app that is true.
+
+    It exists because a browser probes `/favicon.ico` on every page load when a document declares
+    no icon, and that 404 is a console error on every screen Compass serves.
+  -->
+  <style>
+    .rail { fill: #d4d4d8; }
+    .rule { fill: #18181b; }
+    .tick { fill: #059669; }
+    @media (prefers-color-scheme: dark) {
+      .rail { fill: #3f3f46; }
+      .rule { fill: #fafafa; }
+      .tick { fill: #34d399; }
+    }
+  </style>
+
+  <rect class="rail" x="2" y="2" width="2" height="12" rx="1" />
+  <rect class="tick" x="2" y="6" width="2" height="4" rx="1" />
+
+  <rect class="rule" x="7" y="3" width="7" height="2" rx="1" />
+  <rect class="rule" x="7" y="7" width="7" height="2" rx="1" />
+  <rect class="rule" x="7" y="11" width="5" height="2" rx="1" />
+</svg>

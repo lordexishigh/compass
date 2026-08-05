@@ -1,6 +1,6 @@
-import { appendAuditLogEntry, storeIntegrationToken } from '@compass/auth';
+import { storeIntegrationToken } from '@compass/auth';
 import { SystemClock } from '@compass/clock';
-import { randomUUID } from 'node:crypto';
+import { appendAuditLogEntry } from '@compass/db';
 import { NextResponse } from 'next/server';
 
 import { guard, scopedFor } from '../../../../../lib/auth/guard';
@@ -85,20 +85,23 @@ export async function GET(request: Request): Promise<NextResponse> {
       now,
     );
 
-    // Connecting a source is a change to what Compass reads about an organization, so it is on the
-    // record with the acting principal — the same treatment a seat change or an anonymization gets.
-    await appendAuditLogEntry(
-      scoped,
-      {
-        id: randomUUID(),
-        actorUserId: admitted.allowed ? (admitted.identity?.user.id ?? null) : null,
-        action: 'connector.connected',
-        subjectKind: 'connector',
-        subjectId: GITHUB_SOURCE_KEY,
-        detail: 'GitHub was connected. Compass reads the selected repositories with read-only permissions.',
-      },
-      now,
-    );
+    /**
+     * Connecting a source is a change to what Compass reads about an organization, so it is on the
+     * record — the same treatment a seat change or an anonymization gets.
+     *
+     * `actorUserId` is null here and that is honest rather than lazy: a callback carries no cookie, so
+     * there is no session to attribute it to. What *is* known is the organization, which came from the
+     * signed state. `before`/`after` carry the connection state rather than any part of the credential.
+     */
+    await appendAuditLogEntry(scoped, {
+      actorUserId: null,
+      action: 'connector.connected',
+      targetKind: 'connector',
+      targetId: GITHUB_SOURCE_KEY,
+      before: { connected: false },
+      after: { connected: true, access: 'read-only' },
+      occurredAt: now,
+    });
 
     return backToConnect(request, 'connected');
   } catch {

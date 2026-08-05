@@ -123,8 +123,6 @@ export interface ConnectProviderView {
   readonly sourceKey: string;
   /** True once a credential is stored for this organization. */
   readonly connected: boolean;
-  /** Null when never connected. */
-  readonly connectedAtIso: string | null;
   /**
    * Why this provider cannot be connected right now, or null.
    *
@@ -148,8 +146,14 @@ const missingConfigSentence = (missing: readonly string[]): string | null =>
 /**
  * The connect screen's whole view.
  *
- * Reads the stored credential's *description* — never its value; `findIntegrationToken` returns the
- * sealed row and this only ever looks at whether one exists and when it was written.
+ * Reads only *whether* a credential exists — never its value. `findIntegrationToken` returns the sealed
+ * row and this looks at nothing but its presence.
+ *
+ * There is deliberately no "connected since" date: `StoredIntegrationToken` exposes no timestamp, and
+ * the honest options were to add one to the row's public shape or to leave the fact out. It is left
+ * out, because a date invented from the request instant would tell a manager when the *page* was
+ * rendered — the same fabrication the freshness panel refuses. The audit log is where "when was this
+ * connected" is answerable, and it answers it with the acting principal attached.
  */
 export async function buildConnectView(input: {
   readonly scoped: ScopedDb;
@@ -172,7 +176,6 @@ export async function buildConnectView(input: {
         scopes: GITHUB_SCOPES,
         sourceKey: GITHUB_SOURCE_KEY,
         connected: stored !== null,
-        connectedAtIso: stored === null ? null : stored.updatedAt.toISOString(),
         unavailableReason: missingConfigSentence(missing),
       },
     ],

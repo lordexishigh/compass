@@ -59,6 +59,17 @@ which is how Next.js finds it and stamps the same nonce onto its own inline boot
 chunk-loading scripts. `script-src` is `'self' 'nonce-…' 'strict-dynamic'` with no
 `unsafe-inline` and no `unsafe-eval`.
 
+**Under `next dev`, and only there, `script-src` also carries `'unsafe-eval'`.** Not a preference:
+`next dev` compiles with webpack's `eval-source-map` devtool, so every module in the development
+bundle arrives inside an `eval("…")` call and React Refresh's runtime is the first to run one.
+Without the directive that module throws `EvalError`, which takes the entire client bundle with it —
+the server-rendered prose still paints, so the page looks correct while hydration, every interactive
+control and Fast Refresh are silently dead. `next build` emits no `eval` and no `new Function` in
+any chunk, so **the deployed policy is the strict one**; the branch is `currentBuildMode()` in
+`apps/web/lib/security-headers.ts`, keyed on `NODE_ENV === 'development'`, and
+`apps/web/tests/security-headers.test.ts` asserts both policies rather than whichever one the test
+process happens to be running under.
+
 One relaxation, stated rather than hidden: `style-src` keeps `'unsafe-inline'`. React sets
 `style` attributes for its own layout work and Next inlines a critical-CSS block with no nonce,
 so a nonce-only `style-src` breaks the page. `connect-src`, `img-src` and `object-src` are
@@ -109,7 +120,7 @@ never inferred: `authorize` admits an anonymous caller through exactly one branc
 own `allow` map naming `public`. `apps/web/tests/authz-matrix.test.ts` asserts the set of such
 routes is exactly the documented one, and that every other route refuses an anonymous caller.
 
-Four groups, and each is public for a different reason:
+Five groups, and each is public for a different reason:
 
 - **The report and its receipts** — `/`, `/goals`, `/merged`, `/weekly`, `/archive`,
   `/archive/[reportId]`, `/archive/diff`, `/archive/merged/[reportDate]`,
@@ -125,18 +136,53 @@ Four groups, and each is public for a different reason:
   checkout, plan changes and cancellation — is **owner only**, and is deliberately not enumerated
   here: this section is the documented set of *public* routes, and the gate above holds it to exactly
   the matrix's. Naming a non-public route in it would be a claim the matrix contradicts.
+- **What Compass commits to in writing** — `/legal`, `/legal/[slug]`, `/trust/subprocessors`,
+  `/api/trust/subprocessor-notices` and `/api/trust/subprocessor-notices/confirm`. Public in *every*
+  tenant, like the price list and for the same reason: the content is `@compass/trust`, a module of
+  frozen constants, and it holds no organizational data for `demoOnlyPublic` to confine.
+
+  The grant is load-bearing rather than convenient. The people these documents are written for — a
+  buyer's data protection officer reading the DPIA, a subject reading the Article 22 position, a
+  controller checking which subprocessor sees what — are precisely the people who do not have an
+  account and will not be given one to read a policy. A terms page behind a session is not published.
+
+  The two write endpoints are the 30-day subprocessor-change notice subscription, and being public is
+  what makes them the awkward pair in this list: anybody can POST any address to
+  `/api/trust/subprocessor-notices`. Three things contain that. The subscription is inert until
+  confirmed, and `apps/worker/src/trust-notices.ts` mails only confirmed rows, so typing a stranger's
+  address into the form causes them to receive one confirmation request and nothing further. The
+  confirm endpoint is token-authorised and the same token unsubscribes, so no session is needed to
+  undo it. And both replies are identical whether the address was already subscribed, never
+  subscribed or unsubscribed — an endpoint that distinguished them would answer "does this person use
+  Compass" to anybody who asked, which is a membership oracle on a public route.
 - **How a session is obtained** — `/account`, `/account/invite`, `/account/reset`,
   `/account/deletion`, `/login`, `/api/auth/register`, `/api/auth/login`, `/api/auth/logout`,
   `/api/auth/session`, `/api/auth/magic-link`, `/api/auth/magic-link/consume`,
-  `/api/auth/password-reset`, `/api/auth/password-reset/consume` and `/api/seats/accept`. Public
+  `/api/auth/password-reset`, `/api/auth/password-reset/consume`, `/api/auth/2fa/challenge` and
+  `/api/seats/accept`. Public
   by definition; requiring a session to sign in would be circular. Enumerated rather than written
   as a wildcard, because a wildcard here would mean the documented set is not the set the gate can
   check, and a future auth route would inherit the grant silently.
+  `/api/auth/2fa/challenge` is the one worth spelling out: it is the *code* step of a two-factor
+  sign-in, and it is public precisely because the password step before it deliberately mints no
+  session — a second factor that ran after a working cookie had been issued would be advisory. It is
+  not unauthorised: it demands an HMAC-signed challenge naming one user plus a valid TOTP or recovery
+  code, which together are strictly stronger than the cookie it declines to require.
 - **Token-authorised, with no session involved** — `/api/share/[token]`,
   `/api/delivery/unsubscribe`, `/api/feedback/link/[token]`, `/api/privacy/deletion/undo`,
-  `/api/slack/actions`, `/api/webhooks/[provider]`, `/api/stripe/webhook`. Each token is *narrower*
-  than a session: one shared report, one person's daily switched off, one verdict on one item, one
-  deletion undone, one signed provider delivery, one signed billing event.
+  `/api/slack/actions`, `/api/webhooks/[provider]`, `/api/stripe/webhook`,
+  `/api/connect/github/callback`. Each token is *narrower* than a session: one shared report, one
+  person's daily switched off, one verdict on one item, one deletion undone, one signed provider
+  delivery, one signed billing event, one signed install return.
+
+  `/api/connect/github/callback` is the OAuth return, and it is cookie-less for a structural reason:
+  it is a top-level navigation from github.com, which sends no cookie Compass set. What authorises it
+  is an HMAC-signed `state` this deployment minted minutes earlier, naming **the one organization the
+  credential may be stored against**, compared in constant time inside a ten-minute window. The
+  organization therefore comes from the signed state and never from a query parameter — a caller who
+  could choose it would store their own token against somebody else's tenant. With no
+  `COMPASS_CONNECT_STATE_SECRET` set every callback is refused rather than trusted, which is the same
+  fail-closed posture the three provider webhooks take.
 
   `/api/stripe/webhook` is the clearest case of why `public` does not mean open. Stripe posts from
   its own infrastructure with no cookie it could possibly send, so a session requirement would mean

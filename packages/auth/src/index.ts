@@ -39,6 +39,49 @@ export {
   type TokenRejection,
 } from './secrets.js';
 
+/**
+ * TOTP and recovery codes.
+ *
+ * Pure functions with `now` as a parameter — no clock read, no database — so the replay property is
+ * asserted by stepping time deliberately rather than by sleeping thirty seconds.
+ */
+export {
+  InvalidBase32Error,
+  RECOVERY_CODE_COUNT,
+  TOTP_ACCEPTED_DRIFT_STEPS,
+  TOTP_DIGITS,
+  TOTP_SECRET_BYTES,
+  TOTP_STEP_SECONDS,
+  base32Decode,
+  base32Encode,
+  generateRecoveryCode,
+  generateRecoveryCodes,
+  generateTotpSecret,
+  hashRecoveryCode,
+  matchRecoveryCode,
+  normaliseRecoveryCode,
+  totpCodeForStep,
+  totpEnrollmentUri,
+  totpStepFor,
+  verifyTotpCode,
+  type TotpVerdict,
+} from './totp.js';
+
+/**
+ * The signed ticket that carries a sign-in from the password step to the code step.
+ *
+ * Separate from `totp.ts` because it is not the algorithm — it is the reason a password alone mints no
+ * session. See the module for why it is signed rather than stored.
+ */
+export {
+  SECOND_FACTOR_CHALLENGE_SECRET_ENV_VAR,
+  SECOND_FACTOR_CHALLENGE_TTL_MILLIS,
+  describeChallengeRejection,
+  issueSecondFactorChallenge,
+  verifySecondFactorChallenge,
+  type SecondFactorChallengeVerdict,
+} from './second-factor-challenge.js';
+
 export {
   SESSION_ABSOLUTE_TTL_DAYS,
   SESSION_ABSOLUTE_TTL_MILLIS,
@@ -95,6 +138,8 @@ export {
   composeDeletionUndoMail,
   composeDunningMail,
   composeLockoutMail,
+  composeSubprocessorChangeMail,
+  composeSubprocessorConfirmationMail,
   type AuthMailMessage,
   type AuthMailPurpose,
   type AuthMailer,

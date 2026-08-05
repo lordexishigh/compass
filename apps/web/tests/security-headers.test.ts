@@ -3,7 +3,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { NextRequest } from 'next/server';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { middleware, config as middlewareConfig } from '../middleware';
 import {
@@ -13,6 +13,7 @@ import {
   REQUIRED_SECURITY_HEADERS,
   STATIC_SECURITY_HEADERS,
   contentSecurityPolicy,
+  currentBuildMode,
   generateNonce,
 } from '../lib/security-headers';
 
@@ -53,6 +54,12 @@ const ROUTE_CLASSES = [
 ] as const;
 
 const respond = (path: string) => middleware(new NextRequest(`https://compass.example.com${path}`));
+
+// One test stubs `NODE_ENV` to check the build-mode branch. Restored here so nothing after it reads
+// a policy chosen by a leftover stub.
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
 
 describe('every route class carries all six headers', () => {
   it.each(ROUTE_CLASSES)('%s (%s)', (_label, path) => {
@@ -138,7 +145,16 @@ describe('the documented values, one by one', () => {
 
 describe('the Content-Security-Policy', () => {
   const nonce = 'dGVzdC1ub25jZS0xMjM0';
-  const policy = contentSecurityPolicy(nonce);
+  /**
+   * The **deployed** policy, asserted by naming the mode rather than by inheriting the test
+   * process's own `NODE_ENV`.
+   *
+   * That distinction is the whole point of the parameter. `next dev` needs `'unsafe-eval'` because
+   * its bundle is `eval`-wrapped, and a suite that only ever evaluated the default would pass
+   * identically whether the relaxation were confined to development or applied to every deployment
+   * — the one thing here worth being sure about.
+   */
+  const policy = contentSecurityPolicy(nonce, 'production');
 
   it('carries no `unsafe-inline` in script-src, and no `unsafe-eval` anywhere', () => {
     const scriptSrc = policy.split('; ').find((directive) => directive.startsWith('script-src')) ?? '';
@@ -173,6 +189,49 @@ describe('the Content-Security-Policy', () => {
     expect(policy).toContain("connect-src 'self'");
     expect(policy).toContain("default-src 'self'");
     expect(policy).toContain("form-action 'self'");
+  });
+
+  /**
+   * The development bundle is `eval`-wrapped, so the development policy has to allow it.
+   *
+   * This is the regression that produced the bug: the policy was unconditional while the bundler
+   * output was not, so `next dev` served a page whose every module threw `EvalError` from React
+   * Refresh's runtime before hydration started. The prose still painted — which is why it survived
+   * review — but the client bundle was dead and the console carried the violation.
+   */
+  describe('under `next dev`', () => {
+    const development = contentSecurityPolicy(nonce, 'development');
+
+    it('allows `unsafe-eval`, because webpack’s dev devtool wraps every module in one', () => {
+      const scriptSrc = development.split('; ').find((directive) => directive.startsWith('script-src')) ?? '';
+
+      expect(scriptSrc).toContain("'unsafe-eval'");
+      // The nonce and `strict-dynamic` are unchanged: this adds one token, it does not open the
+      // policy up. An injected inline script is still refused in development.
+      expect(scriptSrc).toContain(`'nonce-${nonce}'`);
+      expect(scriptSrc).toContain("'strict-dynamic'");
+      expect(scriptSrc).not.toContain('unsafe-inline');
+    });
+
+    it('differs from the deployed policy by exactly that one token', () => {
+      // Everything else — every other directive, and the whitespace — is identical, so "development
+      // relaxes one thing" is a claim about the string rather than about the intent.
+      expect(development.replace(" 'unsafe-eval'", '')).toBe(policy);
+    });
+
+    it('is chosen by NODE_ENV, and by nothing else being trusted to mean production', () => {
+      vi.stubEnv('NODE_ENV', 'development');
+      expect(currentBuildMode()).toBe('development');
+
+      // Anything that is not literally `development` gets the strict policy, so a misspelled or
+      // absent variable fails closed rather than shipping `unsafe-eval`.
+      for (const value of ['production', 'test', 'Development', 'dev', '']) {
+        vi.stubEnv('NODE_ENV', value);
+        expect(currentBuildMode(), `NODE_ENV=${value}`).toBe('production');
+      }
+
+      vi.unstubAllEnvs();
+    });
   });
 
   it('states the one relaxation it keeps, rather than hiding it', () => {

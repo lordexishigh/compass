@@ -1,6 +1,4 @@
-import { appendAuditLogEntry } from '@compass/auth';
-import { deleteIntegrationToken } from '@compass/db';
-import { randomUUID } from 'node:crypto';
+import { appendAuditLogEntry, deleteIntegrationToken } from '@compass/db';
 import type { NextResponse } from 'next/server';
 
 import { guard } from '../../../../../lib/auth/guard';
@@ -39,20 +37,18 @@ export async function POST(request: Request): Promise<NextResponse> {
   try {
     await deleteIntegrationToken(admitted.scoped, GITHUB_SOURCE_KEY, 'access');
 
-    await appendAuditLogEntry(
-      admitted.scoped,
-      {
-        id: randomUUID(),
-        actorUserId: admitted.identity?.user.id ?? null,
-        action: 'connector.disconnected',
-        subjectKind: 'connector',
-        subjectId: GITHUB_SOURCE_KEY,
-        detail:
-          'GitHub was disconnected. Compass stopped reading it; every report, commit and pull request it ' +
-          'had already read is unchanged and still readable.',
-      },
-      admitted.now,
-    );
+    // On the record with the acting principal, unlike the callback — this one arrives with a session,
+    // so who pressed disconnect is known and worth keeping.
+    await appendAuditLogEntry(admitted.scoped, {
+      actorUserId: admitted.identity?.user.id ?? null,
+      action: 'connector.disconnected',
+      targetKind: 'connector',
+      targetId: GITHUB_SOURCE_KEY,
+      before: { connected: true },
+      // States what survived, because that is what somebody reading the log needs to know.
+      after: { connected: false, rowsRetained: true },
+      occurredAt: admitted.now,
+    });
 
     return isFormSubmission(request)
       ? seeOther(new URL('/connect?github=disconnected', request.url).toString())

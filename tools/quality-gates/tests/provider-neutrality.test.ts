@@ -91,7 +91,9 @@ describe('no neutral layer imports a provider connector', () => {
       lines.forEach((line, index) => {
         for (const packageName of PROVIDER_PACKAGES) {
           // `from '<pkg>'` or `import('<pkg>')` — a mention inside prose has no quote before it.
-          if (new RegExp(`['"\`]${packageName.replace(/[/\-]/g, '\\$&')}`).test(line)) {
+          // `-` first in the class so it is a literal rather than a range, which is what lets both
+          // it and the scope separator be escaped without an escape ESLint reads as pointless.
+          if (new RegExp(`['"\`]${packageName.replace(/[-/]/g, '\\$&')}`).test(line)) {
             violations.push({
               file: file.relativePath,
               line: index + 1,

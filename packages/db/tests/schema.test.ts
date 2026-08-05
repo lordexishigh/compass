@@ -52,6 +52,8 @@ describe('base schema convention', () => {
       'app_feedback',
       'audit_log_entries',
       'auth_tokens',
+      // The Stripe idempotency ledger and the per-organization subscription row (migration 0015).
+      'billing_events',
       'blockers',
       'branch_refs',
       'commits',
@@ -90,6 +92,9 @@ describe('base schema convention', () => {
       'org_privacy_settings',
       // The per-organization data key that wraps the integration tokens above.
       'organization_data_keys',
+      // The per-organization subscription row (migration 0015). Sorts before `organizations` because
+      // `_` precedes `s`, which is what the sorted comparison below demands.
+      'organization_subscriptions',
       'organizations',
       'projects',
       'pull_requests',
@@ -120,6 +125,8 @@ describe('base schema convention', () => {
       'source_configs',
       'sprint_scope_changes',
       'sprints',
+      // Addresses that asked for 30-day advance notice of a subprocessor change (migration 0017).
+      'subprocessor_notice_subscribers',
       'subscriptions',
       'team_memberships',
       'teams',
@@ -128,6 +135,10 @@ describe('base schema convention', () => {
       'tracked_projects',
       'tracked_repositories',
       'unmatched_identities',
+      // The second factor (migration 0016). One enrollment per user, one row per recovery code — so
+      // "this code has been spent" is a row state rather than a flag in an array column.
+      'user_recovery_codes',
+      'user_second_factors',
       'users',
       'wins',
       'working_calendars',

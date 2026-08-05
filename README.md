@@ -118,10 +118,59 @@ rather than rendering six empty headings — an empty report about an unconfigur
 would imply a quiet team where there is none. A team that genuinely shipped nothing yesterday
 still gets all six sections, with the absences stated in prose.
 
-See [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) for how to install dependencies,
-run, and verify the project. Architecture is documented in
-[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md); the build plan is in
-[`docs/PLAN.md`](docs/PLAN.md).
+### What is in the seed, and where it is written down
+
+[`seed/MANIFEST.md`](seed/MANIFEST.md) is the dataset's inventory: volumes against the required
+minimums, the objective chain, every developer's fragmented identifiers, the addresses that must
+land in the unmatched queue, the Kanban team with no sprints, the traceability mix, and every
+planted pathology with the entity identifiers it names.
+
+**It is generated, never hand-written**, from the five hand-edited fixtures under
+[`seed/fixtures/`](seed/fixtures/) — `organization.json`, `people.json`, `projects.json`,
+`narrative.json` and `pathologies.json`. Everything under `seed/generated/` and the manifest itself
+are output. Run `pnpm seed:generate` after editing a fixture.
+
+A hand-written manifest drifts from the data the first time a volume changes and then quietly lies,
+which is worse than having none: a reviewer checking whether a detector fires reads the manifest and
+concludes the pathology is missing when the numbers are simply stale. So two tests in
+[`packages/seed-connector/tests/manifest.test.ts`](packages/seed-connector/tests/manifest.test.ts)
+hold it honest — one recomputes every count from the generated dataset and compares it against the
+numbers printed in the file, and one pulls every identifier out of the prose and resolves it against
+a real row. A pathology that names `PLAT-742` fails the build if no such issue exists.
+
+The generator is deterministic: no clock read, no `Math.random`, no locale-sensitive comparison
+anywhere in the expansion. `pnpm seed:generate` followed by `git diff --exit-code` is therefore a
+determinism check on the dataset itself, and the suite runs the equivalent in memory.
+
+The pathologies are the point of the whole dataset. Each is planted deliberately so that a detector
+has something true to find — an off-goal work stream, every platform review queued behind one
+person, a release slipping across a multi-day window, a ticket reported blocked that was merged the
+same evening, story points that stopped tracking elapsed days, work marked Done with nothing in
+version control, merged work sitting ahead of the newest release tag, and a ticket that entered In
+Progress and was never touched again. They are named in the manifest with their identifiers so a
+reviewer can check a report against the thing it was supposed to notice, rather than against their
+own reading of the data.
+
+### The three guarantees, and where each is written down
+
+| Guarantee | Documented in | Enforced by |
+| --- | --- | --- |
+| **Determinism** — the same `(org, team, instant)` produces byte-identical structured JSON, excluding the non-semantic allowlist: `generatedAt`, `narrationTraceId`, `runId`, declared once as `NON_SEMANTIC_REPORT_FIELDS` in `packages/analysis/src/determinism.ts` and re-exported rather than redeclared by the pipeline's canonical serializer | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | `packages/analysis/tests/determinism.test.ts` |
+| **Prose grounding** — every number, date, PR number, commit SHA, tracker key and person name in narrated prose exists in that section's structured payload, or narration fails closed to the template renderer | [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) | `tools/quality-gates/tests/grounding-corpus.test.ts` |
+| **Budgets** — the render, regeneration, cold-start and word ceilings | [`docs/budgets.md`](docs/budgets.md) | `tools/perf-budget`, and the budget-table gate that diffs the prose against the constants |
+
+The golden-fixture workflow is the fourth mechanism and the one a change to analysis will meet first:
+`pnpm test:golden` diffs live output against the checked-in fixtures for ten consecutive simulated
+days per team plus the merged report, and `pnpm golden:update` regenerates them as a reviewable text
+diff. Fixtures are only ever rewritten through that command, so a report change is something a
+reviewer reads rather than something that happens silently.
+
+See [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) for how to install dependencies, run, and verify the
+project. Architecture is documented in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md); the build plan
+is in [`docs/PLAN.md`](docs/PLAN.md). What Compass commits to publicly — terms, the privacy policy,
+the impact assessment, the Article 22 position and the subprocessor list — is at
+[`/legal`](http://localhost:3000/legal), and the SBOM retrieval process is in
+[`docs/SBOM.md`](docs/SBOM.md).
 
 Every number Compass holds itself to — the 2000 ms report render, the 5000 ms time-travel
 regeneration, the 60-second cold start, the word ceilings and the narration-fallback alert rate — is

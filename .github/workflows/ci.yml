@@ -114,11 +114,18 @@ jobs:
           # deserves to name itself in the check title.
           - gate: billing (plans, entitlement, webhook signature, idempotency)
             filters: --filter @compass/billing
+          # Its own leg for the same reason as billing: these suites assert the *content* of published
+          # commitments — the subprocessor list, the 30-day notice window, the Article 22 statement and the
+          # no-individual-ranking stance. A failure here means something Compass published in its own name
+          # is no longer true, and that reads badly buried in a sweep called "remaining layers".
+          - gate: trust (subprocessors, DPIA, Article 22, no-ranking stance)
+            filters: --filter @compass/trust
           - gate: remaining layers
             filters: >-
               --filter @compass/clock --filter @compass/connector-port --filter @compass/ingest
               --filter @compass/knowledge-model --filter @compass/renderers --filter @compass/delivery
               --filter @compass/seed-connector --filter @compass/github-connector
+              --filter @compass/jira-connector
               --filter @compass/seed-snapshot --filter @compass/smoke
               --filter @compass/perf-budget --filter @compass/eslint-plugin
     steps:
@@ -239,6 +246,48 @@ jobs:
           name: dependency-audit
           path: audit.json
           if-no-files-found: warn
+
+  sbom:
+    name: software bill of materials
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # CycloneDX, from the installed tree rather than from the manifests.
+      #
+      # `pnpm list --depth Infinity` reports what `--frozen-lockfile` actually installed, so the SBOM
+      # describes the dependency graph that shipped rather than the ranges somebody declared. A bill of
+      # materials generated from `package.json` would omit every transitive dependency, which is the
+      # half a vulnerability question is always about.
+      #
+      # `--prod` is deliberately absent: a supply-chain question covers the build too. A compromised
+      # test runner or bundler reaches the artifact just as surely as a runtime dependency does.
+      - name: generate the SBOM
+        run: |
+          pnpm list --recursive --depth Infinity --json > sbom-tree.json
+          node tools/sbom.mjs < sbom-tree.json > compass-sbom.cdx.json
+          node -e "const s=require('./compass-sbom.cdx.json');console.log('components:',s.components.length)"
+
+      # 90 days, named, and referenced by `docs/SBOM.md` so the retrieval process is a documented path
+      # rather than folklore. The trust page points a controller at the same document.
+      - name: publish the SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: compass-sbom
+          path: |
+            compass-sbom.cdx.json
+            sbom-tree.json
+          retention-days: 90
+          if-no-files-found: error
 
   image-scan:
     name: 'gate: container image scan'

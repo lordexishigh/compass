@@ -216,7 +216,10 @@ describe('the summary sentence', () => {
      */
     const moved: StructuredReport = {
       ...today,
-      findings: { ...today.findings, reviewQueue: { ...today.findings.reviewQueue, depth: 99 } },
+      // `totalOpen`, which is what `ReviewQueue` actually calls the size of the queue. This said
+      // `depth` — a field the type has never had — so the object was only accepted because an excess
+      // property does not fail an assertion at runtime. `tsc -p tsconfig.tests.json` is what caught it.
+      findings: { ...today.findings, reviewQueue: { ...today.findings.reviewQueue, totalOpen: 99 } },
     };
 
     const diff = diffReports(today, moved);

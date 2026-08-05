@@ -31,12 +31,53 @@
  */
 export const FRAME_ANCESTORS = "frame-ancestors 'none'";
 
+/** Which bundle this process is serving. The only thing the policy varies on. */
+export type BuildMode = 'development' | 'production';
+
+/**
+ * `process.env.NODE_ENV` is read as a *static* member expression, deliberately.
+ *
+ * The middleware runs in the Edge runtime, where the bundler substitutes exactly this expression
+ * with a string literal at build time. Reading it dynamically — indexing a `process.env` passed in
+ * as a parameter — would not be substituted, would depend on the Edge shim happening to carry the
+ * variable, and would fail by silently returning `production` in development: the strict policy
+ * again, and the same dead client bundle this function exists to prevent.
+ *
+ * Anything that is not literally `development` — a production build, `next start`, a test run, an
+ * unset variable — gets the strict policy. The relaxation is unreachable by accident.
+ */
+export function currentBuildMode(): BuildMode {
+  return process.env.NODE_ENV === 'development' ? 'development' : 'production';
+}
+
 /**
  * The Content-Security-Policy, given this response's nonce.
  *
+ * ## `'unsafe-eval'` under `next dev`, and only there
+ *
+ * This is the one directive that differs between the two bundles, and it differs because the
+ * *bundler* differs. `next dev` compiles with webpack's `eval-source-map` devtool: every module
+ * arrives wrapped in an `eval("…")` call — the chunk's own header says so — and React Refresh's
+ * runtime is the first of them to run. Under a policy without `'unsafe-eval'` that first module
+ * throws `EvalError` before hydration begins, which takes the whole client bundle with it: the
+ * server-rendered prose is still on screen, so the page *looks* fine, while the Six Spine's active
+ * tick, every interactive control and Fast Refresh are all dead, and the console holds one error
+ * naming a directive nobody meant to violate.
+ *
+ * Relaxing it in development is not a weakening of the deployed posture, which is what makes this
+ * the right shape rather than a compromise: `next build` emits no `eval` and no `new Function` at
+ * all — verified across all 93 chunks of a production build — so the served policy is byte for byte
+ * the strict one, and `tests/security-headers.test.ts` asserts both branches rather than whichever
+ * one the test process happens to be in.
+ *
+ * The alternative was to make the dev bundle eval-free by overriding `webpack.devtool` in
+ * `next.config.ts`. It is rejected because it trades a real thing for a cosmetic one: dev source
+ * maps and Fast Refresh are how this codebase is debugged, and a `next.config.ts` that fights its
+ * own dev server is a maintenance burden pointed at a policy that never ships.
+ *
  * ## No `unsafe-inline`, and what that cost
  *
- * `script-src` is `'self' 'nonce-…' 'strict-dynamic'`. The nonce is what lets Next's own
+ * The deployed `script-src` is `'self' 'nonce-…' 'strict-dynamic'`. The nonce is what lets Next's own
  * hydration bootstrap run: Next reads the CSP off the *request* header the middleware sets and
  * stamps the same nonce onto every script tag it emits, so the framework's inline bootstrap is
  * allowed and an injected one is not. `'strict-dynamic'` extends that trust to scripts those
@@ -53,10 +94,15 @@ export const FRAME_ANCESTORS = "frame-ancestors 'none'";
  * omit: the first kills plugin-based script execution, the second stops an injected `<base>` from
  * repointing every relative URL on the page.
  */
-export function contentSecurityPolicy(nonce: string): string {
+export function contentSecurityPolicy(nonce: string, mode: BuildMode = currentBuildMode()): string {
+  // Appended rather than interpolated conditionally, so the production string is unchanged down to
+  // its whitespace and a diff of the two policies is one token long.
+  const scriptSrc = [`script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`];
+  if (mode === 'development') scriptSrc.push("'unsafe-eval'");
+
   return [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
+    scriptSrc.join(' '),
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data:",
     "font-src 'self'",

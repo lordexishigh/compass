@@ -173,6 +173,21 @@ export {
 
 export { appFeedback } from './schema/app-feedback.js';
 
+export { subprocessorNoticeSubscribers } from './schema/trust.js';
+
+export {
+  confirmNoticeSubscriber,
+  listNoticeSubscribers,
+  noticeSubscriberRowId,
+  recordNoticeSent,
+  subscribeToSubprocessorNotices,
+  subscribersAwaitingNotice,
+  unsubscribeFromSubprocessorNotices,
+  type StoredNoticeSubscriber,
+  type SubscribeInput,
+  type SubscribeResult,
+} from './repositories/trust.js';
+
 export { billingEvents, organizationSubscriptions } from './schema/billing.js';
 
 /**
@@ -194,6 +209,21 @@ export {
   type StoredBillingEvent,
   type StoredBillingSubscription,
 } from './repositories/billing.js';
+
+export { secondFactorIsActive, userRecoveryCodes, userSecondFactors } from './schema/second-factor.js';
+
+export {
+  activateSecondFactor,
+  advanceTotpStep,
+  beginSecondFactorEnrollment,
+  countUnspentRecoveryCodes,
+  deleteSecondFactor,
+  findSecondFactor,
+  listUnspentRecoveryCodeHashes,
+  replaceRecoveryCodes,
+  spendRecoveryCode,
+  type StoredSecondFactor,
+} from './repositories/second-factor.js';
 
 export { INTEGRATION_TOKEN_KINDS, integrationTokens, organizationDataKeys } from './schema/security.js';
 

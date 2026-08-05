@@ -57,6 +57,45 @@ export default async function AcceptInvitePage({
           minPasswordLength={PASSWORD_MIN_LENGTH}
         />
       )}
+
+      {/*
+        Terms and privacy at the point of agreement.
+
+        This is the sign-up flow: accepting a seat is where an account comes into existence, so it is the
+        one moment somebody is actually agreeing to something. Linking the documents only from a report
+        footer would put them where existing users are and not where new ones consent.
+
+        Phrased as what taking the seat means rather than as a checkbox. A tick-box adds a click and a
+        record of a click; it does not make anybody better informed, and the honest version is a sentence
+        with two links a reader can follow before they submit. Both pages are public in every tenant, so
+        neither link can refuse somebody who does not yet have the account they are here to create — and
+        the third link is what Compass will say about *them*, which is the more relevant document for
+        somebody about to be written about.
+      */}
+      <p className="mt-10 hairline pt-5 text-[13px] leading-relaxed text-ink-faint">
+        Taking a seat means you accept the{' '}
+        <a
+          href="/legal/terms"
+          className="underline decoration-rule-strong underline-offset-4 hover:text-ink hover:decoration-verified"
+        >
+          terms of service
+        </a>{' '}
+        and that your work is read as described in the{' '}
+        <a
+          href="/legal/privacy"
+          className="underline decoration-rule-strong underline-offset-4 hover:text-ink hover:decoration-verified"
+        >
+          privacy policy
+        </a>
+        . Compass does not rank individuals and produces no automated decision about you —{' '}
+        <a
+          href="/legal/automated-decisions"
+          className="underline decoration-rule-strong underline-offset-4 hover:text-ink hover:decoration-verified"
+        >
+          what that means, and how to object
+        </a>
+        .
+      </p>
     </div>
   );
 }

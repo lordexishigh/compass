@@ -56,8 +56,20 @@ const REPOSITORIES = join(dirname(fileURLToPath(import.meta.url)), '..', 'src', 
  *
  * Listed by name rather than by a naming convention, so adding a second exception is a
  * visible edit to this file rather than a function that happens to match a pattern.
+ *
+ * ## The second exception: `applyBillingEventOnce`
+ *
+ * It takes a raw `CompassDatabase` because it must **open a transaction** and build a `ScopedDb`
+ * *inside* it. A `ScopedDb` wraps a connection that has already been chosen, so writing through the
+ * outer handle would put half the work outside the transaction — and the whole point of that function
+ * is that the Stripe event-id insert and the subscription update commit or roll back together. One
+ * state change per redelivered event is only true if they are atomic.
+ *
+ * It is not unscoped in effect: the first thing it does inside the transaction is
+ * `new ScopedDb(tx, orgScope(input.organizationId))`, and every statement goes through that. What it
+ * lacks is a scope in its *signature*, which is what this scan can see.
  */
-const DOCUMENTED_EXCEPTIONS: readonly string[] = ['ensureOrganization'];
+const DOCUMENTED_EXCEPTIONS: readonly string[] = ['applyBillingEventOnce', 'ensureOrganization'];
 
 const SCOPE_FIRST_PARAMETER_TYPES = new Set(['ScopedDb']);
 const SCOPE_FIRST_PARAMETER_NAMES = new Set(['organizationId']);

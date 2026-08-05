@@ -206,6 +206,22 @@ export function ReportDocument({ view }: { readonly view: ReportView }) {
             >
               Privacy and retention
             </a>
+            {/* Terms and the privacy policy, in the footer of every report because that is where a
+                reader is when they wonder — and because the criterion is that they are linked from
+                the footer and the sign-up flow, not merely published at a URL somebody was sent.
+                Public in every tenant, so this link never refuses anybody. */}
+            <a
+              href="/legal/terms"
+              className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
+            >
+              Terms
+            </a>
+            <a
+              href="/legal/privacy"
+              className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
+            >
+              Privacy policy
+            </a>
             {/* Reachable, never imposed. `/` gates nothing and never redirects here:
                 the zero-config promise is that a manager reads a report first and
                 decides about accounts afterwards. */}
