@@ -28,6 +28,15 @@ import { scrubText } from './scrub.js';
 export const LOG_EVENTS = [
   /** One pipeline run finished: which scope, how long, which renderer answered. */
   'pipeline.run',
+  /**
+   * A generation attempt failed and produced no report.
+   *
+   * Distinct from `pipeline.run`, which is only emitted once a report has been persisted. A run that
+   * throws never reaches that emitter, so without this event the *failure* case was the one condition
+   * the log could not describe — it existed only as an interpolated sentence in the worker's stderr,
+   * which cannot be grouped by organization or counted over a window.
+   */
+  'pipeline.failure',
   /** Narration was attempted and the template renderer answered instead. */
   'narration.fallback',
   /** A source did not cover the window it was asked for. */
@@ -45,6 +54,8 @@ export type LogLevel = 'info' | 'warn' | 'error';
 /** Which level each event is emitted at, so the choice is one table rather than per call site. */
 export const LEVEL_FOR_EVENT: Readonly<Record<LogEvent, LogLevel>> = {
   'pipeline.run': 'info',
+  // A report that does not exist is the product failing to appear, not a degradation of it.
+  'pipeline.failure': 'error',
   // A fallback is a *degradation*, not a failure: the reader still gets six complete sections.
   'narration.fallback': 'warn',
   'ingest.coverage_gap': 'warn',
@@ -237,6 +248,26 @@ export const logPipelineRun = (
   extras: { readonly scopeKind: string; readonly rendererId: string; readonly durationMillis: number },
   sink?: LogSink,
 ): LogRecord => emit('pipeline.run', fields, extras, sink);
+
+/**
+ * A generation attempt that produced no report.
+ *
+ * `attempt` and `retryLimit` are both fields because the pair is what says whether this is a transient
+ * blip pg-boss will retry or the last attempt — an alert on the final failure is a different page from
+ * one on the first, and a string like "attempt 3 of 5" cannot be filtered on.
+ *
+ * `reason` is the thrown error's own message, scrubbed like every other string here.
+ */
+export const logPipelineFailure = (
+  fields: LogFields,
+  extras: {
+    readonly scopeKind: string;
+    readonly reason: string;
+    readonly attempt: number;
+    readonly retryLimit: number;
+  },
+  sink?: LogSink,
+): LogRecord => emit('pipeline.failure', fields, extras, sink);
 
 /**
  * `cause` is what makes the fallback *rate* alert actionable.

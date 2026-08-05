@@ -1,4 +1,5 @@
 import { MILLIS_PER_HOUR, differenceInMillis, instantFromIso, toIso, zonedParts, type Instant } from '@compass/clock';
+import { RecordingSink } from '@compass/observability';
 import { describe, expect, it, vi } from 'vitest';
 
 import {
@@ -303,6 +304,62 @@ describe('when generation fails', () => {
     expect(errors[0]).toContain('team:platform');
     expect(errors[0]).toContain('2026-08-03T05:00:00.000Z');
     expect(errors[0]).toContain(`attempt 3 of ${GENERATION_RETRY_LIMIT}`);
+  });
+
+  /**
+   * The same three facts, as a *queryable event* rather than as a sentence.
+   *
+   * > Delivery failures and pipeline generation failures raise alerts with the org, team and instant.
+   *
+   * The prose line above satisfies a person tailing the worker and cannot satisfy that criterion: an
+   * interpolated string cannot be grouped by organization or counted over a rolling window, so the
+   * alert rule in `@compass/observability` had nothing to read. `pipeline.failure` is that event, and
+   * this is the assertion that it actually fires — `packages/observability/tests/alerts.test.ts` owns
+   * the rule that consumes it.
+   */
+  it('emits pipeline.failure with the organization, team and report instant', async () => {
+    const sink = new RecordingSink();
+    const failing = dependencies({
+      ensureReport: async () => {
+        throw new Error('the analysis core threw');
+      },
+      logSink: sink,
+    });
+
+    await expect(handleReportGenerate(failing, payload(), 3)).rejects.toThrow('the analysis core threw');
+
+    const record = sink.last('pipeline.failure');
+    expect(record, 'a failed generation emitted no structured event').not.toBeNull();
+    expect(record?.organizationId).toBe('11111111-1111-4111-8111-111111111111');
+    expect(record?.teamKey).toBe('platform');
+    // The report instant the run was *for*, not a wall-clock read — so the event lines up with the
+    // report it failed to produce.
+    expect(record?.at).toBe(Date.parse('2026-08-03T05:00:00.000Z'));
+    expect(record?.level).toBe('error');
+    expect(record?.extras['reason']).toBe('the analysis core threw');
+    // The pair that says whether pg-boss will try again.
+    expect(record?.extras['attempt']).toBe(3);
+    expect(record?.extras['retryLimit']).toBe(GENERATION_RETRY_LIMIT);
+  });
+
+  it('carries no team for a merged report, because it genuinely has none', async () => {
+    const sink = new RecordingSink();
+
+    await expect(
+      handleReportGenerate(
+        dependencies({
+          ensureReport: async () => {
+            throw new Error('merged build threw');
+          },
+          logSink: sink,
+        }),
+        payload({ scopeKind: 'merged', scopeKey: '*' }),
+      ),
+    ).rejects.toThrow();
+
+    // `null` rather than `'*'`: the merged scope key is a sentinel, not a team anybody is on.
+    expect(sink.last('pipeline.failure')?.teamKey).toBeNull();
+    expect(sink.last('pipeline.failure')?.extras['scopeKind']).toBe('merged');
   });
 
   it('rethrows so pg-boss counts the attempt rather than swallowing the failure', async () => {

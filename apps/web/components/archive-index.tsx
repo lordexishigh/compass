@@ -1,7 +1,41 @@
 import { mergedArchiveHref, type ArchiveDayView } from '../lib/archive-source';
+import { diffHref } from '../lib/diff-source';
 import { EMPTY_STATES } from '../lib/empty-states';
 
 import { EmptyState } from './empty-state';
+
+/**
+ * For each (date, team), the most recent earlier date that also has a report for that team.
+ *
+ * This is what makes the diff *reachable*. A comparison view nobody can navigate to is the failure a
+ * previous task found on `/me`: the permission was right, the route worked, and the only way in was to
+ * type the URL. So every row that has a predecessor carries a link to the diff against it.
+ *
+ * "The previous date for this team" and not "the previous date" — a team whose report failed on
+ * Tuesday should compare Wednesday against Monday, which is the comparison a reviewer actually wants,
+ * rather than against a date it has no report for and getting the missing-report state.
+ *
+ * `days` arrives newest first, so walking forward from a date finds its predecessor.
+ */
+function previousDateByScope(days: readonly ArchiveDayView[]): ReadonlyMap<string, string> {
+  const previous = new Map<string, string>();
+
+  for (let index = 0; index < days.length; index += 1) {
+    for (const entry of days[index]!.entries) {
+      if (entry.scopeKind !== 'team') continue;
+
+      const earlier = days
+        .slice(index + 1)
+        .find((day) => day.entries.some((candidate) => candidate.scopeKey === entry.scopeKey));
+
+      if (earlier !== undefined) {
+        previous.set(`${entry.reportDate}:${entry.scopeKey}`, earlier.reportDate);
+      }
+    }
+  }
+
+  return previous;
+}
 
 /**
  * The archive index: every report Compass has written, by date, each one a permalink.
@@ -33,6 +67,8 @@ export function ArchiveIndex({ days }: { readonly days: readonly ArchiveDayView[
       </div>
     );
   }
+
+  const previousDate = previousDateByScope(days);
 
   return (
     <ol className="mt-10 space-y-8">
@@ -66,6 +102,28 @@ export function ArchiveIndex({ days }: { readonly days: readonly ArchiveDayView[
                   <span className="stated-absence text-[12px]">{entry.coverageStatus} coverage</span>
                 )}
                 {entry.fallbackRenderer && <span className="stated-absence text-[12px]">rendered from template</span>}
+                {/*
+                  The way in to the diff. Only rendered when this team has an earlier report to
+                  compare against — a link to a comparison that cannot exist would land the reader on
+                  the missing-report state, which teaches them the feature is broken.
+                */}
+                {(() => {
+                  const from = previousDate.get(`${entry.reportDate}:${entry.scopeKey}`);
+                  if (from === undefined) return null;
+
+                  return (
+                    <a
+                      href={diffHref({ teamKey: entry.scopeKey, from, to: entry.reportDate })}
+                      className="tertiary-action"
+                    >
+                      what changed
+                      <span className="sr-only">
+                        {' '}
+                        in {entry.scopeLabel} between {from} and {entry.reportDate}
+                      </span>
+                    </a>
+                  );
+                })()}
               </li>
             ))}
           </ul>

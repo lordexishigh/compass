@@ -19,7 +19,7 @@ always the prose.
 | Merged cross-team report prose | 400 words | `MERGED_REPORT_WORD_BUDGET` | `packages/renderers/tests/merged.test.ts` |
 | One team's daily report prose | 900 words | `DAILY_REPORT_WORD_BUDGET` | `packages/narrator/tests/narrate.test.ts` |
 | One team's daily report, ~90-second read | 450 words | `DAILY_REPORT_READING_BUDGET` | `tools/quality-gates/tests/budgets.test.ts` |
-| Narration-fallback alert rate | 0.20 | `NARRATION_FALLBACK_ALERT_RATE` | `packages/analysis/tests/budgets.test.ts` |
+| Narration-fallback alert rate | 0.02 | `NARRATION_FALLBACK_ALERT_RATE` | `packages/analysis/tests/budgets.test.ts` |
 
 ### Which of these are gates, and which are targets
 
@@ -221,22 +221,36 @@ turns: `maxItemsPerSection` in `AnalysisConfig`, or `MAX_SENTENCES_PER_ITEM` in
 `packages/renderers/src/prose.ts`. It will move every golden fixture under `fixtures/reports/`, and
 that diff is the review.
 
-## Narration-fallback alert rate — 0.20
+## Narration-fallback alert rate — 0.02
 
-**The alert rate is 0.20**: the share of a day's generated reports that may fall back to the
-deterministic renderer before the condition stops being noise and becomes an incident.
+**The alert rate is 0.02**: the share of generated reports, over a rolling 24-hour window, that may
+fall back to the deterministic renderer before the condition stops being noise and becomes an
+incident. Above it, the alert names the affected organizations.
 
-Above one report in five, the likely cause is not a model having an odd day — it is a prompt, a schema
-or a grounding rule that has broken for *every* report and is being masked by the fallback working
-correctly. That masking is the whole reason there is a number here: fail-closed narration degrades so
-gracefully that a total narration outage looks, from outside, like a product that has quietly decided
-to be templated.
+The reason there is a number here at all is masking: fail-closed narration degrades so gracefully
+that a total narration outage looks, from outside, like a product that has quietly decided to be
+templated. The rate is what turns "everything still renders" into a page.
 
 A rate rather than a count, so a deployment with three teams and one with thirty do not need different
-thresholds. Evaluated per day rather than per report, because a single fallback is an expected event
-that must never page anybody. `narrationFallbackAlert` decides it and returns `alerting: false` for a
-day with no reports at all — that is a different condition, with its own signal, and dividing by zero
-would fold it into this one.
+thresholds. Evaluated over a window rather than per report, because a single fallback is an expected
+event that must never page anybody. `narrationFallbackAlert` decides it and returns `alerting: false`
+for a window with no reports at all — that is a different condition, with its own signal, and dividing
+by zero would fold it into this one. The comparison is strictly greater than the rate, because the
+criterion says fallbacks must *exceed* it, so 2 reports in 100 is the ceiling rather than a breach.
+
+### Why this number changed from 0.20
+
+It was 0.20 here and in `NARRATION_FALLBACK_ALERT_RATE`, and nowhere else. `docs/PLAN.md` and the
+launch monitoring criteria both specify **2%** — so the criterion that cites "the rate documented in
+docs/budgets.md" was citing a number the plan never agreed to. One of the two had to move, and the
+plan is the document of record.
+
+It is also the right number on its own merits. The old prose argued that above one report in five the
+cause is certainly a broken prompt or grounding rule. That is an argument about when narration is
+*definitely* broken, not about when to wake somebody: one report in five silently templated is a
+severe incident that has usually been running for days, and on a three-team deployment a single bad
+report every day sits under a 20% threshold forever. 2% catches a systemic prompt or schema break
+while one unlucky report still pages nobody, which is the pair of properties the number has to have.
 
 ## The weekly digest: no word budget
 

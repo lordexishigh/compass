@@ -11,10 +11,135 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  verify:
-    name: lint, typecheck, test
+  # ---------------------------------------------------------------------------
+  # The named gates.
+  #
+  # One job per gate family rather than one `pnpm run verify` step, because the criterion is that
+  # *every documented gate runs on every pull request* and that a failure names the gate. A single
+  # green or red check called "verify" satisfies neither: a reviewer cannot see which gates ran, and a
+  # gate silently removed from a package.json looks identical to one that passed.
+  #
+  # Each gate's failure message is the assertion's own — `tools/quality-gates` and the suites it wraps
+  # already name the offending artifact — so nothing here echoes a summary that could drift from what
+  # actually failed. The job *name* supplies the gate; the test output supplies the artifact.
+  # ---------------------------------------------------------------------------
+  gate-lint:
+    name: 'gate: lint (clock reads, no charts, secret disclosure, jsx-a11y)'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # `compass/no-system-clock`, `no-time-library-imports`, `no-clock-instantiation`,
+      # `no-analysis-io`, `no-secret-disclosure`, plus the jsx-a11y set over apps/web. The clock and
+      # purity rules are also enforced by an independent textual scan in `gate-quality-gates`, so each
+      # is checked twice by two mechanisms that cannot both be switched off by one edit.
+      - run: pnpm run lint
+
+  gate-architecture:
+    name: 'gate: architecture (layer boundaries, analysis purity)'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # dependency-cruiser over packages/apps/tools. Names the offending edge on failure.
+      - run: pnpm run arch
+
+  gate-typecheck:
+    name: 'gate: typecheck'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run typecheck
+
+  gate-suites:
+    # Fanned out per workspace so a failure names the gate in the check title rather than only in a
+    # 3,000-line log. Every package carries its own vitest.config.ts, so a root-level `vitest run`
+    # would report success while discovering none of tools/* — which is exactly the false green this
+    # matrix exists to prevent. `fail-fast: false` so one broken gate does not hide the others.
+    name: 'gate: ${{ matrix.gate }}'
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # `filters` is the literal flag string, one `--filter` per package. Spelling the flags out
+          # here rather than assembling them in the run step keeps the shell line trivial: a clever
+          # expression that silently expanded to no filter at all would run the whole workspace and
+          # report it under one gate's name, which is worse than either alternative.
+          - gate: quality-gates (determinism, clock scan, grounding corpus, budgets, isolation, encoding)
+            filters: --filter @compass/quality-gates
+          - gate: golden fixtures + determinism
+            filters: --filter @compass/golden
+          - gate: web (accessibility, role matrix, headers, no-chart, degradation)
+            filters: --filter @compass/web
+          - gate: worker (pipeline ordering, delivery, generation, privacy)
+            filters: --filter @compass/worker
+          - gate: analysis (purity, budgets, report invariants)
+            filters: --filter @compass/analysis
+          - gate: pipeline + observability (alert rules, structured events)
+            filters: --filter @compass/pipeline --filter @compass/observability
+          - gate: narrator + memos (grounding, minimization)
+            filters: --filter @compass/narrator --filter @compass/memos
+          - gate: db + auth (migrations, tenant isolation, seats)
+            filters: --filter @compass/db --filter @compass/auth
+          # Its own leg rather than a name in the list below, because what it asserts is money and
+          # access: the webhook signature, one state change per redelivered event, the trial and
+          # dunning boundaries, and the downgrade that must be refused. A failure in any of those
+          # deserves to name itself in the check title.
+          - gate: billing (plans, entitlement, webhook signature, idempotency)
+            filters: --filter @compass/billing
+          - gate: remaining layers
+            filters: >-
+              --filter @compass/clock --filter @compass/connector-port --filter @compass/ingest
+              --filter @compass/knowledge-model --filter @compass/renderers --filter @compass/delivery
+              --filter @compass/seed-connector --filter @compass/github-connector
+              --filter @compass/seed-snapshot --filter @compass/smoke
+              --filter @compass/perf-budget --filter @compass/eslint-plugin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: run the gate
+        run: pnpm ${{ matrix.filters }} --workspace-concurrency=1 --reporter=append-only run test
+
+  # A belt-and-braces whole-workspace run, so a package added without a matrix entry is still
+  # executed and cannot slip through the fan-out above unnoticed.
+  verify:
+    name: whole-workspace test sweep (catches an unmatrixed package)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -29,21 +154,16 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # Lint, typecheck and the whole suite. `pnpm test` is recursive, so this
-      # already includes:
+      # Every workspace's tests, recursively.
       #
-      #  - `tools/quality-gates` — the no-system-clock source scan over every
-      #    guarded package, and the analysis-purity scan. `pnpm run arch` (inside
-      #    `verify`) runs dependency-cruiser over the same boundaries, so purity is
-      #    enforced twice by two independent mechanisms.
-      #  - `tools/golden` — the golden fixture diff and the determinism gate, which
-      #    generates the same (org, team, instant) twice in-process, twice in
-      #    separate processes, and again under a different timezone and locale.
-      #  - `tools/smoke` — the cold-start assertions.
+      # `gate-suites` above already runs these fanned out per gate, and this is deliberately not that
+      # list again: it is `pnpm -r`, which discovers packages from the workspace globs rather than from
+      # a matrix somebody has to remember to edit. A package added without a matrix entry is therefore
+      # still executed here, which is the one thing the fan-out cannot check about itself.
       #
-      # They are named here rather than left implicit because a gate nobody can see
-      # in the workflow is a gate somebody removes from a package.json by accident.
-      - run: pnpm run verify
+      # Lint, architecture and typecheck are their own jobs above rather than steps here, so each is a
+      # named check. `pnpm run verify` still chains all four for local use.
+      - run: pnpm run test
 
       # The seed is checked in, so a regeneration that produces different bytes is
       # a determinism regression rather than a routine diff.
@@ -61,6 +181,110 @@ jobs:
         run: |
           pnpm run golden:update
           git diff --exit-code -- fixtures/
+
+  # ---------------------------------------------------------------------------
+  # Supply chain: secrets, dependencies, base image.
+  #
+  # All three run on every pull request. The nightly sweep over `master` lives in
+  # `.github/workflows/nightly.yml` — same scanners, different trigger, because a dependency that
+  # becomes vulnerable on a Tuesday does so without anybody opening a pull request.
+  # ---------------------------------------------------------------------------
+  secret-scan:
+    name: 'gate: secret scan'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Gitleaks scans *history*, so a shallow clone would silently check one commit and pass. A
+          # credential committed and then reverted is still a leaked credential.
+          fetch-depth: 0
+
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+
+  dependency-scan:
+    name: 'gate: dependency scan (critical CVE with a fix blocks)'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # `pnpm audit` exits non-zero on *any* advisory, so its exit code is discarded and the JSON is
+      # judged by `tools/audit-critical.mjs`, which blocks only on a critical advisory that has a
+      # published fix and prints the package and the version to move to. `pipefail` is off for the
+      # same reason — the audit's own exit code is expected to be non-zero and is not the verdict.
+      - name: critical vulnerabilities with an available fix
+        run: |
+          set +e
+          pnpm audit --json > audit.json
+          set -e
+          node tools/audit-critical.mjs < audit.json
+
+      - name: audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-audit
+          path: audit.json
+          if-no-files-found: warn
+
+  image-scan:
+    name: 'gate: container image scan'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      # The same image the cold-start and perf jobs measure, so what is scanned is what ships.
+      - name: build the image
+        run: docker compose build
+
+      # The `web` service by name. Never "whichever image compose happens to list first".
+      #
+      # This read `docker compose config --images | head -n 1`, which in this compose file resolves to
+      # `postgres:17-alpine`: `postgres` is declared first and is the only service carrying an `image:`
+      # key, because `web` and `worker` are `build:` services. So the step directly above, whose comment
+      # promises "what is scanned is what ships", was scanning the database and never once looked at the
+      # Compass image — a gate that reported green about an artifact it had not opened.
+      #
+      # Naming the service resolves the tag compose assigns a build-only service, which is the tag
+      # `docker compose build` produced a step earlier. `worker` is the same image with a different
+      # command, so scanning `web` covers both.
+      - name: resolve the built image tag
+        id: image
+        run: |
+          ref="$(docker compose config --images web)"
+          if [ -z "$ref" ]; then
+            echo "docker compose config --images web resolved no image; the service may have been renamed." >&2
+            exit 1
+          fi
+          echo "scanning $ref"
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+
+      # Base-image and OS-package CVEs. `exit-code: 1` with `severity: CRITICAL` and
+      # `ignore-unfixed: true` is the same policy the dependency gate applies to npm packages: block on
+      # a critical finding somebody can actually fix, report the rest without making the gate
+      # unsatisfiable.
+      - name: trivy
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ steps.image.outputs.ref }}
+          severity: CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+          format: table
 
   cold-start:
     name: docker compose cold start

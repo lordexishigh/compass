@@ -401,6 +401,62 @@ export const ROLE_MATRIX: readonly RouteRule[] = [
     allow: { POST: ANYONE },
   },
 
+  // -------------------------------------------------------------------------
+  // Billing: the plan, the seats it covers, and Stripe's own callbacks.
+  //
+  // Every write here is **owner only**, and the line is not arbitrary. A plan change moves money and
+  // a downgrade decides which colleagues lose access — that is the owner's decision by definition,
+  // and a manager who could make it could remove seats they do not administer. Reading the billing
+  // page is owner-only for the same reason `/privacy` is: it names an amount, a payment state and an
+  // invoice history, none of which is any part of a manager's job.
+  //
+  // `/pricing` is the one exception and is public in *every* tenant, not just the demonstration one.
+  // It carries no organizational data at all — it reads the plan table out of `@compass/billing` and
+  // nothing else — so there is nothing for `demoOnlyPublic` to confine. A pricing page that needed a
+  // session would be a pricing page nobody could read before signing up.
+  {
+    route: '/pricing',
+    summary: 'Public pricing: the plan table and the seat price, read from @compass/billing.',
+    allow: { GET: ANYONE },
+  },
+  {
+    route: '/billing',
+    summary: 'The plan, the seats it covers, the payment state, and the invoice history.',
+    allow: { GET: ['owner'] },
+  },
+  {
+    route: '/api/billing/checkout',
+    summary: 'Starts a Stripe Checkout session for a plan at the org’s current seat count.',
+    allow: { POST: ['owner'] },
+  },
+  {
+    route: '/api/billing/plan',
+    summary: 'Changes plan with proration. Refuses a downgrade below the current seat count.',
+    allow: { POST: ['owner'] },
+  },
+  {
+    route: '/api/billing/cancel',
+    summary: 'Cancels at period end, so access is retained for what has already been paid for.',
+    allow: { POST: ['owner'] },
+  },
+  /**
+   * Stripe's webhook endpoint.
+   *
+   * `ANYONE`, for exactly the reason `/api/webhooks/[provider]` is, and the same substitute for a
+   * session: an HMAC-SHA256 over the raw bytes under a secret only Compass and Stripe hold, compared
+   * in constant time, inside a five-minute window. A caller without the secret is refused before the
+   * body is parsed, and with no secret configured *every* delivery is refused rather than trusted.
+   *
+   * No `demoOnlyPublic`: the flag confines a public read of tenant data, and this route reads nothing
+   * back to its caller. It answers "accepted" or "not verified" and nothing else — an attacker who
+   * could reach it learns whether the endpoint exists, which Stripe's documentation already says.
+   */
+  {
+    route: '/api/stripe/webhook',
+    summary: 'Stripe subscription and invoice events. Verified over the raw body, applied once.',
+    allow: { POST: ANYONE },
+  },
+
   /**
    * The simulated-clock time-travel control.
    *
@@ -636,6 +692,22 @@ export const ROLE_MATRIX: readonly RouteRule[] = [
   {
     route: '/archive/merged/[reportDate]',
     summary: "One date's merged cross-team view, re-derived from that date's stored per-team reports.",
+    allow: { GET: ANYONE },
+    demoOnlyPublic: true,
+  },
+  /**
+   * The side-by-side diff, on the archive's terms because it *is* two archived reports.
+   *
+   * The evaluator journey this exists for is "show me you did not make this up", and it is performed
+   * by somebody who has been sent a link — a skip-level, a prospect, a reviewer — so requiring a seat
+   * would close the one door the view was built to open. It renders two stored rows and never
+   * regenerates, so it grants no capability `/archive/[reportId]` does not already grant twice.
+   */
+  {
+    route: '/archive/diff',
+    summary:
+      'Two stored reports side by side: added, removed and changed by stable id, each claim expandable ' +
+      'to the structured payload behind it.',
     allow: { GET: ANYONE },
     demoOnlyPublic: true,
   },

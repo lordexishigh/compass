@@ -1,0 +1,112 @@
+name: Report a nightly finding
+description: >-
+  Opens a labelled issue for a nightly scan finding, or comments on the one that is already open.
+  Extracted so all three nightly scanners report the same way.
+
+# Why this is a composite action and not three copies of the same script.
+#
+# The dependency scan already filed issues; the secret and image scans did not, so a nightly gitleaks
+# hit or a fixable critical in the image turned a tab red and told nobody — which is exactly what this
+# workflow's own header argues is not a report. Fixing that by pasting the filing script into two more
+# jobs would leave three copies of the dedupe logic to drift apart, and the first one to drift would be
+# discovered during an incident.
+#
+# So the behaviour lives here once: same label, same title-based dedupe, same body shape, and one place
+# to change if the reporting policy changes.
+
+inputs:
+  title:
+    description: >-
+      The issue title. Also the dedupe key — a finding that recurs comments on the existing issue
+      rather than opening a second one every night, which is how a security label becomes noise.
+    required: true
+  summary:
+    description: One-line statement of what was found, above the detail block.
+    required: true
+  detail:
+    description: Optional detail to fence in a code block. A log excerpt, or a scanner summary.
+    required: false
+    default: ''
+  detail-file:
+    description: >-
+      Optional path to read the detail from instead of passing it inline. Missing or unreadable is not
+      an error: the issue is still filed, saying the detail is in the workflow log. A report that
+      failed to be filed because its attachment was absent is the worst of both outcomes.
+    required: false
+    default: ''
+  label:
+    description: Label applied to the issue, and the label the dedupe search is scoped to.
+    required: false
+    default: security
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/github-script@v7
+      env:
+        FINDING_TITLE: ${{ inputs.title }}
+        FINDING_SUMMARY: ${{ inputs.summary }}
+        FINDING_DETAIL: ${{ inputs.detail }}
+        FINDING_DETAIL_FILE: ${{ inputs.detail-file }}
+        FINDING_LABEL: ${{ inputs.label }}
+      with:
+        script: |
+          const fs = require('node:fs');
+
+          const title = process.env.FINDING_TITLE;
+          const label = process.env.FINDING_LABEL;
+          const summary = process.env.FINDING_SUMMARY;
+
+          // Inline detail wins; otherwise read the file; otherwise say where to look. Every branch
+          // still files the issue.
+          let detail = process.env.FINDING_DETAIL ?? '';
+          const detailFile = process.env.FINDING_DETAIL_FILE ?? '';
+          if (detail.trim().length === 0 && detailFile.length > 0) {
+            try {
+              detail = fs.readFileSync(detailFile, 'utf8');
+            } catch {
+              detail = '';
+            }
+          }
+
+          const runUrl =
+            `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+          const body = [
+            summary,
+            '',
+            ...(detail.trim().length > 0
+              ? ['```', detail.trim().slice(0, 60_000), '```', '']
+              : ['The scanner produced no summary file; the finding is in the workflow log.', '']),
+            `Run: ${runUrl}`,
+            `Commit: ${context.sha}`,
+          ].join('\n');
+
+          // Scoped to the label rather than listing every open issue, and matched on the exact title.
+          const existing = await github.rest.issues.listForRepo({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            state: 'open',
+            labels: label,
+            per_page: 100,
+          });
+
+          const open = existing.data.find((issue) => issue.title === title);
+          if (open) {
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: open.number,
+              body,
+            });
+            core.info(`Commented on #${open.number}: ${title}`);
+          } else {
+            const created = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              labels: [label],
+              body,
+            });
+            core.info(`Opened #${created.data.number}: ${title}`);
+          }

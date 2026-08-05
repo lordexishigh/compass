@@ -524,6 +524,52 @@ export function emptyBundle(): StoredReportBundle {
   };
 }
 
+/**
+ * Two stored reports a day apart, arranged to contain all three diff outcomes.
+ *
+ * One item keeps its stable id and gets worse (a `changed` row), one is only in the earlier report
+ * (`removed`), one only in the later (`added`). Shared between `report-diff.test.tsx` and the axe
+ * sweep in `accessibility.test.tsx` rather than built twice: the diff's markup is structural — nested
+ * lists, a disclosure per side, a definition list inside each — and two fixtures that drifted would
+ * mean the audited tree and the asserted tree were different trees.
+ */
+export function diffPairFixture(): {
+  readonly before: StoredReportBundle;
+  readonly after: StoredReportBundle;
+} {
+  const withFirstSectionItems = (
+    bundle: StoredReportBundle,
+    map: (items: readonly StoredReportItem[]) => readonly StoredReportItem[],
+  ): StoredReportBundle => ({
+    ...bundle,
+    sections: bundle.sections.map((section, index) =>
+      index === 0 ? { ...section, items: map(section.items) } : section,
+    ),
+  });
+
+  const earlier = storedBundle();
+  const template = earlier.sections[0]!.items[0]!;
+
+  const before = withFirstSectionItems(
+    { ...earlier, report: { ...earlier.report, id: 'report-0', reportDate: '2026-07-30' } },
+    (items) => [
+      ...items,
+      { ...template, id: 'item-departing', stableId: 'blocker:ticket:DEV-999:tracker_flag' },
+    ],
+  );
+
+  const after = withFirstSectionItems(storedBundle(), (items) => [
+    ...items.map((entry) => ({
+      ...entry,
+      severityScore: entry.severityScore + 15,
+      ageDays: entry.ageDays + 1,
+    })),
+    { ...template, id: 'item-fresh', stableId: 'blocker:ticket:DEV-777:tracker_flag' },
+  ]);
+
+  return { before, after };
+}
+
 const source = (
   sourceKey: string,
   overrides: Partial<SourceFreshness> = {},

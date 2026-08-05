@@ -16,10 +16,12 @@
   },
   "dependencies": {
     "@compass/auth": "workspace:*",
+    "@compass/billing": "workspace:*",
     "@compass/clock": "workspace:*",
     "@compass/connector-port": "workspace:*",
     "@compass/db": "workspace:*",
     "@compass/delivery": "workspace:*",
+    "@compass/github-connector": "workspace:*",
     "@compass/ingest": "workspace:*",
     "@compass/knowledge-model": "workspace:*",
     "@compass/narrator": "workspace:*",

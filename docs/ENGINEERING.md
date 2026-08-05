@@ -109,13 +109,22 @@ never inferred: `authorize` admits an anonymous caller through exactly one branc
 own `allow` map naming `public`. `apps/web/tests/authz-matrix.test.ts` asserts the set of such
 routes is exactly the documented one, and that every other route refuses an anonymous caller.
 
-Three groups, and each is public for a different reason:
+Four groups, and each is public for a different reason:
 
 - **The report and its receipts** — `/`, `/goals`, `/merged`, `/weekly`, `/archive`,
-  `/archive/[reportId]`, `/archive/merged/[reportDate]`, `/artifact/[kind]/[artifactId]`,
-  `/api/reports/[teamKey]`, `/api/goals`, `/api/goals/[nodeId]`, `/api/feedback/app`. All carry
-  `demoOnlyPublic`, so the grant applies to the seeded demonstration tenant and to nothing else:
-  a real customer's blockers and risks are not a landing page.
+  `/archive/[reportId]`, `/archive/diff`, `/archive/merged/[reportDate]`,
+  `/artifact/[kind]/[artifactId]`, `/api/reports/[teamKey]`, `/api/goals`, `/api/goals/[nodeId]`,
+  `/api/feedback/app`. All carry `demoOnlyPublic`, so the grant applies to the seeded demonstration
+  tenant and to nothing else: a real customer's blockers and risks are not a landing page.
+- **The price list** — `/pricing`, and it is the one group that is public in *every* tenant rather
+  than only the demonstration one. It carries no organizational data at all: it reads the plan table
+  out of `@compass/billing` and nothing else, so there is nothing for `demoOnlyPublic` to confine. A
+  pricing page that required a session would be a pricing page nobody could read before signing up.
+
+  Every *other* billing surface — the billing page itself and its three write endpoints, for
+  checkout, plan changes and cancellation — is **owner only**, and is deliberately not enumerated
+  here: this section is the documented set of *public* routes, and the gate above holds it to exactly
+  the matrix's. Naming a non-public route in it would be a claim the matrix contradicts.
 - **How a session is obtained** — `/account`, `/account/invite`, `/account/reset`,
   `/account/deletion`, `/login`, `/api/auth/register`, `/api/auth/login`, `/api/auth/logout`,
   `/api/auth/session`, `/api/auth/magic-link`, `/api/auth/magic-link/consume`,
@@ -125,9 +134,16 @@ Three groups, and each is public for a different reason:
   check, and a future auth route would inherit the grant silently.
 - **Token-authorised, with no session involved** — `/api/share/[token]`,
   `/api/delivery/unsubscribe`, `/api/feedback/link/[token]`, `/api/privacy/deletion/undo`,
-  `/api/slack/actions`, `/api/webhooks/[provider]`. Each token is *narrower* than a session: one
-  shared report, one person's daily switched off, one verdict on one item, one deletion undone,
-  one signed provider delivery.
+  `/api/slack/actions`, `/api/webhooks/[provider]`, `/api/stripe/webhook`. Each token is *narrower*
+  than a session: one shared report, one person's daily switched off, one verdict on one item, one
+  deletion undone, one signed provider delivery, one signed billing event.
+
+  `/api/stripe/webhook` is the clearest case of why `public` does not mean open. Stripe posts from
+  its own infrastructure with no cookie it could possibly send, so a session requirement would mean
+  the feature cannot exist. What authorises it instead is an HMAC-SHA256 over the **raw bytes** under
+  a secret only Compass and Stripe hold, compared in constant time, inside a five-minute window — and
+  with no `STRIPE_WEBHOOK_SECRET` set every delivery is refused rather than trusted. It answers
+  "accepted" or "not verified" and discloses nothing about the organization.
 
 `/api/health` is public in every tenant, because the container's own `HEALTHCHECK` calls it and
 it never carries organization data.

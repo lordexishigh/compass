@@ -92,22 +92,35 @@ export const DAILY_REPORT_READING_BUDGET = 450;
 export const DAILY_REPORT_WORD_BUDGET = 900;
 
 /**
- * The narration-fallback alert rate: **0.20**.
+ * The narration-fallback alert rate: **0.02**.
  *
- * The share of a day's generated reports that may fall back to the deterministic renderer before the
- * condition stops being noise and becomes an incident. Above one report in five, the likely cause is
- * not a model having an odd day — it is a prompt, a schema or a grounding rule that has broken for
- * *every* report and is being masked by the fallback working correctly.
+ * The share of generated reports, over a rolling 24-hour window, that may fall back to the
+ * deterministic renderer before the condition stops being noise and becomes an incident.
  *
  * That masking is the whole reason there is a number here. Fail-closed narration degrades so
  * gracefully that a total narration outage looks, from the outside, like a product that has quietly
  * decided to be templated. The rate is what turns "everything still renders" into an alert.
  *
  * A rate rather than a count, because a deployment with three teams and one with thirty should not
- * need different thresholds; and evaluated per day rather than per report, because a single fallback
- * is an expected event that must never page anybody.
+ * need different thresholds; and evaluated over a window rather than per report, because a single
+ * fallback is an expected event that must never page anybody.
+ *
+ * ## Why 0.02 and not the 0.20 this constant used to hold
+ *
+ * 0.20 was the wrong number for an *alert*, and it was inconsistent with the plan of record.
+ * `docs/PLAN.md` and the launch monitoring criteria both specify 2%; only this constant and the
+ * `docs/budgets.md` section quoting it said 20%, and the criterion citing "the rate documented in
+ * docs/budgets.md" was therefore citing a number the plan never agreed to.
+ *
+ * The old prose argued that above one report in five "the likely cause is a prompt or a grounding
+ * rule that has broken for every report". That is true and it is an argument about when narration is
+ * *certainly* broken, not about when to wake somebody. One report in five silently templated is
+ * already a severe, days-old incident by the time it trips a 20% threshold — with three teams that
+ * is a single bad report per day sitting under the alarm indefinitely. 2% is the threshold that
+ * catches a systemic prompt or schema break while a single unlucky report still does not page
+ * anybody, which is exactly the pair of properties the number has to have.
  */
-export const NARRATION_FALLBACK_ALERT_RATE = 0.2;
+export const NARRATION_FALLBACK_ALERT_RATE = 0.02;
 
 /**
  * Whether a day's fallback share has crossed the alert threshold.
@@ -123,7 +136,8 @@ export function narrationFallbackAlert(input: {
   if (input.reportsGenerated <= 0) return { rate: 0, alerting: false };
 
   const rate = input.reportsFellBack / input.reportsGenerated;
-  // Strictly greater: exactly one in five is the documented ceiling, not the first failure.
+  // Strictly greater, because the criterion says fallbacks must *exceed* the rate: the published
+  // number is the documented ceiling, not the first failure above zero.
   return { rate, alerting: rate > NARRATION_FALLBACK_ALERT_RATE };
 }
 

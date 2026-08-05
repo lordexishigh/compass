@@ -19,8 +19,12 @@ import { describe, expect, it } from 'vitest';
  */
 
 describe('the narration-fallback alert rate', () => {
-  it('is one report in five', () => {
-    expect(NARRATION_FALLBACK_ALERT_RATE).toBe(0.2);
+  it('is two percent, the rate the plan of record and the launch criteria both specify', () => {
+    // Was 0.20, which only this constant and the `docs/budgets.md` section quoting it ever said.
+    // `docs/PLAN.md` and the launch monitoring criteria specify 2%, so a criterion citing "the rate
+    // documented in docs/budgets.md" was citing a number the plan never agreed to. See the constant's
+    // own doc comment for why 2% is also the operationally correct threshold for an *alert*.
+    expect(NARRATION_FALLBACK_ALERT_RATE).toBe(0.02);
   });
 
   it('does not alert on a day with no reports at all', () => {
@@ -39,24 +43,25 @@ describe('the narration-fallback alert rate', () => {
     expect(narrationFallbackAlert({ reportsGenerated: 0, reportsFellBack: 3 }).alerting).toBe(false);
   });
 
-  it('does not alert on a single fallback in a normal day', () => {
-    // One report in ten falling back is the expected event this whole mechanism exists to absorb.
-    // If it paged anybody, the fallback would be a liability rather than a feature.
-    const verdict = narrationFallbackAlert({ reportsGenerated: 10, reportsFellBack: 1 });
+  it('does not alert on a single fallback in an ordinary window', () => {
+    // One report in two hundred falling back is the expected event this whole mechanism exists to
+    // absorb. If it paged anybody, the fallback would be a liability rather than a feature.
+    const verdict = narrationFallbackAlert({ reportsGenerated: 200, reportsFellBack: 1 });
 
-    expect(verdict.rate).toBeCloseTo(0.1, 10);
+    expect(verdict.rate).toBeCloseTo(0.005, 10);
     expect(verdict.alerting).toBe(false);
   });
 
   it('treats exactly the documented rate as the ceiling rather than the first failure', () => {
-    // 2 of 10 is 0.20 — the stated budget, not a breach of it.
-    expect(narrationFallbackAlert({ reportsGenerated: 10, reportsFellBack: 2 })).toEqual({
-      rate: 0.2,
+    // 2 of 100 is 0.02 — the stated budget, not a breach of it. The criterion says fallbacks must
+    // *exceed* the rate, so the boundary itself is silent.
+    expect(narrationFallbackAlert({ reportsGenerated: 100, reportsFellBack: 2 })).toEqual({
+      rate: 0.02,
       alerting: false,
     });
 
-    // 3 of 10 is over.
-    expect(narrationFallbackAlert({ reportsGenerated: 10, reportsFellBack: 3 }).alerting).toBe(true);
+    // 3 of 100 is over.
+    expect(narrationFallbackAlert({ reportsGenerated: 100, reportsFellBack: 3 }).alerting).toBe(true);
   });
 
   it('alerts when every report fell back, which is the outage this number exists to catch', () => {

@@ -22,9 +22,12 @@
     "paths": {
       "@compass/clock": ["packages/clock/src/index.ts"],
       "@compass/observability": ["packages/observability/src/index.ts"],
+      "@compass/billing/testkit": ["packages/billing/src/testkit/index.ts"],
+      "@compass/billing": ["packages/billing/src/index.ts"],
       "@compass/connector-port/testkit": ["packages/connector-port/src/testkit/index.ts"],
       "@compass/connector-port": ["packages/connector-port/src/index.ts"],
       "@compass/seed-connector": ["packages/seed-connector/src/index.ts"],
+      "@compass/github-connector": ["packages/github-connector/src/index.ts"],
       "@compass/db/testing": ["packages/db/src/testing/pglite.ts"],
       "@compass/db": ["packages/db/src/index.ts"],
       "@compass/auth": ["packages/auth/src/index.ts"],

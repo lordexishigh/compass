@@ -475,6 +475,21 @@ export {
 } from './determinism.js';
 
 export {
+  NOTHING_CHANGED_STATEMENT,
+  changedItemDiffs,
+  diffItems,
+  diffReports,
+  fieldChangesBetween,
+  type DiffSide,
+  type DiffableItem,
+  type FieldChange,
+  type ItemDiff,
+  type ItemDiffStatus,
+  type ReportDiff,
+  type SectionDiff,
+} from './report-diff.js';
+
+export {
   ChangeTagError,
   ItemAgeError,
   ItemCauseMismatchError,

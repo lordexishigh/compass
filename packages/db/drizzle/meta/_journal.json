@@ -99,6 +99,13 @@
       "when": 1785541200000,
       "tag": "0014_encrypted_integration_tokens",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1785548400000,
+      "tag": "0015_billing_and_subscriptions",
+      "breakpoints": true
     }
   ]
 }

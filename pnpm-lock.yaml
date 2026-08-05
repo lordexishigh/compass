@@ -50,6 +50,9 @@ importers:
       '@compass/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@compass/billing':
+        specifier: workspace:*
+        version: link:../../packages/billing
       '@compass/clock':
         specifier: workspace:*
         version: link:../../packages/clock
@@ -62,6 +65,9 @@ importers:
       '@compass/delivery':
         specifier: workspace:*
         version: link:../../packages/delivery
+      '@compass/github-connector':
+        specifier: workspace:*
+        version: link:../../packages/github-connector
       '@compass/knowledge-model':
         specifier: workspace:*
         version: link:../../packages/knowledge-model
@@ -135,6 +141,9 @@ importers:
       '@compass/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@compass/billing':
+        specifier: workspace:*
+        version: link:../../packages/billing
       '@compass/clock':
         specifier: workspace:*
         version: link:../../packages/clock
@@ -147,6 +156,9 @@ importers:
       '@compass/delivery':
         specifier: workspace:*
         version: link:../../packages/delivery
+      '@compass/github-connector':
+        specifier: workspace:*
+        version: link:../../packages/github-connector
       '@compass/ingest':
         specifier: workspace:*
         version: link:../../packages/ingest
@@ -231,6 +243,22 @@ importers:
         specifier: 4.1.10
         version: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@24.13.3)(jsdom@30.0.1)(vite@8.2.0(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.23.1))
 
+  packages/billing:
+    dependencies:
+      '@compass/clock':
+        specifier: workspace:*
+        version: link:../clock
+    devDependencies:
+      '@types/node':
+        specifier: 24.13.3
+        version: 24.13.3
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: 4.1.10
+        version: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@24.13.3)(jsdom@30.0.1)(vite@8.2.0(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.23.1))
+
   packages/clock:
     devDependencies:
       typescript:
@@ -301,6 +329,25 @@ importers:
       '@compass/renderers':
         specifier: workspace:*
         version: link:../renderers
+    devDependencies:
+      '@types/node':
+        specifier: 24.13.3
+        version: 24.13.3
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: 4.1.10
+        version: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@24.13.3)(jsdom@30.0.1)(vite@8.2.0(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.23.1))
+
+  packages/github-connector:
+    dependencies:
+      '@compass/clock':
+        specifier: workspace:*
+        version: link:../clock
+      '@compass/connector-port':
+        specifier: workspace:*
+        version: link:../connector-port
     devDependencies:
       '@types/node':
         specifier: 24.13.3

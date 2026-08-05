@@ -8,6 +8,7 @@ export * from './reports.js';
 export * from './narration.js';
 export * from './delivery.js';
 export * from './app-feedback.js';
+export * from './billing.js';
 export * from './privacy.js';
 export * from './security.js';
 export * from './registry.js';

@@ -98,6 +98,9 @@ const UNAUTHENTICATED_PAGES: readonly {
    */
   { route: '/archive', file: ['app', 'archive', 'page.tsx'], showsCredentials: false },
   { route: '/archive/[reportId]', file: ['app', 'archive', '[reportId]', 'page.tsx'], showsCredentials: false },
+  // The side-by-side diff. Two archived reports, so the same posture as the reports themselves: the
+  // reviewer sent this link came to check a claim, not to sign in.
+  { route: '/archive/diff', file: ['app', 'archive', 'diff', 'page.tsx'], showsCredentials: false },
   {
     route: '/archive/merged/[reportDate]',
     file: ['app', 'archive', 'merged', '[reportDate]', 'page.tsx'],

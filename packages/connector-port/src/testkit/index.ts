@@ -22,6 +22,13 @@ export {
   type FixtureSource,
 } from './fixture-connector.js';
 
+export {
+  ReplayHttpClient,
+  ThrottledHttpClient,
+  UnrecordedRequestError,
+  jsonResponse,
+} from './http-clients.js';
+
 /**
  * The provider conformance kit.
  *

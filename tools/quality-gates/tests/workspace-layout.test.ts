@@ -40,10 +40,20 @@ describe('the pnpm workspace holds every layer as its own package', () => {
     expect(layerPackages.map((workspacePackage) => workspacePackage.directoryName)).toEqual([
       'analysis',
       'auth',
+      // Beside `auth` and above `clock` only: plans, seat pricing and subscription entitlement. It
+      // holds no database handle — the web app and the worker own persistence, exactly as the
+      // narrator writes no rows — which is what lets a fourteen-day trial expiry be unit-tested
+      // against a literal instant.
+      'billing',
       'clock',
       'connector-port',
       'db',
       'delivery',
+      // A live code connector beside `seed-connector`, directly above `connector-port`. Nothing in
+      // ingest, the knowledge model, analysis or the renderers may import it: the provider is
+      // resolved at the composition root and injected, which
+      // `tests/provider-neutrality.test.ts` asserts over source text.
+      'github-connector',
       'ingest',
       'knowledge-model',
       // Manager Memos: the one write path into the org model. Above `knowledge-model`

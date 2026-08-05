@@ -173,6 +173,28 @@ export {
 
 export { appFeedback } from './schema/app-feedback.js';
 
+export { billingEvents, organizationSubscriptions } from './schema/billing.js';
+
+/**
+ * Named `…BillingSubscription` rather than `…Subscription` on purpose.
+ *
+ * `subscriptions` in this schema already means a *delivery* subscription — who gets the daily by
+ * email or Slack, and when. Exporting a second `StoredSubscription` from the same barrel would be a
+ * genuine ambiguity at every import site, and the compiler caught it as a duplicate identifier. The
+ * longer names say which kind of subscription is meant.
+ */
+export {
+  applyBillingEventOnce,
+  findBillingSubscription,
+  listBillingEvents,
+  upsertBillingSubscription,
+  type ApplyEventOnceInput,
+  type ApplyEventOnceResult,
+  type BillingSubscriptionWrite,
+  type StoredBillingEvent,
+  type StoredBillingSubscription,
+} from './repositories/billing.js';
+
 export { INTEGRATION_TOKEN_KINDS, integrationTokens, organizationDataKeys } from './schema/security.js';
 
 export {

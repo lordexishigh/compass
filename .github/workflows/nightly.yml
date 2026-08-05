@@ -1,0 +1,231 @@
+name: Nightly scans
+
+# Why a schedule as well as the pull-request gates.
+#
+# A dependency does not become vulnerable when somebody opens a pull request. An advisory published on
+# a Tuesday against a package nobody has touched in a month is invisible to a per-PR gate on a quiet
+# repository, which is precisely the window an attacker has. So the same three scanners run against
+# the default branch every night and report to the maintainers.
+#
+# `workflow_dispatch` too, so a maintainer reacting to a disclosure does not have to wait for 03:00 or
+# push an empty commit.
+on:
+  schedule:
+    # 03:17 UTC. Off the hour on purpose: every scheduled job in the world fires at :00, GitHub queues
+    # them, and a job that starts 40 minutes late every night is a job whose logs nobody trusts.
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: nightly
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  # Findings are filed as issues so they reach the maintainers rather than dying in a log nobody opens.
+  issues: write
+
+jobs:
+  dependency-scan:
+    name: dependency scan (default branch)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      verdict: ${{ steps.audit.outcome }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # Same policy as the pull-request gate, and deliberately the same script: a nightly scan with its
+      # own threshold would eventually disagree with the gate, and the disagreement would be discovered
+      # during an incident.
+      # No pipe, deliberately.
+      #
+      # This step read `node tools/audit-critical.mjs < audit.json | tee audit-summary.txt`, and the
+      # pipe threw the verdict away: a pipeline's exit status is its *last* command's, `tee` always
+      # succeeds, and GitHub's implicit shell is `bash -e {0}` — `pipefail` is only set when `shell:
+      # bash` is named explicitly. So `steps.audit.outcome` stayed `success` on a fixable critical,
+      # the issue was never filed, and the `exit 1` below never ran. The whole nightly scan was
+      # decorative in exactly the case it exists for.
+      #
+      # Redirecting and then capturing `$?` cannot go wrong the same way, and it is clearer about
+      # what is being asserted than adding `set -o pipefail` would be.
+      - name: critical vulnerabilities with an available fix
+        id: audit
+        continue-on-error: true
+        run: |
+          # `pnpm audit` exits non-zero merely for *finding* an advisory, which is not the policy —
+          # `tools/audit-critical.mjs` decides, and it needs the report to exist either way.
+          set +e
+          pnpm audit --json > audit.json
+          set -e
+
+          # `2>&1` matters as much as dropping the pipe did. `audit-critical.mjs` writes the *blocking*
+          # advisories — the package, the vulnerable range and the version to move to — to **stderr**,
+          # and only its pass/not-blocking lines to stdout. Capturing stdout alone leaves
+          # `audit-summary.txt` empty in precisely the failure case, so the issue filed below would
+          # quote nothing and say the scanner produced no summary. Verified against a fixture: a
+          # fixable critical exits 1 with zero bytes on stdout.
+          set +e
+          node tools/audit-critical.mjs < audit.json > audit-summary.txt 2>&1
+          status=$?
+          set -e
+
+          # Printed so the log carries the verdict, and *then* rethrown, so the step outcome is the
+          # script's and not `cat`'s.
+          cat audit-summary.txt
+          exit $status
+
+      - name: upload the audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-dependency-audit
+          path: |
+            audit.json
+            audit-summary.txt
+          if-no-files-found: warn
+
+      # `continue-on-error` above keeps the *other* nightly jobs running, and this step is what makes
+      # the failure visible: a scheduled workflow that goes red in a tab nobody visits has not reported
+      # anything to anybody.
+      - name: file an issue naming the blocking packages
+        if: steps.audit.outcome == 'failure'
+        uses: ./.github/actions/report-finding
+        with:
+          title: 'Nightly dependency scan: critical vulnerability with an available fix'
+          summary: The nightly dependency scan found at least one critical advisory with a published fix.
+          detail-file: audit-summary.txt
+
+      - name: fail the run so the branch status reflects it
+        if: steps.audit.outcome == 'failure'
+        run: exit 1
+
+  secret-scan:
+    name: secret scan (full history)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # `continue-on-error` so the reporting step below runs on a hit. The job still ends red, via the
+      # final `exit 1` — the point is that it also reaches a maintainer.
+      - name: gitleaks
+        id: gitleaks
+        continue-on-error: true
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+
+      # A leaked credential is the one nightly finding that is worse the longer nobody looks at it: the
+      # commit is already public, and the remedy is rotation rather than a revert. So it files an issue
+      # like the dependency scan does, and deliberately carries **no detail block** — a scanner summary
+      # naming the file, the line and the matched prefix would reproduce the secret inside a public
+      # issue, which is a second disclosure. The log and the run link are where an authorised reader
+      # goes.
+      - name: file an issue that a credential was detected
+        if: steps.gitleaks.outcome == 'failure'
+        uses: ./.github/actions/report-finding
+        with:
+          title: 'Nightly secret scan: a credential was detected in history'
+          summary: >-
+            The nightly secret scan found a credential in the repository's history. Treat it as
+            disclosed and rotate it — a commit that has been pushed is leaked whether or not it was
+            later reverted. The matched file and line are in the workflow log and are deliberately not
+            reproduced here, because this issue is public.
+
+      - name: fail the run so the branch status reflects it
+        if: steps.gitleaks.outcome == 'failure'
+        run: exit 1
+
+  image-scan:
+    name: container image scan (default branch)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: build the image
+        run: docker compose build
+
+      # The `web` service by name, never "whichever image compose lists first".
+      #
+      # This read `docker compose config --images | head -n 1`, and in this compose file that is
+      # `postgres:17-alpine`: `postgres` is declared first and is the only service with an `image:`
+      # key at all, since `web` and `worker` are `build:` services. So the step that claims "what is
+      # scanned is what ships" was scanning the database image and never once looked at Compass.
+      #
+      # `docker compose config --images web` resolves the name compose assigns a build-only service —
+      # the same tag `docker compose build` just produced — so the scanned image is the built one.
+      # `web` and `worker` are the same image built from the same Dockerfile with a different command,
+      # so scanning `web` covers both.
+      - name: resolve the built image tag
+        id: image
+        run: |
+          ref="$(docker compose config --images web)"
+          if [ -z "$ref" ]; then
+            echo "docker compose config --images web resolved no image; the service may have been renamed." >&2
+            exit 1
+          fi
+          echo "scanning $ref"
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+
+      # Nightly reports every severity to the log for triage, and still fails only on a fixable
+      # critical — the same asymmetry the dependency gate uses, for the same reason.
+      - name: trivy (report everything)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ steps.image.outputs.ref }}
+          severity: 'LOW,MEDIUM,HIGH,CRITICAL'
+          exit-code: '0'
+          format: table
+
+      # `continue-on-error` plus an explicit `exit 1` below, so a finding is both reported to a
+      # maintainer and reflected in the branch status. The report is written to a file rather than only
+      # to the log so the issue can name the packages.
+      - name: trivy (block on a fixable critical)
+        id: trivy
+        continue-on-error: true
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ steps.image.outputs.ref }}
+          severity: CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+          format: table
+          output: trivy-critical.txt
+
+      - name: upload the image report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-image-scan
+          path: trivy-critical.txt
+          if-no-files-found: warn
+
+      # Unlike the secret scan, the detail here is safe to publish: a CVE id and a package version are
+      # already public, and they are the whole of what a maintainer needs to decide whether to rebuild.
+      - name: file an issue naming the vulnerable packages
+        if: steps.trivy.outcome == 'failure'
+        uses: ./.github/actions/report-finding
+        with:
+          title: 'Nightly image scan: critical vulnerability with an available fix'
+          summary: >-
+            The nightly container scan found at least one critical vulnerability with a fixed version
+            available in the image Compass ships. Rebuilding on a current base image is usually the
+            whole remedy.
+          detail-file: trivy-critical.txt
+
+      - name: fail the run so the branch status reflects it
+        if: steps.trivy.outcome == 'failure'
+        run: exit 1

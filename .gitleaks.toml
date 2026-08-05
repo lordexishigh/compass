@@ -1,0 +1,54 @@
+# Secret scanning configuration.
+#
+# The gate runs on every pull request over the whole of git *history* — a credential committed and
+# then reverted is still leaked — and fails the build on a detected credential.
+#
+# The allowlist below is deliberately narrow, and it exempts **values, never paths**. Blanket-ignoring
+# `.env*` is the commonest way this gate becomes decorative: `.env.local` is exactly where a real key
+# lands, so the pattern that would make the first build green is the pattern that makes every later
+# build meaningless. A path exemption is the same mistake one step smaller — it switches off scanning
+# for a whole file rather than for a known-harmless string — so there is no `paths` entry here at all,
+# and a real credential committed to `.env.example` is still a finding.
+#
+# `.env.local` is untracked and covered by `.gitignore` (`.env.*`), so it never reaches history and
+# needs no entry here. If it ever appears in a diff, this gate should and will fail.
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "compass-postgres-url-with-password"
+description = "A PostgreSQL connection string carrying a non-placeholder password"
+# The shape of a connection string with a password in it, and nothing cleverer.
+#
+# This rule previously excluded the placeholders with a negative lookahead — `(?!compass@|postgres@)`
+# — which cannot work: gitleaks compiles rule patterns with Go's `regexp`, which is RE2 and has no
+# lookaround at all. It rejected the config with "invalid or unsupported Perl syntax: `(?!`", so the
+# whole step aborted before scanning anything, on every pull request and every nightly run. A gate
+# that cannot parse its own configuration is worse than no gate: it goes red for a reason nobody reads
+# as "no scanning happened".
+#
+# So the exemption moved to where gitleaks can express it — the allowlist `regexes` below — and the
+# pattern is now plain RE2. The `{8,}` bound does most of the work on its own: every placeholder in
+# this repository uses the password `compass`, which is seven characters, so none of them reach it.
+regex = '''postgres(?:ql)?://[a-zA-Z0-9._%-]+:[^\s:@/]{8,}@'''
+tags = ["database", "credential"]
+
+# One allowlist, matching on value only.
+#
+# The `paths` entry that used to sit here — `^\.env\.example$` — was a hole rather than a narrowing.
+# Gitleaks ORs the conditions inside an allowlist by default (`condition = "OR"`), so the path entry
+# exempted that file from *every* rule on its own, and the comment claiming the path and the values
+# were ANDed described behaviour the file did not have. A live key pasted into `.env.example` would
+# have been reported by nothing.
+#
+# Matching by literal value instead is what the surrounding argument always meant: these two exact
+# loopback strings are documentation, anything else anywhere is a finding, and there is no file in the
+# repository that scanning is switched off for. Both strings are kept even though the `{8,}` bound
+# already spares the first, because the allowlist also applies to the inherited default rules.
+[allowlist]
+description = "The exact loopback placeholder strings shared by .env.example, docker-compose and drizzle.config"
+regexes = [
+  '''postgresql://compass:compass@localhost:5432/compass''',
+  '''postgresql://postgres:postgres@localhost:5432/compass''',
+]

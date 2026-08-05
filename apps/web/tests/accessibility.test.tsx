@@ -21,14 +21,17 @@ import {
   MinimizationControls,
   RetentionControls,
 } from '../components/privacy-controls';
+import { ReportDiffDocument } from '../components/report-diff';
 import { ReportDocument } from '../components/report-document';
 import { SeatManager } from '../components/seat-manager';
 import { SignInPanel } from '../components/sign-in-panel';
 import { StatedFailure } from '../components/stated-failure';
+import { buildReportDiffView } from '../lib/diff-source';
 import { EMPTY_STATES } from '../lib/empty-states';
 import { buildReportView } from '../lib/view-model';
 
 import {
+  diffPairFixture,
   emptyBundle,
   fallbackBundle,
   freshnessAbsent,
@@ -267,6 +270,31 @@ describe('axe reports no critical or serious violations', () => {
     ];
 
     await expectNoBlockingViolations('the archive index', renderToStaticMarkup(<ArchiveIndex days={days} />));
+  });
+
+  /**
+   * The side-by-side diff, in both states.
+   *
+   * Its structure is the part worth auditing: a list of rows, a two-column grid inside each, a
+   * `<details>` disclosure per side and a `<dl>` of payload fields inside that. Nested lists, nested
+   * disclosures and definition lists are exactly what axe checks and exactly what hand-written nesting
+   * gets wrong — and the "nothing changed" state is a different tree with no rows at all.
+   */
+  it('on the side-by-side report diff', async () => {
+    await expectNoBlockingViolations(
+      'the report diff',
+      renderToStaticMarkup(<ReportDiffDocument diff={buildReportDiffView(diffPairFixture())} />),
+    );
+  });
+
+  it('on a diff where nothing changed', async () => {
+    const bundle = storedBundle();
+    await expectNoBlockingViolations(
+      'the unchanged report diff',
+      renderToStaticMarkup(
+        <ReportDiffDocument diff={buildReportDiffView({ before: bundle, after: bundle })} />,
+      ),
+    );
   });
 
   it('on an archive with nothing in it yet', async () => {

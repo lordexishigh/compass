@@ -81,6 +81,17 @@ export {
   type ConnectorResult,
 } from './port.js';
 
+export {
+  RATE_LIMIT_STATUS,
+  SERVER_ERROR_STATUSES,
+  fetchHttpClient,
+  isAuthFailure,
+  isRateLimited,
+  type HttpClient,
+  type HttpRequest,
+  type HttpResponse,
+} from './http.js';
+
 export { compareRecords, isInCanonicalOrder, recordIdentity, sortRecords } from './ordering.js';
 
 export {

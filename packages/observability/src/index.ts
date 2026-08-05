@@ -29,6 +29,16 @@ export {
 } from './scrub.js';
 
 export {
+  ALERT_RULES,
+  ROLLING_WINDOW_MILLIS,
+  evaluateAlerts,
+  type Alert,
+  type AlertInput,
+  type AlertRule,
+  type AlertSeverity,
+} from './alerts.js';
+
+export {
   LEVEL_FOR_EVENT,
   LOG_EVENTS,
   RecordingSink,
@@ -38,6 +48,7 @@ export {
   logDeliveryFailure,
   logIngestCoverageGap,
   logNarrationFallback,
+  logPipelineFailure,
   logPipelineRun,
   logReadinessUnavailable,
   logRecord,

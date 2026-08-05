@@ -3,9 +3,11 @@ import {
   formatCivilDate,
   instantAtLocalTime,
   isAfter,
+  toEpochMillis,
   toIso,
   type Instant,
 } from '@compass/clock';
+import { logPipelineFailure, type LogSink } from '@compass/observability';
 import { DEFAULT_GENERATION_LOCAL_TIME } from '@compass/pipeline';
 import { z } from 'zod';
 
@@ -250,6 +252,15 @@ export interface GenerationDependencies {
     readonly timezone: string;
   }) => Promise<{ readonly reportId: string; readonly generated: boolean }>;
   readonly logger: Pick<Console, 'info' | 'warn' | 'error'>;
+  /**
+   * Where the `pipeline.failure` structured event goes. Defaults to the console.
+   *
+   * Separate from `logger` for the same reason the delivery handler's is: `logger` carries the human
+   * sentences this handler has always written, while this is the queryable event with the
+   * organization, team and instant as fields. One is tailed by a person; the other answers "which
+   * organizations have no report this morning".
+   */
+  readonly logSink?: LogSink;
 }
 
 export interface GenerationResult {
@@ -305,7 +316,36 @@ export async function handleReportGenerate(
     };
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error);
-    // Org, scope and instant, so the failure is attributable without cross-referencing the queue.
+
+    /**
+     * The structured event, emitted before the throw so the failure survives it.
+     *
+     * This used to be only the interpolated sentence below, which named the organization, scope and
+     * instant but glued them into prose — so "which organizations failed to generate today" was a
+     * grep rather than a query, and the launch criterion's alert could not be built on it at all.
+     * `at` is the report instant, not a wall-clock read, so the event lines up with the report it
+     * failed to produce.
+     */
+    logPipelineFailure(
+      {
+        organizationId: payload.organizationId,
+        // A merged report genuinely has no team; a team-scoped one's scope key *is* the team key.
+        teamKey: payload.scopeKind === 'team' ? payload.scopeKey : null,
+        at: toEpochMillis(reportInstant),
+        detail: `Generating ${payload.scopeKind}:${payload.scopeKey} for ${payload.reportDate} failed.`,
+      },
+      {
+        scopeKind: payload.scopeKind,
+        reason,
+        // The pair that says whether pg-boss will try again. An exhausted attempt is a report that
+        // will never exist; a first failure usually heals itself.
+        attempt,
+        retryLimit: GENERATION_RETRY_LIMIT,
+      },
+      dependencies.logSink,
+    );
+
+    // Kept beside it: a person tailing the worker reads sentences, and this one has always been here.
     dependencies.logger.error(
       `[compass] generation failed for ${payload.organizationId} ${payload.scopeKind}:${payload.scopeKey} ` +
         `at ${toIso(reportInstant)} (attempt ${attempt} of ${GENERATION_RETRY_LIMIT}): ${reason}`,

@@ -201,6 +201,32 @@ const EXPECTED: Readonly<Record<string, Partial<Record<Action, readonly Principa
   '/api/webhooks/[provider]': { POST: ['public', 'owner', 'manager', 'member', 'viewer'] },
 
   /**
+   * Billing: every write is the owner's, and `/pricing` is the one page public in *every* tenant.
+   *
+   * Restated here as intent rather than copied as fact. The owner-only line is deliberate and is not
+   * the same judgement the roster makes: a plan change moves money, and a *downgrade* decides which
+   * colleagues lose access — that is the owner's call by definition, and a manager who could make it
+   * could remove seats they do not administer. Reading `/billing` is owner-only too, because the page
+   * names an amount, a payment state and an invoice history, none of which is part of a manager's job.
+   *
+   * `/pricing` carries no organizational data at all — it reads the plan table out of
+   * `@compass/billing` and nothing else — so it is public without `demoOnlyPublic`, which exists to
+   * confine a public read *of tenant data* to the demonstration org. A pricing page that needed a
+   * session would be one nobody could read before signing up.
+   *
+   * `/api/stripe/webhook` names `public` for exactly the reason `/api/webhooks/[provider]` does: a
+   * webhook arrives from Stripe's infrastructure with no cookie it could send, and what authorises it
+   * is strictly narrower than a session — an HMAC over the raw bytes inside a five-minute window,
+   * refused entirely when no signing secret is set.
+   */
+  '/pricing': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
+  '/billing': { GET: ['owner'] },
+  '/api/billing/checkout': { POST: ['owner'] },
+  '/api/billing/plan': { POST: ['owner'] },
+  '/api/billing/cancel': { POST: ['owner'] },
+  '/api/stripe/webhook': { POST: ['public', 'owner', 'manager', 'member', 'viewer'] },
+
+  /**
    * Configuration and the identity roster: owner *and* manager on every verb.
    *
    * Restated here as intent rather than copied as fact. The widening to managers is
@@ -305,6 +331,9 @@ const EXPECTED: Readonly<Record<string, Partial<Record<Action, readonly Principa
   '/archive': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
   '/archive/[reportId]': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
   '/archive/merged/[reportDate]': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
+  // Two stored reports side by side. Renders rows and never regenerates, so it grants nothing
+  // `/archive/[reportId]` does not already grant twice.
+  '/archive/diff': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
   '/merged': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
   '/weekly': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
 };
@@ -525,6 +554,7 @@ describe('the seeded demo report route stays publicly readable', () => {
       '/api/reports/[teamKey]',
       '/archive',
       '/archive/[reportId]',
+      '/archive/diff',
       '/archive/merged/[reportDate]',
       // The receipt behind a claim, on the same terms as the claim.
       '/artifact/[kind]/[artifactId]',
@@ -558,6 +588,7 @@ describe('the seeded demo report route stays publicly readable', () => {
       '/',
       '/archive',
       '/archive/[reportId]',
+      '/archive/diff',
       '/archive/merged/[reportDate]',
       '/artifact/[kind]/[artifactId]',
       '/goals',
@@ -592,6 +623,11 @@ describe('the seeded demo report route stays publicly readable', () => {
       '/api/share/[token]',
       '/api/slack/actions',
       '/api/webhooks/[provider]',
+      // Signature-authorised, like the three provider webhooks above and for the same reason.
+      '/api/stripe/webhook',
+      // The public pricing page. Unlike every other entry in this list it is public in a *real*
+      // tenant too, because it reads the plan table and nothing about the organization.
+      '/pricing',
     ].sort());
   });
 

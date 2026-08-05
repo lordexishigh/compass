@@ -35,16 +35,28 @@ const fields = (teamKey: string | null = 'platform') => ({
 });
 
 describe('the closed set of events', () => {
-  it('is exactly the four the criterion names, plus the web edge’s own', () => {
-    // A fifth event is a compile error until it is declared, which is what stops the log growing a
+  it('is exactly the events the criteria name, plus the web edge’s own', () => {
+    // A new event is a compile error until it is declared, which is what stops the log growing a
     // vocabulary nobody has written a query for.
+    //
+    // `pipeline.failure` joined the set for the launch monitoring criteria: `pipeline.run` is only
+    // emitted once a report is persisted, so a run that threw was the one condition the log could not
+    // describe — it existed only as an interpolated sentence in the worker's stderr.
     expect([...LOG_EVENTS]).toEqual([
       'pipeline.run',
+      'pipeline.failure',
       'narration.fallback',
       'ingest.coverage_gap',
       'delivery.failure',
       'readiness.unavailable',
     ]);
+  });
+
+  it('calls a report that does not exist a failure rather than a degradation', () => {
+    // The distinction the two pipeline events draw: a fallback still gives the reader six complete
+    // sections, while a generation failure means there is no report at all.
+    expect(LEVEL_FOR_EVENT['pipeline.failure']).toBe('error');
+    expect(LEVEL_FOR_EVENT['pipeline.run']).toBe('info');
   });
 
   it('assigns every event a level in one table', () => {
