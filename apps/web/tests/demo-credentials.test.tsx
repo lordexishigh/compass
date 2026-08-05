@@ -8,6 +8,7 @@ import {
   OWNER_EMAIL_ENV_VAR,
   OWNER_PASSWORD_ENV_VAR,
   ROLE_MATRIX,
+  ownerConfigurationProblem,
   resolveOwnerCredentials,
 } from '@compass/auth';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -226,6 +227,85 @@ describe('the published demonstration credentials are shown where they are neede
     expect(account).toContain('ownerCredentialsAreDefault()');
     expect(account).toContain('DEMO_OWNER_EMAIL');
     expect(account).toContain('DEMO_OWNER_PASSWORD');
+  });
+});
+
+/**
+ * A half-configured owner environment, on the one screen that offers credentials.
+ *
+ * `bootstrapOwner` refuses to provision on it, so there is no seat — and the credentials the
+ * resolver returns are the *configured* address paired with the published password, which is
+ * exactly the pairing the guard exists to prevent. Offering `owner@compass.demo` here would
+ * name an address that does not exist and read as a broken product rather than a
+ * misconfigured deployment.
+ */
+describe('a half-configured owner environment is stated, not papered over', () => {
+  const halfConfigured = { [OWNER_EMAIL_ENV_VAR]: 'owner@acme.example' };
+  const configurationProblem = ownerConfigurationProblem(halfConfigured);
+
+  it('has a problem to state, so this suite cannot pass vacuously', () => {
+    expect(configurationProblem).not.toBeNull();
+    expect(configurationProblem).toContain(OWNER_PASSWORD_ENV_VAR);
+  });
+
+  it('renders the sentence, naming the variable that is missing', () => {
+    const panel = renderToStaticMarkup(
+      <SignInPanel configurationProblem={configurationProblem} demoCredentials={null} />,
+    );
+
+    expect(panel).toContain('this deployment has no owner seat');
+    expect(panel).toContain(OWNER_PASSWORD_ENV_VAR);
+  });
+
+  it('does not offer the demonstration credentials, which would not open anything', () => {
+    const panel = renderToStaticMarkup(
+      <SignInPanel configurationProblem={configurationProblem} demoCredentials={null} />,
+    );
+
+    expect(panel).not.toContain(DEMO_OWNER_PASSWORD);
+    expect(panel).not.toContain(DEMO_OWNER_EMAIL);
+    expect(panel).not.toContain('fill the form with them');
+  });
+
+  it('never echoes a configured password into the page', () => {
+    const secret = 'the-operators-own-configured-passphrase';
+    const panel = renderToStaticMarkup(
+      <SignInPanel
+        configurationProblem={ownerConfigurationProblem({ [OWNER_PASSWORD_ENV_VAR]: secret })}
+        demoCredentials={null}
+      />,
+    );
+
+    expect(panel).not.toContain(secret);
+  });
+
+  it('leaves the form in place, so the screen is still a sign-in screen', () => {
+    const panel = renderToStaticMarkup(
+      <SignInPanel configurationProblem={configurationProblem} demoCredentials={null} />,
+    );
+
+    expect(panel).toContain('name="email"');
+    expect(panel).toContain('>Sign in<');
+  });
+
+  it('is wired from the page, and gates the credentials on the same answer', () => {
+    // Both halves in the source: the panel is told about the problem, and the credential
+    // block is conditional on there not being one. Passing the problem down while still
+    // printing the credentials would state the fact and contradict it in the next paragraph.
+    const account = readWebFile('app', 'account', 'page.tsx');
+
+    expect(account).toContain('configurationProblem={ownerConfigurationProblem()}');
+    expect(account).toContain('ownerConfigurationProblem() === null && ownerCredentialsAreDefault()');
+  });
+
+  it('says nothing at all when the environment is whole', () => {
+    // The demonstration deployment and a fully configured one both resolve to `null`, so
+    // neither renders this block. Otherwise every zero-config reader would be told their
+    // deployment has no owner seat, which is the opposite of true.
+    expect(ownerConfigurationProblem({})).toBeNull();
+
+    const whole = renderToStaticMarkup(<SignInPanel demoCredentials={null} />);
+    expect(whole).not.toContain('this deployment has no owner seat');
   });
 });
 

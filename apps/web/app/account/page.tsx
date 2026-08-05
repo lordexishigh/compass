@@ -4,6 +4,7 @@ import {
   ROLE_CAPABILITIES,
   SESSION_ABSOLUTE_TTL_DAYS,
   SESSION_IDLE_TTL_DAYS,
+  ownerConfigurationProblem,
   ownerCredentialsAreDefault,
   sessionDeadline,
   sessionRejection,
@@ -101,10 +102,21 @@ export default async function AccountPage({
       </header>
 
       {identity === null ? (
+        /**
+         * The demonstration credentials are offered only when they would actually work.
+         *
+         * A half-configured owner environment resolves to the *configured* address paired with
+         * the published password, and `bootstrapOwner` refuses to provision on it — so there is
+         * no seat at all. Printing `owner@compass.demo` there would hand a reader an address
+         * that does not exist and let them conclude the product is broken rather than the
+         * deployment misconfigured. The two are mutually exclusive by construction: a problem
+         * means no credentials, no problem means the resolved pair is the one in the database.
+         */
         <SignInPanel
           problem={problem}
+          configurationProblem={ownerConfigurationProblem()}
           demoCredentials={
-            ownerCredentialsAreDefault()
+            ownerConfigurationProblem() === null && ownerCredentialsAreDefault()
               ? { email: DEMO_OWNER_EMAIL, password: DEMO_OWNER_PASSWORD }
               : null
           }

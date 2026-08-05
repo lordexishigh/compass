@@ -38,9 +38,21 @@ export interface SignInPanelProps {
   readonly problem?: string | null;
   /** Shown when the deployment is still on the published demonstration owner. */
   readonly demoCredentials?: { readonly email: string; readonly password: string } | null;
+  /**
+   * The owner environment is half-configured, so no owner seat exists to sign in to.
+   *
+   * Its own prop rather than reusing `problem`, which is what a *rejected attempt* says. This
+   * is true before anybody types anything, and it is the reason every attempt will fail — so
+   * it is stated up front rather than after the fact.
+   */
+  readonly configurationProblem?: string | null;
 }
 
-export function SignInPanel({ problem = null, demoCredentials = null }: SignInPanelProps) {
+export function SignInPanel({
+  problem = null,
+  demoCredentials = null,
+  configurationProblem = null,
+}: SignInPanelProps) {
   const [mode, setMode] = useState<Mode>('password');
   // Deliberately empty rather than pre-filled with the demonstration address: a form that
   // arrives half-completed makes a reader wonder what else it has assumed. The button
@@ -185,6 +197,24 @@ export function SignInPanel({ problem = null, demoCredentials = null }: SignInPa
         <p role="alert" className="prose-narration mt-8 border-l-2 border-rule-severe pl-3 text-[15px]">
           {failed}
         </p>
+      )}
+
+      {/* Stated as a fact about the deployment, in the reading column, carried by a hairline
+          and by zinc rather than by colour: this is not bad news to be flagged, it is the
+          reason the form above cannot work, and a reader is entitled to it before they try.
+          `role="status"` and not `alert` — nothing was attempted yet. */}
+      {configurationProblem !== null && (
+        <div role="status" className="mt-12 hairline pt-6">
+          <p className="section-label">this deployment has no owner seat</p>
+          <p className="prose-narration mt-2 text-[15px]">
+            {configurationProblem}{' '}
+            <span className="stated-absence">
+              Until then the boot script refuses to provision an owner, so no address here can sign in — including the
+              demonstration one, which is deliberately not offered while the environment says something else was
+              intended. /api/health reports this ahead of every other check.
+            </span>
+          </p>
+        </div>
       )}
 
       {demoCredentials !== null && (
