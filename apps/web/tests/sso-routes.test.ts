@@ -1,4 +1,13 @@
-import { generateScimToken, hashScimToken, hashPassword, startSession } from '@compass/auth';
+import {
+  SESSION_ABSOLUTE_TTL_DAYS,
+  generateScimToken,
+  hashPassword,
+  hashScimToken,
+  resolveFederatedSignIn,
+  resolveIdentity,
+  rotateSessionsForPrivilegeChange,
+  startSession,
+} from '@compass/auth';
 import { instantFromIso, type Instant } from '@compass/clock';
 import {
   ScopedDb,
@@ -709,6 +718,111 @@ describe('POST /api/auth/saml/acs', () => {
     );
 
     expect(response.headers.get('location') ?? '').not.toContain('evil.example');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Session parity — the third criterion of the SSO subtask
+// ---------------------------------------------------------------------------
+
+describe('a session minted by single sign-on', () => {
+  /**
+   * "SSO sessions obey the same rotation and expiry rules as password sessions."
+   *
+   * The implementation reason this holds is that all three sign-in paths call the same `startSession`,
+   * so there is one policy rather than three that happen to agree. That is an argument, though, and this
+   * is the assertion: a password session and an SSO session are compared field for field, and then the
+   * *rotation* rule is applied to the SSO one to show it is not exempt.
+   */
+  it('has the same lifetime as one minted by a password sign-in', async () => {
+    const { completeLogin } = await import('../lib/auth/login');
+    const { guard } = await import('../lib/auth/guard');
+
+    // A real password sign-in through the production path.
+    const request = new Request(`${BASE_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ email: 'priya@example.com', password: MEMBER_PASSWORD }),
+    });
+    const admitted = await guard({ request, route: '/api/auth/login', action: 'POST' });
+    expect(admitted.allowed).toBe(true);
+    if (!admitted.allowed) return;
+
+    const passwordResponse = await completeLogin(request, admitted);
+    expect(passwordResponse.status).toBe(200);
+
+    // And a federated sign-in for the same person, resolved and minted the way the callback does it.
+    /**
+     * GitHub rather than Google, and the reason is a constraint doing its job.
+     *
+     * The unlink suite above leaves this person with a Google identity, and
+     * `user_identities_org_provider_user_key` allows one identity per provider per user — so a second
+     * Google subject for the same account is correctly refused. Which provider mints the session is
+     * irrelevant to what this test is about, so it uses the free one rather than weakening the index.
+     */
+    const resolution = await resolveFederatedSignIn({
+      scoped: scoped(),
+      assertion: {
+        provider: 'github',
+        subject: 'github-parity-subject',
+        email: 'priya@example.com',
+        emailVerified: true,
+        displayName: 'Priya Raman',
+      },
+      now: admitted.now,
+    });
+    expect(resolution.kind).toBe('signed_in');
+    if (resolution.kind !== 'signed_in') return;
+
+    const ssoSession = await startSession({
+      scoped: scoped(),
+      userId: resolution.user.id,
+      now: admitted.now,
+    });
+
+    const rows = await database.client.query<{
+      issued_at: Date;
+      expires_at: Date;
+      last_used_at: Date;
+      revoked_at: Date | null;
+    }>(
+      `select issued_at, expires_at, last_used_at, revoked_at from sessions
+        where user_id = $1 and revoked_at is null order by issued_at desc limit 2`,
+      [MEMBER],
+    );
+
+    expect(rows.rows).toHaveLength(2);
+    const [first, second] = rows.rows as [typeof rows.rows[0], typeof rows.rows[0]];
+
+    // The absolute deadline is frozen at issue, so the same instant must produce the same window.
+    const window = (row: typeof first): number => row.expires_at.getTime() - row.issued_at.getTime();
+    expect(window(first)).toBe(window(second));
+    // Thirty days, from `SESSION_ABSOLUTE_TTL_DAYS` rather than a number typed here.
+    expect(window(first)).toBe(SESSION_ABSOLUTE_TTL_DAYS * 24 * 60 * 60 * 1000);
+
+    /**
+     * And the *rotation* rule, applied to the SSO session.
+     *
+     * A privilege change revokes every session the account holds. An SSO session that survived one
+     * would be a way to carry an old role forward, which is the exact hole the rotation rule closes —
+     * so it is asserted against the session single sign-on minted rather than assumed from the shared
+     * helper.
+     */
+    const rotated = await rotateSessionsForPrivilegeChange({
+      scoped: scoped(),
+      userId: resolution.user.id,
+      reason: 'role_change',
+      now: admitted.now,
+    });
+
+    expect(rotated.revoked).toBeGreaterThanOrEqual(2);
+
+    const identity = await resolveIdentity({
+      scoped: scoped(),
+      secret: ssoSession.secret,
+      now: admitted.now,
+    });
+    expect(identity.kind).toBe('anonymous');
   });
 });
 

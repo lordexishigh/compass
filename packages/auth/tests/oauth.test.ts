@@ -13,6 +13,7 @@ import {
   verifySsoState,
   type SsoHttpClient,
   type SsoHttpRequest,
+  type SsoHttpResponse,
 } from '@compass/auth';
 import { instantFromIso, type Instant } from '@compass/clock';
 import { describe, expect, it } from 'vitest';
@@ -334,7 +335,10 @@ function scriptedHttp(
 
   return {
     requests,
-    async send(request: SsoHttpRequest) {
+    // The return type is annotated rather than inferred: without it the two branches widen into a
+    // union whose header maps are not both `Record<string, string>`, which `tsc -p tsconfig.tests.json`
+    // rejects even though vitest runs it happily.
+    async send(request: SsoHttpRequest): Promise<SsoHttpResponse> {
       requests.push(request);
       const answer = answers.find((entry) => request.url.includes(entry.match));
 
