@@ -402,28 +402,7 @@ function progressItems(
 
   if (progress.mode === 'no_signal') return [];
 
-  if (progress.mode === 'kanban') {
-    const flow = progress.flow;
-    return [
-      {
-        ...identified(progressCause(scope, PROGRESS_CAUSE_KINDS.kanbanFlow)),
-        headline: flow.statement,
-        detail: progress.statement,
-        changeTag: 'unchanged',
-        ageDays: 0,
-        firstSeenAt: instant,
-        severityScore: SEVERITY_SCORE.terminal,
-        signalOnsetAt: instant,
-        evidence: flow.evidence,
-      },
-      // A team with no sprints still gets the projection line, and on this path it
-      // is almost always the refusal. That is the point: "no completion date,
-      // because fewer than two sprints have completed" is the honest answer for a
-      // Kanban or brand-new team, and omitting the line entirely would leave the
-      // reader to assume Compass simply had not got round to it.
-      projectionItem(organizationId, instant, scope, findings, flow.evidence),
-    ];
-  }
+  if (progress.mode === 'kanban') return kanbanProgressItems(organizationId, instant, scope, findings, progress);
 
   const sprint = progress.sprint;
   const unit = sprint.basis === 'story_points' ? 'points' : 'items';
@@ -475,6 +454,109 @@ function progressItems(
       evidence: orderedEvidence(progress.velocity.samples.flatMap((sample) => sample.evidence)),
     });
   }
+
+  return items;
+}
+
+/**
+ * The Progress section for a team that runs no sprints.
+ *
+ * Four claims and the projection, where a Scrum team gets the sprint, the projection and
+ * its velocity. Each flow figure is its own item rather than a clause inside one, because
+ * each is separately dismissable, separately ages, and carries different evidence: the WIP
+ * distribution cites what is on the board now, cycle time cites what finished, and the
+ * aging list cites only the items that are actually late. One merged item would have to
+ * cite all of them at once, which is exactly the undifferentiated evidence chain the
+ * design brief rules out.
+ *
+ * A shape that does not apply is still absent rather than zero. When cycle time could not
+ * be measured there is no cycle-time item and no aging item — their refusal sentences say
+ * so in `findings.progress`, and the section states one honest absence instead of two
+ * claims with nothing behind them.
+ */
+function kanbanProgressItems(
+  organizationId: string,
+  instant: Instant,
+  scope: ResolvedScope,
+  findings: AnalysisFindings,
+  progress: Extract<ProgressAssessment, { readonly mode: 'kanban' }>,
+): readonly ReportItem[] {
+  const flow = progress.flow;
+  const identified = (cause: ItemCause): IdentifiedItem => identifyItem(organizationId, cause);
+  // Every flow claim is terminal and reads as unchanged while it persists, for the same
+  // reason the projection does: a throughput that moved is not a condition that worsened,
+  // and the tagging pass has the day counter for saying how long it has been true.
+  const common = {
+    changeTag: 'unchanged' as const,
+    ageDays: 0,
+    firstSeenAt: instant,
+    severityScore: SEVERITY_SCORE.terminal,
+    signalOnsetAt: instant,
+  };
+
+  const items: ReportItem[] = [
+    {
+      ...identified(progressCause(scope, PROGRESS_CAUSE_KINDS.kanbanFlow)),
+      ...common,
+      headline: flow.statement,
+      detail: progress.statement,
+      evidence: flow.evidence,
+    },
+    {
+      ...identified(progressCause(scope, PROGRESS_CAUSE_KINDS.kanbanWip)),
+      ...common,
+      headline: flow.workInProgress.statement,
+      detail:
+        flow.workInProgress.byColumn.length === 0
+          ? 'No column on this board is holding work, so there is nothing to distribute.'
+          : `${flow.workInProgress.byColumn
+              .map((load) => `${load.column}: ${load.ticketKeys.join(', ')}`)
+              .join('. ')}.`,
+      evidence: flow.workInProgress.evidence,
+    },
+  ];
+
+  if (flow.cycleTime.kind === 'measured') {
+    const cycleTime = flow.cycleTime;
+    items.push({
+      ...identified(progressCause(scope, PROGRESS_CAUSE_KINDS.kanbanCycleTime)),
+      ...common,
+      // The trend belongs in the headline and not in the detail. The template renderer
+      // emits an item's headline, its change clause and its evidence — `detail` reaches the
+      // structured payload and the narrator, but never the page in the deterministic voice.
+      // A trend written into `detail` would therefore be a flow metric that exists in the
+      // report object and is invisible in the report, which is the failure mode this whole
+      // feature was half-built with.
+      headline: `${cycleTime.statement} ${cycleTime.trend.statement}`,
+      detail: `Measured over the trailing ${cycleTime.trailingDays} days from ${cycleTime.ticketKeys.join(', ')}.`,
+      evidence: cycleTime.evidence,
+    });
+  }
+
+  if (flow.aging.kind === 'measured') {
+    const aging = flow.aging;
+    items.push({
+      ...identified(progressCause(scope, PROGRESS_CAUSE_KINDS.kanbanAging)),
+      ...common,
+      headline: aging.statement,
+      detail:
+        aging.items.length === 0
+          ? `Every item in flight is inside the ${aging.p85Days}-day P85 this board's own finished work sets.`
+          : aging.items
+              .map((item) => `${item.ticketKey} "${item.title}" has been in ${item.column} for ${item.ageDays} days`)
+              .join('; ') + '.',
+      // Only the late items, so following the marker lands on the work in question and
+      // not on the whole board.
+      evidence: aging.evidence,
+    });
+  }
+
+  // A team with no sprints still gets the projection line, and on this path it
+  // is almost always the refusal. That is the point: "no completion date,
+  // because fewer than two sprints have completed" is the honest answer for a
+  // Kanban or brand-new team, and omitting the line entirely would leave the
+  // reader to assume Compass simply had not got round to it.
+  items.push(projectionItem(organizationId, instant, scope, findings, flow.evidence));
 
   return items;
 }

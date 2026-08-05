@@ -129,7 +129,7 @@
       "teamKey": "insights"
     }
   ],
-  "omittedItemCount": 69,
+  "omittedItemCount": 72,
   "organizationId": "00000000-0000-4000-8000-000000000001",
   "schemaVersion": 1,
   "teams": [
@@ -140,7 +140,7 @@
       "teamKey": "checkout"
     },
     {
-      "itemCount": 25,
+      "itemCount": 28,
       "mergedItemCount": 4,
       "reportId": null,
       "teamKey": "insights"

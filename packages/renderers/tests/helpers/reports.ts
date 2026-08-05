@@ -362,3 +362,132 @@ export function fullReport(): StructuredReport {
     },
   };
 }
+
+/**
+ * A Kanban team's report: the same six sections, a Progress section with no percentage.
+ *
+ * Built beside `fullReport` rather than derived from it, because the two Progress payloads
+ * are *different shapes* — the whole point of the discriminated union is that a Kanban
+ * team's flow has no `sprint` and no `velocity` to override. Spreading one over the other
+ * would produce an object neither arm describes, and the renderer's clause selection would
+ * then be tested against a payload the analysis core cannot emit.
+ *
+ * The four flow items carry the four Kanban cause kinds, which is what `progressClause`
+ * keys on: without them the WIP, cycle-time and aging figures would fall through to the
+ * change-tag fallback and their clauses would never be exercised.
+ */
+export function kanbanReport(): StructuredReport {
+  const base = emptyReport();
+
+  const flowItem: ReportItem = fixtureItem({
+    stableId: 'v1:00000000000000a1',
+    cause: progressCause(PROGRESS_CAUSE_KINDS.kanbanFlow, 'insights'),
+    headline: '3 items finished in this window, 22 are in flight, and the median item has been taking 6 days from start to finish',
+    detail: 'This team runs Kanban, so this section reports flow.',
+    changeTag: 'unchanged',
+    ageDays: 0,
+    evidence: [{ kind: 'issue', label: 'INS-204', sourceKey: 'primary-tracker', sourceRecordId: 'issue-204' }],
+  });
+
+  const wipItem: ReportItem = fixtureItem({
+    stableId: 'v1:00000000000000a2',
+    cause: progressCause(PROGRESS_CAUSE_KINDS.kanbanWip, 'insights'),
+    headline: '22 items are in flight across 2 columns — In Progress 12, In Review 10',
+    detail: 'In Progress: INS-105, INS-106. In Review: INS-118.',
+    changeTag: 'unchanged',
+    ageDays: 0,
+    evidence: [{ kind: 'issue', label: 'INS-105', sourceKey: 'primary-tracker', sourceRecordId: 'issue-105' }],
+  });
+
+  const CYCLE_TIME_STATEMENT =
+    'Over the last 28 days the median item took 6 days from start to finish and the slowest sixth took 8 or more, across 12 finished items.';
+  const CYCLE_TIME_TREND_STATEMENT =
+    'Cycle time is lengthening: a median of 5 days over the earlier 14-day half, against 7 days over the later half.';
+
+  const cycleTimeItem: ReportItem = fixtureItem({
+    stableId: 'v1:00000000000000a3',
+    cause: progressCause(PROGRESS_CAUSE_KINDS.kanbanCycleTime, 'insights'),
+    // Both sentences, exactly as `generate.ts` composes them: the trend has to be in the
+    // headline to reach the prose at all, and a fixture that kept it in `detail` would test
+    // a rendering the analysis core does not produce.
+    headline: `${CYCLE_TIME_STATEMENT} ${CYCLE_TIME_TREND_STATEMENT}`,
+    detail: 'Measured over the trailing 28 days from INS-141.',
+    changeTag: 'unchanged',
+    ageDays: 0,
+    evidence: [{ kind: 'issue', label: 'INS-141', sourceKey: 'primary-tracker', sourceRecordId: 'issue-141' }],
+  });
+
+  const agingItem: ReportItem = fixtureItem({
+    stableId: 'v1:00000000000000a4',
+    cause: progressCause(PROGRESS_CAUSE_KINDS.kanbanAging, 'insights'),
+    headline: '2 items have been in flight longer than the 8-day P85: INS-105 at 19 days in In Progress, INS-118 at 11 days in In Review',
+    detail: 'INS-105 "Timezone conversion shifts the settlement date" has been in In Progress for 19 days.',
+    changeTag: 'unchanged',
+    ageDays: 0,
+    evidence: [{ kind: 'issue', label: 'INS-105', sourceKey: 'primary-tracker', sourceRecordId: 'issue-105' }],
+  });
+
+  const report = withItems(base, { progress: [flowItem, wipItem, cycleTimeItem, agingItem] });
+
+  return {
+    ...report,
+    findings: {
+      ...report.findings,
+      progress: {
+        mode: 'kanban',
+        reason: 'team_runs_kanban',
+        statement: 'This team runs Kanban, so this section reports flow.',
+        flow: {
+          windowDays: 1,
+          throughput: { completedItems: 3, ticketKeys: ['INS-198', 'INS-201', 'INS-204'] },
+          workInProgress: {
+            items: 22,
+            ticketKeys: ['INS-105', 'INS-106', 'INS-118'],
+            byColumn: [
+              { column: 'In Progress', items: 12, ticketKeys: ['INS-105', 'INS-106'] },
+              { column: 'In Review', items: 10, ticketKeys: ['INS-118'] },
+            ],
+            statement: wipItem.headline,
+            evidence: [...wipItem.evidence],
+          },
+          cycleTime: {
+            kind: 'measured',
+            sampleSize: 12,
+            medianDays: 6,
+            p85Days: 8,
+            percentile: 0.85,
+            trailingDays: 28,
+            ticketKeys: ['INS-141'],
+            trend: {
+              kind: 'measured',
+              direction: 'lengthening',
+              halfDays: 14,
+              earlierMedianDays: 5,
+              earlierSampleSize: 5,
+              laterMedianDays: 7,
+              laterSampleSize: 7,
+              changeBasisPoints: 4_000,
+              statement: CYCLE_TIME_TREND_STATEMENT,
+            },
+            statement: CYCLE_TIME_STATEMENT,
+            evidence: [...cycleTimeItem.evidence],
+          },
+          aging: {
+            kind: 'measured',
+            p85Days: 8,
+            percentile: 0.85,
+            items: [
+              { ticketKey: 'INS-105', title: 'Timezone conversion shifts the settlement date', column: 'In Progress', ageDays: 19 },
+              { ticketKey: 'INS-118', title: 'Late-arriving events never update the rollup', column: 'In Review', ageDays: 11 },
+            ],
+            unmeasurableTicketKeys: [],
+            statement: agingItem.headline,
+            evidence: [...agingItem.evidence],
+          },
+          statement: flowItem.headline,
+          evidence: [...flowItem.evidence],
+        },
+      },
+    },
+  };
+}

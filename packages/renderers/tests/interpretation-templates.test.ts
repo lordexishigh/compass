@@ -87,6 +87,8 @@ describe('every instantiation is recognised by its own template', () => {
     interpretation.coverage(0, 0),
     interpretation.collar('low', 'cycle_time'),
     interpretation.collar('high', 'trailing_velocity'),
+    interpretation.aging(1),
+    interpretation.aging(8),
   ];
 
   it.each(clauses.map((clause) => [clause.templateId, clause.text] as const))(
