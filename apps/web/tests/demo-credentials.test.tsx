@@ -109,6 +109,18 @@ const UNAUTHENTICATED_PAGES: readonly {
   { route: '/merged', file: ['app', 'merged', 'page.tsx'], showsCredentials: false },
   { route: '/weekly', file: ['app', 'weekly', 'page.tsx'], showsCredentials: false },
   /**
+   * The public pricing page.
+   *
+   * Public in *every* tenant rather than only the demonstration one, unlike the report surfaces: it
+   * carries no organizational data at all — it reads the plan table out of `@compass/billing` and
+   * nothing else — so there is nothing for `demoOnlyPublic` to confine.
+   *
+   * It shows no credentials, so it has to offer a way to reach them. It originally linked only to
+   * `/billing`, which is owner-only and answers a refusal to a reader with no session — this list is
+   * what caught that, and the page now carries a `/account` link beside it.
+   */
+  { route: '/pricing', file: ['app', 'pricing', 'page.tsx'], showsCredentials: false },
+  /**
    * The evidence page behind a claim.
    *
    * It joined this list when it gained a matrix entry at all: `beta-security-hardening` extended the

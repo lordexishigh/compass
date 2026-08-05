@@ -92,9 +92,22 @@ export default function PricingPage() {
         </p>
       </section>
 
-      <p className="mt-8 text-[13px] leading-relaxed text-ink-faint">
+      {/*
+        Two ways out, and the second one is required rather than decorative.
+        `/pricing` is readable with no session at all, so a reader who arrives here must be able to
+        reach the sign-in credentials — `/billing` alone would strand them, because it is owner-only and
+        answers a refusal to somebody with no session. `tests/demo-credentials.test.tsx` enforces this
+        for every publicly-readable page, which is how the omission was caught.
+      */}
+      <p className="mt-8 flex flex-wrap gap-4 text-[13px] leading-relaxed text-ink-faint">
+        <a href="/account" className="tertiary-action">
+          Sign in
+        </a>
         <a href="/billing" className="tertiary-action">
           Manage your plan
+        </a>
+        <a href="/" className="tertiary-action">
+          Read today&apos;s report
         </a>
       </p>
     </main>

@@ -93,6 +93,7 @@ export {
   composeAuthMail,
   composeDeletionConfirmationMail,
   composeDeletionUndoMail,
+  composeDunningMail,
   composeLockoutMail,
   type AuthMailMessage,
   type AuthMailPurpose,

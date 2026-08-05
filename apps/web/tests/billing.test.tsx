@@ -83,6 +83,20 @@ function view(overrides: Partial<BillingView> = {}): BillingView {
       isCurrent: plan.id === 'team',
       purchasable: true,
       blockedReason: null,
+      /**
+       * The endpoint and the label the view resolves per card.
+       *
+       * These are required on `PlanCardView` and were missing here, which broke the suite in two ways
+       * at once: `view()` no longer satisfied the interface under `gate-typecheck`, and — because React
+       * drops an `undefined` attribute rather than rendering it — `<form action={plan.actionPath}>`
+       * emitted no `action` at all, so the form-action assertion read `null`.
+       *
+       * `/api/billing/checkout` is the right default for this fixture: `buildBillingView` picks the
+       * endpoint from whether Stripe already holds a subscription, and the cases that exercise the
+       * has-subscription branch override it explicitly rather than inheriting it from here.
+       */
+      actionPath: '/api/billing/checkout',
+      actionLabel: `Choose ${plan.name}`,
     })),
     currentPlanId: 'team',
     monthlyTotalLabel: formatPence(9600),
@@ -363,6 +377,64 @@ describe('a plan the organization is too large for', () => {
   });
 });
 
+/**
+ * Which endpoint each card posts to — the defect that made `/api/billing/plan` dead code.
+ *
+ * Every card used to post to `/api/billing/checkout`, so an owner on Team pressing "Choose Business"
+ * opened a *second* Checkout session against the same Stripe customer — two subscriptions and two
+ * invoices — rather than a prorated plan change, and the plan route's 409 refusal payload had no
+ * caller at all. Asserting the markup's `action` is the only way this stays fixed: both endpoints
+ * exist and both return 2xx/3xx, so a wrong one is invisible without checking where the form points.
+ */
+describe('a plan button posts to the endpoint the act requires', () => {
+  const withSubscription = () =>
+    view({
+      plans: view().plans.map((plan) => ({
+        ...plan,
+        actionPath: '/api/billing/plan',
+        actionLabel: `Change to ${plan.name}`,
+      })),
+    });
+
+  const withoutSubscription = () =>
+    view({
+      currentPlanId: null,
+      hasStripeCustomer: false,
+      plans: view().plans.map((plan) => ({ ...plan, isCurrent: false })),
+    });
+
+  it('posts a first purchase to checkout', () => {
+    document.body.innerHTML = render(withoutSubscription());
+
+    for (const planId of ['starter', 'team', 'business']) {
+      const form = document.body.querySelector(`[data-plan="${planId}"] form`);
+      expect(form?.getAttribute('action'), `${planId} posts to the wrong endpoint`).toBe(
+        '/api/billing/checkout',
+      );
+    }
+    // And the label says which act it is, before it is pressed.
+    expect(textOf(render(withoutSubscription()))).toContain('Choose Business');
+  });
+
+  it('posts a change to the plan route once a subscription exists', () => {
+    document.body.innerHTML = render(withSubscription());
+
+    // `team` is the current plan and therefore has no button; the other two are changes.
+    for (const planId of ['starter', 'business']) {
+      const form = document.body.querySelector(`[data-plan="${planId}"] form`);
+      expect(form?.getAttribute('action'), `${planId} posts to the wrong endpoint`).toBe(
+        '/api/billing/plan',
+      );
+    }
+    expect(textOf(render(withSubscription()))).toContain('Change to Business');
+  });
+
+  it('never offers a button for the plan already held', () => {
+    document.body.innerHTML = render(withSubscription());
+    expect(document.body.querySelector('[data-plan="team"] form')).toBeNull();
+  });
+});
+
 describe('cancellation is offered while there is something to cancel', () => {
   it('shows the cancel form and says access is retained', () => {
     document.body.innerHTML = render(view());
@@ -372,6 +444,30 @@ describe('cancellation is offered while there is something to cancel', () => {
     expect((document.body.textContent ?? '').replace(/\s+/g, ' ')).toContain(
       'keeps Compass working to the end of the period you have already paid for',
     );
+  });
+
+  it('offers nothing to cancel once it is already cancelling', () => {
+    // The button used to stay live at `canceling`, and a second press called `cancelAtPeriodEnd` again
+    // on a subscription already cancelled. The state notice above says when access ends, which is what
+    // the reader actually wants in its place.
+    const cancelling = view({
+      state: billingState(
+        {
+          status: 'canceling',
+          planId: 'team',
+          seatAllowance: 8,
+          trialEndsAt: null,
+          currentPeriodEndsAt: instantFromIso('2026-09-01T00:00:00Z'),
+          dunningStartedAt: null,
+        },
+        NOW,
+      ),
+    });
+    document.body.innerHTML = render(cancelling);
+
+    expect(document.body.querySelector('form[action="/api/billing/cancel"]')).toBeNull();
+    // And it still says what happens, so the section does not simply vanish without explanation.
+    expect((document.body.textContent ?? '').replace(/\s+/g, ' ')).toContain('will not renew');
   });
 
   it('offers nothing to cancel once it is over', () => {

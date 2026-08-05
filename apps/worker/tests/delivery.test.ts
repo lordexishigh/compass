@@ -16,7 +16,7 @@ import {
 import { createTestDatabase, type TestDatabase } from '@compass/db/testing';
 import { FakeEmailTransport, FakeSlackTransport } from '@compass/delivery/testkit';
 import { RecordingSink } from '@compass/observability';
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 import {
   DELIVERY_RETRY_LIMIT,
@@ -500,6 +500,72 @@ describe('when the provider refuses', () => {
     ).rejects.toThrow();
 
     expect(sink.records.filter((entry) => entry.event === 'delivery.failure')).toHaveLength(1);
+  });
+});
+
+/**
+ * Delivery works on a deployment that has never configured billing.
+ *
+ * The other half of criterion 004, whose generation half is `packages/pipeline/tests/no-billing.test.ts`.
+ * The web suite asserted the *sentence* "every report, delivery and configuration screen works", which
+ * is a claim about a string and stays green whether or not the claim is true. This runs the real
+ * delivery handler — real migrated PostgreSQL, real `delivery_log` write, the testkit transport with the
+ * network removed — with every Stripe variable absent from the environment.
+ *
+ * What it guards is not hypothetical: a module-scope `new Stripe(process.env.STRIPE_SECRET_KEY!)`
+ * anywhere in the import graph throws at *import*, and the worker would die on boot rather than deliver
+ * anything. `apps/worker` does depend on `@compass/billing`, so this graph genuinely could acquire that
+ * defect — which is why the assertion lives here and not only in the pipeline package.
+ */
+describe('with no Stripe key configured, delivery still sends', () => {
+  const STRIPE_VARS = [
+    'STRIPE_SECRET_KEY',
+    'STRIPE_WEBHOOK_SECRET',
+    'STRIPE_PRICE_STARTER',
+    'STRIPE_PRICE_TEAM',
+    'STRIPE_PRICE_BUSINESS',
+  ] as const;
+
+  const saved = new Map<string, string | undefined>();
+
+  beforeEach(() => {
+    // Absent, not empty: "absent" is the state the criterion names, and the two are different states
+    // that `resolveBillingConfig` happens to treat alike.
+    for (const name of STRIPE_VARS) {
+      saved.set(name, process.env[name]);
+      delete process.env[name];
+    }
+  });
+
+  afterEach(() => {
+    for (const [name, value] of saved) {
+      if (value === undefined) delete process.env[name];
+      else process.env[name] = value;
+    }
+    saved.clear();
+  });
+
+  it('confirms the fixture: every Stripe variable really is absent', () => {
+    for (const name of STRIPE_VARS) {
+      expect(process.env[name], `${name} is set, so this group would prove nothing`).toBeUndefined();
+    }
+  });
+
+  it('delivers the report and records the attempt', async () => {
+    const result = await handleReportDeliver(dependencies(), payload(), NOW, 1);
+
+    expect(result.status).toBe('sent');
+    // The provider was actually called with a rendered report, not skipped past.
+    expect(email.sent).toHaveLength(1);
+    expect(email.sent[0]?.rendered.html.length ?? 0).toBeGreaterThan(0);
+
+    // And the row is on the record, which is what the delivery guarantees are about.
+    const attempts = await listDeliveryAttempts(scoped(), {
+      subscriptionId: SUBSCRIPTION,
+      deliveryDate: testDate,
+    });
+    expect(attempts).toHaveLength(1);
+    expect(attempts[0]?.status).toBe('sent');
   });
 });
 

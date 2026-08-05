@@ -171,11 +171,19 @@ function PlanCard({ plan }: { readonly plan: PlanCardView }) {
         </p>
       )}
 
+      {/*
+        A real form, posting to the endpoint the view resolved.
+        `plan.actionPath` is `/api/billing/checkout` for a first purchase and `/api/billing/plan` for a
+        change to a subscription that already exists — the component picks nothing, because which act
+        this is depends on the organization's Stripe state rather than on anything the card knows. Both
+        routes answer a form submission with a 303, so the browser navigates (to Stripe, or back here)
+        instead of landing on a JSON document.
+      */}
       {!unavailable && !plan.isCurrent && (
-        <form action="/api/billing/checkout" method="post" className="mt-3">
+        <form action={plan.actionPath} method="post" className="mt-3">
           <input type="hidden" name="planId" value={plan.id} />
-          <button type="submit" className="primary-action">
-            Choose {plan.name}
+          <button type="submit" className="primary-action" data-testid="plan-submit" data-action={plan.actionPath}>
+            {plan.actionLabel}
           </button>
         </form>
       )}
@@ -315,23 +323,32 @@ export function BillingScreen({ view }: { readonly view: BillingView }) {
 
           <Invoices view={view} />
 
-          {view.currentPlanId !== null && view.state.status !== 'canceled' && (
-            <section aria-labelledby="cancel-heading" className="mt-10 border-t border-rule pt-6">
-              <h2 id="cancel-heading" className="text-[15px] font-medium text-ink-strong">
-                Cancel
-              </h2>
-              <p className="mt-1 max-w-prose text-[13px] leading-relaxed text-ink">
-                Cancelling keeps Compass working to the end of the period you have already paid for.
-                After that your reports stay readable and your data stays exportable; Compass stops
-                writing new ones.
-              </p>
-              <form action="/api/billing/cancel" method="post" className="mt-3">
-                <button type="submit" className="tertiary-action">
-                  Cancel at period end
-                </button>
-              </form>
-            </section>
-          )}
+          {/*
+            Offered only while there is something to cancel.
+            `canceling` is excluded as well as `canceled`: the button used to stay live after a
+            successful cancellation, and a second press would call `cancelAtPeriodEnd` again on a
+            subscription already cancelled. The state notice above already says when access ends, so
+            what replaces the button is the sentence a reader actually wants.
+          */}
+          {view.currentPlanId !== null &&
+            view.state.status !== 'canceled' &&
+            view.state.status !== 'canceling' && (
+              <section aria-labelledby="cancel-heading" className="mt-10 border-t border-rule pt-6">
+                <h2 id="cancel-heading" className="text-[15px] font-medium text-ink-strong">
+                  Cancel
+                </h2>
+                <p className="mt-1 max-w-prose text-[13px] leading-relaxed text-ink">
+                  Cancelling keeps Compass working to the end of the period you have already paid for.
+                  After that your reports stay readable and your data stays exportable; Compass stops
+                  writing new ones.
+                </p>
+                <form action="/api/billing/cancel" method="post" className="mt-3">
+                  <button type="submit" className="tertiary-action" data-testid="cancel-submit">
+                    Cancel at period end
+                  </button>
+                </form>
+              </section>
+            )}
         </>
       ) : (
         <NotConfigured view={view} />

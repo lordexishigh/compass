@@ -43,7 +43,16 @@ export type AuthMailPurpose =
    * enumerates what was deleted.
    */
   | 'deletion_undo'
-  | 'deletion_confirmation';
+  | 'deletion_confirmation'
+  /**
+   * The failed-payment notice, for the same reason again.
+   *
+   * A dunning email is Compass telling the owner something about their own organization, on the one
+   * transport a deployment configures. It carries no token: the link goes to `/billing`, which requires
+   * the session the owner already has, because a "fix your card" link that authenticated on its own
+   * would be a payment-method-change credential sitting in an inbox.
+   */
+  | 'dunning_notice';
 
 export interface AuthMailMessage {
   readonly to: string;
@@ -286,6 +295,54 @@ export function composeLockoutMail(input: {
       'If this is a colleague who has forgotten their password, they can use "email me a link" instead — a mailed',
       'sign-in link is not affected by this limit. If it is not a colleague, the account is already closed to the',
       'attempts and there is nothing you need to do to keep it closed.',
+      '',
+      input.link,
+    ].join('\n'),
+  };
+}
+
+/**
+ * The message an owner gets when a payment fails.
+ *
+ * Criterion 002 asks for the failed payment to be notified **by email** and for the deadline to be
+ * stated in-app. The in-app half is `billingState`'s notice on `/billing`; this is the other half, and
+ * it deliberately states the *same* deadline from the same stored instant rather than recomputing one —
+ * two places computing a deadline is how an owner comes to be told two different dates.
+ *
+ * ## What it does not do
+ *
+ * No card details, no amount taken from a request, and no link that could change a payment method
+ * without a session. The link is `/billing`, which the owner reaches with the session they already
+ * have; anything self-authenticating in an inbox would be a payment-method credential.
+ *
+ * It also does not threaten more than is true. Access is *not* cut when a payment fails — Compass keeps
+ * generating until the deadline, because a card expires far more often than a customer leaves — so the
+ * mail says what actually happens and when, which is the only version an owner can plan around.
+ */
+export function composeDunningMail(input: {
+  readonly to: string;
+  readonly organizationName: string;
+  /** The deadline, already formatted for a human by the caller that owns the timezone. */
+  readonly deadlineLabel: string | null;
+  /** Where the owner goes to fix it: the billing page, behind their own session. */
+  readonly link: string;
+}): AuthMailMessage {
+  return {
+    to: input.to,
+    purpose: 'dunning_notice',
+    link: input.link,
+    subject: `Payment failed for ${input.organizationName} — Compass`,
+    body: [
+      `A payment for ${input.organizationName} did not go through.`,
+      '',
+      input.deadlineLabel === null
+        ? 'Compass is still generating and delivering your daily report. Update the payment method to keep it that way.'
+        : `Compass is still generating and delivering your daily report, and will keep doing so until ` +
+          `${input.deadlineLabel}. If the payment has not succeeded by then, Compass stops writing new ` +
+          'reports — every report it has already written stays readable and your data stays exportable.',
+      '',
+      'You are being told because you own this organization. Nothing has been cancelled and no data has been',
+      'deleted. The usual cause is an expired card.',
       '',
       input.link,
     ].join('\n'),

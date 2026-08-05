@@ -57,6 +57,73 @@ export async function readJsonObject(
   return { body: parsed as Record<string, unknown> };
 }
 
+/**
+ * True when the body is an HTML form submission rather than a JSON API call.
+ *
+ * The distinction decides two things at once — how the body is read *and* how the reply is shaped —
+ * so it is one predicate rather than two guesses. A browser that submitted a `<form>` needs a 303 it
+ * can follow; a JSON caller needs a JSON body and would be broken by a redirect.
+ */
+export const isFormSubmission = (request: Request): boolean =>
+  (request.headers.get('content-type') ?? '').includes('application/x-www-form-urlencoded');
+
+/**
+ * Reads a body posted either as JSON or as an HTML form.
+ *
+ * ## Why this exists
+ *
+ * Compass's billing screens are Server Components with no client JavaScript — the same posture the
+ * report surfaces take — so the plan buttons are real `<form method="post">` elements. A native form
+ * submission sends `application/x-www-form-urlencoded`, which `readJsonObject` rejects with a 400: the
+ * checkout flow could not be started from the UI at all, because the only caller the route accepted
+ * was one nothing in the product was making.
+ *
+ * Every value from a form arrives as a string, which is exactly what the callers of this helper want —
+ * they validate against closed vocabularies (`isPlanId`) rather than coercing types. A `File` entry is
+ * dropped rather than stringified into `"[object File]"`: no billing form uploads anything, and a
+ * silent coercion would turn a mistake into a plausible-looking value.
+ */
+export async function readFormOrJsonObject(
+  request: Request,
+): Promise<{ readonly body: Record<string, unknown> } | { readonly response: NextResponse }> {
+  if (!isFormSubmission(request)) return readJsonObject(request);
+
+  let form: FormData;
+  try {
+    form = await request.formData();
+  } catch {
+    return { response: jsonError('invalid_body', 'The form body could not be read.', 400) };
+  }
+
+  const body: Record<string, unknown> = {};
+  for (const [key, value] of form.entries()) {
+    if (typeof value === 'string') body[key] = value;
+  }
+  return { body };
+}
+
+/**
+ * The reply a form submission needs: a 303 to where the browser should land next.
+ *
+ * 303 rather than 302 specifically. A 303 tells the browser to follow with **GET**, which is what
+ * turns a POST of a plan choice into a navigation to Stripe Checkout; a 302 leaves the method
+ * implementation-defined and browsers have historically re-POSTed it.
+ */
+export const seeOther = (location: string): NextResponse =>
+  NextResponse.redirect(location, { status: 303, headers: NO_STORE });
+
+/**
+ * A 303 to a path on this deployment, resolved against the request.
+ *
+ * `NextResponse.redirect` requires an absolute URL, and the origin is taken from `request.url` rather
+ * than from a header: this is only ever used to send the owner back to a Compass page they are already
+ * on, so the request's own origin is the correct and the only safe answer. `COMPASS_BASE_URL` is what
+ * mailed links use, and deliberately not this — a redirect that left the deployment the owner was
+ * looking at would be the surprise, not the fix.
+ */
+export const seeOtherPath = (request: Request, path: string): NextResponse =>
+  seeOther(new URL(path, request.url).toString());
+
 /** A required string field, trimmed, or the sentence naming it. */
 export function requiredString(
   body: Record<string, unknown>,

@@ -1,10 +1,16 @@
 import { NOT_CONFIGURED_STATEMENT, isPlanId, planChangeVerdict, resolveBillingConfig } from '@compass/billing';
 import { findBillingSubscription, upsertBillingSubscription } from '@compass/db';
-import { randomUUID } from 'node:crypto';
 import { NextResponse } from 'next/server';
 
 import { guard } from '../../../../lib/auth/guard';
-import { failure, jsonError, jsonOk, readJsonObject } from '../../../../lib/auth/http';
+import {
+  failure,
+  isFormSubmission,
+  jsonError,
+  jsonOk,
+  readFormOrJsonObject,
+  seeOther,
+} from '../../../../lib/auth/http';
 import { gatewayFor, seatSummaries } from '../../../../lib/billing-source';
 
 /**
@@ -40,7 +46,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   const config = resolveBillingConfig();
   if (!config.configured) return jsonError('billing_not_configured', config.statement, 503);
 
-  const body = await readJsonObject(request);
+  const body = await readFormOrJsonObject(request);
   if ('response' in body) return body.response;
 
   const planId = body.body['planId'];
@@ -65,6 +71,19 @@ export async function POST(request: Request): Promise<NextResponse> {
     const verdict = planChangeVerdict({ targetPlanId: planId, seats });
 
     if (!verdict.allowed) {
+      /**
+       * A browser goes back to the page that already explains the refusal.
+       *
+       * `/billing` recomputes the same `planChangeVerdict` for every plan card on load, so the reason
+       * and the suggested seats are already rendered beneath the plan the owner just tried — the block
+       * is not a message that has to survive a redirect. Sending the browser back there is therefore
+       * both simpler and more useful than a 409 JSON document, and `?planChange=blocked` names the
+       * plan so the page can draw attention to that card rather than to all three.
+       */
+      if (isFormSubmission(request)) {
+        return seeOther(new URL(`/billing?planChange=blocked&plan=${planId}`, request.url).toString());
+      }
+
       return NextResponse.json(
         {
           error: 'seat_count_exceeds_plan',
@@ -105,11 +124,26 @@ export async function POST(request: Request): Promise<NextResponse> {
       return jsonError('plan_change_failed', `Stripe refused the change: ${changed.detail}`, 502);
     }
 
+    /**
+     * `existing.id`, with no fallback.
+     *
+     * This read `existing.id ?? randomUUID()`, which was unreachable and worse than merely dead: the
+     * guard above returns 409 unless `existing.stripeSubscriptionId` is a string, so `existing` is a
+     * row that was read from the database and its `id` is always present. A `randomUUID()` branch
+     * implied a case in which changing a plan mints a *second* subscription row for the organization —
+     * which the unique index on `organization_id` would then refuse. Naming a case that cannot happen
+     * is how a later reader comes to believe it can.
+     */
     await upsertBillingSubscription(
       admitted.scoped,
-      { id: existing.id ?? randomUUID(), write: { planId, seatAllowance: verdict.seatCount } },
+      { id: existing.id, write: { planId, seatAllowance: verdict.seatCount } },
       admitted.now,
     );
+
+    // The browser lands back on the billing page, which now reads the changed plan.
+    if (isFormSubmission(request)) {
+      return seeOther(new URL('/billing?planChange=complete', request.url).toString());
+    }
 
     return jsonOk({ planId, seats: verdict.seatCount });
   } catch (error) {

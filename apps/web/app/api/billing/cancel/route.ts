@@ -1,10 +1,10 @@
 import { NOT_CONFIGURED_STATEMENT, resolveBillingConfig } from '@compass/billing';
 import { findBillingSubscription, upsertBillingSubscription } from '@compass/db';
 import { toIso } from '@compass/clock';
-import { NextResponse } from 'next/server';
+import type { NextResponse } from 'next/server';
 
 import { guard } from '../../../../lib/auth/guard';
-import { failure, jsonError, jsonOk } from '../../../../lib/auth/http';
+import { failure, isFormSubmission, jsonError, jsonOk, seeOther } from '../../../../lib/auth/http';
 import { gatewayFor } from '../../../../lib/billing-source';
 
 /**
@@ -84,6 +84,18 @@ export async function POST(request: Request): Promise<NextResponse> {
     );
 
     const endsAt = cancelled.value.endsAt ?? existing.currentPeriodEndsAt;
+
+    /**
+     * The owner lands back on the billing page, which now reads `canceling`.
+     *
+     * This returned only JSON, so pressing "Cancel at period end" recorded the cancellation correctly
+     * and then showed the owner a raw JSON document — the one moment in the product where somebody is
+     * most likely to want reassurance about what they just did, answered with a machine payload. The
+     * page's own notice states the retained-access period from the row this just wrote.
+     */
+    if (isFormSubmission(request)) {
+      return seeOther(new URL('/billing?cancelled=1', request.url).toString());
+    }
 
     return jsonOk({
       status: 'canceling',

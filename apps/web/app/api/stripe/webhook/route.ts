@@ -10,7 +10,8 @@ import { applyBillingEventOnce } from '@compass/db';
 import { randomUUID } from 'node:crypto';
 import { NextResponse } from 'next/server';
 
-import { guard } from '../../../../lib/auth/guard';
+import { baseUrlFor, guard, scopedFor } from '../../../../lib/auth/guard';
+import { notifyDunning } from '../../../../lib/billing-source';
 import { database } from '../../../../lib/database';
 
 /**
@@ -58,6 +59,27 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 const ROUTE = '/api/stripe/webhook';
+
+/**
+ * Where the dunning email points, and why it cannot throw.
+ *
+ * `baseUrlFor` refuses to infer an origin from the request and **throws** when `COMPASS_BASE_URL` is
+ * unset off loopback — correct for a mailed sign-in link, and dangerous here: it is called on the
+ * webhook path *after* the state change has committed, so an unset variable would turn a correctly
+ * applied event into a 500 and make Stripe redeliver it forever.
+ *
+ * So the failure is absorbed and the mail falls back to a bare path. An owner who follows a relative
+ * link from an inbox gets a link that does not resolve, which is a bad link in one email; the
+ * alternative was an infinite webhook retry loop on every failed payment. The variable is documented
+ * in `.env.example` as required for any deployment not reached over loopback.
+ */
+function dunningLink(request: Request): string {
+  try {
+    return new URL('/billing', baseUrlFor(request)).toString();
+  } catch {
+    return '/billing';
+  }
+}
 
 /** Accepted, and nothing more. The body says why, for an operator reading Stripe's own delivery log. */
 const accepted = (detail: string, applied: boolean): NextResponse =>
@@ -172,10 +194,40 @@ export async function POST(request: Request): Promise<NextResponse> {
           ...(applied.patch.dunningDeadline === undefined
             ? {}
             : { dunningDeadlineAt: applied.patch.dunningDeadline }),
+          /**
+           * The "already told them" mark is cleared with the window it belongs to.
+           *
+           * `applyEvent` clears `dunningStartedAt` whenever the subscription is not `past_due` — a paid
+           * invoice, a plan change, a recovery. If `dunning_notified_at` outlived that, a *second*
+           * genuine failure months later would find it set and send nothing, and the owner would never
+           * hear about the payment that actually stopped their reports. The two are one fact and are
+           * written together.
+           */
+          ...(applied.patch.dunningStartedAt === null ? { dunningNotifiedAt: null } : {}),
         },
       },
       admitted.now,
     );
+
+    /**
+     * The email half of the dunning criterion, sent only on the delivery that changed the state.
+     *
+     * Inside `outcome.applied`, so a redelivery of the same event does not re-send: the idempotency
+     * ledger already decided this event had not been seen, and reusing that verdict is what keeps the
+     * email exactly as idempotent as the row. `notifyDunning` additionally guards on
+     * `dunning_notified_at`, so Stripe's *later* retries — which are different event ids and do change
+     * state — stay quiet too.
+     *
+     * It cannot fail this request. See `notifyDunning`: a 500 here would make Stripe redeliver an event
+     * whose state change has already committed.
+     */
+    if (outcome.applied && applied.patch.notifyDunning === true) {
+      await notifyDunning({
+        scoped: scopedFor(applied.organizationId),
+        now: admitted.now,
+        billingUrl: dunningLink(request),
+      });
+    }
 
     return accepted(
       outcome.applied
