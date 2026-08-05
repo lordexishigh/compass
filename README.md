@@ -82,23 +82,37 @@ containers starting together cannot both do it.
 
 ### Signing in
 
-The seed provisions one owner seat with published demonstration credentials, and writes them to
-`.nous/demo_account.json` (gitignored, and excluded from the Docker image) for automated
-verification:
+The seed provisions one owner seat. **Its password is not published in this repository**, and
+there is no default for it: a working owner password committed here would be no password at all
+on every deployment that never overrode it. What the seat gets instead depends on whether the
+deployment configured anything.
 
 | | |
 |---|---|
-| Email | `owner@compass.demo` |
-| Password | `compass-demo-owner` |
+| Email | `COMPASS_OWNER_EMAIL`, or `owner@compass.demo` when that is unset |
+| Password | `COMPASS_OWNER_PASSWORD`, or 18 random bytes minted by the boot that creates the seat |
 | Login | `POST /login` with `{"email": "...", "password": "..."}` |
 
-They are also printed at boot and shown on [`/account`](http://localhost:3000/account). Set
-`COMPASS_OWNER_EMAIL` and `COMPASS_OWNER_PASSWORD` before this deployment holds real data —
-`/api/health` says out loud while the published defaults are still in use.
+A **generated** password is readable in exactly two places, because the database keeps only an
+Argon2id digest of it and nothing that can be read back:
 
-Set **both or neither**. The two used to be filled in independently, so setting the email and
-forgetting the password gave you an owner seat at your real address protected by the password
-in the table above. The boot script now refuses that combination and names the variable you
+- it is **printed once**, in the log of the seed or cold start that created the seat; and
+- it is written to **`.nous/demo_account.json`** as `{email, password, login_path}` at mode
+  `0600` — gitignored and excluded from the Docker image — which is the copy an automated
+  harness reads, so a script never has to parse a page to sign in.
+
+That digest is also why a *later* boot of an unconfigured deployment leaves the file alone rather
+than rewriting it: this process cannot learn the password the earlier one minted, and a file
+silently holding the wrong password is worse than one holding a real one.
+
+[`/account`](http://localhost:3000/account) states the owner address and whether a password is
+set. It never shows the value, because the web app genuinely does not have it — the worker mints
+it, hashes it and prints it.
+
+Set `COMPASS_OWNER_EMAIL` and `COMPASS_OWNER_PASSWORD` before this deployment holds real data.
+Set **both or neither**: the two used to be filled in independently, so setting the email and
+forgetting the password gave you an owner seat at your real address protected by a password
+published in this file. The boot script now refuses that combination and names the variable you
 are missing, and `/api/health` reports it ahead of every other check.
 
 ### A new organization: from nothing to a first report
@@ -170,7 +184,10 @@ The golden-fixture workflow is the fourth mechanism and the one a change to anal
 `pnpm test:golden` diffs live output against the checked-in fixtures for ten consecutive simulated
 days per team plus the merged report, and `pnpm golden:update` regenerates them as a reviewable text
 diff. Fixtures are only ever rewritten through that command, so a report change is something a
-reviewer reads rather than something that happens silently.
+reviewer reads rather than something that happens silently. The step-by-step review workflow for a
+golden diff — read the failing path, regenerate, read `git diff -- fixtures/`, check the blast
+radius, and commit the regeneration separately from the logic change — is in
+[**Golden fixtures**](docs/DEVELOPMENT.md#golden-fixtures).
 
 See [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) for how to install dependencies, run, and verify the
 project. Architecture is documented in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md); the build plan

@@ -1,7 +1,6 @@
 import { OFF_GOAL_LABEL, SECTIONS, entityRef, isStableItemId, stableItemId } from '@compass/analysis';
 import {
   DEMO_OWNER_EMAIL,
-  DEMO_OWNER_PASSWORD,
   OWNER_EMAIL_ENV_VAR,
   OWNER_PASSWORD_ENV_VAR,
   OwnerConfigurationError,
@@ -132,6 +131,9 @@ const ownerResult: BootstrapOwnerResult = {
   created: false,
   teamKeys: ['platform'],
   usingDefaultCredentials: true,
+  // `created: false`, so this boot minted nothing: the branch of `describeBootstrapOwner`
+  // that points an operator at the file rather than printing a password.
+  generatedPassword: null,
 };
 
 describe('a clean database plus the seed produces a readable report', () => {
@@ -445,13 +447,32 @@ describe('the boot script leaves an owner who can sign in', () => {
     expect(result.teamKeys).toEqual([run.teamKey]);
     expect(result.user.email).toBe(DEMO_OWNER_EMAIL);
 
-    // And the password it set actually signs in — the only proof the hash was written.
+    /**
+     * The generated password signs in — the only proof the hash was written, and the only proof
+     * the generated value is recoverable at all.
+     *
+     * It comes off the result rather than from a constant, because there is no constant: an
+     * unconfigured boot mints a password and `generatedPassword` is the single copy of it in
+     * existence. If that field were ever null here, a zero-config deployment would have an owner
+     * seat nobody could open, which is exactly the failure the old literal hid.
+     */
+    expect(result.generatedPassword, 'a first boot with nothing configured must mint a password').not.toBeNull();
+
     const login = await verifyLogin({
       scoped: scoped(),
       email: DEMO_OWNER_EMAIL,
-      password: DEMO_OWNER_PASSWORD,
+      password: result.generatedPassword ?? '',
     });
     expect(login.ok).toBe(true);
+  }, 120_000);
+
+  it('mints nothing on a later boot, so the first password keeps working', async () => {
+    // The idempotency that makes `.nous/demo_account.json` safe to leave alone: a second boot must
+    // not report a password, because the one it would report is not the one in the database.
+    const again = await bootstrapOwner({ scoped: scoped(), now: run.now, teamKeys: [run.teamKey], env: {} });
+
+    expect(again.created).toBe(false);
+    expect(again.generatedPassword).toBeNull();
   }, 120_000);
 
   it('is idempotent, so a container restart does not add a second owner', async () => {

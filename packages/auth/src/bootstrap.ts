@@ -1,3 +1,5 @@
+import { randomBytes } from 'node:crypto';
+
 import type { Instant } from '@compass/clock';
 import { listSeats, replaceTeamScopes, type MembershipRow, type ScopedDb, type UserRow } from '@compass/db';
 
@@ -38,15 +40,77 @@ export const OWNER_PASSWORD_ENV_VAR = 'COMPASS_OWNER_PASSWORD';
 export const OWNER_NAME_ENV_VAR = 'COMPASS_OWNER_NAME';
 
 /**
- * The demonstration owner.
+ * The demonstration owner's address and display name.
  *
- * Twelve characters or more, because `assertUsablePassword` holds the bootstrap to the
- * same floor as a human — a seed script that could set a password the product would
- * refuse would be a second, weaker rule.
+ * There is deliberately **no** `DEMO_OWNER_PASSWORD` beside these. There was, and it was a
+ * working owner password compiled into a published package — `'compass-demo-owner'`, reachable
+ * by any deployment that never set `COMPASS_OWNER_PASSWORD`. The comment above it called it a
+ * documented demonstration default, which described the intent and not the consequence.
+ * `compass/no-credential-literal` now fails the build on its return.
+ *
+ * An address and a display name are not credentials: knowing `owner@compass.demo` opens
+ * nothing. The password is either configured or generated — see `generateOwnerPassword`.
  */
 export const DEMO_OWNER_EMAIL = 'owner@compass.demo';
-export const DEMO_OWNER_PASSWORD = 'compass-demo-owner';
 export const DEMO_OWNER_NAME = 'Demo Owner';
+
+/**
+ * Bytes of entropy in a generated first-run password.
+ *
+ * 18 bytes is 24 base64url characters, comfortably past the floor `assertUsablePassword`
+ * holds a human to — a seed script that could set a password the product would refuse would
+ * be a second, weaker rule.
+ */
+export const GENERATED_PASSWORD_BYTES = 18;
+
+/**
+ * A first-run owner password, when the deployment configured none.
+ *
+ * This is what replaces the literal, and why the replacement is a generator rather than a
+ * throw at module load. The production-readiness requirement is that a deployment which can
+ * authenticate must have *some* path to its first owner; the zero-config path — `docker compose
+ * up` on a clean checkout, and the CI cold-start job that boots with no `.env` at all and
+ * asserts a six-section report inside 60 seconds — has no operator standing by to invent one.
+ * So a boot with nothing configured mints a password nobody has ever seen, and the caller is
+ * responsible for telling somebody what it was: `describeBootstrapOwner` prints it and the
+ * worker writes it to `.nous/demo_account.json` at mode 0600.
+ *
+ * `randomBytes` and not `Math.random`: this value protects an owner seat from the moment it is
+ * created, whether or not the data behind it is a fixture on the day it is generated.
+ */
+export function generateOwnerPassword(): string {
+  return randomBytes(GENERATED_PASSWORD_BYTES).toString('base64url');
+}
+
+/**
+ * The configured owner password, or null when the deployment set none.
+ *
+ * Separate from `resolveOwnerCredentials` because `/api/health` and `/account` need to ask
+ * *whether* one is configured without needing a value, and the value is no longer something
+ * this module can produce on its own.
+ */
+export function configuredOwnerPassword(env: OwnerEnvironment = process.env): string | null {
+  const password = env[OWNER_PASSWORD_ENV_VAR];
+  return password !== undefined && password.length > 0 ? password : null;
+}
+
+/**
+ * Thrown when a password is required and neither configured nor supplied.
+ *
+ * Named after the variable, so an operator reading a crashed boot log learns what to set
+ * rather than that something was undefined. The same shape as `resolveMasterKey`'s refusal for
+ * `COMPASS_KMS_MASTER_KEY`, which is the other secret in Compass with deliberately no default.
+ */
+export class MissingOwnerPasswordError extends Error {
+  constructor() {
+    super(
+      `Missing required environment variable: ${OWNER_PASSWORD_ENV_VAR}. Compass will not fall back to a ` +
+        'password compiled into its own source: one published in this repository would be no password at all. ' +
+        'Set it, or call bootstrapOwner, which mints a random one for a first run and prints it.',
+    );
+    this.name = 'MissingOwnerPasswordError';
+  }
+}
 
 /**
  * The address these credentials are POSTed to, named once.
@@ -82,24 +146,47 @@ export interface OwnerCredentials {
  */
 export type OwnerEnvironment = Readonly<Record<string, string | undefined>>;
 
-export function resolveOwnerCredentials(env: OwnerEnvironment = process.env): OwnerCredentials {
+/**
+ * The owner credentials this deployment will use.
+ *
+ * `password` is the configured one when there is one, and otherwise `fallbackPassword` — which
+ * the caller supplies because the caller is the only party that can also *record* a generated
+ * value. With neither, this throws `MissingOwnerPasswordError` rather than inventing a
+ * credential silently: a function that quietly returned a fresh random password on every call
+ * would put a different one in the database, in the log line and in `.nous/demo_account.json`.
+ */
+export function resolveOwnerCredentials(
+  env: OwnerEnvironment = process.env,
+  fallbackPassword: string | null = null,
+): OwnerCredentials {
   const email = env[OWNER_EMAIL_ENV_VAR];
-  const password = env[OWNER_PASSWORD_ENV_VAR];
   const displayName = env[OWNER_NAME_ENV_VAR];
+  const configuredPassword = configuredOwnerPassword(env);
 
-  const configured =
-    email !== undefined && email.length > 0 && password !== undefined && password.length > 0;
+  const password = configuredPassword ?? fallbackPassword;
+  if (password === null) throw new MissingOwnerPasswordError();
+
+  const configured = email !== undefined && email.length > 0 && configuredPassword !== null;
 
   return {
     email: email !== undefined && email.length > 0 ? email : DEMO_OWNER_EMAIL,
-    password: password !== undefined && password.length > 0 ? password : DEMO_OWNER_PASSWORD,
+    password,
     displayName: displayName !== undefined && displayName.length > 0 ? displayName : DEMO_OWNER_NAME,
     isDefault: !configured,
   };
 }
 
-export const ownerCredentialsAreDefault = (env: OwnerEnvironment = process.env): boolean =>
-  resolveOwnerCredentials(env).isDefault;
+/**
+ * Whether this deployment is running on credentials it never configured.
+ *
+ * Reads the environment directly rather than through `resolveOwnerCredentials`, which now
+ * throws when nothing is configured — and the callers of this predicate are `/api/health` and
+ * `/account`, both of which must render a diagnosis rather than raise one.
+ */
+export const ownerCredentialsAreDefault = (env: OwnerEnvironment = process.env): boolean => {
+  const email = env[OWNER_EMAIL_ENV_VAR];
+  return !(email !== undefined && email.length > 0 && configuredOwnerPassword(env) !== null);
+};
 
 /**
  * Half-configured owner credentials, which are a misconfiguration and not a fallback.
@@ -162,6 +249,14 @@ export interface BootstrapOwnerResult {
   readonly created: boolean;
   readonly teamKeys: readonly string[];
   readonly usingDefaultCredentials: boolean;
+  /**
+   * The password minted for this seat, on the one boot that created it with nothing configured.
+   *
+   * Null on every other boot — including a later boot of the same unconfigured deployment,
+   * which mints nothing it can use. The caller is the only party that can record it, and it is
+   * the only chance anybody has to learn it: what the database holds is an Argon2id digest.
+   */
+  readonly generatedPassword: string | null;
 }
 
 /**
@@ -190,7 +285,16 @@ export async function bootstrapOwner(input: {
   const problem = ownerConfigurationProblem(env);
   if (problem !== null) throw new OwnerConfigurationError(problem);
 
-  const credentials = resolveOwnerCredentials(env);
+  /**
+   * A generated password is minted only when none is configured, and it only *matters* on the
+   * boot that creates the seat: `registerAccount` is keyed on the address and never overwrites
+   * an existing password, so a second boot mints a value it then discards. That is why
+   * `generatedPassword` on the result is null unless `created` is true — a caller writing it to
+   * `.nous/demo_account.json` on every boot would replace a working credential with one the
+   * database has never seen.
+   */
+  const generated = configuredOwnerPassword(env) === null ? generateOwnerPassword() : null;
+  const credentials = resolveOwnerCredentials(env, generated);
   const alreadyOwned = await hasOwner(input.scoped);
 
   const registered = await registerAccount({
@@ -236,16 +340,44 @@ export async function bootstrapOwner(input: {
     created: registered.created,
     teamKeys,
     usingDefaultCredentials: credentials.isDefault,
+    generatedPassword: registered.created ? generated : null,
   };
 }
 
-/** One line an operator can read at boot to know how to sign in. */
+/**
+ * One line an operator can read at boot to know how to sign in.
+ *
+ * When a password was minted this is the **only** place it is ever printed, and the only reason
+ * a credential appears in a log line anywhere in Compass. It is deliberate rather than an
+ * oversight of `no-secret-disclosure`: the alternative to printing a generated password once,
+ * at the moment of generation, is a deployment nobody can sign in to. What the rule exists to
+ * stop is a credential that was *already* stored being logged again on every request; this one
+ * has no other copy — the database holds an Argon2id digest of it and nothing else.
+ *
+ * On a later boot of the same deployment `generatedPassword` is null and nothing is printed, so
+ * the value does not recur in the log even though the seat still exists.
+ */
 export function describeBootstrapOwner(result: BootstrapOwnerResult): string {
-  const state = result.created ? 'created' : 'already present';
-  const warning = result.usingDefaultCredentials
-    ? ` Using the published demonstration password — set ${OWNER_EMAIL_ENV_VAR} and ${OWNER_PASSWORD_ENV_VAR} before this deployment holds real data.`
-    : '';
-  return `[compass] owner seat ${state}: ${result.user.email}, scoped to ${result.teamKeys.length === 0 ? 'every team' : result.teamKeys.join(', ')}.${warning}`;
+  const scope = result.teamKeys.length === 0 ? 'every team' : result.teamKeys.join(', ');
+  const line = `[compass] owner seat ${result.created ? 'created' : 'already present'}: ${result.user.email}, scoped to ${scope}.`;
+
+  if (result.generatedPassword !== null) {
+    return (
+      `${line} No ${OWNER_PASSWORD_ENV_VAR} was set, so Compass generated one for this first run: ` +
+      `${result.generatedPassword} — it is printed here once and never again, and it is written to ` +
+      `.nous/demo_account.json. Set ${OWNER_EMAIL_ENV_VAR} and ${OWNER_PASSWORD_ENV_VAR} to choose your own.`
+    );
+  }
+
+  if (result.usingDefaultCredentials) {
+    return (
+      `${line} This deployment configured no owner credentials, so the seat is on a password generated at ` +
+      `first boot — see .nous/demo_account.json. Set ${OWNER_EMAIL_ENV_VAR} and ${OWNER_PASSWORD_ENV_VAR} ` +
+      'before this deployment holds real data.'
+    );
+  }
+
+  return line;
 }
 
 /** Whether anyone can sign in at all — what `/api/health` reports. */

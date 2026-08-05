@@ -36,8 +36,14 @@ const ENDPOINT: Readonly<Record<Mode, string>> = {
 export interface SignInPanelProps {
   /** A sentence from a rejected link, carried here by the redirect. */
   readonly problem?: string | null;
-  /** Shown when the deployment is still on the published demonstration owner. */
-  readonly demoCredentials?: { readonly email: string; readonly password: string } | null;
+  /**
+   * The owner address, when this deployment configured none and one was generated for it.
+   *
+   * The address and not the password, because the password is not knowable here: the worker
+   * mints it on the boot that creates the seat, stores an Argon2id digest of it, and prints it
+   * once. This panel says where to find it rather than showing it.
+   */
+  readonly generatedOwnerEmail?: string | null;
   /**
    * The owner environment is half-configured, so no owner seat exists to sign in to.
    *
@@ -50,7 +56,7 @@ export interface SignInPanelProps {
 
 export function SignInPanel({
   problem = null,
-  demoCredentials = null,
+  generatedOwnerEmail = null,
   configurationProblem = null,
 }: SignInPanelProps) {
   const [mode, setMode] = useState<Mode>('password');
@@ -217,31 +223,33 @@ export function SignInPanel({
         </div>
       )}
 
-      {demoCredentials !== null && (
+      {generatedOwnerEmail !== null && (
         <div className="mt-12 hairline pt-6">
-          <p className="section-label">this deployment is a demonstration</p>
+          <p className="section-label">this deployment configured no owner</p>
           <p className="prose-narration mt-2 text-[15px]">
-            The owner seat is the published demonstration one, so you can sign in and try seat management without
-            setting anything up. Its password is{' '}
-            <code className="data-token">{demoCredentials.password}</code> and its address is{' '}
-            <code className="data-token">{demoCredentials.email}</code>.{' '}
+            The owner seat is <code className="data-token">{generatedOwnerEmail}</code>, and its password was generated
+            when Compass first booted rather than being written into this source. Compass printed it once, in the boot
+            log, and wrote it to <code className="data-token">.nous/demo_account.json</code> — this page cannot show it
+            to you, because the database holds only a hash of it.{' '}
             <span className="stated-absence">
-              Set COMPASS_OWNER_EMAIL and COMPASS_OWNER_PASSWORD before this deployment holds real data — /api/health
-              says the same thing until you do.
+              Set COMPASS_OWNER_EMAIL and COMPASS_OWNER_PASSWORD to choose your own before this deployment holds real
+              data — /api/health says the same thing until you do.
             </span>
           </p>
+          {/* The address is safe to fill and saves a reader retyping it; the password is the
+              half they have to fetch, and a button that filled only one field and silently
+              left the other would read as broken. */}
           <button
             type="button"
             onClick={() => {
               setMode('password');
-              setEmail(demoCredentials.email);
-              setPassword(demoCredentials.password);
+              setEmail(generatedOwnerEmail);
               setStated(null);
               setFailed(null);
             }}
             className="tertiary-action mt-3"
           >
-            fill the form with them
+            fill in that address
           </button>
         </div>
       )}

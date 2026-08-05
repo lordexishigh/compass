@@ -225,7 +225,56 @@ export {
   type StoredSecondFactor,
 } from './repositories/second-factor.js';
 
+export {
+  identityProvider,
+  samlAssertionReplays,
+  samlConnectionIsEnabled,
+  samlConnections,
+  scimCredentials,
+  userIdentities,
+} from './schema/federated-identity.js';
+
+export {
+  claimAssertionId,
+  disableSamlConnection,
+  findIdentityBySubject,
+  findIdentityForUser,
+  findLiveScimCredential,
+  findSamlConnection,
+  insertScimCredential,
+  linkIdentity,
+  listIdentitiesForUser,
+  listScimCredentials,
+  pruneAssertionReplays,
+  revokeScimCredential,
+  samlAssertionReplayRowId,
+  samlConnectionRowId,
+  saveSamlConnection,
+  scimCredentialRowId,
+  touchIdentitySignIn,
+  touchScimCredential,
+  unlinkIdentity,
+  userIdentityRowId,
+  type IdentityProvider,
+  type LinkIdentityInput,
+  type SamlConnectionInput,
+  type StoredSamlConnection,
+  type StoredScimCredential,
+  type StoredUserIdentity,
+} from './repositories/federated-identity.js';
+
 export { INTEGRATION_TOKEN_KINDS, integrationTokens, organizationDataKeys } from './schema/security.js';
+
+export {
+  findSourceConfig,
+  listSourceConfigs,
+  saveSourceConfig,
+  setSourceConfigEnabled,
+  sourceConfigRowId,
+  type SourceConfigInput,
+  type SourceSelection,
+  type StoredSourceConfig,
+} from './repositories/source-configs.js';
 
 export {
   dataKeyRowId,

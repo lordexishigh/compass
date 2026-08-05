@@ -116,6 +116,16 @@ describe('base schema convention', () => {
       'repositories',
       'reviews',
       'risks',
+      /**
+       * Enterprise identity (migration 0019).
+       *
+       * `saml_assertion_replays` is the one worth reading twice: its unique index on
+       * `(organization_id, assertion_id)` *is* the replay defence, because acceptance is an INSERT
+       * against it rather than a SELECT somebody could race.
+       */
+      'saml_assertion_replays',
+      'saml_connections',
+      'scim_credentials',
       'sessions',
       'share_link_access',
       'share_links',
@@ -135,6 +145,9 @@ describe('base schema convention', () => {
       'tracked_projects',
       'tracked_repositories',
       'unmatched_identities',
+      // Federated sign-in links (migration 0019). Keyed on the provider's immutable subject rather
+      // than the email, so a reassigned address cannot inherit somebody else's account.
+      'user_identities',
       // The second factor (migration 0016). One enrollment per user, one row per recovery code — so
       // "this code has been spent" is a row state rather than a flag in an array column.
       'user_recovery_codes',

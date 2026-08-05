@@ -103,6 +103,14 @@ export async function ensureFirstRun(options: FirstRunOptions = {}): Promise<Fir
 
   const result = await withFirstRunLock(resolveDatabaseUrl('direct'), async (session) => {
     if (options.force !== true && (await session.hasStoredReport(organizationId))) {
+      /**
+       * Already seeded, so no bootstrap ran and no password was minted here.
+       *
+       * `writeDemoAccountFile` returns null for an unconfigured deployment in that case rather
+       * than rewriting the file: the seat's password was minted by the boot that created it and
+       * this process cannot learn it. A configured deployment still gets its file rewritten,
+       * because `COMPASS_OWNER_PASSWORD` is readable on every boot.
+       */
       return {
         outcome: 'already_seeded' as const,
         coldStart: null,
@@ -120,7 +128,10 @@ export async function ensureFirstRun(options: FirstRunOptions = {}): Promise<Fir
     return {
       outcome: 'seeded' as const,
       coldStart: seeded,
-      demoAccount: writeDemoAccountFile({ env }),
+      demoAccount: writeDemoAccountFile({
+        env,
+        generatedPassword: seeded.bootstrap.owner.generatedPassword,
+      }),
     };
   });
 

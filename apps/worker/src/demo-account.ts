@@ -2,7 +2,12 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { DEMO_ACCOUNT_LOGIN_PATH, resolveOwnerCredentials, type OwnerEnvironment } from '@compass/auth';
+import {
+  DEMO_ACCOUNT_LOGIN_PATH,
+  configuredOwnerPassword,
+  resolveOwnerCredentials,
+  type OwnerEnvironment,
+} from '@compass/auth';
 import { findRepositoryRoot } from '@compass/seed-connector';
 
 /**
@@ -92,8 +97,11 @@ export const demoAccountPath = (root: string = repositoryRoot()): string =>
  * the file and the seat in step: a deployment that set `COMPASS_OWNER_PASSWORD` gets a
  * file holding the password that works, and there is no path by which the two disagree.
  */
-export function demoAccountContents(env: OwnerEnvironment = process.env): DemoAccountFile {
-  const credentials = resolveOwnerCredentials(env);
+export function demoAccountContents(
+  env: OwnerEnvironment = process.env,
+  generatedPassword: string | null = null,
+): DemoAccountFile {
+  const credentials = resolveOwnerCredentials(env, generatedPassword);
 
   return {
     email: credentials.email,
@@ -111,24 +119,52 @@ export function demoAccountContents(env: OwnerEnvironment = process.env): DemoAc
  * does read this file, usually while working out why their harness cannot sign in.
  */
 export function writeDemoAccountFile(
-  options: { readonly root?: string; readonly env?: OwnerEnvironment } = {},
-): WrittenDemoAccount {
+  options: {
+    readonly root?: string;
+    readonly env?: OwnerEnvironment;
+    /**
+     * The password this boot minted, from `bootstrapOwner`'s `generatedPassword`.
+     *
+     * Required whenever `COMPASS_OWNER_PASSWORD` is unset, because it is then the only copy in
+     * existence — the database holds an Argon2id digest and nothing that can be read back.
+     */
+    readonly generatedPassword?: string | null;
+  } = {},
+): WrittenDemoAccount | null {
   const root = options.root ?? repositoryRoot();
   const env = options.env ?? process.env;
-  const contents = demoAccountContents(env);
+  const generated = options.generatedPassword ?? null;
+
+  /**
+   * Nothing configured and nothing minted: leave the existing file alone and say nothing.
+   *
+   * This is the second and later boot of an unconfigured deployment. The seat exists on a
+   * password minted by the boot that created it, and *this* process cannot learn it. The old
+   * behaviour — rewrite unconditionally from `resolveOwnerCredentials` — was safe only while a
+   * literal default made every boot agree; with a generated password it would overwrite a
+   * working credential with one the database has never seen, which is precisely the "file
+   * silently holding the wrong password" this module's own comment warns against.
+   */
+  if (configuredOwnerPassword(env) === null && generated === null) return null;
+
+  const contents = demoAccountContents(env, generated);
   const path = demoAccountPath(root);
 
   mkdirSync(demoAccountDirectory(root), { recursive: true });
   // 0o600: readable by the account that ran the seed and by nobody else on the machine.
   writeFileSync(path, `${JSON.stringify(contents, null, 2)}\n`, { encoding: 'utf8', mode: 0o600 });
 
-  return { path, contents, writtenCredentialsAreDefault: resolveOwnerCredentials(env).isDefault };
+  return {
+    path,
+    contents,
+    writtenCredentialsAreDefault: configuredOwnerPassword(env) === null,
+  };
 }
 
 /** One line an operator can read to know the harness has what it needs. */
 export function describeDemoAccountFile(written: WrittenDemoAccount): string {
   const provenance = written.writtenCredentialsAreDefault
-    ? 'the published demonstration credentials'
+    ? 'the owner password generated for this first run'
     : 'this deployment’s configured owner credentials';
 
   return (

@@ -81,6 +81,12 @@ describe('the pnpm workspace holds every layer as its own package', () => {
       'pipeline',
       'renderers',
       'seed-connector',
+      // A live chat connector, in exactly the same position as the other two live ones and under the
+      // same prohibition. Its own package for the same reason: chat is the family Compass stores
+      // verbatim, so the per-channel opt-in rules and the scope set that cannot enumerate a workspace
+      // are worth isolating behind a package boundary rather than folding into a shared `connectors`
+      // package where a change to one provider's parsing could reach another's tests.
+      'slack-connector',
       // Not a layer in the pipeline: the seeded organization projected into an
       // `AnalysisSnapshot` for any `(team, instant)`. It is a package rather than a test
       // helper because three consumers need it — the analysis suites, the golden fixture

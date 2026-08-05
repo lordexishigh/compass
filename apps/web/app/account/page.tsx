@@ -1,6 +1,5 @@
 import {
   DEMO_OWNER_EMAIL,
-  DEMO_OWNER_PASSWORD,
   ROLE_CAPABILITIES,
   SESSION_ABSOLUTE_TTL_DAYS,
   SESSION_IDLE_TTL_DAYS,
@@ -103,22 +102,27 @@ export default async function AccountPage({
 
       {identity === null ? (
         /**
-         * The demonstration credentials are offered only when they would actually work.
+         * The address, never the password — because this process does not have it.
          *
-         * A half-configured owner environment resolves to the *configured* address paired with
-         * the published password, and `bootstrapOwner` refuses to provision on it — so there is
-         * no seat at all. Printing `owner@compass.demo` there would hand a reader an address
-         * that does not exist and let them conclude the product is broken rather than the
-         * deployment misconfigured. The two are mutually exclusive by construction: a problem
-         * means no credentials, no problem means the resolved pair is the one in the database.
+         * There used to be a `DEMO_OWNER_PASSWORD` constant to print here. Removing it from
+         * shipped source removed the only way the *web* process could know an unconfigured
+         * deployment's password: it is minted by the worker on the boot that creates the seat,
+         * hashed into the database with Argon2id, and printed once. The web app cannot read it
+         * back, and it should not be able to.
+         *
+         * So the panel now states where to find it instead of showing it — which is the more
+         * honest rendering anyway, and the one the design brief asks for: a stated fact in the
+         * product's voice rather than a credential on a page anybody can open.
+         *
+         * A half-configured environment is still mutually exclusive with this: `bootstrapOwner`
+         * refuses to provision on it, so there is no seat at any address, and naming one would
+         * let a reader conclude the product is broken rather than the deployment misconfigured.
          */
         <SignInPanel
           problem={problem}
           configurationProblem={ownerConfigurationProblem()}
-          demoCredentials={
-            ownerConfigurationProblem() === null && ownerCredentialsAreDefault()
-              ? { email: DEMO_OWNER_EMAIL, password: DEMO_OWNER_PASSWORD }
-              : null
+          generatedOwnerEmail={
+            ownerConfigurationProblem() === null && ownerCredentialsAreDefault() ? DEMO_OWNER_EMAIL : null
           }
         />
       ) : (

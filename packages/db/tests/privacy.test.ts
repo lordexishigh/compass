@@ -8,8 +8,12 @@ import {
   RAW_RETENTION_CHOICES,
   ScopedDb,
   anonymizations,
+  beginSecondFactorEnrollment,
+  eraseAccountData,
   eraseOrganizationData,
   ensurePrivacySettings,
+  linkIdentity,
+  replaceRecoveryCodes,
   findAnonymization,
   ingestibleConversationKeys,
   isOrgScopedTable,
@@ -178,6 +182,89 @@ describe('an organization erasure empties the tenant', () => {
     );
     expect(organization.rows[0]?.name).toBe('Deleted organization');
     expect(organization.rows[0]?.slug).toBe(`erased-${ORGANIZATION_ID}`);
+  });
+
+  /**
+   * The account erasure, for somebody who actually used the product's own security features.
+   *
+   * ## The bug this pins
+   *
+   * `eraseAccountData` deleted `subscriptions`, `auth_tokens`, `sessions`, the team scopes, the
+   * membership and then `users` — and nothing else. But `user_second_factors` and
+   * `user_recovery_codes` have carried a foreign key to `users` since migration 0016, so for anybody
+   * who had ever enrolled in 2FA the final `DELETE FROM users` raised a foreign-key violation, the
+   * whole `eraseWithin` transaction rolled back, and **the account was not deleted at all** while the
+   * caller went on to mail a confirmation saying it had been. `user_identities` (migration 0019) would
+   * have joined them.
+   *
+   * It survived because every existing subject in this suite has no enrollment and no SSO link, so the
+   * failing path was the one no test walked. This test gives the subject all three.
+   */
+  it('erases an account that has a second factor, recovery codes and an SSO link', async () => {
+    const userId = '20000000-0000-4000-8000-000000000001';
+    const membershipId = '20000000-0000-4000-8000-000000000002';
+    const stamp = new Date(Date.parse('2026-08-05T09:00:00Z'));
+
+    await scoped()
+      .insertInto(schema.users, {
+        id: userId,
+        email: 'dana@northwind.example',
+        displayName: 'Dana Okonjo',
+        passwordHash: null,
+        createdAt: stamp,
+        updatedAt: stamp,
+      })
+      .execute();
+    await scoped()
+      .insertInto(schema.memberships, {
+        id: membershipId,
+        userId,
+        role: 'manager',
+        status: 'active',
+        createdAt: stamp,
+        updatedAt: stamp,
+      })
+      .execute();
+    await beginSecondFactorEnrollment(
+      scoped(),
+      { id: '20000000-0000-4000-8000-000000000003', userId, secret: 'JBSWY3DPEHPK3PXP' },
+      NOW,
+    );
+    await replaceRecoveryCodes(
+      scoped(),
+      {
+        userId,
+        codes: [
+          { id: '20000000-0000-4000-8000-000000000004', codeHash: 'a'.repeat(64) },
+        ],
+      },
+      NOW,
+    );
+    await linkIdentity(
+      scoped(),
+      { userId, provider: 'google', subject: 'google-subject-1', email: 'dana@northwind.example', emailVerified: true },
+      NOW,
+    );
+
+    // Before the fix this rejected with a foreign-key violation rather than resolving.
+    const categories = await eraseAccountData(scoped(), { userId });
+
+    expect(categories.length).toBeGreaterThan(3);
+
+    // And the account really is gone, rather than the transaction having rolled back silently.
+    for (const [table, column] of [
+      ['users', 'id'],
+      ['memberships', 'user_id'],
+      ['user_second_factors', 'user_id'],
+      ['user_recovery_codes', 'user_id'],
+      ['user_identities', 'user_id'],
+    ] as const) {
+      const rows = await database.client.query<{ count: string }>(
+        `select count(*)::text as count from ${table} where ${column} = $1`,
+        [userId],
+      );
+      expect(rows.rows[0]?.count, `${table} still holds a row for the erased account`).toBe('0');
+    }
   });
 
   it('restores the append-only refusal the moment the erasure transaction ends', async () => {

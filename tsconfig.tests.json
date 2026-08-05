@@ -30,6 +30,7 @@
       "@compass/seed-connector": ["packages/seed-connector/src/index.ts"],
       "@compass/github-connector": ["packages/github-connector/src/index.ts"],
       "@compass/jira-connector": ["packages/jira-connector/src/index.ts"],
+      "@compass/slack-connector": ["packages/slack-connector/src/index.ts"],
       "@compass/db/testing": ["packages/db/src/testing/pglite.ts"],
       "@compass/db": ["packages/db/src/index.ts"],
       "@compass/auth": ["packages/auth/src/index.ts"],

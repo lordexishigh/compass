@@ -41,6 +41,12 @@ import { objectiveLinks, objectiveScopeLinks, objectiveVersions } from '../schem
 import { corrections, entityVersions, sprintScopeChanges, ticketStatusTransitions } from '../schema/history.js';
 import { narrationTraces } from '../schema/narration.js';
 import { userRecoveryCodes, userSecondFactors } from '../schema/second-factor.js';
+import {
+  samlAssertionReplays,
+  samlConnections,
+  scimCredentials,
+  userIdentities,
+} from '../schema/federated-identity.js';
 import { integrationTokens, organizationDataKeys } from '../schema/security.js';
 import {
   auditLogEntries,
@@ -1116,6 +1122,26 @@ export const ERASURE_TABLE_ORDER: readonly PgTable[] = Object.freeze([
    */
   userRecoveryCodes,
   userSecondFactors,
+  /**
+   * Federated identity, before `users` because `user_identities` references it.
+   *
+   * Erased, on the same reasoning as the second factor and with one addition. A `user_identities` row
+   * is a *way into the account*: it says "whoever Google calls `sub=1234` is this person". Keeping it
+   * past an erasure would leave a live sign-in path to an account that no longer exists, and — worse
+   * than the TOTP case — the credential is held by a third party, so Compass could not revoke it even
+   * in principle. There is no accountability argument for retaining it either: the audit log already
+   * records that the link was made and by whom.
+   *
+   * `saml_connections` and `scim_credentials` go with it. Both are organization-level configuration
+   * that authorises provisioning into a tenant which is being deleted, and a SCIM token surviving its
+   * organization is a bearer credential pointed at nothing — the kind of thing that gets reused when a
+   * slug is recycled. `saml_assertion_replays` is spent-id bookkeeping for that same connection and
+   * has no meaning without it.
+   */
+  userIdentities,
+  samlAssertionReplays,
+  samlConnections,
+  scimCredentials,
   memberships,
   users,
   // Settings last: the retention window is what said this erasure was allowed to happen.
@@ -1161,6 +1187,9 @@ export const ERASURE_CATEGORIES: readonly string[] = Object.freeze([
   'the subscription record, the plan it was on and the record of which Stripe events were applied',
   'any address subscribed to the subprocessor change notice',
   'accounts, seats, sessions, sign-in tokens and the audit log',
+  'two-factor enrollments and their recovery codes',
+  'single-sign-on links to Google, GitHub and any SAML identity provider, the provider configuration ' +
+    'itself, and every SCIM provisioning token',
   'the append-only version history behind all of the above',
 ]);
 
@@ -1203,6 +1232,8 @@ export const ACCOUNT_ERASURE_CATEGORIES: readonly string[] = Object.freeze([
   'your account: name, email address and password hash',
   'your seat, its role and its team scopes',
   'every signed-in session and every outstanding sign-in or reset token',
+  'your two-factor enrollment and its recovery codes',
+  'your single-sign-on links to Google, GitHub or a SAML identity provider',
   'your email and Slack subscriptions',
 ]);
 
@@ -1230,6 +1261,25 @@ export async function eraseAccountData(
     await erasing.deleteFrom(subscriptions, eq(subscriptions.userId, input.userId)).execute();
     await erasing.deleteFrom(authTokens, eq(authTokens.userId, input.userId)).execute();
     await erasing.deleteFrom(sessions, eq(sessions.userId, input.userId)).execute();
+
+    /**
+     * The credentials, before `users`, because every one of these rows references it.
+     *
+     * These three deletes were missing and the omission was not cosmetic: `user_second_factors` and
+     * `user_recovery_codes` have carried a foreign key to `users` since migration 0016, so
+     * `DELETE FROM users` raised a foreign-key violation for anybody who had ever enrolled in 2FA —
+     * the whole `eraseWithin` transaction rolled back and the account was not deleted at all. It went
+     * unnoticed because the erasure suite's subjects have no enrollment, so the failing path was the
+     * one no test walked. `user_identities` would have joined them.
+     *
+     * Deleting rather than keeping is also the correct answer on the merits: a TOTP secret, a recovery
+     * code and an SSO link are each a live way to authenticate as the person whose account is being
+     * erased. An SSO link is the sharpest case — the credential is held by Google or the IdP, so
+     * Compass could not revoke it even in principle, and a surviving row would keep the door open.
+     */
+    await erasing.deleteFrom(userRecoveryCodes, eq(userRecoveryCodes.userId, input.userId)).execute();
+    await erasing.deleteFrom(userSecondFactors, eq(userSecondFactors.userId, input.userId)).execute();
+    await erasing.deleteFrom(userIdentities, eq(userIdentities.userId, input.userId)).execute();
 
     for (const seat of membership) {
       await erasing

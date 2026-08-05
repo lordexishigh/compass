@@ -69,6 +69,12 @@ export {
 } from './coverage.js';
 
 export {
+  CompositeConnector,
+  EmptyCompositionError,
+  type CompositeConnectorConfig,
+} from './composite.js';
+
+export {
   ARTIFACT_FETCHERS,
   connectorResult,
   degradedCoverage,

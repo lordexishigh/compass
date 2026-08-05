@@ -10,6 +10,7 @@ export * from './delivery.js';
 export * from './app-feedback.js';
 export * from './billing.js';
 export * from './second-factor.js';
+export * from './federated-identity.js';
 export * from './trust.js';
 export * from './privacy.js';
 export * from './security.js';

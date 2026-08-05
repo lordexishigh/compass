@@ -1,7 +1,8 @@
 import {
   DEMO_ACCOUNT_LOGIN_PATH,
   DEMO_OWNER_EMAIL,
-  DEMO_OWNER_PASSWORD,
+  OWNER_EMAIL_ENV_VAR,
+  OWNER_PASSWORD_ENV_VAR,
   bootstrapOwner,
   resolveIdentity,
   resolveOwnerCredentials,
@@ -13,7 +14,7 @@ import { SEEDED_ORGANIZATION_ID } from '@compass/seed-connector';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { SESSION_COOKIE_NAME } from '../lib/auth/cookies';
-import { WRONG_PASSPHRASE } from './helpers/fixture-credentials';
+import { FIXTURE_OWNER_PASSWORD, WRONG_PASSPHRASE } from './helpers/fixture-credentials';
 
 /**
  * `POST /login` with the credentials the seed publishes.
@@ -42,6 +43,19 @@ let database: TestDatabase;
 
 const T0 = instantFromIso('2026-07-31T09:00:00Z');
 
+/**
+ * The owner environment this suite provisions and then signs in against.
+ *
+ * The password arrives through the environment rather than from a constant in `@compass/auth`,
+ * because there is no longer a constant there to import: an unconfigured deployment gets a
+ * *generated* password, which would make these sign-in assertions depend on a value the suite
+ * never saw. Configuring one is also the more faithful test — it is what a real deployment does.
+ */
+const OWNER_ENVIRONMENT = {
+  [OWNER_EMAIL_ENV_VAR]: DEMO_OWNER_EMAIL,
+  [OWNER_PASSWORD_ENV_VAR]: FIXTURE_OWNER_PASSWORD,
+} as const;
+
 const pool = vi.hoisted(() => ({ current: null as CompassDatabase | null }));
 
 vi.mock('../lib/database', () => ({
@@ -66,7 +80,7 @@ beforeAll(async () => {
     scoped: new ScopedDb(database.db, orgScope(SEEDED_ORGANIZATION_ID)),
     now: T0,
     teamKeys: ['platform'],
-    env: {},
+    env: OWNER_ENVIRONMENT,
   });
 }, 180_000);
 
@@ -100,7 +114,9 @@ describe('the published demo credentials sign in at the published path', () => {
 
   it('authenticates and sets a session cookie', async () => {
     const { POST } = await import('../app/login/route');
-    const credentials = resolveOwnerCredentials({});
+    // Resolved from the same environment the seat was provisioned with, so this asserts the
+    // resolver and the login route agree rather than restating the fixture constant.
+    const credentials = resolveOwnerCredentials(OWNER_ENVIRONMENT);
 
     const response = await POST(loginRequest({ email: credentials.email, password: credentials.password }));
 
@@ -116,21 +132,21 @@ describe('the published demo credentials sign in at the published path', () => {
   it('answers with the owner seat and where to go next', async () => {
     const { POST } = await import('../app/login/route');
 
-    const response = await POST(loginRequest({ email: DEMO_OWNER_EMAIL, password: DEMO_OWNER_PASSWORD }));
+    const response = await POST(loginRequest({ email: DEMO_OWNER_EMAIL, password: FIXTURE_OWNER_PASSWORD }));
     const body = (await response.json()) as Record<string, unknown>;
 
     expect(body).toMatchObject({ signedIn: true, email: DEMO_OWNER_EMAIL, role: 'owner' });
     // "and land on the seeded org's report" — stated rather than left for the caller to guess.
     expect(body['redirect']).toBe('/');
     // And no credential comes back in the body.
-    expect(JSON.stringify(body)).not.toContain(DEMO_OWNER_PASSWORD);
+    expect(JSON.stringify(body)).not.toContain(FIXTURE_OWNER_PASSWORD);
   });
 
   it('mints a cookie the session layer resolves back to that owner', async () => {
     // The only proof the session is real rather than a 200 with a cookie-shaped string in it.
     const { POST } = await import('../app/login/route');
 
-    const response = await POST(loginRequest({ email: DEMO_OWNER_EMAIL, password: DEMO_OWNER_PASSWORD }));
+    const response = await POST(loginRequest({ email: DEMO_OWNER_EMAIL, password: FIXTURE_OWNER_PASSWORD }));
     const resolved = await resolveIdentity({ scoped: scoped(), secret: secretFrom(sessionCookie(response) ?? ''), now: T0 });
 
     expect(resolved.kind).toBe('identified');
@@ -156,8 +172,8 @@ describe('the published demo credentials sign in at the published path', () => {
     const short = await import('../app/login/route');
     const api = await import('../app/api/auth/login/route');
 
-    const viaShort = await short.POST(loginRequest({ email: DEMO_OWNER_EMAIL, password: DEMO_OWNER_PASSWORD }));
-    const viaApi = await api.POST(loginRequest({ email: DEMO_OWNER_EMAIL, password: DEMO_OWNER_PASSWORD }));
+    const viaShort = await short.POST(loginRequest({ email: DEMO_OWNER_EMAIL, password: FIXTURE_OWNER_PASSWORD }));
+    const viaApi = await api.POST(loginRequest({ email: DEMO_OWNER_EMAIL, password: FIXTURE_OWNER_PASSWORD }));
 
     expect(viaShort.status).toBe(viaApi.status);
 

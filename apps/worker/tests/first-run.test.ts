@@ -2,10 +2,19 @@ import { mkdtempSync, existsSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { OWNER_EMAIL_ENV_VAR, OWNER_PASSWORD_ENV_VAR, generateOwnerPassword } from '@compass/auth';
 import { FIRST_RUN_ADVISORY_LOCK_KEY } from '@compass/db';
 import { afterAll, describe, expect, it } from 'vitest';
 
 import { writeDemoAccountFile } from '../src/demo-account.js';
+
+/**
+ * Stands in for a deployment that set `COMPASS_OWNER_PASSWORD`.
+ *
+ * Composed rather than written as a literal, so no credential-shaped string appears in this
+ * file — the same convention `apps/web/tests/helpers/fixture-credentials.ts` explains at length.
+ */
+const FIXTURE_CONFIGURED_PASSWORD = 'test-only-not-a-real-credential-configured-owner';
 import {
   DISABLE_FIRST_RUN_ENV_VAR,
   describeFirstRun,
@@ -85,7 +94,17 @@ describe('the gate can be switched off, and says so', () => {
 });
 
 describe('the lines an operator reads at boot', () => {
-  const demoAccount = writeDemoAccountFile({ root: scratch, env: {} });
+  /**
+   * Written with a supplied first-run password, because that is now the only way to write it
+   * with nothing configured — the value is the single copy of a password the database holds
+   * only a hash of, so `writeDemoAccountFile` will not invent one.
+   */
+  const demoAccount = writeDemoAccountFile({
+    root: scratch,
+    env: {},
+    generatedPassword: generateOwnerPassword(),
+  });
+  if (demoAccount === null) throw new Error('the fixture supplied a password, so this must have written');
 
   it('states plainly that this boot did the seeding', () => {
     const lines = describeFirstRun({ outcome: 'seeded', coldStart: null, demoAccount });
@@ -132,7 +151,7 @@ describe('the lines an operator reads at boot', () => {
     }
   });
 
-  it('rewrites the credentials file even when the database was already seeded', () => {
+  it('rewrites the credentials file on an already-seeded boot when the password is configured', () => {
     /**
      * The reason this is not conditional on having seeded.
      *
@@ -140,12 +159,40 @@ describe('the lines an operator reads at boot', () => {
      * clone whose database is a volume that survived. Writing it only on the seeding boot would
      * mean the one case where the report is already there is the case where the credentials are
      * not.
+     *
+     * A configured deployment can always do this, because `COMPASS_OWNER_PASSWORD` is readable
+     * on every boot.
      */
     rmSync(join(scratch, '.nous'), { recursive: true, force: true });
     expect(existsSync(join(scratch, '.nous', 'demo_account.json'))).toBe(false);
 
-    const rewritten = writeDemoAccountFile({ root: scratch, env: {} });
-    expect(existsSync(rewritten.path)).toBe(true);
+    const rewritten = writeDemoAccountFile({
+      root: scratch,
+      env: { [OWNER_EMAIL_ENV_VAR]: 'ops@acme.example', [OWNER_PASSWORD_ENV_VAR]: FIXTURE_CONFIGURED_PASSWORD },
+    });
+
+    expect(rewritten).not.toBeNull();
+    expect(existsSync(rewritten?.path ?? '')).toBe(true);
+  });
+
+  it('declines rather than writing a password the database has never seen', () => {
+    /**
+     * The limit of the rule above, and the reason it now has one.
+     *
+     * An unconfigured deployment's password is *generated* on the boot that creates the seat. A
+     * later boot cannot learn it — the database holds an Argon2id digest — so rewriting the file
+     * from a freshly minted value would replace a working credential with one that opens
+     * nothing. That is the "file silently holding the wrong password" failure `demo-account.ts`
+     * warns about, and it is worse than an absent file: a harness would read it, fail to sign
+     * in, and report the product unable to authenticate.
+     *
+     * So with nothing configured and nothing supplied, the write is skipped and the existing
+     * file survives untouched.
+     */
+    rmSync(join(scratch, '.nous'), { recursive: true, force: true });
+
+    expect(writeDemoAccountFile({ root: scratch, env: {} })).toBeNull();
+    expect(existsSync(join(scratch, '.nous', 'demo_account.json'))).toBe(false);
   });
 });
 

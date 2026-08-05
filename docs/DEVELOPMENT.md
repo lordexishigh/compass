@@ -6,23 +6,102 @@ verifies the assembled product.
 
 ## Running & verifying
 
-The exact commands depend on the tech stack (see `docs/ARCHITECTURE.md`). General steps:
+Node **22.12 or newer** and **pnpm** (this is a pnpm workspace; npm and yarn will install a broken
+tree because nothing here resolves through a flat `node_modules`).
 
-1. **Install dependencies**
-   - Python: `python -m pip install -r requirements.txt`
-   - Node:   `npm install`
-2. **Run tests**
-   - Python: `python -m pytest`
-   - Node:   `npm test`
-3. **Build / start**
-   - Frontend: `npm run build` then `npm run dev` / `npm start`
-   - Backend:  start the app entrypoint documented in the architecture
+```bash
+pnpm install
+pnpm run seed        # generate the dataset, migrate, provision the owner, write today's report
+pnpm run dev         # builds the packages, then serves the web app on :3000
+pnpm run worker      # the second process: ingest, generation, delivery, privacy and notice jobs
+```
+
+`docker compose up` does all of that in one command and is the canonical cold start. Both paths are
+documented, with the credentials the seed provisions, in [`../README.md`](../README.md).
+
+**`pnpm run verify` is the gate** — `lint`, `arch`, `typecheck`, `test`, in that order. It is the
+same sequence CI runs, and it takes several minutes, so run it before a commit rather than after
+every edit.
+
+Individual steps, when you want one:
+
+| Command | What it checks |
+| --- | --- |
+| `pnpm run lint` | ESLint, including the `compass/*` rules — the clock ban, the secret-disclosure ban, the credential-literal ban |
+| `pnpm run arch` | dependency-cruiser: every layer boundary in `docs/ARCHITECTURE.md`, as a rule |
+| `pnpm run typecheck` | `tsc -b` over the packages, the test projects, and the web app |
+| `pnpm run test` | every package's own vitest project |
+| `pnpm run test:golden` | the checked-in report fixtures — see [Golden fixtures](#golden-fixtures) |
+| `pnpm run smoke` / `pnpm run perf` | the running product: a cold boot, then the numbered budgets in [`budgets.md`](budgets.md) |
+
+`pnpm run test` **stops at the first failing package**, so a green tail tells you nothing about the
+packages behind it. When something fails, re-run that one package directly —
+`pnpm --filter @compass/analysis run test` — and re-run the whole suite only once it passes.
 
 ## Project layout
 
-- `docs/` — project brief, architecture, and the build plan
-- source code is organised per the architecture document
-- `.nous/` — pipeline session state (safe to ignore / not part of the product)
+A pnpm workspace over `packages/*`, `apps/*` and `tools/*`. Every package exposes exactly one entry
+point (`src/index.ts`), owns its own `tsconfig.json` and `vitest.config.ts`, and is imported across
+package boundaries only through that barrel — never by a deep path.
+
+- **`apps/`** — the two deployed processes: `web` (Next.js App Router) and `worker` (pg-boss).
+- **`packages/`** — the layered pipeline, bottom to top: `clock`, `trust`, `connector-port`, the
+  three live connectors plus `seed-connector` and `seed-snapshot`, `ingest`, `knowledge-model`,
+  `analysis`, `pipeline`, `renderers`, `narrator`, `memos`, `delivery`, `db`, `auth`, `billing`,
+  `observability`.
+  `analysis` is pure: no I/O, no clock, no randomness, enforced by `pnpm run arch`.
+- **`tools/`** — checks rather than product: `golden` (report fixtures), `quality-gates` (the
+  cross-cutting gates, including the ones that diff these docs against the code they describe),
+  `perf-budget`, `smoke`, `eslint-plugin-compass`, `sbom.mjs`.
+- **`seed/`** — the hand-edited fixtures and the generated dataset, with `MANIFEST.md`.
+- **`fixtures/reports/`** — the golden reports.
+- **`docs/`** — this file, the architecture, the budgets, and the legal source of record.
+- **`.nous/`** — pipeline session state and the generated demo credentials. Gitignored; not product.
+
+## Golden fixtures
+
+`fixtures/reports/<scope>/<date>.json` holds a full structured report for **ten consecutive
+simulated days** for each of the three seeded teams (`checkout`, `insights`, `platform`) plus the
+`merged` cross-team report — forty files, generated through the real pipeline against the seeded
+dataset at a fixed instant.
+
+They exist so that a change in analysis shows up as **a diff in a report** rather than as a number
+moving somewhere nobody looks. Ten consecutive days is deliberate: it is the only check that covers
+change-awareness, because day 6 of a blocker is only correct relative to days 1 through 5.
+
+```bash
+pnpm run test:golden     # diff live output against the checked-in fixtures
+pnpm run golden:update   # regenerate all forty, then review the diff
+```
+
+`golden:update` takes no flags — no team filter, no date range — because a half-updated suite is a
+suite whose failures nobody trusts. It prints how many files it wrote, how many were already
+current, and anything it removed.
+
+### Reviewing a golden diff
+
+A failing `test:golden` is not a broken test. It is the suite asking whether you meant to change the
+report, and the answer is a judgement only the author can make.
+
+1. **Read the failure first.** It names the fixture and the JSON path that moved
+   (`fixtures/reports/platform/… $.sections[2].items[0].ageDays`). If that path is not something
+   your change was supposed to touch, stop — the fixture is right and the code is wrong.
+2. **Regenerate** with `pnpm run golden:update`.
+3. **Read `git diff -- fixtures/`.** This is the actual review. The fixtures are pretty-printed with
+   stable key order precisely so this diff is line-readable prose and numbers, not an opaque blob.
+   For every changed line, be able to say why it changed.
+4. **Check the blast radius.** A change to one detector that rewrites all forty files is either a
+   much broader change than intended, or a determinism leak. Both are worth stopping for.
+5. **Commit the regeneration separately** from the logic change that caused it. A single commit
+   mixing a detector edit with forty rewritten fixtures is one nobody can review; two commits let a
+   reviewer read the logic, then read its consequences.
+
+Fixtures are only ever written by `golden:update`. Hand-editing one makes the suite green about
+output the pipeline does not produce, which is strictly worse than a red suite.
+
+`tools/golden/tests/determinism.test.ts` covers the other half: regenerating with nothing changed is
+byte-identical, so a no-op `golden:update` leaves an empty diff. If it does not, the leak is a clock
+read or an unstable sort, not a fixture problem.
 
 ## The scheduled pipeline
 
@@ -373,3 +452,36 @@ Withdrawing a name is two substitutions in two places, and the split is the desi
 
 The act writes an `anonymizations` row, appends an `entity_versions` row, and writes an audit
 entry. Restoring a name is a second recorded act, never the absence of the first.
+
+## Subprocessor change notices
+
+`/trust/subprocessors` publishes every company that receives any part of a tenant's data, the
+category each one receives and its processing region. The published commitment beside that table is
+**30 days' advance notice before the list changes**, and this is the machinery that keeps it.
+
+The list itself is `SUBPROCESSORS` in `@compass/trust`. It is a package rather than a module in
+`apps/web` for one reason: the page that publishes the list and the job that mails the notice must
+not be able to disagree about what the list *is*, and two apps cannot import each other.
+
+| Job | Cron | What it does |
+| --- | --- | --- |
+| `trust.subprocessor-notice` | `41 4 * * *` | Compares `subprocessorDigest(SUBPROCESSORS)` against the digest each confirmed subscriber was last told, and mails the difference with an effective date at least `SUBPROCESSOR_NOTICE_DAYS` out. |
+
+- **Subscribing is double opt-in.** `POST /api/trust/subprocessor-notices` stores the address as
+  *unconfirmed* and mails a single-use link; only the digest of that token is stored. The job never
+  mails an unconfirmed address, so the worst a nuisance submission achieves is one confirmation
+  email. `/api/trust/subprocessor-notices/confirm` is what promotes it.
+- **The notice states what changed**, not that something did — added, removed and altered entries by
+  name, from `describeSubprocessorChanges`.
+- **Advance, not retrospective.** The effective date is computed from the injected clock plus
+  `SUBPROCESSOR_NOTICE_DAYS`, which is why the 30 days is testable by choosing an instant rather
+  than by waiting a month.
+- **Told once.** The digest a subscriber has been notified of is recorded per subscriber, so a
+  second run over an unchanged list sends nothing and a failed transport leaves the subscriber
+  un-notified for the next run to retry rather than marking them told.
+
+`apps/worker/tests/trust-notices.test.ts` owns all of that: it asserts the effective date is at
+least the committed number of days out, that an unconfirmed address is never mailed, that nobody
+hears about the same change twice, that an unchanged list sends nothing, and that a transport
+failure is retried. Adding or removing a row in `@compass/trust` is therefore a change that has to
+pass a test about who gets told and when.

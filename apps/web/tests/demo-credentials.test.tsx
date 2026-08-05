@@ -4,7 +4,6 @@ import { fileURLToPath } from 'node:url';
 
 import {
   DEMO_OWNER_EMAIL,
-  DEMO_OWNER_PASSWORD,
   OWNER_EMAIL_ENV_VAR,
   OWNER_PASSWORD_ENV_VAR,
   ROLE_MATRIX,
@@ -170,46 +169,60 @@ const UNAUTHENTICATED_PAGES: readonly {
 
 describe('the published demonstration credentials are shown where they are needed', () => {
   const panel = renderToStaticMarkup(
-    <SignInPanel demoCredentials={{ email: DEMO_OWNER_EMAIL, password: DEMO_OWNER_PASSWORD }} />,
+    <SignInPanel generatedOwnerEmail={DEMO_OWNER_EMAIL} />,
   );
 
-  it('prints both the address and the password, as rendered markup', () => {
-    // The rendered output, not the source: a credential block behind a condition that
-    // never holds would pass a source scan and show a reader nothing.
+  it('prints the address, as rendered markup', () => {
+    // The rendered output, not the source: a block behind a condition that never holds
+    // would pass a source scan and show a reader nothing.
     expect(panel).toContain(DEMO_OWNER_EMAIL);
-    expect(panel).toContain(DEMO_OWNER_PASSWORD);
   });
 
-  it('offers to fill the form, so the password does not have to be retyped from a code span', () => {
-    expect(panel).toContain('fill the form with them');
+  /**
+   * The password is *not* here, and that is the assertion.
+   *
+   * There used to be a `DEMO_OWNER_PASSWORD` constant to print. Removing it from shipped source
+   * removed the only way this process could know an unconfigured deployment's password: the
+   * worker mints it on the boot that creates the seat, Argon2id-hashes it into the database, and
+   * prints it once. A page that showed a password now could only be showing a wrong one.
+   */
+  it('does not print a password, because this process cannot know it', () => {
+    expect(panel).not.toContain('fill the form with them');
+    // Where to find it instead — the two places it actually exists.
+    expect(panel).toContain('.nous/demo_account.json');
+    expect(panel).toContain('boot log');
+    expect(panel).toContain('only a hash');
   });
 
-  it('says out loud that a real deployment must change them', () => {
-    // Honest degradation: the demo password is a stated fact about this deployment, not
+  it('offers to fill in the address, which is the half it does have', () => {
+    expect(panel).toContain('fill in that address');
+  });
+
+  it('says out loud that a real deployment must configure its own', () => {
+    // Honest degradation: a generated password is a stated fact about this deployment, not
     // a convenience that quietly becomes a production credential.
     expect(panel).toContain(OWNER_EMAIL_ENV_VAR);
     expect(panel).toContain(OWNER_PASSWORD_ENV_VAR);
   });
 
-  it('shows the credentials the bootstrap actually provisions', () => {
-    // The other end of the same wire. If these two drifted apart, the page would be
-    // publishing a password that does not open the seat.
-    const provisioned = resolveOwnerCredentials({});
+  it('shows the address the bootstrap actually provisions', () => {
+    // The other end of the same wire, for the half that is still knowable. The password is
+    // supplied rather than resolved, because an unconfigured environment has none — asserted
+    // directly in `packages/auth/tests/owner-bootstrap.test.ts`.
+    const provisioned = resolveOwnerCredentials({}, 'a-supplied-first-run-password');
 
     expect(provisioned.email).toBe(DEMO_OWNER_EMAIL);
-    expect(provisioned.password).toBe(DEMO_OWNER_PASSWORD);
     expect(provisioned.isDefault).toBe(true);
   });
 
   it('prints nothing at all when the deployment has configured its own owner', () => {
     // The inverse, and the one that matters once Compass holds real data: a deployment
-    // with a configured owner must not render a credential block for it.
-    const configured = renderToStaticMarkup(<SignInPanel demoCredentials={null} />);
+    // with a configured owner must not render this block for it.
+    const configured = renderToStaticMarkup(<SignInPanel generatedOwnerEmail={null} />);
 
-    expect(configured).not.toContain(DEMO_OWNER_PASSWORD);
     expect(configured).not.toContain(DEMO_OWNER_EMAIL);
-    expect(configured).not.toContain('this deployment is a demonstration');
-    expect(configured).not.toContain('fill the form with them');
+    expect(configured).not.toContain('this deployment configured no owner');
+    expect(configured).not.toContain('fill in that address');
     // And the form is still there, so the page is a sign-in page either way. The posted
     // endpoint lives in the submit handler rather than in a form `action`, so what is
     // asserted here is the rendered form: the fields and the button.
@@ -219,14 +232,15 @@ describe('the published demonstration credentials are shown where they are neede
   });
 
   it('is wired to the deployment’s own answer rather than to a hardcoded true', () => {
-    // `/account` decides whether to pass the credentials down by asking
-    // `ownerCredentialsAreDefault()`, which reads the environment. A page that passed
-    // them unconditionally would leak a configured deployment's owner address.
+    // `/account` decides whether to pass the address down by asking
+    // `ownerCredentialsAreDefault()`, which reads the environment. A page that passed it
+    // unconditionally would name a configured deployment's owner address to anybody.
     const account = readWebFile('app', 'account', 'page.tsx');
 
     expect(account).toContain('ownerCredentialsAreDefault()');
     expect(account).toContain('DEMO_OWNER_EMAIL');
-    expect(account).toContain('DEMO_OWNER_PASSWORD');
+    // And it cannot have reacquired a password to print.
+    expect(account).not.toContain('DEMO_OWNER_PASSWORD');
   });
 });
 
@@ -250,7 +264,7 @@ describe('a half-configured owner environment is stated, not papered over', () =
 
   it('renders the sentence, naming the variable that is missing', () => {
     const panel = renderToStaticMarkup(
-      <SignInPanel configurationProblem={configurationProblem} demoCredentials={null} />,
+      <SignInPanel configurationProblem={configurationProblem} generatedOwnerEmail={null} />,
     );
 
     expect(panel).toContain('this deployment has no owner seat');
@@ -259,11 +273,10 @@ describe('a half-configured owner environment is stated, not papered over', () =
 
   it('does not offer the demonstration credentials, which would not open anything', () => {
     const panel = renderToStaticMarkup(
-      <SignInPanel configurationProblem={configurationProblem} demoCredentials={null} />,
+      <SignInPanel configurationProblem={configurationProblem} generatedOwnerEmail={null} />,
     );
 
-    expect(panel).not.toContain(DEMO_OWNER_PASSWORD);
-    expect(panel).not.toContain(DEMO_OWNER_EMAIL);
+        expect(panel).not.toContain(DEMO_OWNER_EMAIL);
     expect(panel).not.toContain('fill the form with them');
   });
 
@@ -272,7 +285,7 @@ describe('a half-configured owner environment is stated, not papered over', () =
     const panel = renderToStaticMarkup(
       <SignInPanel
         configurationProblem={ownerConfigurationProblem({ [OWNER_PASSWORD_ENV_VAR]: secret })}
-        demoCredentials={null}
+        generatedOwnerEmail={null}
       />,
     );
 
@@ -281,7 +294,7 @@ describe('a half-configured owner environment is stated, not papered over', () =
 
   it('leaves the form in place, so the screen is still a sign-in screen', () => {
     const panel = renderToStaticMarkup(
-      <SignInPanel configurationProblem={configurationProblem} demoCredentials={null} />,
+      <SignInPanel configurationProblem={configurationProblem} generatedOwnerEmail={null} />,
     );
 
     expect(panel).toContain('name="email"');
@@ -304,7 +317,7 @@ describe('a half-configured owner environment is stated, not papered over', () =
     // deployment has no owner seat, which is the opposite of true.
     expect(ownerConfigurationProblem({})).toBeNull();
 
-    const whole = renderToStaticMarkup(<SignInPanel demoCredentials={null} />);
+    const whole = renderToStaticMarkup(<SignInPanel generatedOwnerEmail={null} />);
     expect(whole).not.toContain('this deployment has no owner seat');
   });
 });

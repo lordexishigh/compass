@@ -156,7 +156,15 @@ if (entryPoint !== undefined && pathToFileURL(entryPoint).href === import.meta.u
       // The machine-readable half of the same credentials. Written here as well as from the
       // worker's first-run check because `pnpm run seed` calls this file directly, and a
       // harness told to run the documented seed command must find the file afterwards.
-      console.info(describeDemoAccountFile(writeDemoAccountFile()));
+      //
+      // `generatedPassword` is threaded from the bootstrap rather than re-derived: on an
+      // unconfigured deployment it is the only copy of the password in existence, and on a
+      // second boot it is null and the write is skipped so the file the first boot wrote
+      // survives.
+      const written = writeDemoAccountFile({
+        generatedPassword: result.bootstrap.owner.generatedPassword,
+      });
+      if (written !== null) console.info(describeDemoAccountFile(written));
 
       // Six sections or the container is not ready. A report missing a section
       // would render as a page missing a heading, and a boot that reported

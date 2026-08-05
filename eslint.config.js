@@ -35,6 +35,29 @@ export const CLOCK_GUARDED_SOURCES = [
  */
 export const PURE_ANALYSIS_SOURCES = ['packages/analysis/src/**/*.ts'];
 
+/**
+ * Shipped source: every published package and both applications, tests excluded.
+ *
+ * This is the tree a credential literal must never appear in, and the exclusion of tests is
+ * the whole reason it is a separate list rather than every TypeScript file. A handful of suites hold
+ * fixture credentials on purpose — a `ghp_`-shaped token whose entire job is to be written to
+ * a column and then searched for in the raw bytes — and a rule pointed at them would either
+ * flood or force those fixtures into a shape that proves nothing.
+ *
+ * `src/**` rather than the package root, so a `vitest.config.ts` or a `tsconfig` is out of
+ * scope for the same reason: neither ships, and neither can hold a credential that a
+ * deployment could authenticate with.
+ */
+export const SHIPPED_SOURCES = [
+  'packages/*/src/**/*.{ts,tsx}',
+  'apps/*/src/**/*.{ts,tsx}',
+  // The web app keeps its shipped code in `app/`, `components/` and `lib/` rather than `src/`,
+  // which is Next.js convention — omitting them would leave every route handler unguarded.
+  'apps/web/app/**/*.{ts,tsx}',
+  'apps/web/components/**/*.{ts,tsx}',
+  'apps/web/lib/**/*.{ts,tsx}',
+];
+
 /** Layers that must never construct a clock — `now` is always a parameter. */
 export const CLOCK_INJECTION_SOURCES = [
   'packages/auth/src/**/*.ts',
@@ -91,6 +114,25 @@ export default tseslint.config(
        * the `/api/share/[token]` route segment do not trip it, and why a `masked` token would.
        */
       'compass/no-secret-disclosure': 'error',
+    },
+  },
+  {
+    /**
+     * No credential compiled into anything that ships.
+     *
+     * The companion to `no-secret-disclosure` above, and the gap it left: that rule bans a
+     * credential *leaving* the process in a log line or a response body, and had nothing to say
+     * about one sitting in the source in the first place. `packages/auth/src/bootstrap.ts` held a
+     * working owner password behind a comment calling it a demonstration default, and every gate
+     * in this file passed it.
+     *
+     * Scoped to `SHIPPED_SOURCES` rather than the whole workspace, unlike the disclosure rule.
+     * The reason is stated on that list: fixture credentials in tests are load-bearing, and the
+     * boundary the build cares about is what a deployment could authenticate with.
+     */
+    files: SHIPPED_SOURCES,
+    rules: {
+      'compass/no-credential-literal': 'error',
     },
   },
   {

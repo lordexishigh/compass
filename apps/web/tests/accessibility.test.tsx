@@ -30,7 +30,6 @@ import { buildReportDiffView } from '../lib/diff-source';
 import { EMPTY_STATES } from '../lib/empty-states';
 import { buildReportView } from '../lib/view-model';
 
-import { FIXTURE_PASSPHRASE } from './helpers/fixture-credentials';
 import {
   diffPairFixture,
   emptyBundle,
@@ -206,7 +205,9 @@ describe('axe reports no critical or serious violations', () => {
     await expectNoBlockingViolations(
       'the sign-in panel',
       renderToStaticMarkup(
-        <SignInPanel demoCredentials={{ email: 'owner@example.com', password: FIXTURE_PASSPHRASE }} />,
+        // The generated-owner branch, which is the one carrying the extra block of prose and the
+        // fill-in button — so the audited tree is the largest the panel ever renders.
+        <SignInPanel generatedOwnerEmail="owner@example.com" />,
       ),
     );
   });

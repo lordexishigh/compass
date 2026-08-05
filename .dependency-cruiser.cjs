@@ -55,6 +55,17 @@ module.exports = {
       to: { path: '^packages/seed-connector' },
     },
     {
+      name: 'no-live-connector-below-the-port',
+      severity: 'error',
+      comment:
+        'The same rule as the seeded provider\'s, extended to the live ones. A neutral layer that reached for ' +
+        '@compass/github-connector has stopped being neutral whatever its logic looks like — and the whole claim ' +
+        'the port exists to make is that swapping a provider is configuration. Kept as its own rule rather than ' +
+        'folded into the seed one so that `seed-isolation.test.ts` keeps asserting over a rule it can read.',
+      from: { path: '^packages/(ingest|knowledge-model|analysis|pipeline|renderers|narrator|memos|db)/src' },
+      to: { path: '^packages/(github|jira|slack)-connector' },
+    },
+    {
       name: 'narration-never-persists',
       severity: 'error',
       comment:

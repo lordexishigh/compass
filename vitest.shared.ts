@@ -25,6 +25,7 @@ export const compassAliases: ReadonlyArray<{ find: string; replacement: string }
   { find: '@compass/seed-connector', replacement: resolveSource('seed-connector/src/index.ts') },
   { find: '@compass/github-connector', replacement: resolveSource('github-connector/src/index.ts') },
   { find: '@compass/jira-connector', replacement: resolveSource('jira-connector/src/index.ts') },
+  { find: '@compass/slack-connector', replacement: resolveSource('slack-connector/src/index.ts') },
   { find: '@compass/db/testing', replacement: resolveSource('db/src/testing/pglite.ts') },
   { find: '@compass/db', replacement: resolveSource('db/src/index.ts') },
   { find: '@compass/auth', replacement: resolveSource('auth/src/index.ts') },

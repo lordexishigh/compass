@@ -82,6 +82,82 @@ export {
   type SecondFactorChallengeVerdict,
 } from './second-factor-challenge.js';
 
+/**
+ * Sign-in with Google and with GitHub.
+ *
+ * The protocol and the configuration only: the account-matching rules live in `federated-sign-in.ts`
+ * because SAML needs exactly the same ones, and two copies of "never auto-link an unverified address"
+ * is two chances to get it wrong.
+ */
+export {
+  SSO_ENV_VARS,
+  SSO_PROVIDERS,
+  SSO_PROVIDER_DEFINITIONS,
+  SSO_STATE_SECRET_ENV_VAR,
+  SSO_STATE_TTL_MILLIS,
+  configuredSsoProviders,
+  describeSsoStateRejection,
+  fetchSsoProfile,
+  generateSsoNonce,
+  isSsoProvider,
+  issueSsoState,
+  ssoAuthorizeUrl,
+  ssoCredentials,
+  verifySsoState,
+  type SsoClientCredentials,
+  type SsoEnvironment,
+  type SsoHttpClient,
+  type SsoHttpRequest,
+  type SsoHttpResponse,
+  type SsoProfile,
+  type SsoProfileResult,
+  type SsoProvider,
+  type SsoProviderDefinition,
+  type SsoState,
+  type SsoStateVerdict,
+} from './oauth.js';
+
+/** One set of account-matching rules for Google, GitHub and SAML alike. */
+export {
+  describeFederatedRefusal,
+  linkIdentityToAccount,
+  resolveFederatedSignIn,
+  type FederatedAssertion,
+  type FederatedRefusal,
+  type FederatedSignIn,
+  type FederatedSignInInput,
+  type IdentityLinkResult,
+} from './federated-sign-in.js';
+
+/**
+ * XML canonicalisation and signature verification, for SAML.
+ *
+ * Exported from the barrel rather than kept private because its tests are the load-bearing ones: a
+ * canonicaliser is only trustworthy if the refusals can be asserted directly.
+ */
+export {
+  DSIG_NAMESPACE,
+  XMLNS,
+  XmlParseError,
+  attributeValue,
+  canonicalizeExclusive,
+  certificateToPem,
+  childNamed,
+  childrenNamed,
+  describeXmlSignatureRefusal,
+  elementChildren,
+  findElementsById,
+  parseXml,
+  textOf,
+  verifyXmlSignature,
+  type XmlAttribute,
+  type XmlElement,
+  type XmlNode,
+  type XmlSignatureRefusal,
+  type XmlSignatureVerdict,
+  type XmlText,
+} from './xml-signature.js';
+
 export {
   SESSION_ABSOLUTE_TTL_DAYS,
   SESSION_ABSOLUTE_TTL_MILLIS,
@@ -197,13 +273,16 @@ export {
   DEMO_ACCOUNT_LOGIN_PATH,
   DEMO_OWNER_EMAIL,
   DEMO_OWNER_NAME,
-  DEMO_OWNER_PASSWORD,
+  GENERATED_PASSWORD_BYTES,
   OWNER_EMAIL_ENV_VAR,
   OWNER_NAME_ENV_VAR,
   OWNER_PASSWORD_ENV_VAR,
+  MissingOwnerPasswordError,
   OwnerConfigurationError,
   bootstrapOwner,
+  configuredOwnerPassword,
   describeBootstrapOwner,
+  generateOwnerPassword,
   ownerConfigurationProblem,
   ownerCredentialsAreDefault,
   resolveOwnerCredentials,

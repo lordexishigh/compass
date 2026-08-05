@@ -35,6 +35,28 @@ export const AUDIT_ACTIONS = [
   'account.second_factor_enabled',
   'account.second_factor_disabled',
   'account.recovery_codes_regenerated',
+  /**
+   * Federated identity. Linking and unlinking are both here, and both matter on the record.
+   *
+   * A linked provider is an *additional way into the account*, so it belongs on the log for exactly
+   * the reason turning 2FA off does: the act is indistinguishable from the rightful owner performing
+   * it, and the row naming the actor and the moment is the only thing that lets the owner tell an
+   * attacker adding their own Google account apart from their own past self doing something sensible.
+   */
+  'account.identity_linked',
+  'account.identity_unlinked',
+  /**
+   * A seat an identity provider created or removed, rather than a person.
+   *
+   * Distinct from `seat.invited`/`seat.removed` on purpose: those have an owner as the actor and a
+   * mailed invitation behind them, whereas these have a null actor and an IdP assertion. Flattening
+   * the two would make "who let this person in" unanswerable in precisely the case — automated
+   * provisioning — where nobody remembers.
+   */
+  'seat.provisioned',
+  'seat.deprovisioned',
+  /** Turning SAML or SCIM on, off, or re-pointing it at a different IdP certificate. */
+  'config.enterprise_identity_changed',
   'config.changed',
   // Configuration and roster acts. `identity.merged` and `identity.unmerged` are the
   // pair the un-merge criterion names: a wrong merge corrupts attribution in every
@@ -94,6 +116,11 @@ export const AUDIT_ACTION_LABEL: Readonly<Record<AuditAction, string>> = {
   'account.second_factor_enabled': 'turned on two-factor authentication',
   'account.second_factor_disabled': 'turned off two-factor authentication',
   'account.recovery_codes_regenerated': 'generated new recovery codes',
+  'account.identity_linked': 'linked a single-sign-on provider to an account',
+  'account.identity_unlinked': 'unlinked a single-sign-on provider',
+  'seat.provisioned': 'an identity provider created a seat',
+  'seat.deprovisioned': 'an identity provider removed a seat',
+  'config.enterprise_identity_changed': 'changed the SAML or SCIM configuration',
   'config.changed': 'changed configuration',
   'config.team_changed': 'changed a team',
   'config.team_membership_changed': 'changed who is on a team',

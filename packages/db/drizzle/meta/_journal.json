@@ -127,6 +127,13 @@
       "when": 1785570000000,
       "tag": "0018_row_level_security",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1785577200000,
+      "tag": "0019_federated_and_enterprise_identity",
+      "breakpoints": true
     }
   ]
 }

@@ -10,6 +10,7 @@
     { "path": "packages/seed-connector" },
     { "path": "packages/github-connector" },
     { "path": "packages/jira-connector" },
+    { "path": "packages/slack-connector" },
     { "path": "packages/db" },
     { "path": "packages/auth" },
     { "path": "packages/knowledge-model" },

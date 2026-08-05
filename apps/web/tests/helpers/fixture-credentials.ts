@@ -56,6 +56,17 @@ export const FIXTURE_PASSPHRASE = fixtureCredential('account-passphrase');
  */
 export const WRONG_PASSPHRASE = fixtureCredential('wrong-passphrase');
 
+/**
+ * Stands in for `COMPASS_OWNER_PASSWORD`.
+ *
+ * A suite that provisions the owner seat has to configure this, rather than importing a default
+ * from `@compass/auth`: there is no default there any more. An unconfigured deployment gets a
+ * password *generated* at first boot, so a test that asserted sign-in against a constant would be
+ * asserting a value it never saw. Configuring one also exercises the branch a real deployment
+ * uses.
+ */
+export const FIXTURE_OWNER_PASSWORD = fixtureCredential('owner-password');
+
 /** Stands in for `COMPASS_FEEDBACK_LINK_SECRET`. */
 export const FIXTURE_FEEDBACK_LINK_SECRET = fixtureCredential('feedback-link-signing');
 
