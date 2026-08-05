@@ -93,6 +93,39 @@ rather than a stale report going out.
 `apps/worker/tests/pipeline-ordering.test.ts` drives the whole sequence — delivery first, then
 generation, then delivery again — and asserts exactly one message.
 
+## Sprint completion, and how to reconcile it against the board
+
+The Progress section's sprint claim states the figure **and both units it can be read in**:
+
+> Sprint 46 is 19% complete by ticket count — 4 of 21 tickets and 11 of 48 points, against
+> "Cut p95 payment gateway latency below 400 ms"
+
+with the commitment in the claim's detail — `21 tickets and 48 points were committed at the start`.
+The percentage is computed on one basis (story points when four fifths or more of the scope carries
+an estimate — threshold `T15` — ticket count otherwise), and the claim names which, because a reader
+who divides the other pair otherwise gets a different answer with no way to see why. A sprint whose
+items carry no estimate states that as a fact rather than printing `0 of 0 points`.
+
+Scope creep shows as a **larger denominator**: `currentScope` is the commitment plus whatever entered
+after the sprint started, and `completionPercentOfCommitment` is published alongside
+`completionPercent` so the two can visibly differ. An item pulled *out* of the sprint is in neither.
+
+**The reconciliation is a test, not a claim.**
+`packages/jira-connector/tests/sprint-reconciliation.test.ts` records one sprint twice — once as the
+Jira REST API the connector reads, and once as Jira's own Sprint Report screen
+(`/rest/greenhopper/1.0/rapid/charts/sprintreport`) — and asserts **equality** between every
+`SprintCompletion` line and the corresponding figure on that report: completed, remaining, current
+scope and the commitment, each in tickets and points, plus both percentages and the per-item
+estimates. The full field mapping is documented in that file, beside the assertions, so it cannot
+drift from them.
+
+Two things that file deliberately proves as well: the punted issue appears on **no** line (it is
+still in the project and still names the sprint in its changelog, which is exactly what a naive count
+gets wrong), and the connector never requests the sprint-report endpoint — Compass computes
+completion from issues, sprint membership and the sprint-field change history, which are artifacts
+every provider behind `ConnectorPort` carries. Reading a Jira-only screen would make one provider's
+shape visible above the port and leave the seeded connector unable to answer Progress at all.
+
 ## Narration and grounding
 
 The Anthropic API is used for exactly two things: narrating an **already-computed** structured report,

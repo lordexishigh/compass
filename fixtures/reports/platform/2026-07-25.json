@@ -10224,7 +10224,7 @@
             "entityRef": "progress:primary-tracker:sprint-PLAT-5"
           },
           "changeTag": "new",
-          "detail": "35 items were committed at the start and 2 were added since, so the denominator is 37. Measured in items because 8 of 37 items carry no estimate. Completed: PLAT-514, PLAT-515, PLAT-516, PLAT-517, PLAT-518, PLAT-519, PLAT-520, PLAT-521, PLAT-522, PLAT-524, PLAT-525, PLAT-526, PLAT-527, PLAT-528, PLAT-529, PLAT-530, PLAT-531, PLAT-532, PLAT-533, PLAT-535, PLAT-536, PLAT-537, PLAT-538, PLAT-539, PLAT-540, PLAT-769, PLAT-770, PLAT-771, PLAT-772, PLAT-773. Remaining: PLAT-513, PLAT-523, PLAT-534, PLAT-786, PLAT-787, PLAT-788, PLAT-789.",
+          "detail": "35 tickets and 113 points were committed at the start, and 2 tickets worth 2 points entered after it started, so current scope is 37 tickets and 115 points. Measured in items because 8 of 37 items carry no estimate. Completed: PLAT-514, PLAT-515, PLAT-516, PLAT-517, PLAT-518, PLAT-519, PLAT-520, PLAT-521, PLAT-522, PLAT-524, PLAT-525, PLAT-526, PLAT-527, PLAT-528, PLAT-529, PLAT-530, PLAT-531, PLAT-532, PLAT-533, PLAT-535, PLAT-536, PLAT-537, PLAT-538, PLAT-539, PLAT-540, PLAT-769, PLAT-770, PLAT-771, PLAT-772, PLAT-773. Remaining: PLAT-513, PLAT-523, PLAT-534, PLAT-786, PLAT-787, PLAT-788, PLAT-789.",
           "evidence": [
             {
               "kind": "sprint",
@@ -10234,7 +10234,7 @@
             }
           ],
           "firstSeenAt": 1784970000000,
-          "headline": "Sprint 45 is 81% complete — 30 of 37 items, against \"Land the release-2 caching layer for merchant profiles\"",
+          "headline": "Sprint 45 is 81% complete by ticket count — 30 of 37 tickets and 106 of 115 points, against \"Land the release-2 caching layer for merchant profiles\"",
           "severityScore": 19,
           "signalOnsetAt": 1783933200000,
           "stableId": "v1:00c4cf47dcdd4ad4"

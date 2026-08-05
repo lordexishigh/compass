@@ -6094,7 +6094,7 @@
             "entityRef": "progress:primary-tracker:sprint-CHK-6"
           },
           "changeTag": "new",
-          "detail": "1 items were committed at the start and 0 were added since, so the denominator is 1. Measured in points because the scope is estimated. Completed: nothing yet. Remaining: CHK-701.",
+          "detail": "1 ticket and 5 points were committed at the start, and nothing has entered since, so that is still the current scope. Measured in points because the scope is estimated. Completed: nothing yet. Remaining: CHK-701.",
           "evidence": [
             {
               "kind": "sprint",
@@ -6104,7 +6104,7 @@
             }
           ],
           "firstSeenAt": 1785315600000,
-          "headline": "Sprint 17 is 0% complete — 0 of 5 points, against \"Ship guest checkout to every merchant behind a flag\"",
+          "headline": "Sprint 17 is 0% complete by story points — 0 of 1 tickets and 0 of 5 points, against \"Ship guest checkout to every merchant behind a flag\"",
           "severityScore": 100,
           "signalOnsetAt": 1785142800000,
           "stableId": "v1:00f197c7fbfeaf49"
