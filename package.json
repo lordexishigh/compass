@@ -2,7 +2,7 @@
   "name": "compass",
   "version": "0.1.0",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "description": "Compass — an AI Engineering Manager that delivers one prose daily report.",
   "engines": {

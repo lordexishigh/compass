@@ -2,7 +2,7 @@
   "name": "@compass/ingest",
   "version": "0.1.0",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "description": "Pulls a half-open window through the connector port and reports what was and was not covered.",
   "main": "./dist/index.js",

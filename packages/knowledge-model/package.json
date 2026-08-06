@@ -2,7 +2,7 @@
   "name": "@compass/knowledge-model",
   "version": "0.1.0",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "description": "The versioned org model and the materialized snapshot handed to the pure layer.",
   "main": "./dist/index.js",

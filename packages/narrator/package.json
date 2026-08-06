@@ -2,7 +2,7 @@
   "name": "@compass/narrator",
   "version": "0.1.0",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "description": "Narration and grounding: Claude writes the prose, the validator proves it invented nothing.",
   "main": "./dist/index.js",

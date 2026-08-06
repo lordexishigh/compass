@@ -260,27 +260,43 @@ describe('the connector-port testkit is reachable as a subpath', () => {
  * rather than as an omission. So the field is asserted on every workspace rather than on
  * the root alone, and a new package is a build failure until it declares one.
  *
- * `UNLICENSED` is npm's registered spelling for "proprietary, no rights granted", and it
- * is the honest pairing with `private: true`: these packages are not published, and
- * nobody may take them. A permissive identifier here would be a grant nobody made.
+ * The value is `SEE LICENSE IN LICENSE` rather than an SPDX identifier, and that is the
+ * correct spelling rather than a cop-out: SPDX ids name *published* licences, and these
+ * terms are not one of them. npm documents this exact form for a licence that is not on
+ * the SPDX list, and it has the property the bare `UNLICENSED` keyword lacks — it points
+ * a reader at the file that states the terms instead of asserting them in four syllables.
+ * A permissive identifier here would be a grant nobody made.
  */
 describe('every workspace declares who owns it', () => {
-  const LICENSE_ID = 'UNLICENSED';
+  /** The one place the value is written. Every assertion below compares against it. */
+  const LICENSE_FIELD = 'SEE LICENSE IN LICENSE';
+  const LICENSE_PATH = join(REPO_ROOT, 'LICENSE');
 
   it('ships a LICENSE at the repository root', () => {
-    const licensePath = join(REPO_ROOT, 'LICENSE');
-    expect(existsSync(licensePath), 'a repository with no LICENSE leaves reuse terms to guesswork').toBe(true);
+    expect(existsSync(LICENSE_PATH), 'a repository with no LICENSE leaves reuse terms to guesswork').toBe(true);
 
-    const text = readFileSync(licensePath, 'utf8');
-    // The three claims that make it a licence rather than a note.
+    const text = readFileSync(LICENSE_PATH, 'utf8');
     expect(text).toContain('All rights reserved');
-    expect(text).toContain(LICENSE_ID);
     expect(text.length, 'a stub LICENSE is worse than none — it looks settled').toBeGreaterThan(500);
   });
 
-  it('states the same identifier in the root manifest', () => {
+  it('names a real holder rather than a placeholder', () => {
+    /**
+     * `packages/trust/src/content.ts` refuses to publish the `[DATE]`-bearing legal drafts on
+     * the grounds that a document with a bracket in it is worse than no document. A LICENSE
+     * with `[COMPANY]` in it is the same defect, and it is the single likeliest thing to be
+     * left behind when one is added in a hurry.
+     */
+    const text = readFileSync(LICENSE_PATH, 'utf8');
+    const placeholders = text.match(/\[[A-Z][A-Z _-]{2,}\]|<[a-z ]+entity[a-z ]*>|TODO|FIXME|XXX/g) ?? [];
+
+    expect(placeholders, 'the LICENSE still carries a fill-in-the-blank').toEqual([]);
+    expect(text, 'the LICENSE names no copyright holder').toMatch(/Copyright \(c\) \d{4} \S/);
+  });
+
+  it('points the manifest at that file rather than at an SPDX id it does not have', () => {
     const root = readJsonFile<{ readonly license?: string }>(join(REPO_ROOT, 'package.json'));
-    expect(root.license).toBe(LICENSE_ID);
+    expect(root.license).toBe(LICENSE_FIELD);
   });
 
   it.each(asCases(allPackages))('%s declares it too', (_label, workspacePackage) => {
@@ -288,9 +304,26 @@ describe('every workspace declares who owns it', () => {
       join(workspacePackage.absoluteDirectory, 'package.json'),
     );
 
-    expect(manifest.license, `${workspacePackage.relativeDirectory} has no license field`).toBe(LICENSE_ID);
-    // `UNLICENSED` and a publishable package would be a contradiction: the identifier says
+    expect(manifest.license, `${workspacePackage.relativeDirectory} has no license field`).toBe(LICENSE_FIELD);
+    // Proprietary terms and a publishable package would be a contradiction: the field says
     // nobody may use it and the absent `private` flag says npm may publish it to everybody.
-    expect(manifest.private, `${workspacePackage.relativeDirectory} is UNLICENSED but publishable`).toBe(true);
+    expect(manifest.private, `${workspacePackage.relativeDirectory} is proprietary but publishable`).toBe(true);
+  });
+
+  it('says the same thing in every manifest, so no workspace is on different terms', () => {
+    /**
+     * The assertion the per-package one cannot make. Each case above checks a manifest against
+     * the constant; this checks the manifests against *each other*, so a future change that
+     * relicenses the repo has to move all 28 together or fail here — a monorepo where one
+     * package is BUSL and the rest are proprietary is the ambiguity this gate exists to stop,
+     * and it would pass a per-file check that had been edited to match.
+     */
+    const declared = new Set(
+      [join(REPO_ROOT, 'package.json'), ...allPackages.map((p) => join(p.absoluteDirectory, 'package.json'))].map(
+        (path) => readJsonFile<{ readonly license?: string }>(path).license ?? '(none)',
+      ),
+    );
+
+    expect([...declared], 'the workspaces do not agree on their licence').toEqual([LICENSE_FIELD]);
   });
 });

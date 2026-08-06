@@ -2,7 +2,7 @@
   "name": "@compass/pipeline",
   "version": "0.1.0",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "description": "The only place the layers are wired together, and the home of the determinism gate.",
   "main": "./dist/index.js",

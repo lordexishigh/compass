@@ -123,13 +123,28 @@ export const SUBPROCESSOR_NOTICE_DAYS = 30;
  * A stable digest of the published list.
  *
  * The notice job compares this against the last value it announced, so "the list changed" is decided by
- * the *content* rather than by somebody remembering to send an email. Built from the fields a customer
- * would care about — a copy-edit to `purpose` is a change worth announcing; reordering the array is not,
- * so the ids are sorted first.
+ * the *content* rather than by somebody remembering to send an email. Every declared field is in the
+ * line — a copy-edit to `purpose` is a change worth announcing; reordering the array is not, so the ids
+ * are sorted first.
+ *
+ * ## Why `purpose` and `optional` are in here, having once been left out
+ *
+ * They were excluded while the docstring above claimed `purpose` was covered, so the module documented a
+ * guarantee it did not implement: rewriting a subprocessor's purpose from "runs the database" to
+ * anything at all — including something a data protection officer would want thirty days' warning of —
+ * produced an identical digest and sent nobody an email. `optional` is the same class of fact: it flips
+ * when a deployment can no longer switch a subprocessor off, which changes what the reader is agreeing
+ * to even though no other field moved.
+ *
+ * New fields go on the **end**. `describeSubprocessorChanges` reads the first three positionally, and
+ * inserting a column would have silently relabelled every sentence in a notice email.
  */
 export const subprocessorDigest = (list: readonly Subprocessor[] = SUBPROCESSORS): string =>
   list
-    .map((entry) => `${entry.id}|${entry.name}|${entry.dataCategory}|${entry.region}`)
+    .map(
+      (entry) =>
+        `${entry.id}|${entry.name}|${entry.dataCategory}|${entry.region}|${entry.purpose}|${entry.optional}`,
+    )
     .slice()
     .sort()
     .join('\n');
@@ -170,6 +185,25 @@ export function describeSubprocessorChanges(
   const after = parse(currentDigest);
   const changes: string[] = [];
 
+  /**
+   * Whether two rows differ in a way worth announcing, tolerant of a row written before a column
+   * existed.
+   *
+   * A subscriber's stored digest is whatever the format was when they were last told, so widening the
+   * line — `purpose` and `optional` were added to it — makes every stored row shorter than every
+   * current one. Comparing the raw strings would report all six subprocessors as "Changed" on the first
+   * run after that deploy, and the sentence it would send names a category and region that did not
+   * move: a false statement to the one reader who is relying on these emails being true.
+   *
+   * So only the columns both rows have are compared. A field the previous row never recorded cannot
+   * have changed — nobody was told its old value, so there is nothing to contrast — and it is announced
+   * the next time it actually moves.
+   */
+  const differsMeaningfully = (previous: readonly string[], current: readonly string[]): boolean => {
+    const shared = Math.min(previous.length, current.length);
+    return previous.slice(0, shared).join('|') !== current.slice(0, shared).join('|');
+  };
+
   for (const [id, fields] of after) {
     const previous = before.get(id);
     const [name, category, region] = fields;
@@ -177,7 +211,7 @@ export function describeSubprocessorChanges(
       changes.push(`Added: ${name ?? id} — ${category ?? 'purpose not stated'} (${region ?? 'region not stated'})`);
       continue;
     }
-    if (previous.join('|') !== fields.join('|')) {
+    if (differsMeaningfully(previous, fields)) {
       const [wasName, , wasRegion] = previous;
       changes.push(
         `Changed: ${name ?? id} — now ${category ?? 'purpose not stated'} (${region ?? 'region not stated'})` +

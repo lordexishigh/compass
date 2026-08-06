@@ -2,7 +2,7 @@
   "name": "@compass/memos",
   "version": "0.1.0",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "description": "Manager Memos: the closed five-kind assertion schema, extraction with explicit refusal, and subject resolution.",
   "main": "./dist/index.js",

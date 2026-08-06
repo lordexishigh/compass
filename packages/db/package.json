@@ -2,7 +2,7 @@
   "name": "@compass/db",
   "version": "0.1.0",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "description": "PostgreSQL schema and the scoped-query layer: no query is built without an organization scope.",
   "main": "./dist/index.js",

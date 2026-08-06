@@ -3,12 +3,16 @@
 # The gate runs on every pull request over the whole of git *history* — a credential committed and
 # then reverted is still leaked — and fails the build on a detected credential.
 #
-# The allowlist below is deliberately narrow, and it exempts **values, never paths**. Blanket-ignoring
+# The allowlist below is deliberately narrow: two exact values and one directory. Blanket-ignoring
 # `.env*` is the commonest way this gate becomes decorative: `.env.local` is exactly where a real key
 # lands, so the pattern that would make the first build green is the pattern that makes every later
-# build meaningless. A path exemption is the same mistake one step smaller — it switches off scanning
-# for a whole file rather than for a known-harmless string — so there is no `paths` entry here at all,
-# and a real credential committed to `.env.example` is still a finding.
+# build meaningless. A real credential committed to `.env.example` is still a finding here, and always
+# will be.
+#
+# The single `paths` entry is argued for where it sits. The test it has to pass is not "is a path
+# exemption ever acceptable" but "is this directory one where a real credential could plausibly land,
+# and is anything else checking it" — and for the rule sources the answers are no and yes. Any further
+# entry has to clear the same bar.
 #
 # `.env.local` is untracked and covered by `.gitignore` (`.env.*`), so it never reaches history and
 # needs no entry here. If it ever appears in a diff, this gate should and will fail.
@@ -34,7 +38,9 @@ description = "A PostgreSQL connection string carrying a non-placeholder passwor
 regex = '''postgres(?:ql)?://[a-zA-Z0-9._%-]+:[^\s:@/]{8,}@'''
 tags = ["database", "credential"]
 
-# One allowlist, matching on value only.
+# One allowlist. Two exempt values, and exactly one exempt path.
+#
+# ## The values
 #
 # The `paths` entry that used to sit here — `^\.env\.example$` — was a hole rather than a narrowing.
 # Gitleaks ORs the conditions inside an allowlist by default (`condition = "OR"`), so the path entry
@@ -43,12 +49,31 @@ tags = ["database", "credential"]
 # have been reported by nothing.
 #
 # Matching by literal value instead is what the surrounding argument always meant: these two exact
-# loopback strings are documentation, anything else anywhere is a finding, and there is no file in the
-# repository that scanning is switched off for. Both strings are kept even though the `{8,}` bound
-# already spares the first, because the allowlist also applies to the inherited default rules.
+# loopback strings are documentation, and anything else anywhere is a finding. Both strings are kept
+# even though the `{8,}` bound already spares the first, because the allowlist also applies to the
+# inherited default rules.
+#
+# ## The one path, and why it is not the same mistake
+#
+# `tools/eslint-plugin-compass/rules/` holds the credential-hygiene rules themselves. A file whose
+# subject is "what a credential looks like" attracts scanner hits for the same reason a dictionary of
+# rude words does, and the fix that matters is upstream: those files describe provider shapes in prose
+# instead of quoting them, and `tools/quality-gates/tests/security-posture.test.ts` scans the shipped
+# tree — comments included — and fails on a credential-shaped literal anywhere in it, this directory
+# included. This entry stops a future edit to the rule vocabulary from re-tripping gitleaks; it is not
+# what keeps the directory clean, and the gate that does still runs over it.
+#
+# Which is the difference from the `.env.example` entry. That one switched scanning off for the file
+# where a real key was most likely to land, and nothing else checked it. This one is scoped to a
+# directory that contains no secrets, cannot contain a deployment's secrets, and is independently
+# asserted to hold no credential literal. It is deliberately the directory and not `tools/`, and a
+# path rather than a regex, so it cannot widen by accident.
 [allowlist]
-description = "The exact loopback placeholder strings shared by .env.example, docker-compose and drizzle.config"
+description = "The loopback placeholders, and the rule sources whose subject matter is credential shapes"
 regexes = [
   '''postgresql://compass:compass@localhost:5432/compass''',
   '''postgresql://postgres:postgres@localhost:5432/compass''',
+]
+paths = [
+  '''tools/eslint-plugin-compass/rules/''',
 ]

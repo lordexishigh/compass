@@ -2,7 +2,7 @@
   "name": "@compass/golden",
   "version": "0.1.0",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "description": "The checked-in golden report fixtures, their per-field diff test and the one command that regenerates them.",
   "scripts": {

@@ -2,7 +2,7 @@
   "name": "@compass/perf-budget",
   "version": "0.1.0",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "description": "The two performance budgets — report LCP and time-travel regeneration — and the throttled-browser runner that measures them.",
   "main": "./dist/index.js",

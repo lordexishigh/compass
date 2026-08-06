@@ -17,9 +17,11 @@ grant of permission.
 
 This applies to every workspace in the monorepo. The packages under packages/,
 the applications under apps/ and the build gates under tools/ are each marked
-"license": "UNLICENSED" and "private": true in their package manifests; none of
-them is published to a public registry, and the manifests say so in the form
-npm understands.
+"license": "SEE LICENSE IN LICENSE" and "private": true in their package
+manifests; none of them is published to a public registry, and the manifests
+point here rather than naming an SPDX identifier, because no published SPDX
+licence describes these terms. That is the form npm documents for a licence that
+is not on the SPDX list.
 
 WHAT THIS DOCUMENT IS NOT
 

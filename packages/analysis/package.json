@@ -2,7 +2,7 @@
   "name": "@compass/analysis",
   "version": "0.1.0",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "description": "The pure deterministic analysis core. Declares no dependencies, by design and by test.",
   "main": "./dist/index.js",

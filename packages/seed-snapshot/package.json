@@ -2,7 +2,7 @@
   "name": "@compass/seed-snapshot",
   "version": "0.1.0",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "description": "The seeded organization as an AnalysisSnapshot for any (team, instant): the fixture the analysis tests, the golden suite and the determinism gate all build from.",
   "main": "./dist/index.js",

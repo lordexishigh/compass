@@ -2,7 +2,7 @@
   "name": "@compass/clock",
   "version": "0.1.0",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "description": "The only source of time in Compass: Instant, TimeWindow, zone helpers and the Clock port.",
   "main": "./dist/index.js",

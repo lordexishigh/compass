@@ -2,7 +2,7 @@
   "name": "@compass/observability",
   "version": "0.1.0",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "description": "Structured logging and the error-reporter scrubber: what leaves the process, and what never does.",
   "main": "./dist/index.js",

@@ -299,3 +299,94 @@ describe('a change to the list is detected from its content', () => {
     expect(describeSubprocessorChanges(without, digest)).toEqual(describeSubprocessorChanges(without, digest));
   });
 });
+
+/**
+ * Every declared field is in the digest, including the two that were once left out.
+ *
+ * The docstring on `subprocessorDigest` promised that "a copy-edit to `purpose` is a change worth
+ * announcing" while the line was built from `id|name|dataCategory|region` — so a subprocessor's stated
+ * purpose could be rewritten to anything at all and the digest would not move. The module documented a
+ * guarantee it did not implement, which is the worst of the three possible states: a reader auditing the
+ * commitment would have read the comment and stopped.
+ */
+describe('a change to any published field is announced', () => {
+  const digest = subprocessorDigest();
+
+  const edited = (id: string, patch: Partial<(typeof SUBPROCESSORS)[number]>): string =>
+    subprocessorDigest(SUBPROCESSORS.map((entry) => (entry.id === id ? { ...entry, ...patch } : entry)));
+
+  it('announces a rewritten purpose — the case the docstring always claimed', () => {
+    const changes = describeSubprocessorChanges(
+      digest,
+      edited('cloud-host', { purpose: 'Also trains models on your data.' }),
+    );
+
+    expect(changes, 'a purpose rewrite must reach the people who asked to be told').toHaveLength(1);
+    expect(changes[0]).toMatch(/^Changed: Fly\.io —/);
+  });
+
+  it('announces a subprocessor becoming non-optional', () => {
+    // `optional: true → false` means a deployment can no longer switch this one off. No other field
+    // moves, so before this the change was invisible to the notice job.
+    const changes = describeSubprocessorChanges(digest, edited('error-tracker', { optional: false }));
+
+    expect(changes).toHaveLength(1);
+    expect(changes[0]).toMatch(/^Changed: Sentry —/);
+  });
+
+  it('still ignores a reordering', () => {
+    expect(subprocessorDigest([...SUBPROCESSORS].reverse())).toBe(digest);
+  });
+});
+
+/**
+ * Widening the digest line must not mail everybody a change that did not happen.
+ *
+ * A subscriber's stored digest is whatever the format was when they were last told. Adding `purpose`
+ * and `optional` made every stored row shorter than every current one, and a raw string comparison
+ * would have reported all six subprocessors as "Changed" on the first run after the deploy — with a
+ * sentence naming a data category and region that had not moved. Sending a data protection officer a
+ * false change notice is a worse failure than the missing-purpose bug this fixed.
+ */
+describe('a subscriber whose stored digest predates a column', () => {
+  /** The four-column format, exactly as it was written before `purpose` and `optional` joined. */
+  const previousFormat = (list: readonly (typeof SUBPROCESSORS)[number][] = SUBPROCESSORS): string =>
+    list
+      .map((entry) => `${entry.id}|${entry.name}|${entry.dataCategory}|${entry.region}`)
+      .slice()
+      .sort()
+      .join('\n');
+
+  it('is told nothing when only the format widened', () => {
+    expect(
+      describeSubprocessorChanges(previousFormat(), subprocessorDigest()),
+      'the format grew; the list did not change, and saying it did would be untrue',
+    ).toEqual([]);
+  });
+
+  it('is still told about a real change made in the same release', () => {
+    // The migration tolerance must not swallow an actual edit that lands alongside it.
+    const moved = subprocessorDigest(
+      SUBPROCESSORS.map((entry) => (entry.id === 'cloud-host' ? { ...entry, region: 'Frankfurt' } : entry)),
+    );
+    const changes = describeSubprocessorChanges(previousFormat(), moved);
+
+    expect(changes).toHaveLength(1);
+    expect(changes[0]).toContain('previously processed in');
+  });
+
+  it('is still told about an addition and a removal across the format change', () => {
+    const withoutSentry = previousFormat(SUBPROCESSORS.filter((entry) => entry.id !== 'error-tracker'));
+
+    const added = describeSubprocessorChanges(withoutSentry, subprocessorDigest());
+    expect(added).toHaveLength(1);
+    expect(added[0]).toMatch(/^Added: Sentry —/);
+
+    const removed = describeSubprocessorChanges(
+      previousFormat(),
+      subprocessorDigest(SUBPROCESSORS.filter((entry) => entry.id !== 'error-tracker')),
+    );
+    expect(removed).toHaveLength(1);
+    expect(removed[0]).toMatch(/^Removed: Sentry —/);
+  });
+});

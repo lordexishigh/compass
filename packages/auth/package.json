@@ -2,7 +2,7 @@
   "name": "@compass/auth",
   "version": "0.1.0",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "description": "Identity, sessions, the four-role matrix and seat lifecycle: the one place an access decision is made.",
   "main": "./dist/index.js",

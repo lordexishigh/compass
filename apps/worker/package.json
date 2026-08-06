@@ -2,7 +2,7 @@
   "name": "@compass/worker",
   "version": "0.1.0",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "description": "The pg-boss worker process: scheduled ingest, generation and delivery.",
   "main": "./dist/index.js",
