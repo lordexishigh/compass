@@ -3,6 +3,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { MATRIX_ROUTES, authorize, findRouteRule, isPublicRoute } from '@compass/auth';
+import { ERROR_REPORTING_CONSENTS, PRIVACY_DEFAULTS } from '@compass/db';
 import { describe, expect, it } from 'vitest';
 
 import { buildReportView } from '../lib/view-model';
@@ -287,5 +288,46 @@ describe('the privacy screen and its routes', () => {
     expect(authorize({ route: '/api/privacy/deletion/undo', action: 'GET', principal: 'public' }).allowed).toBe(
       false,
     );
+  });
+});
+
+/**
+ * The error-reporting consent, from the stored value through to what the reader sees.
+ *
+ * Three claims the feature rests on, none of which any other test would notice breaking:
+ * the answer lives in the organization's privacy row rather than in a cookie of its own, only an
+ * owner may give it, and `unset` is a state the API cannot be talked into writing.
+ */
+describe('the error-reporting consent', () => {
+  it('is the organization’s posture, so only an owner may answer', () => {
+    // It decides whether a third party receives anything at all — the same class of decision as a
+    // retention window, and gated by the same route.
+    expect(
+      authorize({ route: '/api/privacy/settings', action: 'PATCH', principal: 'owner', seatActive: true }).allowed,
+    ).toBe(true);
+    for (const principal of ['manager', 'member', 'viewer', 'public'] as const) {
+      expect(
+        authorize({ route: '/api/privacy/settings', action: 'PATCH', principal, seatActive: true }).allowed,
+        `${principal} must not decide for the organization`,
+      ).toBe(false);
+    }
+  });
+
+  it('has no route of its own, because the notice writes through the privacy settings', () => {
+    /**
+     * The design constraint stated as an assertion. A consent banner's usual shape is its own
+     * endpoint writing its own cookie, which is how a product ends up with two places that
+     * disagree about what the user chose. There is exactly one writer here.
+     */
+    expect(findRouteRule('/api/privacy/consent')).toBeNull();
+    expect(findRouteRule('/api/consent')).toBeNull();
+  });
+
+  it('defaults to unset, so a deployment reports nothing until somebody answers', () => {
+    expect(PRIVACY_DEFAULTS.errorReportingConsent).toBe('unset');
+    // And the vocabulary keeps "not asked" distinct from "said no", which is what the notice keys
+    // on: collapse them and it either never appears or never goes away.
+    expect(ERROR_REPORTING_CONSENTS).toContain('unset');
+    expect(ERROR_REPORTING_CONSENTS).toContain('denied');
   });
 });

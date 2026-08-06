@@ -3,6 +3,7 @@ import {
   LLM_MINIMIZATION_MODES,
   RAW_RETENTION_CHOICES,
   type DerivedRetentionYears,
+  type ErrorReportingConsent,
   type LlmMinimizationMode,
   type RawRetentionDays,
 } from '@compass/db';
@@ -93,6 +94,36 @@ function readMode(
   return { value: raw as LlmMinimizationMode };
 }
 
+/**
+ * The error-reporting answer. Owner-only like the rest of this route, because it is the
+ * organization's posture rather than one visitor's preference.
+ *
+ * `unset` is refused as an *input* while remaining a legal stored value. It means "nobody has been
+ * asked", so a request that set it would be un-asking a question that had already been answered —
+ * deleting a consent record rather than withdrawing consent, and putting the notice back up as
+ * though the decision had never happened. Withdrawal is `denied`: a different statement, a
+ * different audit row, and one that stays findable.
+ */
+function readErrorReportingConsent(
+  body: Record<string, unknown>,
+): { readonly value: ErrorReportingConsent | undefined } | { readonly response: NextResponse } {
+  const raw = body['errorReportingConsent'];
+  if (raw === undefined) return { value: undefined };
+  if (raw !== 'granted' && raw !== 'denied') {
+    return {
+      response: jsonError(
+        'invalid_request',
+        '`errorReportingConsent` must be `granted` or `denied`. It decides whether a scrubbed stack trace may ' +
+          'leave this deployment when something breaks. Either answer ends the notice and either can be changed ' +
+          'again later; `unset` is not accepted, because that is the state before anybody answered rather than ' +
+          'an answer.',
+        400,
+      ),
+    };
+  }
+  return { value: raw };
+}
+
 export async function PATCH(request: Request): Promise<NextResponse> {
   const admitted = await guard({ request, route: ROUTE, action: 'PATCH' });
   if (!admitted.allowed) return admitted.response;
@@ -106,11 +137,19 @@ export async function PATCH(request: Request): Promise<NextResponse> {
   if ('response' in derivedWindow) return derivedWindow.response;
   const mode = readMode(parsed.body);
   if ('response' in mode) return mode.response;
+  const consent = readErrorReportingConsent(parsed.body);
+  if ('response' in consent) return consent.response;
 
-  if (rawWindow.value === undefined && !derivedWindow.present && mode.value === undefined) {
+  if (
+    rawWindow.value === undefined &&
+    !derivedWindow.present &&
+    mode.value === undefined &&
+    consent.value === undefined
+  ) {
     return jsonError(
       'invalid_request',
-      'Send at least one of `rawEventRetentionDays`, `derivedRetentionYears` or `llmMinimizationMode`.',
+      'Send at least one of `rawEventRetentionDays`, `derivedRetentionYears`, `llmMinimizationMode` or ' +
+        '`errorReportingConsent`.',
       400,
     );
   }
@@ -122,6 +161,7 @@ export async function PATCH(request: Request): Promise<NextResponse> {
         ...(rawWindow.value === undefined ? {} : { rawEventRetentionDays: rawWindow.value }),
         ...(derivedWindow.present ? { derivedRetentionYears: derivedWindow.value } : {}),
         ...(mode.value === undefined ? {} : { llmMinimizationMode: mode.value }),
+        ...(consent.value === undefined ? {} : { errorReportingConsent: consent.value }),
       },
       admitted.identity,
       admitted.now,

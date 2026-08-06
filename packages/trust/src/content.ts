@@ -618,9 +618,16 @@ export const PRIVACY_POLICY: PolicyDocument = Object.freeze({
           'a sign-in cookie means.',
         'Error reports are a separate question and worth stating plainly here rather than leaving to ' +
           'the subprocessor list: they are generated **on the server**, never in your browser, so ' +
-          'nothing about them depends on a device choice. Stack traces pass through a scrubber that ' +
+          'nothing about them is decided by your device. Stack traces pass through a scrubber that ' +
           'removes addresses, credentials and ingested text before an event leaves the process, and a ' +
           'deployment with no error-tracking key sends none at all.',
+        'They are also the one thing here Compass asks permission for, and it asks the organization ' +
+          'rather than the browser. Until an owner answers on the privacy screen the setting is ' +
+          '`unset` and **nothing is sent** — errors go to the deployment’s own log and no further. An ' +
+          'owner can grant it, refuse it, or change either answer later, and every change is written ' +
+          'to the audit log with who made it. This is the reason there is no cookie banner asking ' +
+          'about cookies that need no consent: the question worth asking is this one, and it is asked ' +
+          'once, where it can actually be answered.',
       ]),
       bullets: Object.freeze([
         '`compass_session` — proves you are signed in. It holds a random secret; the database keeps ' +

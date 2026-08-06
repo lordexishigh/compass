@@ -1,3 +1,4 @@
+import type { ErrorReportingConsent } from '@compass/db';
 import { scrubEvent } from '@compass/observability';
 import * as Sentry from '@sentry/nextjs';
 
@@ -52,20 +53,54 @@ export function sentryOptions(dsn: string): Sentry.NodeOptions {
 }
 
 /**
- * Initializes Sentry when a DSN is configured. Returns whether it did.
+ * Initializes Sentry when a DSN is configured **and** the organization has agreed. Returns whether
+ * it did.
  *
  * Idempotent: Next.js can evaluate `instrumentation.ts` more than once across the server and edge
  * runtimes, and a second `Sentry.init` would replace a live client mid-request.
+ *
+ * ## Why consent is a parameter and not something this reads
+ *
+ * Because of where this is called from. `register()` in `instrumentation.ts` runs once at process
+ * boot, before any request exists — there is no organization in scope and no stored choice to read,
+ * so a version of this function that went and looked would have nothing to look at. The decision
+ * therefore arrives from the caller that *does* have a request, and this function stays a pure
+ * function of (environment, consent) that a test can drive through all six combinations.
+ *
+ * ## Why the SDK is not initialized while consent is `unset`
+ *
+ * An initialized client is not inert. It installs global handlers, captures unhandled rejections
+ * and can flush on exit, so "initialize now, decide later" would mean events leaving the process
+ * during the window before anybody answered. Deferring the `init` itself is the only version of
+ * this gate that is true at every instant rather than usually.
  */
-export function initErrorReporting(environment: Record<string, string | undefined> = process.env): boolean {
+export function initErrorReporting(
+  input: {
+    readonly consent: ErrorReportingConsent;
+    readonly environment?: Record<string, string | undefined>;
+  } = { consent: 'unset' },
+): boolean {
+  const environment = input.environment ?? process.env;
   const dsn = environment[SENTRY_DSN_ENV_VAR];
   if (dsn === undefined || dsn.length === 0) return false;
+  // `denied` and `unset` behave identically here and mean different things elsewhere: the banner
+  // shows for one and not the other. See `ERROR_REPORTING_CONSENTS`.
+  if (input.consent !== 'granted') return false;
   if (Sentry.getClient() !== undefined) return true;
 
   Sentry.init(sentryOptions(dsn));
   return true;
 }
 
-/** Whether error reporting is configured, for `/api/health` to state rather than imply. */
+/**
+ * Whether error reporting is *configured* — a DSN exists — regardless of consent.
+ *
+ * Kept distinct from "is reporting happening", which `/api/health` also needs to say, because an
+ * operator debugging a silent reporter has to be able to tell "no DSN" from "nobody has agreed
+ * yet". Two different problems with two different fixes, and one boolean could not name either.
+ */
 export const errorReportingConfigured = (environment: Record<string, string | undefined> = process.env): boolean =>
   (environment[SENTRY_DSN_ENV_VAR] ?? '').length > 0;
+
+/** Whether the SDK is live right now. False until an organization has agreed and a DSN is set. */
+export const errorReportingActive = (): boolean => Sentry.getClient() !== undefined;

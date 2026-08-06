@@ -31,6 +31,7 @@ import {
   updatePrivacySettings,
   type ConversationKind,
   type DerivedRetentionYears,
+  type ErrorReportingConsent,
   type LlmMinimizationMode,
   type RawRetentionDays,
   type ScopedDb,
@@ -176,6 +177,7 @@ export async function saveRetention(
     readonly rawEventRetentionDays?: RawRetentionDays;
     readonly derivedRetentionYears?: DerivedRetentionYears;
     readonly llmMinimizationMode?: LlmMinimizationMode;
+    readonly errorReportingConsent?: ErrorReportingConsent;
   },
   identity: Identity | null,
   now: Instant,
@@ -226,6 +228,26 @@ export async function saveRetention(
       targetId: scoped.organizationId,
       before: { llmMinimizationMode: before.llmMinimizationMode },
       after: { llmMinimizationMode: after.llmMinimizationMode },
+      occurredAt: now,
+    });
+  }
+
+  if (before.errorReportingConsent !== after.errorReportingConsent) {
+    /**
+     * Its own audit row, for the same reason the other two have theirs.
+     *
+     * This is the one setting on the page whose subject is a *third party*: it decides whether an
+     * external processor receives anything at all. An owner asked in a year "when did we agree to
+     * that, and who agreed" needs a row that answers it by name, and the transition is recorded in
+     * both directions so a withdrawal is as findable as a grant.
+     */
+    await recordAudit(scoped, {
+      action: 'privacy.error_reporting_consent_changed',
+      actorUserId: identity?.user.id ?? null,
+      targetKind: 'organization',
+      targetId: scoped.organizationId,
+      before: { errorReportingConsent: before.errorReportingConsent },
+      after: { errorReportingConsent: after.errorReportingConsent },
       occurredAt: now,
     });
   }

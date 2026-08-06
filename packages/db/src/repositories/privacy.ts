@@ -94,6 +94,23 @@ export const LLM_MINIMIZATION_MODES = ['full', 'redacted', 'none'] as const;
 export type LlmMinimizationMode = (typeof LLM_MINIMIZATION_MODES)[number];
 
 /**
+ * Whether this organization has agreed that stack traces may leave the process.
+ *
+ * Three values, not a boolean, and the third is the whole point. `unset` is *not yet asked* — a
+ * state a boolean cannot express, because `false` would be indistinguishable from a deliberate no
+ * and would silently become one the moment somebody read it. The banner shows only while the value
+ * is `unset`; the reporter sends only while it is `granted`; and `denied` and `unset` produce the
+ * same behaviour today for different reasons, which is exactly why they are different rows.
+ *
+ * The default is `unset` rather than `granted`, which is the direction that costs something: a
+ * deployment with a `SENTRY_DSN` reports nothing until an owner says yes. That is the correct
+ * default for processing that is a *choice* rather than a necessity — Compass runs identically
+ * without it, and errors still reach the structured log either way.
+ */
+export const ERROR_REPORTING_CONSENTS = ['unset', 'granted', 'denied'] as const;
+export type ErrorReportingConsent = (typeof ERROR_REPORTING_CONSENTS)[number];
+
+/**
  * What a new organization gets, and what every existing one was backfilled with.
  *
  * These three numbers are the documented defaults. `docs/ENGINEERING.md` quotes them
@@ -116,6 +133,9 @@ export const PRIVACY_DEFAULTS = Object.freeze({
   rawEventRetentionDays: 90 as RawRetentionDays,
   derivedRetentionYears: 3 as DerivedRetentionYears,
   llmMinimizationMode: 'redacted' as LlmMinimizationMode,
+  // Not yet asked. See `ERROR_REPORTING_CONSENTS`: the reporter stays silent until an owner
+  // answers, so a fresh deployment with a DSN configured still sends nothing anywhere.
+  errorReportingConsent: 'unset' as ErrorReportingConsent,
 });
 
 /**
@@ -161,8 +181,13 @@ export interface PrivacySettingsRow {
   /** Null means indefinite: derived data and reports are never purged. */
   readonly derivedRetentionYears: number | null;
   readonly llmMinimizationMode: LlmMinimizationMode;
+  /** `unset` until an owner answers. The reporter sends only on `granted`. */
+  readonly errorReportingConsent: ErrorReportingConsent;
   readonly updatedAt: Instant;
 }
+
+const asConsent = (value: string): ErrorReportingConsent =>
+  (ERROR_REPORTING_CONSENTS as readonly string[]).includes(value) ? (value as ErrorReportingConsent) : 'unset';
 
 const asMode = (value: string): LlmMinimizationMode =>
   (LLM_MINIMIZATION_MODES as readonly string[]).includes(value) ? (value as LlmMinimizationMode) : 'none';
@@ -172,6 +197,7 @@ const settingsRow = (row: typeof orgPrivacySettings.$inferSelect): PrivacySettin
   rawEventRetentionDays: row.rawEventRetentionDays,
   derivedRetentionYears: row.derivedRetentionYears,
   llmMinimizationMode: asMode(row.llmMinimizationMode),
+  errorReportingConsent: asConsent(row.errorReportingConsent),
   updatedAt: fromDatabaseInstant(row.updatedAt),
 });
 
@@ -205,6 +231,7 @@ export async function ensurePrivacySettings(
       rawEventRetentionDays: PRIVACY_DEFAULTS.rawEventRetentionDays,
       derivedRetentionYears: PRIVACY_DEFAULTS.derivedRetentionYears,
       llmMinimizationMode: PRIVACY_DEFAULTS.llmMinimizationMode,
+      errorReportingConsent: PRIVACY_DEFAULTS.errorReportingConsent,
       createdAt: at,
       updatedAt: at,
     })
@@ -227,6 +254,7 @@ export async function updatePrivacySettings(
     readonly rawEventRetentionDays?: RawRetentionDays;
     readonly derivedRetentionYears?: DerivedRetentionYears;
     readonly llmMinimizationMode?: LlmMinimizationMode;
+    readonly errorReportingConsent?: ErrorReportingConsent;
     readonly at: Instant;
   },
 ): Promise<void> {
@@ -241,6 +269,9 @@ export async function updatePrivacySettings(
         ? {}
         : { derivedRetentionYears: input.derivedRetentionYears }),
       ...(input.llmMinimizationMode === undefined ? {} : { llmMinimizationMode: input.llmMinimizationMode }),
+      ...(input.errorReportingConsent === undefined
+        ? {}
+        : { errorReportingConsent: input.errorReportingConsent }),
       updatedAt: toDatabaseInstant(input.at),
     })
     .execute();

@@ -1,6 +1,8 @@
 import { RAW_TEXT_FIELD_NAMES, REDACTED, leaksIn } from '@compass/observability';
 import { describe, expect, it } from 'vitest';
 
+import { ERROR_REPORTING_CONSENTS } from '@compass/db';
+
 import { SENTRY_DSN_ENV_VAR, errorReportingConfigured, initErrorReporting, sentryOptions } from '../lib/error-reporting';
 
 /**
@@ -183,11 +185,56 @@ describe('the structural gate', () => {
 
 describe('a deployment with no DSN', () => {
   it('does not initialize, and says so rather than pretending', () => {
-    expect(initErrorReporting({})).toBe(false);
+    expect(initErrorReporting({ consent: 'granted', environment: {} })).toBe(false);
     expect(errorReportingConfigured({})).toBe(false);
   });
 
   it('reports configured when a DSN is present', () => {
     expect(errorReportingConfigured({ [SENTRY_DSN_ENV_VAR]: DSN })).toBe(true);
+  });
+});
+
+/**
+ * The consent gate, as a truth table.
+ *
+ * Two independent conditions decide whether a stack trace can leave the process — the operator has
+ * configured a destination, and the organization has agreed to it — and either one alone used to be
+ * enough because only the first existed. Enumerated rather than spot-checked, because the failure
+ * this guards against is one arm of a boolean quietly inverting and nothing looking different until
+ * an organization's traces are in a third party's dashboard.
+ */
+describe('consent decides whether the reporter starts at all', () => {
+  const withDsn = { [SENTRY_DSN_ENV_VAR]: DSN };
+
+  it.each([
+    ['unset', false],
+    ['denied', false],
+  ] as const)('stays silent with a DSN configured and consent %s', (consent, expected) => {
+    // The important half. A configured deployment reports *nothing* until somebody answers, so the
+    // window between deploying and deciding is not a window in which data leaves.
+    expect(initErrorReporting({ consent, environment: withDsn })).toBe(expected);
+  });
+
+  it.each(['unset', 'granted', 'denied'] as const)('stays silent with no DSN and consent %s', (consent) => {
+    // Consent is permission, not configuration. Agreeing does not conjure a destination.
+    expect(initErrorReporting({ consent, environment: {} })).toBe(false);
+  });
+
+  it('defaults to unset when the caller says nothing', () => {
+    /**
+     * The signature's own safety property. `initErrorReporting()` with no argument is what a
+     * careless future call site looks like, and it must fail closed — a default of `granted` would
+     * make the gate opt-out by accident rather than opt-in by design.
+     */
+    expect(initErrorReporting()).toBe(false);
+  });
+
+  it('treats denied and unset identically here, and they are still different values', () => {
+    // Same behaviour, different meanings: the banner shows for one and not the other. If these ever
+    // collapse into a boolean, the banner loses the only thing it keys on.
+    expect(ERROR_REPORTING_CONSENTS).toEqual(['unset', 'granted', 'denied']);
+    expect(initErrorReporting({ consent: 'unset', environment: withDsn })).toBe(
+      initErrorReporting({ consent: 'denied', environment: withDsn }),
+    );
   });
 });

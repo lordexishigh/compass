@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { headers } from 'next/headers';
 
 import { AppFeedbackControl } from '../components/app-feedback-control';
+import { ErrorReportingNotice } from '../components/error-reporting-notice';
 
 import './globals.css';
 
@@ -79,6 +80,13 @@ export default async function RootLayout({ children }: { readonly children: Reac
           endpoint allows the `public` principal, so the demonstration reader can use it with no
           session at all.
         */}
+        {/*
+          Before the feedback pill and after the document, so the reading order is: the report, then
+          the one thing Compass is waiting to be told, then the control for telling it something
+          else. It renders nothing at all unless an error tracker is configured and the question is
+          unanswered — see the component.
+        */}
+        <ErrorReportingNotice />
         <AppFeedbackControl />
       </body>
     </html>
