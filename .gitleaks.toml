@@ -3,12 +3,25 @@
 # The gate runs on every pull request over the whole of git *history* — a credential committed and
 # then reverted is still leaked — and fails the build on a detected credential.
 #
-# The allowlist below is deliberately narrow, and it exempts **values, never paths**. Blanket-ignoring
-# `.env*` is the commonest way this gate becomes decorative: `.env.local` is exactly where a real key
-# lands, so the pattern that would make the first build green is the pattern that makes every later
-# build meaningless. A path exemption is the same mistake one step smaller — it switches off scanning
-# for a whole file rather than for a known-harmless string — so there is no `paths` entry here at all,
-# and a real credential committed to `.env.example` is still a finding.
+# Exactly three things are exempt, and they are listed here so this paragraph can be checked against
+# the file rather than trusted:
+#
+#   1. `postgresql://compass:compass@localhost:5432/compass`   — a value
+#   2. `postgresql://postgres:postgres@localhost:5432/compass` — a value
+#   3. `tools/eslint-plugin-compass/rules/`                    — a path
+#
+# The first two are loopback placeholders that appear in documentation. The third is the directory
+# holding the ESLint rules that detect credentials for a living, which therefore describes credential
+# shapes and reports itself; see `## The path, and the trade it makes` on the allowlist below for the
+# argument and for what carries the weight instead. It is the only path exemption in this file, and
+# adding a second one should be at least as hard an argument as that block makes.
+#
+# **No `.env` path is exempt, and none may become one.** Blanket-ignoring `.env*` is the commonest way
+# this gate becomes decorative: `.env.local` is exactly where a real key lands, so the pattern that
+# would make the first build green is the pattern that makes every later build meaningless. A path
+# exemption switches off scanning for a whole file rather than for a known-harmless string, which is
+# why there is one rather than a habit of them — and why a real credential committed to `.env.example`
+# is still a finding.
 #
 # `.env.local` is untracked and covered by `.gitignore` (`.env.*`), so it never reaches history and
 # needs no entry here. If it ever appears in a diff, this gate should and will fail.
@@ -29,26 +42,56 @@ description = "A PostgreSQL connection string carrying a non-placeholder passwor
 # as "no scanning happened".
 #
 # So the exemption moved to where gitleaks can express it — the allowlist `regexes` below — and the
-# pattern is now plain RE2. The `{8,}` bound does most of the work on its own: every placeholder in
-# this repository uses the password `compass`, which is seven characters, so none of them reach it.
+# pattern is now plain RE2.
+#
+# The `{8,}` bound is a length floor against noise, not the thing that spares the placeholders, and
+# it is worth being exact about which does what. `compass` is seven characters, so
+# `postgresql://compass:compass@…` never reaches this rule at all. `postgres` is eight, so
+# `postgresql://postgres:postgres@…` *does* match it and is spared only by the allowlist entry
+# below. Both placeholders are listed there for that reason; deleting either on the theory that the
+# bound covers it would turn the second into a finding on every run.
 regex = '''postgres(?:ql)?://[a-zA-Z0-9._%-]+:[^\s:@/]{8,}@'''
 tags = ["database", "credential"]
 
-# One allowlist, matching on value only.
+# One allowlist, with two conditions — and they are ORed, not ANDed.
 #
-# The `paths` entry that used to sit here — `^\.env\.example$` — was a hole rather than a narrowing.
-# Gitleaks ORs the conditions inside an allowlist by default (`condition = "OR"`), so the path entry
-# exempted that file from *every* rule on its own, and the comment claiming the path and the values
-# were ANDed described behaviour the file did not have. A live key pasted into `.env.example` would
-# have been reported by nothing.
+# That is gitleaks' default (`condition = "OR"`) and it is stated here because getting it wrong is
+# how this file broke before. A `paths` entry of `^\.env\.example$` used to sit here under a comment
+# claiming the path and the values were ANDed; they were not, so that one line exempted `.env.example`
+# from *every* rule on its own and a live key pasted into it would have been reported by nothing.
+# It was removed. Anything added below inherits the same OR, so each condition must be able to stand
+# on its own as an exemption.
 #
-# Matching by literal value instead is what the surrounding argument always meant: these two exact
-# loopback strings are documentation, anything else anywhere is a finding, and there is no file in the
-# repository that scanning is switched off for. Both strings are kept even though the `{8,}` bound
-# already spares the first, because the allowlist also applies to the inherited default rules.
+# ## The values
+#
+# Two exact loopback strings, shared by `.env.example`, `docker-compose.yml` and `drizzle.config.ts`.
+# Both are kept even though the `{8,}` bound above already spares the first, because this allowlist
+# also applies to the inherited default rules.
+#
+# ## The path, and the trade it makes
+#
+# `tools/eslint-plugin-compass/rules/` holds the credential-hygiene rules themselves. Their source
+# necessarily discusses credential shapes — that is what they detect — and the scanner cannot tell a
+# rule *about* a secret from a secret, so the directory reports itself. A gate whose only standing
+# finding is its own source is a gate people learn to skim, and the next real finding arrives in that
+# same list.
+#
+# Being straight about the cost, because the OR above means it is real: this switches scanning off for
+# that directory entirely, including for a credential genuinely pasted there. Three things carry the
+# weight instead. The rule sources are held to a stated invariant — no credential-shaped literal and no
+# provider prefix, in code or comment — written into `no-credential-literal.js` and true today.
+# `tests/detection.test.js` pins the detection vocabulary, so keeping that invariant cannot quietly
+# weaken the rules. And the scope is one directory of ESLint rule modules — build tooling that ships
+# to nobody, holds no configuration, and reaches no network or database.
+#
+# Keep it exactly this narrow. It is `rules/`, not the plugin, not `tools/`, and never a bare rule-id
+# exemption — those would switch off scanning for code that does handle real credentials.
 [allowlist]
-description = "The exact loopback placeholder strings shared by .env.example, docker-compose and drizzle.config"
+description = "The loopback placeholder strings, and the ESLint rule sources that describe credential shapes for a living"
 regexes = [
   '''postgresql://compass:compass@localhost:5432/compass''',
   '''postgresql://postgres:postgres@localhost:5432/compass''',
+]
+paths = [
+  '''^tools/eslint-plugin-compass/rules/''',
 ]

@@ -2,6 +2,7 @@
   "name": "@compass/renderers",
   "version": "0.1.0",
   "private": true,
+  "license": "UNLICENSED",
   "type": "module",
   "description": "Renderers over one structured report: six sections, fixed order, prose only.",
   "main": "./dist/index.js",

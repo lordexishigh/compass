@@ -249,3 +249,124 @@ describe('the connector-port testkit is reachable as a subpath', () => {
     expect(barrel).not.toContain('./testkit');
   });
 });
+
+/**
+ * Ownership terms, declared once and everywhere.
+ *
+ * A monorepo where the root says one thing and nineteen workspaces say nothing is not
+ * ambiguous only in the abstract: `npm pack`, every SBOM generator and every corporate
+ * licence scanner read the *manifest*, not the LICENSE file, and a manifest with no
+ * `license` field is reported as "UNKNOWN" — which a procurement review reads as a risk
+ * rather than as an omission. So the field is asserted on every workspace rather than on
+ * the root alone, and a new package is a build failure until it declares one.
+ *
+ * ## One identifier, everywhere — and why it is not `SEE LICENSE IN LICENSE`
+ *
+ * All twenty-eight manifests say `UNLICENSED`, npm's registered spelling for "proprietary,
+ * no rights granted". It is the honest pairing with the `private: true` they already set,
+ * and one identifier is the point: a licence audit that reports twenty-seven packages one
+ * way and the root another has found a discrepancy to chase, and there is none to find.
+ *
+ * `SEE LICENSE IN LICENSE` was tried and is worse here, for a reason that is easy to miss.
+ * npm defines it as a pointer **relative to the directory of the manifest it appears in**,
+ * so in `packages/clock/package.json` it names `packages/clock/LICENSE` — a file that does
+ * not exist and should not, since nothing in this monorepo is packed or published
+ * individually. Twenty-seven manifests were briefly dangling references that `npm pack` and
+ * every scanner resolve to nothing, which is worse than the ambiguity the field was added to
+ * remove: it looks answered and is not. Keeping the pointer at the root alone fixed the
+ * dangling half and left the mismatch, so it is gone from there too.
+ *
+ * The root `LICENSE` file has not gone anywhere and is still where the terms are written and
+ * maintained — `UNLICENSED` says a reader may not use the code, and that file says on what
+ * terms a named recipient may. The assertions below hold the file to being real, and hold
+ * any manifest that ever adopts the pointer form to actually having the file it names.
+ *
+ * A permissive identifier anywhere here would be a grant nobody made.
+ */
+describe('every workspace declares who owns it', () => {
+  /** The one value. Every assertion below compares against it, root included. */
+  const LICENSE_FIELD = 'UNLICENSED';
+  const LICENSE_PATH = join(REPO_ROOT, 'LICENSE');
+
+  it('ships a LICENSE at the repository root', () => {
+    expect(existsSync(LICENSE_PATH), 'a repository with no LICENSE leaves reuse terms to guesswork').toBe(true);
+
+    const text = readFileSync(LICENSE_PATH, 'utf8');
+    expect(text).toContain('All rights reserved');
+    expect(text.length, 'a stub LICENSE is worse than none — it looks settled').toBeGreaterThan(500);
+  });
+
+  it('names a real holder rather than a placeholder', () => {
+    /**
+     * `packages/trust/src/content.ts` refuses to publish the `[DATE]`-bearing legal drafts on
+     * the grounds that a document with a bracket in it is worse than no document. A LICENSE
+     * with `[COMPANY]` in it is the same defect, and it is the single likeliest thing to be
+     * left behind when one is added in a hurry.
+     */
+    const text = readFileSync(LICENSE_PATH, 'utf8');
+    const placeholders = text.match(/\[[A-Z][A-Z _-]{2,}\]|<[a-z ]+entity[a-z ]*>|TODO|FIXME|XXX/g) ?? [];
+
+    expect(placeholders, 'the LICENSE still carries a fill-in-the-blank').toEqual([]);
+    expect(text, 'the LICENSE names no copyright holder').toMatch(/Copyright \(c\) \d{4} \S/);
+  });
+
+  it('declares it in the root manifest', () => {
+    const root = readJsonFile<{ readonly license?: string }>(join(REPO_ROOT, 'package.json'));
+    expect(root.license).toBe(LICENSE_FIELD);
+  });
+
+  it.each(asCases(allPackages))('%s declares it too', (_label, workspacePackage) => {
+    const manifest = readJsonFile<{ readonly license?: string; readonly private?: boolean }>(
+      join(workspacePackage.absoluteDirectory, 'package.json'),
+    );
+
+    expect(manifest.license, `${workspacePackage.relativeDirectory} has no license field`).toBe(LICENSE_FIELD);
+    // Proprietary terms and a publishable package would be a contradiction: the field says
+    // nobody may use it and the absent `private` flag says npm may publish it to everybody.
+    expect(manifest.private, `${workspacePackage.relativeDirectory} is proprietary but publishable`).toBe(true);
+  });
+
+  /**
+   * The trap that made the pointer form wrong here, kept as a gate rather than as a memory.
+   *
+   * `SEE LICENSE IN <file>` only means anything when the file sits beside the manifest, and
+   * npm gives no warning when it does not — the reference simply resolves to nothing. Every
+   * manifest in this repository briefly carried exactly that. Nothing uses the form today, so
+   * this asserts over an empty set by design; it is here so that the day somebody reaches for
+   * it, in any manifest including the root, they are made to ship the file too.
+   */
+  it.each([
+    ['<root>', REPO_ROOT] as const,
+    ...allPackages.map((workspacePackage) => [workspacePackage.relativeDirectory, workspacePackage.absoluteDirectory] as const),
+  ])('%s does not point at a LICENSE it has not got', (label, directory) => {
+    const manifest = readJsonFile<{ readonly license?: string }>(join(directory, 'package.json'));
+    const pointer = /^SEE LICENSE IN (.+)$/.exec(manifest.license ?? '');
+    if (pointer === null) return;
+
+    expect(
+      existsSync(join(directory, pointer[1]!.trim())),
+      `${label} names ${pointer[1]} but has no such file — the reference resolves to nothing`,
+    ).toBe(true);
+  });
+
+  it('says the same thing in all twenty-eight, so none is on different terms', () => {
+    /**
+     * The assertion the per-package ones cannot make. Each case above checks a manifest against
+     * the constant; this checks the manifests against *each other*, so a future change that
+     * relicenses the repo has to move all twenty-eight together or fail here. A monorepo where
+     * one package is BUSL and the rest are proprietary is the ambiguity this gate exists to
+     * stop, and it would pass a per-file check that had been edited to match.
+     *
+     * The root is in this set. It was briefly not — it carried the pointer spelling while the
+     * members carried this one — and a licence audit reading the workspace reported two answers
+     * for one repository. Every manifest is compared here for that reason.
+     */
+    const declared = new Set(
+      [REPO_ROOT, ...allPackages.map((workspacePackage) => workspacePackage.absoluteDirectory)].map(
+        (directory) => readJsonFile<{ readonly license?: string }>(join(directory, 'package.json')).license ?? '(none)',
+      ),
+    );
+
+    expect([...declared], 'the workspace does not agree on its licence').toEqual([LICENSE_FIELD]);
+  });
+});

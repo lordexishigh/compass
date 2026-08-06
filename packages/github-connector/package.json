@@ -2,6 +2,7 @@
   "name": "@compass/github-connector",
   "version": "0.1.0",
   "private": true,
+  "license": "UNLICENSED",
   "type": "module",
   "description": "A live code-host ConnectorPort implementation, read-only, proving the port is provider-neutral.",
   "main": "./dist/index.js",

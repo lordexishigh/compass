@@ -2,6 +2,7 @@
   "name": "@compass/web",
   "version": "0.1.0",
   "private": true,
+  "license": "UNLICENSED",
   "type": "module",
   "description": "The manager-facing report view: one quiet page of prose, six fixed sections.",
   "scripts": {

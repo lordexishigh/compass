@@ -1,0 +1,58 @@
+Copyright (c) 2026 The Compass authors. All rights reserved.
+
+PROPRIETARY SOFTWARE — NOT OPEN SOURCE
+
+This repository and everything in it — source code, configuration, database
+migrations, seed data, documentation and the published policy content — is
+proprietary and confidential. It is made available to named recipients under a
+separate written agreement and for no other purpose.
+
+WHAT IS NOT GRANTED
+
+No licence is granted to any person obtaining a copy of this software to use,
+copy, modify, merge, publish, distribute, sublicense, create derivative works
+of, or sell copies of it, in whole or in part, except as expressly permitted in
+writing by the copyright holder. Absence of a technical restriction is not a
+grant of permission.
+
+This applies to every workspace in the monorepo. All twenty-eight manifests — the
+root, the packages under packages/, the applications under apps/ and the build
+gates under tools/ — carry "license": "UNLICENSED", npm's registered spelling for
+proprietary software that grants no rights, and all twenty-eight also set
+"private": true. One identifier, so a licence audit reading this workspace gets
+one answer rather than a discrepancy to chase.
+
+The npm form "SEE LICENSE IN LICENSE" is deliberately not used, including at the
+root. It is resolved relative to the directory of the manifest that uses it, so
+in packages/clock it would name packages/clock/LICENSE — a file that does not
+exist and should not, since none of these packages is published to a registry,
+packed, or distributed on its own. This file is the single place the terms are
+written and maintained; "UNLICENSED" in a manifest says that no rights are
+granted, and this document says on what terms a named recipient may nonetheless
+hold the code.
+
+WHAT THIS DOCUMENT IS NOT
+
+This is the licence for the *source code*. It is not the agreement under which
+anyone uses the hosted product — that is the terms of service, published at
+/legal/terms and authored in packages/trust/src/content.ts. It is not a privacy
+notice either; that is /legal/privacy. Where this document and a signed customer
+agreement differ on the same point, the signed agreement governs the product and
+this document continues to govern the code.
+
+THIRD-PARTY COMPONENTS
+
+Compass depends on open-source software, each component under its own licence.
+Those licences are unaffected by this one and continue to govern their own code;
+nothing here purports to relicense them. The dependency inventory is generated
+as an SBOM — see docs/ and tools/quality-gates/tests/sbom-documentation.test.ts
+for how it is produced and what it must contain.
+
+NO WARRANTY
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

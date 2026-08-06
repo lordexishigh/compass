@@ -2,6 +2,7 @@
   "name": "@compass/seed-connector",
   "version": "0.1.0",
   "private": true,
+  "license": "UNLICENSED",
   "type": "module",
   "description": "A ConnectorPort implementation over checked-in fixtures — the MVP runtime substrate.",
   "main": "./dist/index.js",

@@ -14,10 +14,12 @@
  * ## Why an AST rule and not a secret scanner
  *
  * `gitleaks` already runs over history and catches credentials that *look* like credentials:
- * a `ghp_`-prefixed token, an `sk_live_` key, a connection string with a password in it. It
- * could not catch the owner password above, because that string looked like nothing. It had no
- * provider prefix and low entropy — it was only a credential because of the *name it was bound
- * to*, and a name is a syntactic fact.
+ * a GitHub personal access token, a live Stripe key, a connection string with a password in
+ * it. Their provider prefixes are deliberately not spelled out here — see the invariant
+ * below; naming the vendor is enough to say which shape is meant. It could not catch the
+ * owner password above, because that string looked like nothing. It had no provider prefix
+ * and low entropy — it was only a credential because of the *name it was bound to*, and a
+ * name is a syntactic fact.
  *
  * So the two gates are complementary rather than redundant: entropy and provider shape for
  * the values that betray themselves, and this rule for the ones that only a binding name
@@ -35,14 +37,24 @@
  *   function f(password = '<value>') {}     // default parameter
  *
  * The values are elided rather than spelled out, and that is this file's one invariant beyond
- * the rule itself: **no credential-shaped literal is written here.** It costs the examples
- * nothing, because the argument above is precisely that the value is irrelevant — a binding
- * name is what makes a credential — so a worked example needs no value to be complete. And
- * writing one would put the repository's only credential-shaped assignment inside the rule
- * that exists to ban them, which is how a secret scan starts reporting its own gates and stops
- * being read. `apps/web/tests/helpers/fixture-credentials.ts` states the same rule for the
- * suites; `tests/rules.test.js` beside this file is the one place shapes are written out in
- * full, because there they are the thing under test.
+ * the rule itself: **no credential-shaped literal and no provider prefix is written here** —
+ * not in code, and not in a comment, because a scanner cannot tell the two apart. It costs the
+ * examples nothing, because the argument above is precisely that the value is irrelevant — a
+ * binding name is what makes a credential — so a worked example needs no value to be complete.
+ * And writing one would put the repository's only credential-shaped text inside the rule that
+ * exists to ban them, which is how a secret scan starts reporting its own gates and stops being
+ * read. `apps/web/tests/helpers/fixture-credentials.ts` states the same rule for the suites;
+ * `../tests/rules.test.js` is the one place shapes are written out in full, because there they
+ * are the thing under test.
+ *
+ * `.gitleaks.toml` exempts `rules/` — this directory, and only it — for that reason. The
+ * exemption deliberately does not reach `../tests/`, so the fixtures next door are still
+ * scanned like any other file: they are shapes, not values, and they should have to stay that
+ * way on the scanner's say-so rather than on ours.
+ *
+ * `tests/detection.test.js` guards the other side of the trade: it asserts the detection surface
+ * still fires on real credential shapes and still spares the benign names, so tidying the prose
+ * can never quietly widen or weaken what the rule catches.
  *
  * Suffix-matched rather than exact, which is the difference from `no-secret-disclosure`'s
  * vocabulary: that rule asks "is this field *the* credential" of a flat name like `token`,
@@ -53,7 +65,10 @@
  *
  *  - **`…_ENV_VAR` and any `…EnvVar`.** `OWNER_PASSWORD_ENV_VAR = 'COMPASS_OWNER_PASSWORD'`
  *    holds the *name* of a variable, not its value. This is the pattern the fix uses, so
- *    banning it would ban the remedy.
+ *    banning it would ban the remedy — and it is allowed by the phrase test rather than by
+ *    `SAFE_SUFFIXES`, which is worth stating because the list used to carry an `envvar` entry
+ *    that could never fire. `words()` splits on `_` and on case, so both spellings end in the
+ *    word `var`, and `var` is not a credential phrase. Nothing has to exempt them.
  *  - **`…Hash`, `…Digest`.** The storage form. Compass stores digests precisely so a leak of
  *    the row is not a leak of the credential.
  *  - **`…Problem`, `…Label`, `…Kind`, `…Version`, `…Message`, `…Placeholder`, `…Pattern`,
@@ -68,11 +83,12 @@
  * ## Scope
  *
  * Registered in `eslint.config.js` over the `SHIPPED_SOURCES` globs — every package's and app's
- * own source, and nothing else. Test files legitimately hold fixture credentials (a `ghp_`-shaped token whose
- * whole job is to be searched for in a database column), and pointing this rule at them would
- * either flood or force the fixtures into a shape that no longer tests anything. The tests
- * that hold such values name them as explicit fixture constants for a reader's benefit; the
- * boundary that matters to the build is this one.
+ * own source, and nothing else. Test files legitimately hold fixture credentials (a token in a
+ * vendor's own prefix shape, whose whole job is to be written to a database column and then
+ * searched for in the raw bytes), and pointing this rule at them would either flood or force
+ * the fixtures into a shape that no longer tests anything. The tests that hold such values name
+ * them as explicit fixture constants for a reader's benefit; the boundary that matters to the
+ * build is this one.
  */
 
 /**
@@ -102,13 +118,21 @@ const CREDENTIAL_PHRASES = [
 ];
 
 /**
- * Suffixes that make a credential-named binding safe. Checked before the ban, and checked
- * against the *whole* normalised name so `ownerPasswordEnvVar` is allowed while
- * `envVarPassword` is not.
+ * Final words that make a credential-named binding safe. Checked before the phrase test.
+ *
+ * Matched against the **last word only** — `parts[parts.length - 1]` in `isCredentialName`,
+ * and nothing wider. So `tokenHash` is spared because it ends in `hash`, while `hashToken`
+ * is not, because it ends in `token`. Every entry here must therefore be a single word that
+ * `words()` can actually produce; a multi-word or hyphenated entry is dead on arrival.
+ *
+ * That is not hypothetical. This list carried `envvar` and `envvars` for the `…_ENV_VAR`
+ * names, and neither could ever fire: `words()` splits on `_` and on case, so
+ * `OWNER_PASSWORD_ENV_VAR` and `ownerPasswordEnvVar` both end in `var`. Both names are
+ * spared anyway — by the phrase test, which finds no credential phrase at the end of them —
+ * so the entries were removed rather than corrected to `var`. Adding `var` would exempt every
+ * binding ending in that word, which is a much larger promise than the one being made.
  */
 const SAFE_SUFFIXES = [
-  'envvar',
-  'envvars',
   'hash',
   'digest',
   'kind',
@@ -273,4 +297,8 @@ const rule = {
 };
 
 export default rule;
-export { CREDENTIAL_PHRASES, isCredentialName, literalString, words };
+// `SAFE_SUFFIXES` is exported for `tests/detection.test.js`, which asserts that the
+// `…_ENV_VAR` names are spared by the phrase test rather than by an entry in it — the
+// distinction that let two dead entries sit here unnoticed. The default export and its
+// `meta`/`create` shape are unchanged; `index.js` reads only that.
+export { CREDENTIAL_PHRASES, SAFE_SUFFIXES, isCredentialName, literalString, words };

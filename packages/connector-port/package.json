@@ -2,6 +2,7 @@
   "name": "@compass/connector-port",
   "version": "0.1.0",
   "private": true,
+  "license": "UNLICENSED",
   "type": "module",
   "description": "The time-windowed query port every data source implements, plus its conformance test kit.",
   "main": "./dist/index.js",
