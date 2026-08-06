@@ -61,12 +61,21 @@ export default async function RootLayout({ children }: { readonly children: Reac
   return (
     <html lang="en">
       <body className="min-h-dvh bg-surface text-ink antialiased">
-        <a
-          href="#report"
-          className="sr-only focus-visible:not-sr-only focus-visible:absolute focus-visible:left-4 focus-visible:top-4 focus-visible:z-50 focus-visible:rounded-lg focus-visible:bg-surface-raised focus-visible:px-3 focus-visible:py-2 focus-visible:text-[13px] focus-visible:text-ink-strong focus-visible:shadow-sm"
-        >
-          Skip to the report
-        </a>
+        {/*
+          The skip link is not here, and that is the fix rather than an omission.
+
+          It used to live at this line as `sr-only focus-visible:not-sr-only`, which failed twice
+          over. It pointed at `#report`, an id only the report document has — on the pricing page,
+          the legal pages and every other route the link resolved to nothing at all, and Compass
+          does not render a link it cannot follow. And `sr-only` clips the anchor to a 1px box at
+          the document origin, so the only pointer that could ever reach it was a keyboard's: a real
+          click on it lands on whatever is underneath. A skip link nobody can activate is a
+          landmark, not an affordance.
+
+          It now renders in `components/report-document.tsx`, beside the id it targets and above the
+          Six Spine it exists to skip past — which is also the only place in this app with anything
+          *to* skip, since every other page puts `<main>` first with no navigation before it.
+        */}
         {children}
         {/*
           Before the feedback pill and after the document, so the reading order is: the report, then

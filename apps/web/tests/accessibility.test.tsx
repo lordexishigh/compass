@@ -609,9 +609,60 @@ describe('landmarks', () => {
 
     const main = document.body.querySelector('main');
     expect(main?.getAttribute('id')).toBe('report');
-    // The skip link in the root layout targets `#report`; if the id moved, the link would go nowhere.
+    // The skip link targets `#report`; if the id moved, the link would go nowhere.
     expect(main?.querySelector('nav'), 'the section rail is navigation, not content').toBeNull();
     expect(main?.querySelector('h1')).not.toBeNull();
+  });
+
+  /**
+   * The skip link has to be operable, not merely present.
+   *
+   * It shipped as `sr-only focus-visible:not-sr-only`, which is the conventional treatment and is
+   * only half an affordance. `sr-only` clips the anchor to a 1px box at the document origin, so it
+   * is reachable by Tab and by nothing else — a pointer, a switch device or a browser automation
+   * harness resolves the link and cannot activate it. The three assertions below are the three
+   * separate ways that failed: hidden, unanchored, and landing nowhere.
+   */
+  describe('the skip link is operable, not decorative', () => {
+    const skipLink = (): HTMLAnchorElement => {
+      document.body.innerHTML = reportMarkup();
+      const links = [...document.body.querySelectorAll('a')];
+      const found = links.find((link) => link.textContent?.trim() === 'Skip to the report');
+      if (found === undefined) throw new Error('the report document renders no skip link');
+      return found;
+    };
+
+    it('is the first focusable thing on the page, ahead of the spine it skips', () => {
+      document.body.innerHTML = reportMarkup();
+      const first = document.body.querySelector('a, button, [tabindex]');
+
+      expect(first?.textContent?.trim()).toBe('Skip to the report');
+    });
+
+    it('is never visually hidden, so a pointer can reach it too', () => {
+      const classes = skipLink().className.split(/\s+/);
+
+      expect(classes, 'an sr-only skip link is clipped to 1px and cannot be clicked').not.toContain(
+        'sr-only',
+      );
+      for (const className of classes) {
+        expect(
+          className,
+          'revealing the link only on focus leaves every non-keyboard reader unable to use it',
+        ).not.toMatch(/^focus(-visible)?:not-sr-only$/);
+      }
+    });
+
+    it('lands focus in the report rather than only scrolling to it', () => {
+      const link = skipLink();
+      expect(link.getAttribute('href')).toBe('#report');
+
+      const target = document.getElementById('report');
+      expect(target, 'the skip link resolves to nothing').not.toBeNull();
+      // Without `tabindex="-1"` the fragment moves the scroll and leaves focus behind, so the
+      // reader's next Tab returns them to the six spine links they just asked to skip.
+      expect(target?.getAttribute('tabindex')).toBe('-1');
+    });
   });
 });
 
@@ -701,8 +752,11 @@ describe('the evidence panel is announced and dismissible', () => {
 // ---------------------------------------------------------------------------
 
 describe('every interactive element is reachable and operable by keyboard', () => {
-  /** Elements that take focus without help, plus anything given an explicit positive tabindex. */
-  const FOCUSABLE = 'a[href], button, input, select, textarea, summary, [tabindex]';
+  /** Elements a reader operates. Each one takes focus without help and must stay in the tab order. */
+  const INTERACTIVE = 'a[href], button, input, select, textarea, summary';
+
+  /** The above, plus anything given an explicit tabindex — including focus destinations. */
+  const FOCUSABLE = `${INTERACTIVE}, [tabindex]`;
 
   it('gives every interactive element on the report a keyboard path', () => {
     document.body.innerHTML = reportMarkup();
@@ -713,13 +767,42 @@ describe('every interactive element is reachable and operable by keyboard', () =
     const unreachable = interactive
       .filter((element) => {
         const tabindex = element.getAttribute('tabindex');
+        if (tabindex === null || Number(tabindex) >= 0) return false;
         // `-1` removes an element from the tab order. On a genuinely interactive element that is a
         // keyboard trap in the other direction: reachable by mouse, unreachable by Tab.
-        return tabindex !== null && Number(tabindex) < 0;
+        //
+        // On an element that is *not* interactive it means the opposite, and it is the only way to
+        // build a working skip link: the anchor sends focus into the region, and the region has to
+        // be able to accept it. `<main id="report" tabindex="-1">` is a destination, not a control,
+        // and putting it in the tab order would give a reader an extra stop on nothing.
+        return element.matches(INTERACTIVE);
       })
       .map((element) => element.outerHTML);
 
     expect(unreachable, 'these are operable by mouse and unreachable by keyboard').toEqual([]);
+  });
+
+  /**
+   * The exemption above is not a loophole, because a focus destination has to be something the page
+   * actually sends focus to. Any `tabindex="-1"` on a non-interactive element must be the target of
+   * a same-page link; otherwise it is a stray attribute, and the check that lets it through here
+   * would be letting anything through.
+   */
+  it('gives every non-interactive focus target a link that sends focus there', () => {
+    document.body.innerHTML = reportMarkup();
+
+    const fragments = new Set(
+      [...document.body.querySelectorAll('a[href^="#"]')].map((anchor) =>
+        (anchor.getAttribute('href') ?? '').slice(1),
+      ),
+    );
+
+    const orphaned = [...document.body.querySelectorAll('[tabindex]')]
+      .filter((element) => Number(element.getAttribute('tabindex')) < 0 && !element.matches(INTERACTIVE))
+      .filter((element) => !fragments.has(element.id))
+      .map((element) => element.outerHTML.slice(0, 120));
+
+    expect(orphaned, 'a negative tabindex nothing links to is a focus trap waiting to happen').toEqual([]);
   });
 
   it('puts no positive tabindex anywhere, so the tab order is the reading order', () => {

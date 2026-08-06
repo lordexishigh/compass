@@ -77,8 +77,23 @@ export function FreshnessPanel({ freshness }: { readonly freshness: FreshnessVie
                     aria-hidden="true"
                   />
                   <span className="data-token">{source.sourceKey}</span>
+                  {/*
+                    The journal's own count, whatever it is — never a categorical label in its place.
+
+                    "no data" was two mistakes in one token. It read as a dashboard's empty state
+                    rather than as a fact about this source, which is the one voice this product does
+                    not use; and it was reachable while the count was *not* zero, because `answered`
+                    is `status === 'complete' && recordCount > 0`. A run that failed halfway with
+                    twelve records ingested printed "no data" over the top of twelve records — the
+                    page stating an absence that its own row contradicted.
+
+                    Printing the number says the same thing without either fault: `0 records` is a
+                    silence, and it is the reader's to interpret alongside the notch, the
+                    "never answered" label and the stated-absence sentence below, each of which
+                    carries a different part of why.
+                  */}
                   <span className="font-mono text-[11px] tabular-nums text-ink-faint">
-                    {source.answered ? `${source.recordCount} records` : 'no data'}
+                    {source.recordCount} {source.recordCount === 1 ? 'record' : 'records'}
                   </span>
                   <span className="font-mono text-[11px] tabular-nums text-ink-faint">
                     {source.lastIngestLabel === null

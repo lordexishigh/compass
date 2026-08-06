@@ -429,10 +429,46 @@ describe('the freshness indicator', () => {
 
   it('names a source that produced nothing and refuses to call the report complete', () => {
     expect(markup).toContain('legacy-code');
-    expect(markup).toContain('no data');
+    // The count the journal holds, not a label standing in for it. `0 records` beside
+    // `never answered` and the stated-absence sentence is the whole disclosure.
+    expect(markup).toContain('0 records');
     expect(markup).toContain('never answered');
     expect(markup).toContain('data-complete="false"');
     expect(markup).toContain('did not answer, so this report is not complete');
+  });
+
+  /**
+   * The silence is stated in the product's voice, never in a dashboard's.
+   *
+   * "no data" is the sentence an empty widget prints, and a reader who meets it on a report page
+   * cannot tell a source that answered nothing from a page that failed to load — which is exactly
+   * the confusion honest degradation exists to remove. It is also the phrase this app's own
+   * cold-start guard treats as evidence the reader was served an empty state instead of a report.
+   */
+  it('never prints a dashboard empty state in place of the count', () => {
+    expect(markup.toLowerCase()).not.toContain('no data');
+  });
+
+  /**
+   * `answered` is `status === 'complete' && recordCount > 0`, so a run that failed partway with
+   * records already ingested is *not* answered while its count is not zero. The old label printed
+   * "no data" over the top of those records — the page contradicting its own row.
+   */
+  it('prints the records a partial run did ingest, rather than calling them nothing', () => {
+    const partial = freshnessWithMissingSource();
+    const degraded = {
+      ...partial,
+      sources: partial.sources.map((source) =>
+        source.status === 'complete' ? source : { ...source, recordCount: 7 },
+      ),
+    };
+
+    const html = renderToStaticMarkup(
+      <ReportDocument view={buildReportView({ bundle: storedBundle(), freshness: degraded })} />,
+    );
+
+    expect(html).toContain('7 records');
+    expect(html.toLowerCase()).not.toContain('no data');
   });
 
   it('calls the report complete only when every source answered', () => {

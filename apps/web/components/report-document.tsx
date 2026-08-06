@@ -73,176 +73,206 @@ export function ReportDocument({ view }: { readonly view: ReportView }) {
   }));
 
   return (
-    <div className="mx-auto grid w-full max-w-[76rem] grid-cols-1 gap-x-16 px-5 pb-24 lg:grid-cols-[var(--spine)_minmax(0,var(--measure))_var(--gutter)] lg:px-8">
-      <div className="lg:pt-16">
-        <SixSpine entries={entries} initialActiveKey={view.sections[0]?.key} />
-      </div>
+    <>
+      {/*
+        The skip link, and it is visible on purpose.
 
-      <main id="report" className="pt-8 lg:pt-16">
-        <header>
-          <p className="section-label">{view.scopeLabel}</p>
-          <h1 className="mt-2 text-[28px] font-semibold leading-tight tracking-tight text-ink-strong">
-            <span className="font-mono tabular-nums">{view.reportDate}</span>
-          </h1>
-          <p className="mt-1 font-mono text-[13px] tabular-nums text-ink-faint">window {view.windowLabel}</p>
+        The Six Spine is six entries of navigation that precede the report in the DOM on every
+        report page forever, so this is the one screen in Compass with something to skip past. The
+        conventional treatment — `sr-only` until focused — was what shipped, and it is only half an
+        affordance: an `sr-only` anchor is clipped to a 1px box, so it is reachable by Tab and by
+        nothing else. A reader driving with a pointer, a switch, or a browser automation harness
+        finds a link that resolves and cannot be activated.
 
-          {view.timeShiftNote !== null && (
-            <p className="stated-absence mt-3 text-[13px]">{view.timeShiftNote}</p>
-          )}
+        So it reads as one quiet line of `section-label` type above the document — the same 11px
+        uppercase the masthead uses for the scope label — rather than as a thing that flashes into
+        existence on Tab. That is a line of chrome the design brief would otherwise refuse, and it
+        earns it: it is the first focusable element on the page and the fastest way into the prose,
+        which is exactly the keyboard-first discipline the brief asks for.
+      */}
+      <a
+        href="#report"
+        className="section-label mx-auto block w-full max-w-[76rem] px-5 pt-4 transition-colors duration-150 hover:text-ink-strong lg:px-8"
+      >
+        Skip to the report
+      </a>
 
-          <NarrationFallbackNote view={view} />
-
-          <FreshnessPanel freshness={view.freshness} />
-
-          {/*
-            What moved since the previous report — the last thing in the masthead and the first
-            sentence of the read. Set in the body serif rather than as a note, because on a quiet
-            morning "Nothing material changed since yesterday" *is* the report: a manager who has
-            that sentence in the first screenful does not scroll six sections to discover it, and a
-            page that made them do so would be re-listing yesterday's three blockers in yesterday's
-            voice — the failure the whole change-awareness pass exists to prevent.
-
-            Empty means the report predates change-awareness. Rendered as nothing rather than as
-            "nothing changed": those are different facts, and Compass does not state the second when
-            it only knows the first.
-          */}
-          {view.changeLine.length > 0 && (
-            <p className="prose-narration mt-6 text-[17px] text-ink-strong">{view.changeLine}</p>
-          )}
-        </header>
-
-        <div className="mt-10 space-y-10">
-          {view.sections.map((section) => (
-            <div key={section.key} className="hairline pt-8 first:border-t-0 first:pt-0">
-              <ReportSectionBlock section={section} />
-            </div>
-          ))}
+      <div className="mx-auto grid w-full max-w-[76rem] grid-cols-1 gap-x-16 px-5 pb-24 lg:grid-cols-[var(--spine)_minmax(0,var(--measure))_var(--gutter)] lg:px-8">
+        <div className="lg:pt-16">
+          <SixSpine entries={entries} initialActiveKey={view.sections[0]?.key} />
         </div>
 
         {/*
-          The confidence collar sits after the six sections rather than inside
-          Progress, and that is deliberate on two counts. The Six Spine is fixed at
-          six entries forever, so the collar must not become a seventh heading a
-          reader scrolls to. And its job is to qualify the *whole* report — the
-          audit's verdicts are about the data every section above was computed from
-          — so it reads last, the way a footnote to the document rather than a
-          paragraph inside one of its parts.
+          `tabIndex={-1}` is what makes the skip link actually land. Without it the fragment moves
+          the scroll position and leaves focus on the anchor, so the next Tab goes back into the
+          spine — the reader is returned to the six links they just asked to skip.
         */}
-        <CalibrationCollar collar={view.collar} />
+        <main id="report" tabIndex={-1} className="pt-8 lg:pt-16">
+          <header>
+            <p className="section-label">{view.scopeLabel}</p>
+            <h1 className="mt-2 text-[28px] font-semibold leading-tight tracking-tight text-ink-strong">
+              <span className="font-mono tabular-nums">{view.reportDate}</span>
+            </h1>
+            <p className="mt-1 font-mono text-[13px] tabular-nums text-ink-faint">window {view.windowLabel}</p>
 
-        <footer className="mt-16 hairline pt-6 text-[13px] text-ink-faint">
-          <p>
-            {view.narrated
-              ? 'Written by the narration model, with every number, date, name and identifier checked against the ' +
-                'computed report before publication'
-              : 'Written by the deterministic template renderer'}{' '}
-            (<span className="data-token">{view.rendererId}</span>), generated {view.generatedAtLabel} {view.timezone}.
-            Every figure above carries a link to the artifact it came from.
-          </p>
-          <p className="mt-2 flex flex-wrap gap-x-5 gap-y-1">
+            {view.timeShiftNote !== null && (
+              <p className="stated-absence mt-3 text-[13px]">{view.timeShiftNote}</p>
+            )}
+
+            <NarrationFallbackNote view={view} />
+
+            <FreshnessPanel freshness={view.freshness} />
+
             {/*
-              The three other reads of the same data, first in the list because they are the only ones a
-              manager reaches *habitually* — the rest of this footer is configuration you visit when
-              something is wrong. A manager of two or three teams opens the merged report every morning
-              instead of this page, and a page they cannot find from here is a page they will not find.
-            */}
-            <a
-              href="/merged"
-              className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
-            >
-              All teams
-            </a>
-            <a
-              href="/weekly"
-              className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
-            >
-              Weekly digest
-            </a>
-            {/* Every past report, permalinked — how a manager points a skip-level at last Tuesday's. */}
-            <a
-              href="/archive"
-              className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
-            >
-              Archive
-            </a>
-            {/* The goal hierarchy is reachable from the report because every
-                alignment verdict above resolves against it, and a manager who
-                disagrees with one needs somewhere to go and say so. */}
-            <a
-              href="/goals"
-              className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
-            >
-              Goal hierarchy
-            </a>
-            {/* The configuration behind every aggregate above: which repositories are
-                tracked, who is on the team, whose work each commit is. A manager who
-                reads a wrong attribution needs somewhere to go and fix it. */}
-            <a
-              href="/roster"
-              className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
-            >
-              Roster and configuration
-            </a>
-            {/* What Compass holds about the reader, and every line above that names them.
-                On the report itself and not tucked inside a settings screen, because the
-                page is for the *subject* of the report rather than its audience: a member
-                who has just read their own name in Blockers has to be able to follow it
-                from there in one click, with nobody to ask. `/privacy` links here too, but
-                a member cannot open `/privacy` — so this is the only route that makes the
-                page genuinely self-serve. */}
-            <a
-              href="/me"
-              className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
-            >
-              What Compass says about you
-            </a>
-            {/* How long any of this is kept, which channels are read, and how to end it.
-                Owner and manager only, and it refuses in the product's own voice for
-                anybody else rather than 404ing — a privacy page that pretends not to
-                exist is the opposite of the point. */}
-            <a
-              href="/privacy"
-              className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
-            >
-              Privacy and retention
-            </a>
-            {/* Terms and the privacy policy, in the footer of every report because that is where a
-                reader is when they wonder — and because the criterion is that they are linked from
-                the footer and the sign-up flow, not merely published at a URL somebody was sent.
-                Public in every tenant, so this link never refuses anybody. */}
-            <a
-              href="/legal/terms"
-              className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
-            >
-              Terms
-            </a>
-            <a
-              href="/legal/privacy"
-              className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
-            >
-              Privacy policy
-            </a>
-            {/* Reachable, never imposed. `/` gates nothing and never redirects here:
-                the zero-config promise is that a manager reads a report first and
-                decides about accounts afterwards. */}
-            <a
-              href="/account"
-              className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
-            >
-              Account and sessions
-            </a>
-            <a
-              href="/api/health"
-              className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
-            >
-              System readiness
-            </a>
-          </p>
-        </footer>
-      </main>
+              What moved since the previous report — the last thing in the masthead and the first
+              sentence of the read. Set in the body serif rather than as a note, because on a quiet
+              morning "Nothing material changed since yesterday" *is* the report: a manager who has
+              that sentence in the first screenful does not scroll six sections to discover it, and a
+              page that made them do so would be re-listing yesterday's three blockers in yesterday's
+              voice — the failure the whole change-awareness pass exists to prevent.
 
-      {/* The evidence gutter: markers resolve to full pages, so this stays quiet. */}
-      <aside aria-hidden="true" className="hidden lg:block lg:pt-16" />
-    </div>
+              Empty means the report predates change-awareness. Rendered as nothing rather than as
+              "nothing changed": those are different facts, and Compass does not state the second when
+              it only knows the first.
+            */}
+            {view.changeLine.length > 0 && (
+              <p className="prose-narration mt-6 text-[17px] text-ink-strong">{view.changeLine}</p>
+            )}
+          </header>
+
+          <div className="mt-10 space-y-10">
+            {view.sections.map((section) => (
+              <div key={section.key} className="hairline pt-8 first:border-t-0 first:pt-0">
+                <ReportSectionBlock section={section} />
+              </div>
+            ))}
+          </div>
+
+          {/*
+            The confidence collar sits after the six sections rather than inside
+            Progress, and that is deliberate on two counts. The Six Spine is fixed at
+            six entries forever, so the collar must not become a seventh heading a
+            reader scrolls to. And its job is to qualify the *whole* report — the
+            audit's verdicts are about the data every section above was computed from
+            — so it reads last, the way a footnote to the document rather than a
+            paragraph inside one of its parts.
+          */}
+          <CalibrationCollar collar={view.collar} />
+
+          <footer className="mt-16 hairline pt-6 text-[13px] text-ink-faint">
+            <p>
+              {view.narrated
+                ? 'Written by the narration model, with every number, date, name and identifier checked against the ' +
+                  'computed report before publication'
+                : 'Written by the deterministic template renderer'}{' '}
+              (<span className="data-token">{view.rendererId}</span>), generated {view.generatedAtLabel} {view.timezone}.
+              Every figure above carries a link to the artifact it came from.
+            </p>
+            <p className="mt-2 flex flex-wrap gap-x-5 gap-y-1">
+              {/*
+                The three other reads of the same data, first in the list because they are the only ones a
+                manager reaches *habitually* — the rest of this footer is configuration you visit when
+                something is wrong. A manager of two or three teams opens the merged report every morning
+                instead of this page, and a page they cannot find from here is a page they will not find.
+              */}
+              <a
+                href="/merged"
+                className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
+              >
+                All teams
+              </a>
+              <a
+                href="/weekly"
+                className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
+              >
+                Weekly digest
+              </a>
+              {/* Every past report, permalinked — how a manager points a skip-level at last Tuesday's. */}
+              <a
+                href="/archive"
+                className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
+              >
+                Archive
+              </a>
+              {/* The goal hierarchy is reachable from the report because every
+                  alignment verdict above resolves against it, and a manager who
+                  disagrees with one needs somewhere to go and say so. */}
+              <a
+                href="/goals"
+                className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
+              >
+                Goal hierarchy
+              </a>
+              {/* The configuration behind every aggregate above: which repositories are
+                  tracked, who is on the team, whose work each commit is. A manager who
+                  reads a wrong attribution needs somewhere to go and fix it. */}
+              <a
+                href="/roster"
+                className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
+              >
+                Roster and configuration
+              </a>
+              {/* What Compass holds about the reader, and every line above that names them.
+                  On the report itself and not tucked inside a settings screen, because the
+                  page is for the *subject* of the report rather than its audience: a member
+                  who has just read their own name in Blockers has to be able to follow it
+                  from there in one click, with nobody to ask. `/privacy` links here too, but
+                  a member cannot open `/privacy` — so this is the only route that makes the
+                  page genuinely self-serve. */}
+              <a
+                href="/me"
+                className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
+              >
+                What Compass says about you
+              </a>
+              {/* How long any of this is kept, which channels are read, and how to end it.
+                  Owner and manager only, and it refuses in the product's own voice for
+                  anybody else rather than 404ing — a privacy page that pretends not to
+                  exist is the opposite of the point. */}
+              <a
+                href="/privacy"
+                className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
+              >
+                Privacy and retention
+              </a>
+              {/* Terms and the privacy policy, in the footer of every report because that is where a
+                  reader is when they wonder — and because the criterion is that they are linked from
+                  the footer and the sign-up flow, not merely published at a URL somebody was sent.
+                  Public in every tenant, so this link never refuses anybody. */}
+              <a
+                href="/legal/terms"
+                className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
+              >
+                Terms
+              </a>
+              <a
+                href="/legal/privacy"
+                className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
+              >
+                Privacy policy
+              </a>
+              {/* Reachable, never imposed. `/` gates nothing and never redirects here:
+                  the zero-config promise is that a manager reads a report first and
+                  decides about accounts afterwards. */}
+              <a
+                href="/account"
+                className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
+              >
+                Account and sessions
+              </a>
+              <a
+                href="/api/health"
+                className="underline decoration-rule-strong underline-offset-4 transition-colors duration-150 hover:text-ink hover:decoration-verified focus-visible:outline-2 focus-visible:outline-offset-2"
+              >
+                System readiness
+              </a>
+            </p>
+          </footer>
+        </main>
+
+        {/* The evidence gutter: markers resolve to full pages, so this stays quiet. */}
+        <aside aria-hidden="true" className="hidden lg:block lg:pt-16" />
+      </div>
+    </>
   );
 }

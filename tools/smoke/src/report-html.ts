@@ -44,7 +44,15 @@ export const REGRESSION_MARKERS: readonly { readonly needle: string; readonly wh
   { needle: 'connect your first', why: 'the first request was answered with a connector wizard' },
   { needle: 'connect a repository', why: 'the first request was answered with a connector wizard' },
   { needle: 'get started by', why: 'the first request was answered with a setup wizard' },
-  { needle: 'no data yet', why: 'the first request was answered with an empty state' },
+  /*
+    Not narrowed to "no data yet". Compass has a whole vocabulary for absence — a stated window a
+    source did not cover, a count of `0 records`, "no deploy signal available" — and every one of
+    them names *what* is missing. The bare phrase names nothing, so on a report page it is either an
+    empty state that leaked through or a label standing where a number belongs, and a reader cannot
+    tell either of those from a page that failed to load. It once shipped as the record count beside
+    a source that answered nothing, which is how it reached a live cold start unnoticed.
+  */
+  { needle: 'no data', why: 'a claim on the page states an absence without naming what is absent' },
   { needle: 'nothing to show', why: 'the first request was answered with an empty state' },
   { needle: 'no reports yet', why: 'the first request was answered with an empty state' },
 ]);
