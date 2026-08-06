@@ -80,16 +80,20 @@ export const EMPTY_STATES = {
   },
 
   // -------------------------------------------------------------------------
-  // /seats
+  // /settings/members
   // -------------------------------------------------------------------------
   seats: {
     id: 'seats',
-    route: '/seats',
+    route: '/settings/members',
     disposition: 'unconfigured',
     statement: 'This organization has no seats to list.',
+    // The "14 days" here cannot interpolate `TOKEN_TTL_LABEL`: this table is imported by
+    // `seat-manager.tsx`, which is a client component, and `@compass/auth` reaches
+    // `node:crypto`. `tests/empty-states.test.tsx` asserts this sentence against the
+    // constant instead, so the number is checked at build time rather than by eye.
     explanation:
       'Seats are how colleagues read the report: each one carries a role and the teams it may read. Inviting somebody ' +
-      'sends a single-use link that expires in seven days.',
+      'sends a single-use link that expires in 14 days.',
     action: { label: 'Invite the first seat', href: '#invite-seat' },
     secondary: [{ label: '← today’s report', href: '/' }],
   },

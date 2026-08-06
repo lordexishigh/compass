@@ -20,6 +20,7 @@ import {
   replaceTeamScopes,
   revokeAllSessionsForUser,
   revokeAuthTokens,
+  touchSession,
   type ScopedDb,
 } from '@compass/db';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -361,6 +362,64 @@ describe('sessions', () => {
 
     const stillLive = await findSessionByTokenHash(a, '2'.repeat(64));
     expect(stillLive?.revokedAt, 'the other user must be untouched').toBeNull();
+  });
+});
+
+/**
+ * `lastActiveAt` on a seat — the "last-active" column the members screen states.
+ *
+ * Derived rather than stored, so what has to be proved is the derivation: the newest
+ * sighting wins, a person who has never signed in reads as null rather than as an epoch
+ * date, and revoking a session does not erase the fact that they were here. That last one
+ * is the interesting case — an owner rotating a colleague's sessions after a role change
+ * must not make that colleague's last-active jump backwards to "never".
+ */
+describe('a seat’s last-active', () => {
+  const seatFor = async (email: string) => (await listSeats(a)).find((seat) => seat.email === email) ?? null;
+
+  it('is null for somebody who has never signed in', async () => {
+    const user = await ensureUser(a, {
+      email: 'never-here@example.com',
+      displayName: 'Never Here',
+      passwordHash: null,
+      at: T0,
+    });
+    await ensureMembership(a, { userId: user.id, role: 'viewer', status: 'pending', at: T0 });
+
+    expect((await seatFor('never-here@example.com'))?.lastActiveAt).toBeNull();
+  });
+
+  it('is the newest sighting across every session, revoked ones included', async () => {
+    const user = await ensureUser(a, {
+      email: 'active@example.com',
+      displayName: 'Active',
+      passwordHash: null,
+      at: T0,
+    });
+    await ensureMembership(a, { userId: user.id, role: 'member', status: 'active', at: T0 });
+
+    // Two browsers. The older one is inserted second, so a reduction that simply took the
+    // last row rather than the greatest would fail here.
+    await insertSession(a, {
+      userId: user.id,
+      tokenHash: 'c'.repeat(64),
+      issuedAt: T0,
+      expiresAt: at('2026-08-30T09:00:00Z'),
+    });
+    await touchSession(a, (await findSessionByTokenHash(a, 'c'.repeat(64)))!.id, at('2026-08-02T14:00:00Z'));
+
+    await insertSession(a, {
+      userId: user.id,
+      tokenHash: 'd'.repeat(64),
+      issuedAt: at('2026-08-01T08:00:00Z'),
+      expiresAt: at('2026-08-31T08:00:00Z'),
+    });
+
+    expect((await seatFor('active@example.com'))?.lastActiveAt).toBe(at('2026-08-02T14:00:00Z'));
+
+    // Signing out does not un-happen the sighting.
+    await revokeAllSessionsForUser(a, user.id, 'sign_out_all_devices', at('2026-08-03T09:00:00Z'));
+    expect((await seatFor('active@example.com'))?.lastActiveAt).toBe(at('2026-08-02T14:00:00Z'));
   });
 });
 

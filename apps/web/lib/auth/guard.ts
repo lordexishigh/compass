@@ -366,9 +366,9 @@ export type PageAccess = PageAccessResolved | PageAccessUnavailable;
  *
  * A discriminated union rather than a nullable field, so a page physically cannot read
  * `scoped` off an outcome where there is no connection to read it from. Both callers
- * (`/account`, `/seats`) render `StatedFailure` on the `unavailable` arm: `/account` in
- * particular is where somebody goes *because* something is wrong, so it is the last
- * screen that may itself become an error page.
+ * (`/account`, `/settings/members`) render `StatedFailure` on the `unavailable` arm:
+ * `/account` in particular is where somebody goes *because* something is wrong, so it is
+ * the last screen that may itself become an error page.
  */
 export async function pageAccess(input: {
   readonly route: string;

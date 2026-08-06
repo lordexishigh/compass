@@ -197,6 +197,10 @@ export async function inviteSeat(input: InviteInput): Promise<InviteResult> {
       displayName: user.displayName,
       hasPassword: false,
       teamKeys,
+      // Null rather than `now`: the seat has been created, not used. A re-invited
+      // revoked seat may well have a real last-active in the database, but this is the
+      // invitation's own result — the caller that wants the list reads `listSeats`.
+      lastActiveAt: null,
     },
     membership,
     link: issued.link,

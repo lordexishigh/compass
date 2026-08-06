@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { TOKEN_TTL_LABEL } from '@compass/auth';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -84,7 +85,7 @@ const LIST_SCREENS: readonly {
     entries: [EMPTY_STATES.correctedFlags, EMPTY_STATES.suppressions, EMPTY_STATES.snoozes],
   },
   {
-    route: '/seats',
+    route: '/settings/members',
     file: ['components', 'seat-manager.tsx'],
     entries: [EMPTY_STATES.seats],
     rendered: renderToStaticMarkup(
@@ -93,6 +94,7 @@ const LIST_SCREENS: readonly {
         canManage
         knownTeamKeys={[]}
         roleCapabilities={{ owner: 'everything', manager: 'reads', member: 'reads', viewer: 'reads' }}
+        inviteLifetimeLabel={TOKEN_TTL_LABEL.invite}
       />,
     ),
   },
@@ -167,6 +169,23 @@ describe('every list Compass renders has an empty state', () => {
       }
     }
   });
+
+  /**
+   * The one copy string in this table that restates a number the code enforces.
+   *
+   * `EMPTY_STATES.seats` promises how long an invitation lasts. It cannot interpolate
+   * `TOKEN_TTL_LABEL` — this module is imported by the client component `seat-manager.tsx`,
+   * and `@compass/auth` reaches `node:crypto` — so the tie is asserted here instead, where
+   * importing it costs nothing. The screen's *other* statement of the window is a prop
+   * (`inviteLifetimeLabel`) and needs no test.
+   *
+   * This drifted once, in exactly this direction: the token expired after seven days while
+   * the copy promised what the blueprint committed to. A sentence that overstates how long
+   * somebody has to accept an invitation is a support ticket, not a typo.
+   */
+  it('states the real invitation lifetime, not a number that has drifted from the token', () => {
+    expect(EMPTY_STATES.seats.explanation).toContain(`expires in ${TOKEN_TTL_LABEL.invite}`);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -232,7 +251,7 @@ describe('the screens that can be rendered here show their copy when empty', () 
     // `/archive` joined the moment its index became a component rather than inline JSX in a Server
     // Component. Enumerated rather than counted, so a screen that stops being renderable is a
     // visible edit here instead of a silently smaller suite.
-    expect(renderable.map((screen) => screen.route).sort()).toEqual(['/archive', '/goals', '/roster', '/seats']);
+    expect(renderable.map((screen) => screen.route).sort()).toEqual(['/archive', '/goals', '/roster', '/settings/members']);
   });
 
   it.each(renderable.map((screen) => [screen.route, screen] as const))(

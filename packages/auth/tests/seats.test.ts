@@ -2,6 +2,7 @@ import {
   AUDIT_ACTIONS,
   LastOwnerError,
   TOKEN_TTL_LABEL,
+  TOKEN_TTL_MILLIS,
   acceptInvite,
   changeSeat,
   consumeMagicLink,
@@ -80,8 +81,9 @@ describe('inviting a seat', () => {
     expect(result.membership.role).toBe('manager');
     expect(result.seat.teamKeys).toEqual(['platform']);
 
-    // Seven days, from the documented table rather than from a literal here.
-    expect(result.expiresAt).toBe(addMillis(T0, 7 * MILLIS_PER_DAY));
+    // Read from the documented table rather than restated here, so this asserts that the
+    // expiry the invitee gets is the one the product promises — not that two literals match.
+    expect(result.expiresAt).toBe(addMillis(T0, TOKEN_TTL_MILLIS.invite));
 
     const message = harness.mailer.lastTo('priya@example.com');
     expect(message, 'no invitation was mailed').not.toBeNull();
@@ -207,11 +209,45 @@ describe('accepting an invitation', () => {
       secret: tokenFromLink(invited.link),
       displayName: 'Priya Raman',
       password: 'priyas-own-long-passphrase',
-      now: addMillis(T0, 7 * MILLIS_PER_DAY),
+      // Exactly the deadline. `tokenRejection` refuses at `now >= expiresAt`, so this is the
+      // first instant that must fail — a test a second later would pass on an off-by-one window.
+      now: addMillis(T0, TOKEN_TTL_MILLIS.invite),
     });
 
     expect(tooLate.ok).toBe(false);
     expect(tooLate.ok === false ? tooLate.rejection : null).toBe('expired');
+  });
+
+  /**
+   * The window is fourteen days, and this is the one place that number is written down
+   * in a test.
+   *
+   * Every other assertion here reads `TOKEN_TTL_MILLIS.invite`, which is what stops them
+   * drifting — and also what would let the constant be changed to an hour with the whole
+   * suite still green. The blueprint commits to fourteen days, so one test has to hold the
+   * literal and fail if somebody moves it. It shipped as seven for exactly as long as
+   * nothing checked.
+   */
+  it('gives an invitation the fourteen days the product promises', () => {
+    expect(TOKEN_TTL_MILLIS.invite).toBe(14 * MILLIS_PER_DAY);
+    expect(TOKEN_TTL_LABEL.invite).toBe('14 days');
+  });
+
+  it('still accepts an invitation on the last day of the window', async () => {
+    // The other half of the boundary. Without this, an expiry of *zero* would satisfy the
+    // refusal test above and nothing would notice that no invitation could ever be used.
+    const invited = await invite('priya@example.com');
+
+    const justInTime = await acceptInvite({
+      scoped,
+      secret: tokenFromLink(invited.link),
+      displayName: 'Priya Raman',
+      password: 'priyas-own-long-passphrase',
+      now: addMillis(T0, TOKEN_TTL_MILLIS.invite - MILLIS_PER_MINUTE),
+    });
+
+    expect(justInTime.ok).toBe(true);
+    expect(justInTime.ok ? justInTime.membership.status : null).toBe('active');
   });
 });
 
@@ -229,7 +265,7 @@ describe('resending an invitation', () => {
     });
 
     expect(second.link).not.toBe(first.link);
-    expect(second.expiresAt).toBe(addMillis(T0, MILLIS_PER_HOUR + 7 * MILLIS_PER_DAY));
+    expect(second.expiresAt).toBe(addMillis(T0, MILLIS_PER_HOUR + TOKEN_TTL_MILLIS.invite));
 
     // Exactly one live token — never two.
     expect(await listLiveAuthTokens(scoped, first.membership.userId, 'invite')).toHaveLength(1);

@@ -1,4 +1,4 @@
-import { inviteSeat, isSeatRole, readSeats, seatReadiness } from '@compass/auth';
+import { TOKEN_TTL_LABEL, inviteSeat, isSeatRole, readSeats, seatReadiness } from '@compass/auth';
 import type { NextResponse } from 'next/server';
 
 import { baseUrlFor, guard, mailer, organizationName } from '../../../lib/auth/guard';
@@ -20,10 +20,12 @@ import {
  * reading a report does not make someone an administrator of it.
  *
  * `POST` is owner only, creates a `pending` Membership, and mails a single-use
- * invitation that expires in seven days. The link is also returned in the response,
- * because a deployment whose mail transport is the process log would otherwise have no
- * way to hand the invitation over — and a silently undeliverable invite is worse than a
- * visible one.
+ * invitation whose lifetime is `TOKEN_TTL_LABEL.invite` — never a number written here,
+ * because this sentence and the token would then be free to disagree, and once did.
+ *
+ * The link is also returned in the response, because a deployment whose mail transport is
+ * the process log would otherwise have no way to hand the invitation over — and a silently
+ * undeliverable invite is worse than a visible one.
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -46,6 +48,9 @@ export async function GET(request: Request): Promise<NextResponse> {
         teamKeys: seat.teamKeys,
         invitedAt: new Date(seat.createdAt).toISOString(),
         updatedAt: new Date(seat.updatedAt).toISOString(),
+        // Null for somebody who has never signed in, which the caller states rather than
+        // renders as a missing field.
+        lastActiveAt: seat.lastActiveAt === null ? null : new Date(seat.lastActiveAt).toISOString(),
       })),
       readiness: await seatReadiness(admitted.scoped),
       // A manager reads this list; only an owner may act on it. Stated so the UI does
@@ -99,7 +104,8 @@ export async function POST(request: Request): Promise<NextResponse> {
         invitationExpiresAt: new Date(invited.expiresAt).toISOString(),
         invitationLink: invited.link,
         detail:
-          'Invitation sent. The link works once and expires in 7 days; resending it revokes the previous one.',
+          `Invitation sent. The link works once and expires in ${TOKEN_TTL_LABEL.invite}; resending it revokes the ` +
+          'previous one.',
       },
       201,
     );

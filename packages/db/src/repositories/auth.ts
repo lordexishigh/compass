@@ -189,6 +189,20 @@ export interface SeatRow extends MembershipRow {
   readonly displayName: string;
   readonly hasPassword: boolean;
   readonly teamKeys: readonly string[];
+  /**
+   * When this person last made a request, or null if they never have.
+   *
+   * Derived from the newest `last_used_at` across all of their sessions rather than
+   * stored on the membership: `touchSession` already advances that column on every
+   * authenticated request, so a second column would be a second source of truth
+   * updated on the same write path and able to disagree with the first.
+   *
+   * Revoked and expired sessions are counted. "Last active" is a fact about the
+   * person, not about a live cookie — reading only unrevoked rows would report a
+   * colleague who signed out last night as having never been here at all, and would
+   * make a seat's last-active jump *backwards* when an owner rotated their sessions.
+   */
+  readonly lastActiveAt: Instant | null;
 }
 
 const toMembershipRow = (row: typeof memberships.$inferSelect): MembershipRow => ({
@@ -296,6 +310,18 @@ export async function listSeats(scoped: ScopedDb): Promise<readonly SeatRow[]> {
     else bucket.push(row.teamKey);
   }
 
+  // The newest sighting per person. Read in full and reduced here rather than as a
+  // grouped aggregate, matching the two reads above: this is seat-scale data — one row
+  // per signed-in browser in one organization — and four small selects the tenant guard
+  // already scopes beat one hand-built join it would have to be taught about.
+  const sessionRows = await scoped.selectFrom(sessions);
+  const lastActiveByUser = new Map<string, Instant>();
+  for (const row of sessionRows) {
+    const seenAt = fromDatabaseInstant(row.lastUsedAt);
+    const previous = lastActiveByUser.get(row.userId);
+    if (previous === undefined || seenAt > previous) lastActiveByUser.set(row.userId, seenAt);
+  }
+
   return membershipRows
     .map((row): SeatRow => {
       const user = userById.get(row.userId);
@@ -305,6 +331,7 @@ export async function listSeats(scoped: ScopedDb): Promise<readonly SeatRow[]> {
         displayName: user?.displayName ?? '',
         hasPassword: (user?.passwordHash ?? null) !== null,
         teamKeys: scopesByMembership.get(row.id) ?? [],
+        lastActiveAt: lastActiveByUser.get(row.userId) ?? null,
       };
     })
     .sort((left, right) => {

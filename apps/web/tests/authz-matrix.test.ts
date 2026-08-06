@@ -398,7 +398,7 @@ const EXPECTED: Readonly<Record<string, Partial<Record<Action, readonly Principa
    * destination, never an interception: nothing redirects to it.
    */
   '/start': { GET: ['owner', 'manager'] },
-  '/seats': { GET: ['owner', 'manager'] },
+  '/settings/members': { GET: ['owner', 'manager'] },
   '/roster': { GET: ['owner', 'manager'] },
   // What a manager has told Compass to stop saying. Owner and manager, exactly like the roster:
   // a suppression a manager cannot find is indistinguishable from a detector that broke, so the

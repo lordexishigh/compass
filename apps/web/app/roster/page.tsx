@@ -19,7 +19,7 @@ import { readRoster } from '../../lib/roster-source';
  * document it configures.
  *
  * A Server Component that reads the store directly and hands a value to one client island,
- * exactly as `/` and `/seats` do.
+ * exactly as `/` and `/settings/members` do.
  */
 export const dynamic = 'force-dynamic';
 
@@ -35,7 +35,7 @@ export const metadata = {
  * standfirst and the cross-links are part of the masthead. `children` sits outside it: the
  * body of a refusal is a `role="alert"`, and an alert nested inside a banner reads oddly to a
  * screen reader — the heading is the landmark, the sentence is the content. Same reasoning as
- * `SeatsFrame` on `/seats`.
+ * `MembersFrame` on `/settings/members`.
  */
 function Frame({
   heading,
@@ -132,7 +132,7 @@ export default async function RosterPage() {
             <a href="/goals" className="tertiary-action">
               goal hierarchy
             </a>
-            <a href="/seats" className="tertiary-action">
+            <a href="/settings/members" className="tertiary-action">
               seats
             </a>
           </p>

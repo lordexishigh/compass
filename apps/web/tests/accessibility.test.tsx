@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { ROLE_CAPABILITIES } from '@compass/auth';
+import { ROLE_CAPABILITIES, TOKEN_TTL_LABEL } from '@compass/auth';
 import axe, { type Result } from 'axe-core';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
@@ -339,6 +339,7 @@ describe('axe reports no critical or serious violations on the configuration scr
               hasPassword: true,
               teamKeys: ['platform'],
               invitedAtLabel: '2026-07-01 09:00',
+              lastActiveLabel: 'active today',
               isYou: true,
             },
             {
@@ -350,6 +351,7 @@ describe('axe reports no critical or serious violations on the configuration scr
               hasPassword: false,
               teamKeys: [],
               invitedAtLabel: '2026-07-30 11:20',
+              lastActiveLabel: 'never signed in',
               isYou: false,
             },
           ]}
@@ -357,6 +359,7 @@ describe('axe reports no critical or serious violations on the configuration scr
           knownTeamKeys={['platform', 'checkout']}
           // The real table, so the sentence beside each seat is the one a reader gets.
           roleCapabilities={ROLE_CAPABILITIES}
+          inviteLifetimeLabel={TOKEN_TTL_LABEL.invite}
         />,
       ),
     );
@@ -373,6 +376,7 @@ describe('axe reports no critical or serious violations on the configuration scr
           canManage={false}
           knownTeamKeys={['platform']}
           roleCapabilities={ROLE_CAPABILITIES}
+          inviteLifetimeLabel={TOKEN_TTL_LABEL.invite}
         />,
       ),
     );

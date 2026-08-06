@@ -73,21 +73,29 @@ export function digestsMatch(left: string, right: string): boolean {
  *  - **password reset — 1 hour.** Longer, because the person asking is often not
  *    at their desk and a reset that has expired by the time they read the mail is
  *    a support ticket. Still single-use, and issuing a new one revokes the old.
- *  - **seat invite — 7 days.** A person being invited to an organization may be on
- *    leave. An owner can resend, which revokes the previous token and issues a new
- *    seven-day one, so the long window never means an *unrevokable* one.
+ *  - **seat invite — 14 days.** A person being invited to an organization may be on
+ *    leave, and two weeks is the window the product commits to: long enough to cover
+ *    a normal holiday, so the ordinary case is not "my link died while I was away".
+ *    An owner can resend, which revokes the previous token and issues a new
+ *    fourteen-day one, so the long window never means an *unrevokable* one.
+ *
+ * Nothing may restate these numbers in prose. `TOKEN_TTL_LABEL` exists so that the
+ * sentence a person reads is derived from the same constant the expiry is computed
+ * from — the seat screen and the invitation email both interpolate it. An invitation
+ * that lasted 7 days under a screen that promised 14 was exactly that drift, and the
+ * only structural fix is to leave no second place for the number to live.
  */
 export const TOKEN_TTL_MILLIS: Readonly<Record<AuthTokenPurpose, number>> = {
   magic_link: 15 * MILLIS_PER_MINUTE,
   password_reset: MILLIS_PER_HOUR,
-  invite: 7 * MILLIS_PER_DAY,
+  invite: 14 * MILLIS_PER_DAY,
 };
 
 /** Human wording for each lifetime, for the sentence the product actually shows. */
 export const TOKEN_TTL_LABEL: Readonly<Record<AuthTokenPurpose, string>> = {
   magic_link: '15 minutes',
   password_reset: '1 hour',
-  invite: '7 days',
+  invite: '14 days',
 };
 
 export const tokenExpiryFor = (purpose: AuthTokenPurpose, issuedAt: Instant): Instant =>

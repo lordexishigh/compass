@@ -864,7 +864,15 @@ export const ROLE_MATRIX: readonly RouteRule[] = [
     allow: { GET: ['owner', 'manager'] },
   },
   {
-    route: '/seats',
+    /**
+     * Seat management, at the blueprint's address.
+     *
+     * `/seats` was the original path and is now a permanent redirect declared in
+     * `apps/web/next.config.ts`. It gets no entry here on purpose: a redirect is not a
+     * route that reads anything, and giving one a matrix row would mean the coverage
+     * test could no longer treat "in the matrix" and "serves data" as the same claim.
+     */
+    route: '/settings/members',
     summary: 'Seat management. Owners change things here; managers read who is on the team.',
     allow: { GET: ['owner', 'manager'] },
   },

@@ -31,6 +31,12 @@ export interface SeatView {
   readonly hasPassword: boolean;
   readonly teamKeys: readonly string[];
   readonly invitedAtLabel: string;
+  /**
+   * When this person was last here, already worded — 'active 3 days ago', 'never
+   * signed in'. Computed on the server against one instant for the whole page, so the
+   * clause is a fact rather than something this component recomputes on every render.
+   */
+  readonly lastActiveLabel: string;
   readonly isYou: boolean;
 }
 
@@ -42,6 +48,14 @@ export interface SeatManagerProps {
   readonly canManage: boolean;
   readonly knownTeamKeys: readonly string[];
   readonly roleCapabilities: Readonly<Record<SeatRoleName, string>>;
+  /**
+   * How long an invitation lasts, in words — passed from `TOKEN_TTL_LABEL.invite`.
+   *
+   * A prop rather than a string in the copy below, because this sentence is a promise
+   * the token enforcement has to keep. It read "seven days" while the constant said
+   * fourteen, which is the drift a derived label makes impossible.
+   */
+  readonly inviteLifetimeLabel: string;
 }
 
 const ROLES: readonly SeatRoleName[] = ['owner', 'manager', 'member', 'viewer'];
@@ -168,8 +182,16 @@ export function SeatManager(props: SeatManagerProps) {
                 </span>
               )}
               {seat.status === 'revoked' && <span className="stated-absence"> —— removed</span>}
+              {/*
+                Last-active, as a run-in clause on the seat's own line rather than a column.
+                Only for an active seat: a pending invitation has by definition never signed
+                in, and printing 'never signed in' beside 'not yet accepted' would be the
+                same fact twice. A removed seat's last sighting is history, not a fact about
+                who can read reports today.
+              */}
+              {seat.status === 'active' && <span className="stated-absence"> —— {seat.lastActiveLabel}</span>}
               {seat.status === 'active' && !seat.hasPassword && (
-                <span className="stated-absence"> —— signs in by emailed link, no password set</span>
+                <span className="stated-absence">, signs in by emailed link, no password set</span>
               )}
             </p>
             <p className="mt-1 text-[13px] text-ink-faint">{props.roleCapabilities[seat.role]}</p>
@@ -245,8 +267,8 @@ export function SeatManager(props: SeatManagerProps) {
         <section id="invite-seat" className="mt-14 hairline pt-8">
           <h2 className="section-label">invite a seat</h2>
           <p className="prose-narration mt-2 text-[15px]">
-            The invitation works once and expires in seven days. Resending it revokes the previous link, so there is
-            never more than one that works.
+            The invitation works once and expires in {props.inviteLifetimeLabel}. Resending it revokes the previous
+            link, so there is never more than one that works.
           </p>
 
           <form onSubmit={invite} className="mt-6 max-w-[26rem]">

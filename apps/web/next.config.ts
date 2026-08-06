@@ -94,6 +94,23 @@ const config: NextConfig = {
   // So middleware owns all six, `apps/web/lib/security-headers.ts` is the single source
   // of their values, and `tests/security-headers.test.ts` asserts this file declares no
   // `headers()` at all — the comment is not what keeps the ownership single.
+
+  /**
+   * Route renames, kept alive.
+   *
+   * `/seats` became `/settings/members` when the path was aligned with the blueprint.
+   * A redirect rather than a second page file: a duplicate page would need its own
+   * `ROLE_MATRIX` entry and would be a second screen to keep in step with the first,
+   * whereas this is the framework's own answer to a moved address and costs one entry.
+   *
+   * `permanent: true` — a 308, which browsers and search engines cache. That is the
+   * honest status for a rename that is not going to be reversed, and it preserves the
+   * method, so a client that somehow posted to the old path is not silently downgraded
+   * to a GET.
+   */
+  async redirects() {
+    return [{ source: '/seats', destination: '/settings/members', permanent: true }];
+  },
 };
 
 export default config;
