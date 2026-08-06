@@ -69,6 +69,13 @@ export default async function RootLayout({ children }: { readonly children: Reac
         </a>
         {children}
         {/*
+          Before the feedback pill and after the document, so the reading order is: the report, then
+          the one thing Compass is waiting to be told, then the control for telling it something
+          else. It renders nothing at all unless an error tracker is configured and the question is
+          unanswered — see the component.
+        */}
+        <ErrorReportingNotice />
+        {/*
           Mounted here rather than inside `ReportDocument`, which is what makes it reachable from
           *both* report views — today's report at `/` and any archived permalink at
           `/archive/[reportId]` — as well as the weekly digest and the merged view, without four
@@ -80,13 +87,6 @@ export default async function RootLayout({ children }: { readonly children: Reac
           endpoint allows the `public` principal, so the demonstration reader can use it with no
           session at all.
         */}
-        {/*
-          Before the feedback pill and after the document, so the reading order is: the report, then
-          the one thing Compass is waiting to be told, then the control for telling it something
-          else. It renders nothing at all unless an error tracker is configured and the question is
-          unanswered — see the component.
-        */}
-        <ErrorReportingNotice />
         <AppFeedbackControl />
       </body>
     </html>

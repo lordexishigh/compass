@@ -76,6 +76,8 @@ export interface RetentionView {
   readonly rawEventRetentionDays: number;
   readonly derivedRetentionYears: number | null;
   readonly llmMinimizationMode: LlmMinimizationMode;
+  /** `unset` until an owner answers. What the error-reporting control on `/privacy` shows. */
+  readonly errorReportingConsent: ErrorReportingConsent;
   /** The instant raw events currently have to postdate to survive. */
   readonly rawCutoff: Instant;
   readonly derivedCutoff: Instant | null;
@@ -120,6 +122,7 @@ export async function loadPrivacyAdminView(scoped: ScopedDb, now: Instant): Prom
       rawEventRetentionDays: settings.rawEventRetentionDays,
       derivedRetentionYears: settings.derivedRetentionYears,
       llmMinimizationMode: settings.llmMinimizationMode,
+      errorReportingConsent: settings.errorReportingConsent,
       rawCutoff: instantFromEpochMillis(
         toEpochMillis(now) - Math.round(settings.rawEventRetentionDays * MILLIS_PER_DAY),
       ),
@@ -171,6 +174,25 @@ export { privacySettingsRowId };
  */
 export { DeletionAlreadyPendingError, InvalidRetentionError };
 
+/**
+ * What a settings write actually applied, so the route can acknowledge it rather than guess.
+ *
+ * The response used to be `{ llmMinimizationMode }` and a sentence about purges, which meant a
+ * caller who changed only the error-reporting answer was told about two things they had not touched
+ * and nothing about the one they had. That matters more on this field than the others: it is the one
+ * with an external processor on the far side, and "did that save?" is not a question to leave to
+ * inference.
+ *
+ * `errorReportingConsentChanged` is carried rather than recomputed by the caller because only this
+ * function has the before-state — the same read the audit row is derived from, so the sentence a
+ * manager sees and the row an auditor finds cannot disagree about whether anything moved.
+ */
+export interface AppliedRetention {
+  readonly llmMinimizationMode: LlmMinimizationMode;
+  readonly errorReportingConsent: ErrorReportingConsent;
+  readonly errorReportingConsentChanged: boolean;
+}
+
 export async function saveRetention(
   scoped: ScopedDb,
   input: {
@@ -181,7 +203,7 @@ export async function saveRetention(
   },
   identity: Identity | null,
   now: Instant,
-): Promise<RetentionView['llmMinimizationMode']> {
+): Promise<AppliedRetention> {
   const before = await ensurePrivacySettings(scoped, {
     id: privacySettingsRowId(scoped.organizationId),
     at: now,
@@ -252,7 +274,11 @@ export async function saveRetention(
     });
   }
 
-  return after.llmMinimizationMode;
+  return {
+    llmMinimizationMode: after.llmMinimizationMode,
+    errorReportingConsent: after.errorReportingConsent,
+    errorReportingConsentChanged: before.errorReportingConsent !== after.errorReportingConsent,
+  };
 }
 
 export async function saveChannelIngestion(

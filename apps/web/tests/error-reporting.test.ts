@@ -1,9 +1,18 @@
 import { RAW_TEXT_FIELD_NAMES, REDACTED, leaksIn } from '@compass/observability';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import { ERROR_REPORTING_CONSENTS } from '@compass/db';
 
-import { SENTRY_DSN_ENV_VAR, errorReportingConfigured, initErrorReporting, sentryOptions } from '../lib/error-reporting';
+import * as Sentry from '@sentry/nextjs';
+
+import {
+  SENTRY_DSN_ENV_VAR,
+  errorReportingActive,
+  errorReportingConfigured,
+  initErrorReporting,
+  sentryOptions,
+  stopErrorReporting,
+} from '../lib/error-reporting';
 
 /**
  * The criterion: no email address, token or raw ingested text reaches an error-reporter payload.
@@ -184,8 +193,8 @@ describe('the structural gate', () => {
 });
 
 describe('a deployment with no DSN', () => {
-  it('does not initialize, and says so rather than pretending', () => {
-    expect(initErrorReporting({ consent: 'granted', environment: {} })).toBe(false);
+  it('does not initialize, and says so rather than pretending', async () => {
+    expect(await initErrorReporting({ consent: 'granted', environment: {} })).toBe(false);
     expect(errorReportingConfigured({})).toBe(false);
   });
 
@@ -209,32 +218,92 @@ describe('consent decides whether the reporter starts at all', () => {
   it.each([
     ['unset', false],
     ['denied', false],
-  ] as const)('stays silent with a DSN configured and consent %s', (consent, expected) => {
+  ] as const)('stays silent with a DSN configured and consent %s', async (consent, expected) => {
     // The important half. A configured deployment reports *nothing* until somebody answers, so the
     // window between deploying and deciding is not a window in which data leaves.
-    expect(initErrorReporting({ consent, environment: withDsn })).toBe(expected);
+    expect(await initErrorReporting({ consent, environment: withDsn })).toBe(expected);
   });
 
-  it.each(['unset', 'granted', 'denied'] as const)('stays silent with no DSN and consent %s', (consent) => {
+  it.each(['unset', 'granted', 'denied'] as const)('stays silent with no DSN and consent %s', async (consent) => {
     // Consent is permission, not configuration. Agreeing does not conjure a destination.
-    expect(initErrorReporting({ consent, environment: {} })).toBe(false);
+    expect(await initErrorReporting({ consent, environment: {} })).toBe(false);
   });
 
-  it('defaults to unset when the caller says nothing', () => {
+  it('defaults to unset when the caller says nothing', async () => {
     /**
      * The signature's own safety property. `initErrorReporting()` with no argument is what a
      * careless future call site looks like, and it must fail closed — a default of `granted` would
      * make the gate opt-out by accident rather than opt-in by design.
      */
-    expect(initErrorReporting()).toBe(false);
+    expect(await initErrorReporting()).toBe(false);
   });
 
-  it('treats denied and unset identically here, and they are still different values', () => {
+  it('treats denied and unset identically here, and they are still different values', async () => {
     // Same behaviour, different meanings: the banner shows for one and not the other. If these ever
     // collapse into a boolean, the banner loses the only thing it keys on.
     expect(ERROR_REPORTING_CONSENTS).toEqual(['unset', 'granted', 'denied']);
-    expect(initErrorReporting({ consent: 'unset', environment: withDsn })).toBe(
-      initErrorReporting({ consent: 'denied', environment: withDsn }),
+    expect(await initErrorReporting({ consent: 'unset', environment: withDsn })).toBe(
+      await initErrorReporting({ consent: 'denied', environment: withDsn }),
     );
+  });
+});
+
+/**
+ * The arm that actually sends, and the arm that stops sending.
+ *
+ * Separated from the table above because these two are the only tests in this file that start a
+ * real client, and a live SDK left behind would leak into every later test in the process — the
+ * scrubber tests build events through `sentryOptions()` rather than through a client precisely so
+ * they never need one. `afterEach` tears it down whatever the assertion did.
+ *
+ * The DSN is syntactically valid and points at a host that does not resolve; nothing is sent
+ * because nothing is captured here, only initialised.
+ */
+describe('a granted deployment, and a withdrawal', () => {
+  const withDsn = { [SENTRY_DSN_ENV_VAR]: DSN };
+
+  afterEach(async () => {
+    await stopErrorReporting();
+  });
+
+  it('initializes with a DSN and consent granted — the combination that sends', async () => {
+    // The arm the truth table above was missing. Without it every assertion in this file was
+    // satisfied by a function that returned false unconditionally.
+    expect(await initErrorReporting({ consent: 'granted', environment: withDsn })).toBe(true);
+    expect(errorReportingActive()).toBe(true);
+  });
+
+  it('is idempotent, so a second request does not replace a live client mid-flight', async () => {
+    expect(await initErrorReporting({ consent: 'granted', environment: withDsn })).toBe(true);
+    const first = Sentry.getClient();
+
+    expect(await initErrorReporting({ consent: 'granted', environment: withDsn })).toBe(true);
+    expect(Sentry.getClient()).toBe(first);
+  });
+
+  it('tears the client down when consent is withdrawn, without waiting for a restart', async () => {
+    /**
+     * The defect this closes. An initialized client installs global handlers, so gating only the
+     * capture path left an unhandled rejection still reaching the tracker after the owner said no —
+     * consent withdrawn in the database and not in the process.
+     */
+    await initErrorReporting({ consent: 'granted', environment: withDsn });
+    expect(errorReportingActive()).toBe(true);
+
+    expect(await initErrorReporting({ consent: 'denied', environment: withDsn })).toBe(false);
+    expect(errorReportingActive(), 'the client survived a withdrawal').toBe(false);
+  });
+
+  it('tears it down for unset too, which is what a fresh organization reverts to on a failed read', async () => {
+    // `errorReportingConsent()` answers `unset` when the database cannot be reached, and that path
+    // must stop an already-running client rather than leave it reporting on a guess.
+    await initErrorReporting({ consent: 'granted', environment: withDsn });
+
+    expect(await initErrorReporting({ consent: 'unset', environment: withDsn })).toBe(false);
+    expect(errorReportingActive()).toBe(false);
+  });
+
+  it('can be stopped when nothing is running, so a shutdown hook needs no guard', async () => {
+    await expect(stopErrorReporting()).resolves.toBeUndefined();
   });
 });

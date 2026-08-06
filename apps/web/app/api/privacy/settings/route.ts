@@ -167,12 +167,31 @@ export async function PATCH(request: Request): Promise<NextResponse> {
       admitted.now,
     );
 
+    /**
+     * The acknowledgement names what moved, and the consent sentence is conditional.
+     *
+     * A caller who sent only `errorReportingConsent` used to be told about purge windows and the
+     * narration mode — neither of which they touched — and nothing about the field they did. It is
+     * the one setting here with an external processor on the other side, so "did that save, and
+     * what is happening now" is the question the response has to answer rather than imply.
+     *
+     * Conditional on having *changed* rather than on having been sent: re-affirming the answer that
+     * was already stored is a no-op, and saying "reports now go to the tracker" over a request that
+     * changed nothing would misdescribe it.
+     */
+    const consentSentence = applied.errorReportingConsentChanged
+      ? applied.errorReportingConsent === 'granted'
+        ? ' Error reporting is on: from now on a scrubbed stack trace goes to the error tracker when Compass throws.'
+        : ' Error reporting is off: nothing leaves this deployment, and errors stay in its own log.'
+      : '';
+
     return jsonOk({
-      llmMinimizationMode: applied,
+      llmMinimizationMode: applied.llmMinimizationMode,
+      errorReportingConsent: applied.errorReportingConsent,
       detail:
         'Saved. The next scheduled purge applies the new window; nothing is deleted at the moment you change it, ' +
         'so shortening a window gives you until the next purge to change your mind. The narration mode takes ' +
-        'effect on the next report Compass generates.',
+        `effect on the next report Compass generates.${consentSentence}`,
     });
   } catch (error) {
     return failure(error);

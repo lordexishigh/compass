@@ -331,3 +331,44 @@ describe('the error-reporting consent', () => {
     expect(ERROR_REPORTING_CONSENTS).toContain('denied');
   });
 });
+
+/**
+ * The consent question is answerable from the product, not only by hand-crafting a PATCH.
+ *
+ * This is the assertion whose absence let the notice ship undismissable: the gate was built, the
+ * banner was built, the endpoint accepted the field — and no screen offered it, so the one state
+ * the notice's own docstring promises it can leave was unreachable. Every piece existed and the
+ * feature did not work.
+ *
+ * A source scan rather than a render, for the same reason the no-ranking scan above is one: the
+ * page is a Server Component that reaches for a database, and what needs pinning is that the
+ * control is *wired in* — which is a fact about the file, not about a fixture.
+ */
+describe('the error-reporting consent can be answered on /privacy', () => {
+  const source = readFileSync(join(WEB_ROOT, 'app', 'privacy', 'page.tsx'), 'utf8');
+
+  it('renders the control', () => {
+    expect(source, '/privacy does not render ErrorReportingControls').toContain('<ErrorReportingControls');
+    expect(source).toContain("from '../../components/privacy-controls'");
+  });
+
+  it('hands it the stored answer rather than a literal', () => {
+    // A hard-coded `consent="unset"` would render a control that always looked unanswered and
+    // silently discarded what the owner had already chosen.
+    expect(source).toContain('consent={view.retention.errorReportingConsent}');
+  });
+
+  it('gates it to owners, exactly as the retention windows are', () => {
+    /**
+     * `/api/privacy/settings` PATCH is owner-only, so a control a manager could press would 403 —
+     * and a control that refuses when pressed reads as a broken product rather than as a
+     * permission boundary. Asserted against the same `isOwner` the retention selects use, so the
+     * two cannot drift into disagreeing about who may change the organization's posture.
+     */
+    const controlLine = /<ErrorReportingControls[^>]*>/.exec(source)?.[0] ?? '';
+
+    expect(controlLine, 'the control is not owner-gated').toContain('canEdit={isOwner}');
+    expect(source).toContain('<RetentionControls');
+    expect(/<RetentionControls[\s\S]*?\/>/.exec(source)?.[0]).toContain('canEdit={isOwner}');
+  });
+});

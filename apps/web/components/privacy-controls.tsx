@@ -50,6 +50,31 @@ const MODES = [
   },
 ] as const;
 
+/**
+ * The two answers an owner may give about error reporting.
+ *
+ * Two, not three. `unset` is the stored state before anybody answered and `/api/privacy/settings`
+ * refuses it as an input — offering it here would be offering "un-ask the question", which deletes
+ * a consent record rather than withdrawing consent. Withdrawal is `denied`, and it is the second
+ * option rather than an absent one so that saying no is as easy as saying yes.
+ */
+const ERROR_REPORTING_ANSWERS = [
+  {
+    value: 'granted',
+    title: 'Send scrubbed reports',
+    detail:
+      'When Compass throws, a stack trace goes to the error tracker named on the data-processing page. Addresses, ' +
+      'credentials and every piece of ingested text are removed before it leaves this process.',
+  },
+  {
+    value: 'denied',
+    title: 'Send nothing',
+    detail:
+      'Nothing leaves. Errors are written to this deployment’s own log and stay there, which is exactly what ' +
+      'happens today while nobody has answered.',
+  },
+] as const;
+
 interface Outcome {
   readonly kind: 'ok' | 'refused';
   readonly detail: string;
@@ -293,6 +318,109 @@ export function MinimizationControls({
       {canEdit ? null : (
         <p className="stated-absence mt-4">
           Only an owner can change this. The mode in force is marked above and applies to every report Compass writes.
+        </p>
+      )}
+
+      <OutcomeLine outcome={outcome} />
+    </div>
+  );
+}
+
+/**
+ * The answer to the consent notice, and the only place it can be given.
+ *
+ * `components/error-reporting-notice.tsx` renders a landmark at the foot of every page while the
+ * stored value is `unset`, and it deliberately carries no buttons: the choice is the organization's
+ * posture, `/api/privacy/settings` is owner-only, and a viewer pressing "Allow" would be deciding
+ * for everybody. This is where it points. Without this control the notice was undismissable through
+ * the product — the one state its own docstring promises it can leave.
+ *
+ * Built as a copy of `MinimizationControls` rather than as something new, down to the focus restore:
+ * both are a small closed vocabulary written to the same endpoint, and a reader who has learned one
+ * screen's radio group should not meet a second idiom on the same page.
+ */
+export function ErrorReportingControls({
+  consent,
+  canEdit,
+}: {
+  readonly consent: string;
+  readonly canEdit: boolean;
+}) {
+  // `unset` is a real stored value and deliberately matches no radio, so nothing is preselected and
+  // the group renders as the unanswered question it is. A default selection would show an answer
+  // nobody gave.
+  const [selected, setSelected] = useState(consent);
+  const [outcome, setOutcome] = useState<Outcome | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  const radioRefs = useRef(new Map<string, HTMLInputElement>());
+  const [restoreFocusTo, setRestoreFocusTo] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (pending || restoreFocusTo === null) return;
+    radioRefs.current.get(restoreFocusTo)?.focus();
+    setRestoreFocusTo(null);
+  }, [pending, restoreFocusTo]);
+
+  const choose = (value: string) => {
+    setSelected(value);
+    setRestoreFocusTo(value);
+    startTransition(async () => {
+      setOutcome(await send('/api/privacy/settings', 'PATCH', { errorReportingConsent: value }));
+    });
+  };
+
+  return (
+    <div className="mt-5">
+      {selected === 'unset' && (
+        // Stated rather than implied. An unanswered radio group looks identical to one whose answer
+        // failed to load, and "honest degradation" means the page says which it is.
+        <p className="stated-absence mb-4">
+          Nobody has answered yet, so Compass is sending nothing. Either answer settles it and the
+          notice at the foot of the page goes away; both can be changed again here at any time.
+        </p>
+      )}
+
+      <fieldset disabled={!canEdit} aria-busy={pending} className="space-y-4">
+        <legend className="sr-only">Whether stack traces may leave this deployment</legend>
+        {ERROR_REPORTING_ANSWERS.map((option) => (
+          <div key={option.value} className="flex gap-3">
+            <input
+              id={`error-reporting-${option.value}`}
+              type="radio"
+              name="error-reporting-consent"
+              value={option.value}
+              checked={selected === option.value}
+              disabled={pending}
+              ref={(node) => {
+                if (node === null) radioRefs.current.delete(option.value);
+                else radioRefs.current.set(option.value, node);
+              }}
+              onChange={() => choose(option.value)}
+              aria-describedby={`error-reporting-${option.value}-detail`}
+              className="mt-1 accent-[var(--verified)]"
+            />
+            <span>
+              <label
+                htmlFor={`error-reporting-${option.value}`}
+                className="block text-[14px] font-semibold text-ink-strong"
+              >
+                {option.title}
+              </label>
+              <span
+                id={`error-reporting-${option.value}-detail`}
+                className="mt-0.5 block text-[13px] leading-relaxed text-ink-muted"
+              >
+                {option.detail}
+              </span>
+            </span>
+          </div>
+        ))}
+      </fieldset>
+
+      {canEdit ? null : (
+        <p className="stated-absence mt-4">
+          Only an owner can answer this. Whatever is marked above is what Compass is doing now.
         </p>
       )}
 

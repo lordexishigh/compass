@@ -73,23 +73,67 @@ export function sentryOptions(dsn: string): Sentry.NodeOptions {
  * and can flush on exit, so "initialize now, decide later" would mean events leaving the process
  * during the window before anybody answered. Deferring the `init` itself is the only version of
  * this gate that is true at every instant rather than usually.
+ *
+ * ## Withdrawal takes effect now, not at the next restart
+ *
+ * The same fact makes the reverse true, and it is the arm that was missing. A client started under
+ * `granted` keeps its global handlers after the owner changes their mind, so gating only the
+ * *capture* path would have left an unhandled rejection still reaching the tracker — consent
+ * withdrawn in the database and not in the process. So a non-granted pass with a live client tears
+ * it down. `Sentry.close()` flushes what is already queued before detaching, which is the right
+ * order: those events were captured while consent stood.
  */
-export function initErrorReporting(
+export async function initErrorReporting(
   input: {
     readonly consent: ErrorReportingConsent;
     readonly environment?: Record<string, string | undefined>;
   } = { consent: 'unset' },
-): boolean {
+): Promise<boolean> {
   const environment = input.environment ?? process.env;
   const dsn = environment[SENTRY_DSN_ENV_VAR];
   if (dsn === undefined || dsn.length === 0) return false;
-  // `denied` and `unset` behave identically here and mean different things elsewhere: the banner
+
+  // `denied` and `unset` behave identically here and mean different things elsewhere: the notice
   // shows for one and not the other. See `ERROR_REPORTING_CONSENTS`.
-  if (input.consent !== 'granted') return false;
+  if (input.consent !== 'granted') {
+    await stopErrorReporting();
+    return false;
+  }
+
   if (Sentry.getClient() !== undefined) return true;
 
   Sentry.init(sentryOptions(dsn));
   return true;
+}
+
+/**
+ * Detaches the SDK, flushing anything already captured. Safe to call when nothing is running.
+ *
+ * Exported so a test can assert the teardown directly and so a caller with its own reason to stop
+ * — a shutdown hook, a test's `afterEach` — does not have to fake a consent value to get it.
+ *
+ * ## `close()` alone does not do it
+ *
+ * `Sentry.close()` flushes the queue and shuts the transport down, but it leaves the client bound
+ * to the scopes — `getClient()` keeps returning it, and code that asks "is reporting on" is told
+ * yes. That is not a cosmetic difference for a consent gate: the whole claim is that withdrawal
+ * takes effect now, and a half-detached client is a claim that reads true and behaves otherwise.
+ * The first version of this function shipped exactly that, and the test below caught it.
+ *
+ * So the client is unbound from all three scopes afterwards. All three, because `getClient()`
+ * resolves current → isolation → global, and clearing only the one `init` happened to write would
+ * leave the lookup finding it one level up.
+ */
+export async function stopErrorReporting(): Promise<void> {
+  if (Sentry.getClient() === undefined) return;
+
+  // Flush first, detach second. Anything already captured was captured while consent stood, and
+  // dropping it would lose a real error rather than protect anybody.
+  await Sentry.close();
+
+  Sentry.getCurrentScope().setClient(undefined);
+  Sentry.getIsolationScope().setClient(undefined);
+  Sentry.getGlobalScope().setClient(undefined);
 }
 
 /**

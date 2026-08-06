@@ -65,7 +65,9 @@ export function register(): void {
  * fault into two.
  */
 export const onRequestError: NonNullable<Instrumentation.onRequestError> = async (error, request, context) => {
-  if (!initErrorReporting({ consent: await errorReportingConsent() })) return;
+  // Awaited because the non-granted arm tears a live client down: an owner who withdraws consent
+  // must stop being reported on immediately, not at the next deploy.
+  if (!(await initErrorReporting({ consent: await errorReportingConsent() }))) return;
 
   await Sentry.captureRequestError(error, request, context);
 };

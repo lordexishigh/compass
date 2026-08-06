@@ -18,6 +18,7 @@ import {
   AnonymizeControl,
   ChannelToggle,
   DeletionControls,
+  ErrorReportingControls,
   MinimizationControls,
   RetentionControls,
 } from '../components/privacy-controls';
@@ -1171,5 +1172,66 @@ describe('the error-reporting consent notice is a landmark, not a modal', () => 
 
     expect(text).toContain('it is sending nothing');
     expect(text).toContain('go nowhere else');
+  });
+});
+
+/**
+ * The control that answers the notice — the half that was missing when the notice shipped.
+ *
+ * `ErrorReportingNoticeBody` promises the question "disappears when the decision is made, either
+ * way", and for one review cycle nothing on `/privacy` could make it. These assertions are what
+ * keep the promise checkable: the control exists, it offers both answers, and it never offers the
+ * third value the route refuses.
+ */
+describe('the error-reporting consent control', () => {
+  it('has no critical or serious axe violations as an owner sees it', async () => {
+    await expectNoBlockingViolations(
+      'the error-reporting control',
+      renderToStaticMarkup(<ErrorReportingControls consent="unset" canEdit />),
+    );
+  });
+
+  it('has none in the read-only rendering a manager sees', async () => {
+    await expectNoBlockingViolations(
+      'the read-only error-reporting control',
+      renderToStaticMarkup(<ErrorReportingControls consent="granted" canEdit={false} />),
+    );
+  });
+
+  it('offers both answers and never `unset`, which the route refuses by design', () => {
+    const markup = renderToStaticMarkup(<ErrorReportingControls consent="unset" canEdit />);
+
+    expect(markup).toContain('value="granted"');
+    expect(markup).toContain('value="denied"');
+    // Offering it would be offering "un-ask the question", which deletes a consent record rather
+    // than withdrawing consent — and `/api/privacy/settings` would 400 the request anyway.
+    expect(markup).not.toContain('value="unset"');
+  });
+
+  it('says nobody has answered when nothing is stored, rather than preselecting one', () => {
+    const markup = renderToStaticMarkup(<ErrorReportingControls consent="unset" canEdit />);
+
+    expect(markup).toContain('Nobody has answered yet');
+    // A checked radio would show an answer nobody gave.
+    expect(markup).not.toContain('checked=""');
+  });
+
+  it('marks the stored answer once one exists, and drops the unanswered sentence', () => {
+    const markup = renderToStaticMarkup(<ErrorReportingControls consent="denied" canEdit />);
+
+    expect(markup).not.toContain('Nobody has answered yet');
+    // Attribute order is React's business; what matters is that the denied input is the checked one.
+    const deniedInput = /<input[^>]*id="error-reporting-denied"[^>]*>/.exec(markup)?.[0] ?? '';
+    expect(deniedInput).toContain('checked');
+    const grantedInput = /<input[^>]*id="error-reporting-granted"[^>]*>/.exec(markup)?.[0] ?? '';
+    expect(grantedInput).not.toContain('checked');
+  });
+
+  it('tells a manager who may not change it who can, rather than disabling in silence', () => {
+    // Same rule the retention windows follow: a control a reader cannot use and cannot account for
+    // reads as a bug.
+    expect(renderToStaticMarkup(<ErrorReportingControls consent="granted" canEdit={false} />)).toContain(
+      'Only an owner can answer this',
+    );
   });
 });
