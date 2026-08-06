@@ -4,6 +4,7 @@ import { narratorFromEnvironment } from '@compass/narrator';
 import { ensureDailyReport, loadFreshnessFor, type EnsuredReport } from '@compass/pipeline';
 import { SeedConnector, resolveSeededRun, type SeededRun } from '@compass/seed-connector';
 
+import { simulatedClockAvailable, timeTravelBounds, type TimeTravelBounds } from './archive-source';
 import { listDisconnectedSources } from './connect-source';
 import {
   organizationHasSubject,
@@ -157,7 +158,23 @@ export async function loadReportView(): Promise<ReportView> {
  * whether there is a subject, not whether the subject did anything.
  */
 export type HomeView =
-  | { readonly kind: 'report'; readonly view: ReportView }
+  | {
+      readonly kind: 'report';
+      readonly view: ReportView;
+      /**
+       * The date control, or `null` where stepping `now` is not a meaningful act.
+       *
+       * Resolved here rather than in the page for the reason every instant in this app is: the
+       * bounds are time arithmetic over the seeded history, and `apps/web` renders rather than
+       * computes. `null` — not a disabled control — is what a live organization gets, because a
+       * disabled affordance is an invitation to ask why, and the honest arrangement is that a
+       * feature which cannot apply is not shown. The POST route refuses independently either way.
+       */
+      readonly timeTravel: {
+        readonly bounds: TimeTravelBounds;
+        readonly teamKey: string;
+      } | null;
+    }
   | {
       readonly kind: 'unprovisioned';
       readonly steps: readonly FirstRunStep[];
@@ -172,7 +189,21 @@ export async function loadHomeView(): Promise<HomeView> {
   // configured — which is every one that matters — this returns true and the report path is
   // reached having paid almost nothing for the question.
   if (await organizationHasSubject(scoped)) {
-    return { kind: 'report', view: await loadReportView() };
+    const view = await loadReportView();
+
+    return {
+      kind: 'report',
+      view,
+      /**
+       * `run.teamKey` is the scope `ensureTodaysReport` just generated for, so the key the
+       * scrubber posts back is by construction the key this page is about — there is no second
+       * source of it that could drift. `/` is always a team report, never the merged scope, so
+       * the `scopeKind === 'team'` guard the permalink page needs has nothing to test here.
+       */
+      timeTravel: simulatedClockAvailable(run.organizationId)
+        ? { bounds: timeTravelBounds(run.organizationId, view.reportDate), teamKey: run.teamKey }
+        : null,
+    };
   }
 
   // Only now, on the branch that is going to render the step list, is the full model built.

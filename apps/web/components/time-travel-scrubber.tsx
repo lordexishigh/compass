@@ -59,6 +59,25 @@ export function TimeTravelScrubber({ bounds, teamKey }: TimeTravelScrubberProps)
       return;
     }
 
+    /**
+     * Travelling to the day already on screen is not a journey, and posting it is not harmless.
+     *
+     * A report row's id is `(organization, scope, instant)` — `reportRowId` in `packages/db` hashes
+     * the instant in *milliseconds*, not the civil date. Time travel generates at the scheduler's
+     * canonical instant for a date (06:00 local), while `/` generates at the run's own `now`. Those
+     * are two different instants on one civil date, so posting the date already being shown mints a
+     * second row for that morning and the archive then lists the day twice with different content.
+     *
+     * The wider mismatch is not this component's to fix — it is a question about which instant `/`
+     * reports for — but the one path from here into it closes with an equality check. A reader who
+     * picks today's date out of the date input is asking for the page they are already reading.
+     */
+    if (target === bounds.currentDate) {
+      setNote(null);
+      setDate(target);
+      return;
+    }
+
     setDate(target);
     setNote(null);
 

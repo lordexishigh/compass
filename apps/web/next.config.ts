@@ -107,9 +107,20 @@ const config: NextConfig = {
    * honest status for a rename that is not going to be reversed, and it preserves the
    * method, so a client that somehow posted to the old path is not silently downgraded
    * to a GET.
+   *
+   * `/reports` is a different case, and takes a 307. Nothing ever lived there — it is simply
+   * the address people guess for "every report Compass has written", and guessing it got a 404
+   * while `/archive` sat one word away holding exactly that. An alias is not a rename: `/archive`
+   * is and stays the canonical permalink root, which is why this redirects *to* it rather than
+   * duplicating the page, and why the status is the temporary one. A 308 would assert that a
+   * resource had permanently moved from an address that never held one, and browsers cache that
+   * claim indefinitely.
    */
   async redirects() {
-    return [{ source: '/seats', destination: '/settings/members', permanent: true }];
+    return [
+      { source: '/seats', destination: '/settings/members', permanent: true },
+      { source: '/reports', destination: '/archive', permanent: false },
+    ];
   },
 };
 

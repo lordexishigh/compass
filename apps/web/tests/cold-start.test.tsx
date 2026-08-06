@@ -8,6 +8,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
 import { ReportDocument } from '../components/report-document';
+import { TimeTravelScrubber } from '../components/time-travel-scrubber';
 import { buildReportView } from '../lib/view-model';
 
 import { emptyBundle, freshnessComplete, freshnessWithMissingSource, storedBundle } from './helpers/report-fixture';
@@ -297,5 +298,76 @@ describe('the report is readable on a 375px viewport', () => {
     expect(styles).toContain('--measure:');
     expect(styles).toContain('max-width: 66ch');
     expect(document_).toContain('var(--measure)');
+  });
+});
+
+/**
+ * The date control is on the report page.
+ *
+ * The blueprint states the criterion as a location, not as a capability: *"A date control on the
+ * report page; stepping from sprint day 6 to day 11 produces five distinct stored reports … and the
+ * archive lists all five."* The control existed and worked, and was mounted only on
+ * `/archive/[reportId]` — which made the product circular. Stepping is the only thing that generates
+ * a day other than today, so the archive listed exactly one day; and the only page offering a step
+ * was a permalink you could reach only *through* the archive. A reader landing on `/` met a report
+ * frozen on one date with no way to move, which is precisely what the review found.
+ *
+ * So the assertion is about where it is mounted. The gate, the route's refusals and the day-by-day
+ * walk through the pipeline are covered by `tests/time-travel.test.ts` and
+ * `apps/worker/tests/time-travel.test.ts`; none of them can see that `/` does not offer it.
+ */
+describe('the report page carries the date control', () => {
+  const page = codeOf('app', 'page.tsx');
+
+  it('mounts the scrubber on `/`, not only on the permalink', () => {
+    expect(page).toContain('TimeTravelScrubber');
+    // Fed from the loader rather than computed in the component: the bounds are time arithmetic
+    // over the seeded history, and this route renders rather than computes.
+    expect(page).toContain('home.timeTravel');
+  });
+
+  const bounds = {
+    available: true,
+    earliestDate: '2026-07-22',
+    latestDate: '2026-07-31',
+    timezone: 'Europe/Berlin',
+    currentDate: '2026-07-31',
+  } as const;
+
+  it('offers day-step buttons and a date jump, bounded by the seeded history', () => {
+    const control = renderToStaticMarkup(<TimeTravelScrubber bounds={bounds} teamKey="platform" />);
+
+    // The blueprint's two gestures: the day-by-day walk that shows continuity, and the jump.
+    expect(control).toContain('aria-label="Step back one day"');
+    expect(control).toContain('aria-label="Step forward one day"');
+    expect(control).toContain('type="date"');
+
+    // Bounded, so the control cannot ask for a day the fixture has no data for.
+    expect(control).toContain(`min="${bounds.earliestDate}"`);
+    expect(control).toContain(`max="${bounds.latestDate}"`);
+    expect(control).toContain(`value="${bounds.currentDate}"`);
+
+    // At the latest day the forward step is disabled rather than absent, so the bound is legible —
+    // and the backward step is not, because the reader is at one end of the history and not both.
+    // Matched inside each button's own tag: an alternation over the whole document would let the
+    // wrong button's `disabled` satisfy this.
+    const buttonWith = (label: string): string => {
+      const found = [...control.matchAll(/<button\b[^>]*>/g)].find((tag) => tag[0].includes(label));
+      if (found === undefined) throw new Error(`no button labelled ${label}`);
+      return found[0];
+    };
+
+    expect(buttonWith('Step forward one day')).toContain('disabled');
+    expect(buttonWith('Step back one day')).not.toContain('disabled');
+  });
+
+  it('renders nothing at all where stepping `now` is not a meaningful act', () => {
+    // A live organization. Absent rather than disabled: a disabled control is an invitation to ask
+    // why it is disabled, and this one would never become enabled.
+    const control = renderToStaticMarkup(
+      <TimeTravelScrubber bounds={{ ...bounds, available: false }} teamKey="platform" />,
+    );
+
+    expect(control).toBe('');
   });
 });
