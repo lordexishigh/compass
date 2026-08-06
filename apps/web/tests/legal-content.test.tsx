@@ -19,6 +19,7 @@ import AcceptInvitePage from '../app/account/invite/page';
 import LegalIndexPage from '../app/legal/page';
 import LegalDocumentPage from '../app/legal/[slug]/page';
 import SubprocessorsPage from '../app/trust/subprocessors/page';
+import { PolicyBody } from '../components/policy-document';
 
 /**
  * The published legal surfaces, rendered.
@@ -321,5 +322,145 @@ describe('the trust surfaces are reachable without an account', () => {
         `${route} is demo-only, so it is unreadable in a real tenant`,
       ).toBe(false);
     }
+  });
+});
+
+/**
+ * The cookie disclosure, held to the cookies the app actually sets.
+ *
+ * ePrivacy Article 5(3) requires information about anything stored on a reader's device, and exempts
+ * from *consent* only what is strictly necessary. Compass sets two strictly-necessary cookies, so the
+ * published surface is a section of the privacy policy rather than a banner — and that position is
+ * only defensible while the section is complete.
+ *
+ * So this does not check that some prose about cookies exists. It reads the cookie names out of
+ * `lib/auth/cookies.ts` and requires the policy to name each one. A third cookie added to the app
+ * fails here, which forces the question "is this one strictly necessary?" to be answered by a person
+ * at the moment it stops being hypothetical, rather than discovered in an audit.
+ */
+describe('the privacy policy discloses every cookie the app sets', () => {
+  const COOKIE_SOURCE = readFileSync(join(process.cwd(), 'lib', 'auth', 'cookies.ts'), 'utf8');
+
+  /** Every `_COOKIE_NAME = '…'` constant in the cookie module — the real inventory. */
+  const cookieNames = [...COOKIE_SOURCE.matchAll(/COOKIE_NAME\s*=\s*'([^']+)'/g)].map((match) => match[1]!);
+
+  const privacyPolicy = POLICY_DOCUMENTS.find((document) => document.slug === 'privacy')!;
+  const browserSection = privacyPolicy.sections.find((section) => /browser/i.test(section.heading));
+  const sectionText = [
+    browserSection?.heading ?? '',
+    ...(browserSection?.paragraphs ?? []),
+    ...(browserSection?.bullets ?? []),
+  ].join('\n');
+
+  it('found cookies to check, so an empty inventory cannot pass', () => {
+    // Two today. Asserted as a floor rather than an exact count: a third cookie should fail the
+    // naming test below with a useful message, not this one with a confusing one.
+    expect(cookieNames.length, 'no cookie constants were found — did the module move?').toBeGreaterThanOrEqual(2);
+    expect(cookieNames).toContain('compass_session');
+  });
+
+  it('has a section about browser storage at all', () => {
+    expect(browserSection, 'the privacy policy says nothing about what the browser stores').toBeDefined();
+  });
+
+  it.each(cookieNames.map((name) => [name]))('names %s and says what it is for', (name) => {
+    expect(sectionText, `${name} is set by the app but the privacy policy does not disclose it`).toContain(name);
+  });
+
+  it('states the consent position rather than leaving the absent banner unexplained', () => {
+    // The reader has to be told *why* there is no banner, or the absence reads as an oversight —
+    // and a reviewer cannot tell the two apart either.
+    expect(sectionText).toContain('strictly necessary');
+    expect(sectionText.toLowerCase()).toContain('no cookie-consent banner');
+  });
+
+  it('claims no analytics, and is telling the truth about the client bundle', () => {
+    expect(sectionText).toContain('localStorage');
+
+    /**
+     * The claim checked against the code, not just asserted in prose. A policy promising no
+     * client-side storage while a component quietly writes one would be the worst outcome here —
+     * worse than no policy, because it is a published falsehood.
+     */
+    const clientFiles: string[] = [];
+    const walk = (directory: string): void => {
+      for (const entry of readdirSync(directory, { withFileTypes: true })) {
+        const full = join(directory, entry.name);
+        if (entry.isDirectory()) {
+          if (entry.name !== 'node_modules' && entry.name !== '.next') walk(full);
+          continue;
+        }
+        if (/\.tsx?$/.test(entry.name)) clientFiles.push(full);
+      }
+    };
+    walk(join(process.cwd(), 'components'));
+    walk(join(process.cwd(), 'app'));
+
+    const offenders = clientFiles.filter((file) => {
+      const code = readFileSync(file, 'utf8')
+        .replace(/\/\*[\s\S]*?\*\//g, ' ')
+        .replace(/(^|[^:])\/\/.*$/gm, '$1');
+      return /\b(localStorage|sessionStorage|indexedDB|document\.cookie)\b/.test(code);
+    });
+
+    expect(
+      offenders.map((file) => relative(process.cwd(), file)),
+      'the privacy policy promises no browser storage beyond two cookies, and these files write some',
+    ).toEqual([]);
+  });
+});
+
+/**
+ * The published documents render their markup rather than showing it.
+ *
+ * The content module is written in this codebase's own idiom — `**bold**` for a distinction,
+ * backticks for an identifier — and for a while only the first of those was understood, so the
+ * no-ranking stance published the sentence "passes through \`assertNoIndividualRanking\`" with the
+ * punctuation visible. Nobody noticed because the assertions all matched on the raw constant, which
+ * of course still contained the backticks.
+ *
+ * So these assert on the *rendered* markup: the delimiters are gone from the text, and the thing
+ * between them became an element.
+ */
+describe('policy markup is rendered, not printed', () => {
+  const renderDocument = (slug: string): string => {
+    const document = POLICY_DOCUMENTS.find((candidate) => candidate.slug === slug)!;
+    return renderToStaticMarkup(<PolicyBody document={document} />);
+  };
+
+  const documentsWithBackticks = POLICY_DOCUMENTS.filter((document) =>
+    document.sections.some((section) =>
+      [...section.paragraphs, ...(section.bullets ?? [])].some((line) => line.includes('`')),
+    ),
+  );
+
+  it('found documents that use the backtick idiom, so this is not vacuous', () => {
+    // The privacy policy (cookie names) and the no-ranking stance (a guard and its path) at least.
+    expect(documentsWithBackticks.map((document) => document.slug)).toContain('privacy');
+    expect(documentsWithBackticks.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it.each(documentsWithBackticks.map((document) => [document.slug]))(
+    '%s shows no raw delimiter to the reader',
+    (slug) => {
+      const markup = renderDocument(slug);
+      // The rendered *text*, with tags removed — a backtick surviving here is one a reader sees.
+      const visible = markup.replace(/<[^>]+>/g, '');
+
+      expect(visible, 'a backtick reached the page instead of becoming a code span').not.toContain('`');
+      expect(visible, 'an asterisk pair reached the page instead of becoming emphasis').not.toContain('**');
+    },
+  );
+
+  it('sets the identifiers in the product’s one mono treatment', () => {
+    const markup = renderDocument('privacy');
+
+    expect(markup).toContain('class="data-token"');
+    expect(markup).toContain('<code class="data-token">compass_session</code>');
+  });
+
+  it('still emphasises the distinction the privacy policy depends on', () => {
+    // The regression guard for the change that added code spans: bold must keep working.
+    expect(renderDocument('privacy')).toContain('<strong class="font-medium text-ink-strong">');
   });
 });

@@ -515,7 +515,7 @@ export const PRIVACY_POLICY: PolicyDocument = Object.freeze({
   slug: 'privacy',
   title: 'Privacy policy',
   lede: 'What Compass holds, why, who else sees it, and what you can do about all three.',
-  lastUpdated: '2026-08-05',
+  lastUpdated: '2026-08-06',
   sections: Object.freeze([
     Object.freeze({
       heading: 'What Compass holds',
@@ -551,6 +551,51 @@ export const PRIVACY_POLICY: PolicyDocument = Object.freeze({
         'Raw chat message bodies for 90 days by default, derived data and reports for three years, both ' +
           'settable by an owner. A scheduled purge enforces the windows and records each run whether or ' +
           'not it deleted anything.',
+      ]),
+    }),
+    Object.freeze({
+      /**
+       * The cookie disclosure, and the reason there is no consent banner.
+       *
+       * ePrivacy Article 5(3) requires *information* about anything stored on a device, and exempts
+       * from *consent* only what is strictly necessary to provide the service the person asked for.
+       * Compass sets two cookies and both are in that class, so the honest surface is this section
+       * rather than a banner. A banner asking permission for cookies that do not need it would be
+       * theatre: its "reject" button could not reject anything without signing the reader out, and
+       * offering a choice that cannot be honoured teaches people the choice is meaningless.
+       *
+       * This stays true only while the inventory does. `legal-content.test.ts` reads the cookie
+       * names out of `apps/web/lib/auth/cookies.ts` and fails if one is set that this section does
+       * not name — so adding a third cookie forces a decision here rather than slipping past.
+       */
+      heading: 'What Compass stores in your browser',
+      paragraphs: Object.freeze([
+        'Two cookies, both strictly necessary, both `HttpOnly` — meaning no script on the page can ' +
+          'read either of them — and both `SameSite=Lax` and `Secure` wherever the connection is ' +
+          'HTTPS. Compass sets nothing else: no `localStorage`, no analytics or advertising cookie, ' +
+          'no third-party script, no tracking pixel, and no fingerprinting. The Content-Security-' +
+          'Policy would block a third-party script even if one were added by mistake.',
+        'There is deliberately **no cookie-consent banner**, and that is a position rather than an ' +
+          'omission. Consent is required for cookies that are not strictly necessary, and Compass ' +
+          'sets none of those. A banner would ask permission for something that needs none, and its ' +
+          '“reject” option could not reject the session cookie without signing you out — a choice ' +
+          'that cannot be honoured is worse than no choice. Refusing both cookies in your browser is ' +
+          'still available and still works; you will not be able to sign in, which is what refusing ' +
+          'a sign-in cookie means.',
+        'Error reports are a separate question and worth stating plainly here rather than leaving to ' +
+          'the subprocessor list: they are generated **on the server**, never in your browser, so ' +
+          'nothing about them depends on a device choice. Stack traces pass through a scrubber that ' +
+          'removes addresses, credentials and ingested text before an event leaves the process, and a ' +
+          'deployment with no error-tracking key sends none at all.',
+      ]),
+      bullets: Object.freeze([
+        '`compass_session` — proves you are signed in. It holds a random secret; the database keeps ' +
+          'only a hash of it. Expires 30 days after it is issued, and sooner if you are idle, sign ' +
+          'out, or an owner changes your role.',
+        '`compass_sso_nonce` — set only if you sign in through an identity provider, and only for the ' +
+          'ten minutes that round trip lasts. It ties the provider’s answer to the browser that ' +
+          'started the request, which is what stops somebody feeding you their own sign-in. Cleared ' +
+          'the moment the round trip finishes, whatever the outcome.',
       ]),
     }),
     Object.freeze({

@@ -8,24 +8,53 @@ import type { PolicyDocument } from '@compass/trust';
  * the same reason the report refuses it — somebody has to actually read this, on a phone, while deciding
  * whether to trust the product.
  *
- * ## The one piece of markup that is not decoration
+ * ## The two pieces of markup that are not decoration
  *
  * `**bold**` inside a paragraph is honoured, because two of these documents draw a distinction that only
  * works if the two terms are emphasised — "**account data**" against "**work data**" in the privacy
  * policy. It is a deliberate, closed piece of formatting rather than a markdown renderer: the content is
  * a typed module written by us, not user input, so a full parser would be a dependency and an injection
  * surface bought for one asterisk pair.
+ *
+ * Backtick spans are the second, and they were a defect before they were a feature. The no-ranking
+ * stance cites `assertNoIndividualRanking` and `packages/analysis/src/ranking-guard.ts`, and the privacy
+ * policy names the two cookies it sets — all written in the backtick idiom the rest of this codebase
+ * uses, and all rendering on the published page as literal backtick characters, because only asterisks
+ * were understood. A reader saw `` `compass_session` `` with the punctuation showing.
+ *
+ * They are set in mono for the same reason the report sets a SHA in mono: the brief rations that
+ * treatment to receipts — identifiers a reader might copy, search for, or check against something else —
+ * and a cookie name, a file path and a function name are exactly that. Same `.data-token` class the
+ * report uses, so there is one mono treatment in the product rather than a second one here.
  */
 
-/** Splits on `**…**` and emphasises the odd segments. Nothing else in the string is markup. */
+/**
+ * Splits on `**…**` and `` `…` `` and marks up the odd segments. Nothing else in the string is markup.
+ *
+ * Emphasis is applied first and code inside each resulting run second, so `**a `b`**` is bold with a
+ * mono span inside it rather than one of the two winning. An unpaired delimiter leaves its text alone:
+ * `split` yields an even final segment, which falls through as the plain string it was.
+ */
+function withCode(text: string, keyPrefix: string): readonly React.ReactNode[] {
+  return text.split('`').map((segment, index) =>
+    index % 2 === 1 ? (
+      <code key={`${keyPrefix}-c${index}`} className="data-token">
+        {segment}
+      </code>
+    ) : (
+      segment
+    ),
+  );
+}
+
 function withEmphasis(text: string): readonly React.ReactNode[] {
   return text.split('**').map((segment, index) =>
     index % 2 === 1 ? (
       <strong key={index} className="font-medium text-ink-strong">
-        {segment}
+        {withCode(segment, `b${index}`)}
       </strong>
     ) : (
-      segment
+      <span key={index}>{withCode(segment, `p${index}`)}</span>
     ),
   );
 }

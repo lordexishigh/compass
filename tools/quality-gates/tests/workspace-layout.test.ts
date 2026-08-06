@@ -249,3 +249,48 @@ describe('the connector-port testkit is reachable as a subpath', () => {
     expect(barrel).not.toContain('./testkit');
   });
 });
+
+/**
+ * Ownership terms, declared once and everywhere.
+ *
+ * A monorepo where the root says one thing and nineteen workspaces say nothing is not
+ * ambiguous only in the abstract: `npm pack`, every SBOM generator and every corporate
+ * licence scanner read the *manifest*, not the LICENSE file, and a manifest with no
+ * `license` field is reported as "UNKNOWN" — which a procurement review reads as a risk
+ * rather than as an omission. So the field is asserted on every workspace rather than on
+ * the root alone, and a new package is a build failure until it declares one.
+ *
+ * `UNLICENSED` is npm's registered spelling for "proprietary, no rights granted", and it
+ * is the honest pairing with `private: true`: these packages are not published, and
+ * nobody may take them. A permissive identifier here would be a grant nobody made.
+ */
+describe('every workspace declares who owns it', () => {
+  const LICENSE_ID = 'UNLICENSED';
+
+  it('ships a LICENSE at the repository root', () => {
+    const licensePath = join(REPO_ROOT, 'LICENSE');
+    expect(existsSync(licensePath), 'a repository with no LICENSE leaves reuse terms to guesswork').toBe(true);
+
+    const text = readFileSync(licensePath, 'utf8');
+    // The three claims that make it a licence rather than a note.
+    expect(text).toContain('All rights reserved');
+    expect(text).toContain(LICENSE_ID);
+    expect(text.length, 'a stub LICENSE is worse than none — it looks settled').toBeGreaterThan(500);
+  });
+
+  it('states the same identifier in the root manifest', () => {
+    const root = readJsonFile<{ readonly license?: string }>(join(REPO_ROOT, 'package.json'));
+    expect(root.license).toBe(LICENSE_ID);
+  });
+
+  it.each(asCases(allPackages))('%s declares it too', (_label, workspacePackage) => {
+    const manifest = readJsonFile<{ readonly license?: string; readonly private?: boolean }>(
+      join(workspacePackage.absoluteDirectory, 'package.json'),
+    );
+
+    expect(manifest.license, `${workspacePackage.relativeDirectory} has no license field`).toBe(LICENSE_ID);
+    // `UNLICENSED` and a publishable package would be a contradiction: the identifier says
+    // nobody may use it and the absent `private` flag says npm may publish it to everybody.
+    expect(manifest.private, `${workspacePackage.relativeDirectory} is UNLICENSED but publishable`).toBe(true);
+  });
+});

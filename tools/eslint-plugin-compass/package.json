@@ -2,6 +2,7 @@
   "name": "@compass/eslint-plugin",
   "version": "0.1.0",
   "private": true,
+  "license": "UNLICENSED",
   "type": "module",
   "description": "Build gates that keep time, and only time, behind the Clock port.",
   "main": "./index.js",

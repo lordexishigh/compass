@@ -2,6 +2,7 @@
   "name": "@compass/billing",
   "version": "0.1.0",
   "private": true,
+  "license": "UNLICENSED",
   "type": "module",
   "description": "Plans, seat pricing, subscription entitlement and the Stripe port — one source of truth for what a seat costs.",
   "main": "./dist/index.js",
