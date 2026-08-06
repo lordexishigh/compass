@@ -3,8 +3,8 @@
  *
  * ## The defect this exists for
  *
- * `packages/auth/src/bootstrap.ts` carried `export const DEMO_OWNER_PASSWORD =
- * 'compass-demo-owner'` — a working owner password, in a published package, defended as a
+ * `packages/auth/src/bootstrap.ts` carried an `export const DEMO_OWNER_PASSWORD` initialised
+ * to a fixed string — a working owner password, in a published package, defended as a
  * documented demonstration default. It was reachable by any deployment that forgot to set
  * `COMPASS_OWNER_PASSWORD`, which is the definition of a hardcoded credential however the
  * comment above it reads. Nothing in the build objected, because every existing gate here
@@ -15,8 +15,8 @@
  *
  * `gitleaks` already runs over history and catches credentials that *look* like credentials:
  * a `ghp_`-prefixed token, an `sk_live_` key, a connection string with a password in it. It
- * cannot catch `'compass-demo-owner'`, because that string looks like nothing. It has no
- * provider prefix and low entropy — it is only a credential because of the *name it is bound
+ * could not catch the owner password above, because that string looked like nothing. It had no
+ * provider prefix and low entropy — it was only a credential because of the *name it was bound
  * to*, and a name is a syntactic fact.
  *
  * So the two gates are complementary rather than redundant: entropy and provider shape for
@@ -26,12 +26,23 @@
  * ## What is flagged
  *
  * A non-empty string literal (or a template literal with no interpolation, which is the same
- * thing) assigned to a name that ends in a credential word:
+ * thing) assigned to a name that ends in a credential word. `<value>` below stands for any
+ * such literal:
  *
- *   const DEMO_OWNER_PASSWORD = 'compass-demo-owner'   // variable
- *   const config = { apiKey: 'sk_test_abc' }           // object property
- *   class C { #signingSecret = 'shhh' }                // class field
- *   function f(password = 'letmein') {}                // default parameter
+ *   const DEMO_OWNER_PASSWORD = '<value>'   // variable
+ *   const config = { apiKey: '<value>' }    // object property
+ *   class C { #signingSecret = '<value>' }  // class field
+ *   function f(password = '<value>') {}     // default parameter
+ *
+ * The values are elided rather than spelled out, and that is this file's one invariant beyond
+ * the rule itself: **no credential-shaped literal is written here.** It costs the examples
+ * nothing, because the argument above is precisely that the value is irrelevant — a binding
+ * name is what makes a credential — so a worked example needs no value to be complete. And
+ * writing one would put the repository's only credential-shaped assignment inside the rule
+ * that exists to ban them, which is how a secret scan starts reporting its own gates and stops
+ * being read. `apps/web/tests/helpers/fixture-credentials.ts` states the same rule for the
+ * suites; `tests/rules.test.js` beside this file is the one place shapes are written out in
+ * full, because there they are the thing under test.
  *
  * Suffix-matched rather than exact, which is the difference from `no-secret-disclosure`'s
  * vocabulary: that rule asks "is this field *the* credential" of a flat name like `token`,
@@ -224,30 +235,30 @@ const rule = {
     };
 
     return {
-      // const PASSWORD = 'literal'
+      // const PASSWORD = '<value>'
       VariableDeclarator(node) {
         check(node.id, node.init, node);
       },
 
-      // { apiKey: 'literal' } — including inside a nested config object, because the visitor
+      // { apiKey: '<value>' } — including inside a nested config object, because the visitor
       // reaches every Property in the file rather than only top-level ones.
       Property(node) {
         if (node.computed) return;
         check(node.key, node.value, node);
       },
 
-      // class C { #signingSecret = 'literal' }
+      // class C { #signingSecret = '<value>' }
       PropertyDefinition(node) {
         if (node.computed) return;
         check(node.key, node.value, node);
       },
 
-      // function f(password = 'literal') {}
+      // function f(password = '<value>') {}
       AssignmentPattern(node) {
         check(node.left, node.right, node);
       },
 
-      // this.#token = 'literal' — a later assignment, not an initialiser.
+      // this.#token = '<value>' — a later assignment, not an initialiser.
       AssignmentExpression(node) {
         if (node.operator !== '=') return;
         const { left } = node;
