@@ -1784,7 +1784,7 @@
             "comparedTextA": "reformat with the new printer settings",
             "comparedTextB": null,
             "matchedTokens": [],
-            "question": "What were this commit for?",
+            "question": "What was this commit for?",
             "score": 0,
             "threshold": 0.3,
             "tier": "unattributed"
@@ -1802,9 +1802,9 @@
           "label": null,
           "objectiveNodeId": null,
           "objectiveTitle": null,
-          "question": "What were this commit for?",
+          "question": "What was this commit for?",
           "resolvedTier": "unattributed",
-          "stableId": "v1:9dc50322141e9667",
+          "stableId": "v1:df9cf8e10aff74a4",
           "subjects": [
             {
               "key": "insights-etl@13b5dfe",
@@ -7162,7 +7162,7 @@
               "comparedTextA": "reformat with the new printer settings",
               "comparedTextB": null,
               "matchedTokens": [],
-              "question": "What were this commit for?",
+              "question": "What was this commit for?",
               "score": 0,
               "threshold": 0.3,
               "tier": "unattributed"
@@ -7171,7 +7171,7 @@
             "label": null,
             "objectiveNodeId": null,
             "objectiveTitle": null,
-            "question": "What were this commit for?",
+            "question": "What was this commit for?",
             "resolvedTier": "unattributed",
             "subjectLabels": [
               "13b5dfe"
@@ -7182,7 +7182,7 @@
           "cause": {
             "causeDiscriminator": "",
             "causeKind": "unattributed",
-            "entityRef": "commit:unattributed:insights"
+            "entityRef": "commit:unattributed:insights:e67f26a14e9f"
           },
           "changeTag": "new",
           "detail": "13b5dfe name no tracker key in a commit message or a branch, and the closest goal wording scored 0 against a threshold of 0.3. Nothing in the goal hierarchy shared a word with them.",
@@ -7198,7 +7198,7 @@
           "headline": "1 commit could not be tied to a sprint objective",
           "severityScore": 10,
           "signalOnsetAt": 1784710800000,
-          "stableId": "v1:9dc50322141e9667"
+          "stableId": "v1:df9cf8e10aff74a4"
         }
       ],
       "key": "risks",

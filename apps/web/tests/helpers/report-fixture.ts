@@ -74,6 +74,15 @@ interface ItemSpec {
    * pipeline stores it inside `payload`. Present on alignment claims only.
    */
   readonly alignment?: Record<string, unknown>;
+  /**
+   * The cause kind, when the item under test needs its real one.
+   *
+   * Defaults to `fixture`, which is right for a view test that only cares about layout. The
+   * unattributed question overrides it: `feedbackOffersFor` switches on the cause kind, so with the
+   * default this fixture would render the generic risk verbs and the one control the acceptance
+   * criterion names — the answer — would be silently absent from the assertion.
+   */
+  readonly causeKind?: string;
   readonly evidence: readonly (readonly [kind: string, label: string, artifactId: string])[];
 }
 
@@ -88,7 +97,7 @@ function item(spec: ItemSpec, ordinal: number): StoredReportItem {
     // than a real digest, so the cause is a matching label: what these tests exercise is the view,
     // and an item whose cause and id agree in shape is what the view is handed in production.
     causeEntityRef: `ticket:${spec.stableId}`,
-    causeKind: 'fixture',
+    causeKind: spec.causeKind ?? 'fixture',
     causeDiscriminator: '',
     headline: spec.headline,
     detail: spec.detail,
@@ -239,6 +248,9 @@ const ITEMS: Readonly<Record<string, readonly ItemSpec[]>> = {
       detail: 'a1b2c36, a1b2c38 name no tracker key in a commit message or a branch.',
       prose:
         '2 commits could not be tied to a sprint objective — so Compass is asking what they served rather than naming anyone.',
+      // The real cause kind, so the view is handed the offers production would hand it: the answer
+      // and the snooze, rather than the generic risk verbs the `fixture` default produces.
+      causeKind: 'unattributed',
       alignment: {
         kind: 'unattributed',
         label: null,

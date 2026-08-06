@@ -205,6 +205,25 @@ export async function applyManagerFeedback(
     };
   }
 
+  if (request.action === 'explain_unattributed' && (request.reason === null || request.reason.trim().length === 0)) {
+    /**
+     * The one action whose entire content *is* the reason.
+     *
+     * Compass asked what the work was for. An empty answer would silence the question while
+     * recording nothing, which is strictly worse than the snooze sitting beside it: the snooze at
+     * least says "not now" honestly and comes back. Refused here rather than in the component, so
+     * the rule holds for the email and Slack channels too.
+     */
+    return {
+      ok: false,
+      reason: 'reason_required',
+      detail:
+        'Compass asked what these commits were for, so this needs an answer to record. Say what the work was — ' +
+        'it is kept as a correction and shown back on the corrections screen. If you would rather not say now, ' +
+        'snooze the question instead.',
+    };
+  }
+
   const snoozeDays = request.snoozeDays ?? DEFAULT_SNOOZE_DAYS;
   if (request.action === 'snooze' && (!Number.isInteger(snoozeDays) || snoozeDays < 1 || snoozeDays > MAX_SNOOZE_DAYS)) {
     return {
@@ -279,6 +298,10 @@ export function sentenceFor(action: FeedbackAction, snoozeDays: number): string 
       return 'Rejected. Compass will not suggest this step for this item again.';
     case 'blocker_already_resolved':
       return 'Noted as already resolved. It stays out of your report unless the condition starts again.';
+    case 'explain_unattributed':
+      // Says what it covers, because "answered" without a scope would read as "Compass will stop
+      // asking about unexplained commits", which is the opposite of what this feature is for.
+      return 'Thank you — recorded. Compass will not ask about these commits again, and your answer is on the corrections screen. Work it does not cover is still asked about.';
     case 'snooze':
       return `Snoozed for ${snoozeDays} day${snoozeDays === 1 ? '' : 's'}. It comes back on its own after that if it is still true.`;
   }

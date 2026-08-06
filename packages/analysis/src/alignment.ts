@@ -19,7 +19,7 @@ import {
   type GoalNodeRevision,
 } from './goal-hierarchy.js';
 import { compareNumbers, compareStable, wholeDaysBetween, windowContains, type Instant, type TimeWindow } from './instant.js';
-import { entityRef, stableItemId } from './identity.js';
+import { entityRef, shortDigest, stableItemId } from './identity.js';
 import {
   entitiesOfKind,
   instantField,
@@ -907,6 +907,40 @@ function offGoalVerdicts(
 }
 
 /**
+ * The entity id the unattributed question is keyed on: its scope, and the commits it is about.
+ *
+ * ## The scope, which fixed a collision
+ *
+ * A literal `unattributed` key gave every team in one organization the same id, so a dismissal on
+ * one team's question suppressed the others' and the merged report could not attribute it. The
+ * scope stays in the key for that reason, and the merged scope spells itself `merged`.
+ *
+ * ## The commit set, which is what makes an answer bindable
+ *
+ * The set is in the key too, and that is the difference between a question a manager can answer and
+ * one they can only silence. Feedback is recorded against the *cause*, so with a scope-only key an
+ * answer would attach to "this team's unattributed question" in the abstract — and tomorrow, when
+ * the window has rolled and the bucket holds three commits nobody has explained, that stale answer
+ * would still be suppressing it. Keying on the set means an explanation covers exactly the commits
+ * it was written about: the same commits tomorrow stay answered, a new one asks again.
+ *
+ * It also makes the identity honest about what it already admits. `ageDays` is hard zero on this
+ * verdict precisely because "the bucket's membership is recomputed every day" — a scope-only key
+ * asserted a continuity the same function denied two fields later.
+ *
+ * Sorted before hashing so the id does not depend on resolution order, and truncated because this
+ * is a grouping key rather than a security boundary: the full digest would make an already-long
+ * entity ref unreadable in the logs `itemCauseKey` exists to be read in.
+ */
+export function unattributedRefId(
+  scopeKey: string,
+  orphans: readonly { readonly subjectKey: string }[],
+): string {
+  const members = [...orphans].map((orphan) => orphan.subjectKey).sort();
+  return `unattributed:${scopeKey}:${shortDigest(members.join(' '))}`;
+}
+
+/**
  * The unattributed bucket, as a question.
  *
  * Commits only. A tracker item always has a project and a team, so an unattributed
@@ -941,15 +975,16 @@ function unattributedVerdict(
   const score = bestEvidence !== undefined && bestEvidence.tier === 'unattributed' ? bestEvidence.score : 0;
   const comparedTextB =
     bestEvidence !== undefined && bestEvidence.tier === 'unattributed' ? bestEvidence.comparedTextB : null;
-  const question = `What were ${orphans.length === 1 ? 'this commit' : `these ${orphans.length} commits`} for?`;
+  // Singular takes `was`. The verb used to be a fixed "were", which produced "What were this commit
+  // for?" — and because the bucket is one commit far more often than it is three, that was the
+  // commonest sentence in the feature, shipped 28 times across the seeded reports.
+  const question =
+    orphans.length === 1 ? 'What was this commit for?' : `What were these ${orphans.length} commits for?`;
 
   return {
     stableId: stableItemId({
       organizationId,
-      // Keyed on the *scope*, not on the literal unattributed. The bucket is one team's unplaced work,
-      // so a literal key gave every team in one organization the same id — a dismissal on one team's
-      // question suppressed the others', and the merged report could not attribute it.
-      entityRef: entityRef('commit', `unattributed:${scopeKey}`),
+      entityRef: entityRef('commit', unattributedRefId(scopeKey, orphans)),
       causeKind: 'unattributed',
     }),
     kind: 'unattributed',

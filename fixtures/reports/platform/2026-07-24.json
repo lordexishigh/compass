@@ -2894,7 +2894,7 @@
           "objectiveTitle": null,
           "question": "What were these 3 commits for?",
           "resolvedTier": "unattributed",
-          "stableId": "v1:4f8eb21feae5a38d",
+          "stableId": "v1:b6c2e4598890f0fe",
           "subjects": [
             {
               "key": "platform-api@a1b2c32",
@@ -10216,7 +10216,7 @@
           "cause": {
             "causeDiscriminator": "",
             "causeKind": "unattributed",
-            "entityRef": "commit:unattributed:platform"
+            "entityRef": "commit:unattributed:platform:50c5a3daf48d"
           },
           "changeTag": "new",
           "detail": "a1b2c32, a1b2c37, d746576 name no tracker key in a commit message or a branch, and the closest goal wording scored 0.2222 against a threshold of 0.3. The closest goal was \"Cut cold-start time in the payment gateway\".",
@@ -10244,7 +10244,7 @@
           "headline": "3 commits could not be tied to a sprint objective",
           "severityScore": 30,
           "signalOnsetAt": 1784883600000,
-          "stableId": "v1:4f8eb21feae5a38d"
+          "stableId": "v1:b6c2e4598890f0fe"
         }
       ],
       "key": "risks",

@@ -630,3 +630,68 @@ describe('pnpm db:migrate against a managed provider’s roles', () => {
     expect(grants.rows).toEqual([]);
   });
 });
+
+/**
+ * The feedback vocabulary is closed in the database, not only in TypeScript.
+ *
+ * `@compass/analysis` owns the list and every caller validates against it, but the CHECK constraint
+ * is what makes a seventh value unwritable by *any* path — a migration script, a psql session, a
+ * future route that forgot to validate. That guarantee has a cost worth testing: adding an action
+ * in TypeScript alone produces a route that accepts it, writes it, and fails on INSERT with a
+ * constraint violation the manager reads as "Compass is broken". Migration 0020 widened the
+ * constraint for `explain_unattributed`; this is what proves the two halves agree.
+ */
+describe('the feedback action vocabulary is enforced by the database', () => {
+  const ORG_CHECK = '44444444-4444-4444-8444-444444444444';
+
+  let rowCounter = 0;
+
+  const insertAction = async (action: string): Promise<void> => {
+    rowCounter += 1;
+    const rowId = `44444444-0000-4000-8000-${String(rowCounter).padStart(12, '0')}`;
+    await database.client.query(
+      `insert into feedback_entries
+         (id, organization_id, natural_key, first_seen_at, last_seen_at, belief_at, version,
+          report_item_stable_id, cause_entity_ref, cause_kind, cause_discriminator,
+          action, submitted_at, source_channel)
+       values ($1, $2, $3, now(), now(), now(), 1,
+               'v1:0000000000000000', 'commit:unattributed:platform:abc', 'unattributed', '',
+               $4, now(), 'web')`,
+      [rowId, ORG_CHECK, `probe-${rowCounter}`, action],
+    );
+  };
+
+  beforeAll(async () => {
+    await database.seedOrganization({
+      organizationId: ORG_CHECK,
+      name: 'Constraint Probe',
+      slug: 'constraint-probe',
+      timezone: 'UTC',
+      at: asDate('2026-07-31T09:00:00Z'),
+    });
+  });
+
+  it('accepts the answer to the unattributed question', async () => {
+    // The action migration 0020 added. Before it, this insert failed and the feature was unusable
+    // from the first click despite typechecking and passing every unit test.
+    await expect(insertAction('explain_unattributed')).resolves.toBeUndefined();
+  });
+
+  it('still accepts the six that predate it', async () => {
+    for (const action of [
+      'dismiss_risk',
+      'off_goal_flag_wrong',
+      'accept_recommendation',
+      'reject_recommendation',
+      'blocker_already_resolved',
+    ]) {
+      await expect(insertAction(action), action).resolves.toBeUndefined();
+    }
+  });
+
+  it('still refuses a value the pipeline would not understand', async () => {
+    // The half the widening must not have loosened. A verdict no branch handles is a row that
+    // silently suppresses nothing, which is why this is a constraint and not a convention.
+    await expect(insertAction('thumbs_up')).rejects.toThrow(/feedback_entries_action_check/);
+  });
+});
