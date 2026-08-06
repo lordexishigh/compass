@@ -74,6 +74,9 @@ importers:
       '@compass/knowledge-model':
         specifier: workspace:*
         version: link:../../packages/knowledge-model
+      '@compass/memos':
+        specifier: workspace:*
+        version: link:../../packages/memos
       '@compass/narrator':
         specifier: workspace:*
         version: link:../../packages/narrator

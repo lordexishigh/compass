@@ -24,6 +24,7 @@
     "@compass/github-connector": "workspace:*",
     "@compass/jira-connector": "workspace:*",
     "@compass/knowledge-model": "workspace:*",
+    "@compass/memos": "workspace:*",
     "@compass/narrator": "workspace:*",
     "@compass/observability": "workspace:*",
     "@compass/pipeline": "workspace:*",

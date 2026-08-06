@@ -1,5 +1,7 @@
 import { FirstReportGuide } from '../components/first-report-guide';
+import { MemoForm } from '../components/memo-form';
 import { ReportDocument } from '../components/report-document';
+import { TeamSwitcher } from '../components/team-switcher';
 import { TimeTravelScrubber } from '../components/time-travel-scrubber';
 import { loadHomeView } from '../lib/report-source';
 
@@ -49,11 +51,23 @@ export default async function ReportPage() {
         would render two of them on the permalink page, which already mounts its own. Same wrapper
         measure as that page, so time travel is the same object in the same place on both.
       */}
-      {home.timeTravel !== null && (
-        <div className="mx-auto w-full max-w-[46rem] px-5 pb-24 lg:px-8">
+      {/*
+        The three controls that act on the document, grouped after it: which team, which day, and
+        the one way a manager writes back. They share a wrapper because they answer one question
+        between them — *is this the report I meant to be reading, and is anything in it wrong?* —
+        and because splitting them would put two hairlines where the design wants one column.
+
+        After the report rather than before it for the same reason the feedback pill is: the reader
+        came for the prose. A switcher above the masthead would make them choose a team before they
+        had read the one Compass chose for them.
+      */}
+      <div className="mx-auto w-full max-w-[46rem] px-5 pb-24 lg:px-8">
+        <TeamSwitcher teams={home.teams} />
+        {home.timeTravel !== null && (
           <TimeTravelScrubber bounds={home.timeTravel.bounds} teamKey={home.timeTravel.teamKey} />
-        </div>
-      )}
+        )}
+        <MemoForm />
+      </div>
     </>
   );
 }

@@ -356,6 +356,17 @@ const EXPECTED: Readonly<Record<string, Partial<Record<Action, readonly Principa
   '/api/roster/absences': { POST: ['owner', 'manager'], PATCH: ['owner', 'manager'] },
 
   /**
+   * Manager Memos write to the org model, and one memo kind writes an Absence through the roster
+   * service — so this must admit exactly what `/api/roster/absences` admits. A principal allowed
+   * here and refused there would be a way around the single-writer rule that owns suppression.
+   *
+   * Deliberately not public on the demonstration tenant, unlike the report it changes: a memo is
+   * an attributed assertion about a named human, and a stranger must not be able to say "Priya is
+   * out" into somebody else's report.
+   */
+  '/api/memos': { POST: ['owner', 'manager'] },
+
+  /**
    * The two privacy screens, and the undo landing page.
    *
    * `/privacy` is owner and manager, matching the two routes a manager may call: a manager who

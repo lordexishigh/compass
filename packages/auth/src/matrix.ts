@@ -376,6 +376,25 @@ export const ROLE_MATRIX: readonly RouteRule[] = [
     allow: { POST: ['owner', 'manager'], PATCH: ['owner', 'manager'] },
   },
 
+  /**
+   * Manager Memos — the manager's write access to the org model.
+   *
+   * Owner and manager, on the same footing as `/api/roster/absences`, and for the same reason
+   * rather than by analogy: a memo *is* one of the writers of an absence. "Priya is out until
+   * Thursday" travels this route, resolves a subject, and calls the roster service, so admitting
+   * a principal here who is refused there would be a way around the single-writer rule.
+   *
+   * `demoOnlyPublic` is deliberately absent. A memo is an assertion about a named human that
+   * changes what tomorrow's report says about them, attributed to whoever wrote it — the one
+   * thing on the demonstration tenant that must not be writable by a stranger. The report is
+   * world-readable; the power to say "Priya is out" is not.
+   */
+  {
+    route: '/api/memos',
+    summary: 'Submits one Manager Memo: extracts a typed assertion, resolves its subject, writes it.',
+    allow: { POST: ['owner', 'manager'] },
+  },
+
   // -------------------------------------------------------------------------
   // Delivery and share links.
   //

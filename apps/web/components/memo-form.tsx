@@ -1,0 +1,226 @@
+'use client';
+
+import { useState, useTransition } from 'react';
+
+/**
+ * The Manager Memo entry point: one sentence in, a typed assertion back.
+ *
+ * ## Why the confirmation shows Compass's *reading*, not a tick
+ *
+ * A memo changes what tomorrow's report says about a named human — it suppresses a stalled-work
+ * finding, moves a deadline, records a dependency. The manager is entitled to see the assertion
+ * Compass extracted before it does that, in the schema's own words, because the failure this
+ * catches is not a rejected memo but an *accepted* one that was understood differently. "Priya is
+ * out until Thursday" read as an open-ended absence is a memo that looks like it worked.
+ *
+ * So the recorded state renders the kind, the subject and the window as fields, not as a
+ * paragraph. It is the same information the row holds, which is what makes it checkable.
+ *
+ * ## Three answers that are not failures
+ *
+ * The refusal — *"I can't represent that yet"* — is the product's most characteristic sentence and
+ * comes from `REFUSAL_SENTENCE` in `@compass/memos` by way of the route, never from this file. A
+ * memo outside the closed five-kind schema is declined in plain words rather than stored as
+ * something nothing downstream can honour.
+ *
+ * The candidate picker is the second: Compass understood the assertion and cannot tell which
+ * Marcus it is about, so it asks rather than guessing. Choosing re-posts the same text with
+ * `chosenSubjectKey`, and the offered candidates travel with it so the memo records what the
+ * choice was made *between*.
+ *
+ * Every rule behind those three lives in `@compass/memos` — the threshold, the refusal, the
+ * candidate list. This component renders outcomes and decides nothing, which is what stops the web
+ * form and the inbound email path from disagreeing about what Compass will represent.
+ */
+
+interface SubjectCandidateView {
+  readonly subjectKind: string;
+  readonly subjectKey: string;
+  readonly label: string;
+  readonly reason: string;
+}
+
+interface AssertionView {
+  readonly kind?: string;
+  readonly subjectKind?: string;
+  readonly counterparty?: string | null;
+}
+
+interface WindowView {
+  readonly effectiveFrom?: string;
+  readonly effectiveUntil?: string | null;
+  readonly openEnded?: boolean;
+}
+
+type Outcome =
+  | {
+      readonly status: 'recorded';
+      readonly detail: string;
+      readonly subjectLabel: string;
+      readonly assertion?: AssertionView;
+      readonly window?: WindowView;
+    }
+  | { readonly status: 'needs_subject'; readonly detail: string; readonly candidates: readonly SubjectCandidateView[] }
+  | { readonly status: 'refused'; readonly detail: string }
+  | { readonly status: 'subject_unknown'; readonly detail: string }
+  | { readonly status: 'error'; readonly detail: string };
+
+/** A labelled field of the extracted assertion. Mono, because it is a stored value. */
+function AssertionField({ label, value }: { readonly label: string; readonly value: string }) {
+  return (
+    <div className="flex flex-wrap items-baseline gap-2">
+      <span className="section-label">{label}</span>
+      <span className="data-token">{value}</span>
+    </div>
+  );
+}
+
+export function MemoForm() {
+  const [text, setText] = useState('');
+  const [outcome, setOutcome] = useState<Outcome | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  const send = (body: Record<string, unknown>): void => {
+    startTransition(async () => {
+      try {
+        const response = await fetch('/api/memos', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const payload = (await response.json()) as Record<string, unknown>;
+
+        // The route answers 201/409/422 with the outcome union in the body, and any other status
+        // with `{ error, detail }`. Reading `status` first keeps the two apart without a table of
+        // status codes here — the outcome is the contract, the code is how HTTP spells it.
+        if (typeof payload['status'] === 'string') {
+          setOutcome(payload as unknown as Outcome);
+          return;
+        }
+
+        setOutcome({
+          status: 'error',
+          detail:
+            typeof payload['detail'] === 'string'
+              ? payload['detail']
+              : 'Compass could not record that memo, and nothing has been written.',
+        });
+      } catch {
+        setOutcome({ status: 'error', detail: 'Compass could not be reached, so nothing has been written.' });
+      }
+    });
+  };
+
+  const submit = (event: React.FormEvent<HTMLFormElement>): void => {
+    event.preventDefault();
+    if (text.trim().length === 0) return;
+    setOutcome(null);
+    send({ rawText: text.trim(), channel: 'web' });
+  };
+
+  /** Finishing a memo Compass understood but could not attribute. */
+  const choose = (candidate: SubjectCandidateView, candidates: readonly SubjectCandidateView[]): void => {
+    send({
+      rawText: text.trim(),
+      channel: 'web',
+      chosenSubjectKey: candidate.subjectKey,
+      // Echoed back so the row records what the choice was made between, not merely what was chosen.
+      offeredCandidates: candidates,
+    });
+  };
+
+  return (
+    <section aria-labelledby="memo-heading" className="hairline mt-8 pt-6">
+      <h2 id="memo-heading" className="section-label">
+        manager memo
+      </h2>
+      <p className="prose-narration mt-2 text-[15px] text-ink-muted">
+        Tell Compass something it cannot see — somebody is away, a deadline moved, a team is blocked on another team.
+        One sentence. It is read into a typed assertion you can check before tomorrow&apos;s report honours it.
+      </p>
+
+      <form onSubmit={submit} className="mt-4">
+        <label htmlFor="memo-text" className="section-label">
+          the memo
+        </label>
+        <textarea
+          id="memo-text"
+          name="rawText"
+          className="feedback-reason"
+          rows={2}
+          value={text}
+          disabled={pending}
+          onChange={(event) => setText(event.target.value)}
+          placeholder="Priya is out until Thursday"
+        />
+
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <button type="submit" className="primary-action" disabled={pending || text.trim().length === 0}>
+            {pending ? 'reading…' : 'Record this memo'}
+          </button>
+          <span className="font-mono text-[11px] tabular-nums text-ink-faint">writes to the org model</span>
+        </div>
+      </form>
+
+      {/*
+        `role="status"` rather than `alert` throughout: an outcome is the answer to something the
+        manager just did, not an emergency interrupting them.
+      */}
+      {outcome !== null && (
+        <div role="status" className="mt-5">
+          {outcome.status === 'recorded' && (
+            <div className="border-l-2 border-authored pl-4">
+              <p className="section-label text-authored-text">recorded — this is how Compass read it</p>
+              <div className="mt-2 space-y-1">
+                {outcome.assertion?.kind !== undefined && <AssertionField label="kind" value={outcome.assertion.kind} />}
+                <AssertionField label="about" value={outcome.subjectLabel} />
+                {outcome.window?.effectiveFrom !== undefined && (
+                  <AssertionField
+                    label="in force"
+                    value={
+                      outcome.window.openEnded === true || outcome.window.effectiveUntil === null
+                        ? `${outcome.window.effectiveFrom} — open-ended`
+                        : `${outcome.window.effectiveFrom} → ${outcome.window.effectiveUntil}`
+                    }
+                  />
+                )}
+                {outcome.assertion?.counterparty != null && (
+                  <AssertionField label="counterparty" value={outcome.assertion.counterparty} />
+                )}
+              </div>
+              <p className="prose-narration mt-3 text-[15px]">{outcome.detail}</p>
+            </div>
+          )}
+
+          {outcome.status === 'needs_subject' && (
+            <div className="border-l-2 border-rule-strong pl-4">
+              <p className="section-label">who did you mean?</p>
+              <p className="prose-narration mt-2 text-[15px]">{outcome.detail}</p>
+              <ul className="mt-3 space-y-2">
+                {outcome.candidates.map((candidate) => (
+                  <li key={candidate.subjectKey}>
+                    <button
+                      type="button"
+                      className="tertiary-action"
+                      disabled={pending}
+                      onClick={() => choose(candidate, outcome.candidates)}
+                    >
+                      {candidate.label}
+                    </button>{' '}
+                    <span className="stated-absence text-[13px]">{candidate.reason}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {(outcome.status === 'refused' || outcome.status === 'subject_unknown' || outcome.status === 'error') && (
+            // Set in the stated-absence voice — the same serif italic a missing deploy signal gets,
+            // because it is the same kind of sentence: a thing Compass will not pretend to know.
+            <p className="stated-absence border-l-2 border-rule-strong pl-4 text-[15px]">{outcome.detail}</p>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}

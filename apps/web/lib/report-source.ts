@@ -1,10 +1,16 @@
 import { SystemClock } from '@compass/clock';
-import { ScopedDb, ingestRunRowId, orgScope, type CompassDatabase } from '@compass/db';
+import { ScopedDb, findLatestReport, ingestRunRowId, orgScope, type CompassDatabase } from '@compass/db';
 import { narratorFromEnvironment } from '@compass/narrator';
 import { ensureDailyReport, loadFreshnessFor, type EnsuredReport } from '@compass/pipeline';
 import { SeedConnector, resolveSeededRun, type SeededRun } from '@compass/seed-connector';
 
-import { simulatedClockAvailable, timeTravelBounds, type TimeTravelBounds } from './archive-source';
+import {
+  archiveHref,
+  knownTeamKeys,
+  simulatedClockAvailable,
+  timeTravelBounds,
+  type TimeTravelBounds,
+} from './archive-source';
 import { listDisconnectedSources } from './connect-source';
 import {
   organizationHasSubject,
@@ -157,10 +163,73 @@ export async function loadReportView(): Promise<ReportView> {
  * demonstration deployment never is. And a *quiet* day still renders six sections: this asks
  * whether there is a subject, not whether the subject did anything.
  */
+/** One entry in the team switcher: this team, and where its report is. */
+export interface TeamOption {
+  readonly teamKey: string;
+  /** Null for the team already on screen, and for a team with no report written yet. */
+  readonly href: string | null;
+  readonly isCurrent: boolean;
+  /** Set when there is no report to link to, so the absence is stated rather than dead. */
+  readonly absence: string | null;
+}
+
+/**
+ * Every team this organization holds, and where to read each one's report.
+ *
+ * ## Why the link is a permalink and not a `/team/<key>` route
+ *
+ * A team's latest stored report is already a page — `/archive/<reportId>` renders the full
+ * document, spine and all. Adding a route that generated today's report for an arbitrary team
+ * would be a second generation path beside `ensureTodaysReport`, with its own matrix entry and
+ * its own way of disagreeing with the scheduler about which instant a day is. Pointing at the row
+ * that exists is both smaller and more honest: the switcher takes you to a report Compass has
+ * actually written, and says so when it has not written one.
+ *
+ * The current team carries no href on purpose. A link to the page you are on is a control that
+ * looks like it does something and does not.
+ */
+export async function loadTeamOptions(
+  scoped: ScopedDb,
+  currentTeamKey: string,
+): Promise<readonly TeamOption[]> {
+  const teamKeys = await knownTeamKeys(scoped);
+
+  const options = await Promise.all(
+    teamKeys.map(async (teamKey): Promise<TeamOption> => {
+      if (teamKey === currentTeamKey) {
+        return { teamKey, href: null, isCurrent: true, absence: null };
+      }
+
+      const latest = await findLatestReport(scoped, { scopeKind: 'team', scopeKey: teamKey });
+
+      return {
+        teamKey,
+        href: latest === null ? null : archiveHref(latest.id),
+        isCurrent: false,
+        absence:
+          latest === null
+            ? 'no report written yet'
+            : null,
+      };
+    }),
+  );
+
+  return options;
+}
+
 export type HomeView =
   | {
       readonly kind: 'report';
       readonly view: ReportView;
+      /**
+       * The other teams, and how to reach them.
+       *
+       * `/` reports on one team — the run's own — and until this existed there was no way to
+       * discover that the organization had three. A manager of two or three teams is exactly who
+       * this product is for, so a page that silently showed one of their teams and named none of
+       * the others was answering a question they had not asked.
+       */
+      readonly teams: readonly TeamOption[];
       /**
        * The date control, or `null` where stepping `now` is not a meaningful act.
        *
@@ -194,6 +263,7 @@ export async function loadHomeView(): Promise<HomeView> {
     return {
       kind: 'report',
       view,
+      teams: await loadTeamOptions(scoped, run.teamKey),
       /**
        * `run.teamKey` is the scope `ensureTodaysReport` just generated for, so the key the
        * scrubber posts back is by construction the key this page is about — there is no second
