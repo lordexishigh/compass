@@ -1,8 +1,8 @@
 # Build report — Compass
 
-[![nous score](https://img.shields.io/badge/nous%20score-74%2F100-yellow)](#) ![readiness](https://img.shields.io/badge/readiness-caution-yellow)
+[![nous score](https://img.shields.io/badge/nous%20score-77%2F100-yellow)](#) ![readiness](https://img.shields.io/badge/readiness-caution-yellow)
 
-**Overall: 74/100** · readiness: **caution** · **launch-ready** 🚀 · build verified ✓
+**Overall: 77/100** · readiness: **caution** · **launch-ready** 🚀 · build verified ✓
 
 **Live:** https://compass-in1avxuv1-lordexishighs-projects.vercel.app
 
@@ -10,11 +10,11 @@
 
 | Dimension | Score | |
 |---|---:|---|
-| Spec coverage | 66 | `█████████████░░░░░░░` |
+| Spec coverage | 72 | `██████████████░░░░░░` |
 | Code quality | 88 | `██████████████████░░` |
-| Robustness & error handling | 70 | `██████████████░░░░░░` |
+| Robustness & error handling | 76 | `███████████████░░░░░` |
 | Builds & tests | 90 | `██████████████████░░` |
-| UX & design | 58 | `████████████░░░░░░░░` |
+| UX & design | 60 | `████████████░░░░░░░░` |
 
 ## Readiness checks
 
@@ -41,22 +41,22 @@
 
 ## Strengths
 
-- The cold-open promise is delivered: `/` renders a fully narrated six-section report for the seeded org with no login, with a Data-freshness panel stating the real ingest window (2026-07-30 → 2026-07-31) and concrete per-section counts tied to named artifacts (PLAT-529, PLAT-754/755, pull-request-883) — the freshness and named-artifact journeys passed 7/7 and 8/8.
-- Authorization is a single enumerable table (`packages/auth/src/matrix.ts`) with `public` modelled as a fifth principal and `demoOnlyPublic` scoping the zero-config page, held in place by a test that fails the build when any `app/api/**/route.ts` lacks an entry — the correct shape for 'checked server-side on every route'.
-- The seed layer is genuinely deterministic and provider-neutral: `packages/seed-connector/src/generator.ts` expands checked-in fixtures with no host clock, no `Math.random`, and no locale-sensitive comparison, verified by regenerate-then-`git diff --exit-code`.
-- Comments encode invariants and the reasoning behind rejected alternatives (why crawlability is editorial rather than derived from the matrix; why Sentry init is an exported options function), which makes the boundaries maintainable rather than merely present.
+- The determinism story is real, not claimed: packages/seed-connector/src/generator.ts expands checked-in fixtures with no host clock, Math.random or locale-sensitive comparison, and byte-identical output is enforced by seed:generate followed by git diff --exit-code, backed by 40 golden report fixtures.
+- Authorization is one enumerable table (packages/auth/src/matrix.ts) with 'public' modelled as a fifth principal rather than a bypass, and apps/web/tests/authz-matrix.test.ts reads route files off disk so a new endpoint is a build failure until it declares who may call it.
+- The Manager Memo differentiator is now reachable end to end — memo-form.tsx renders the extracted assertion as typed fields, the REFUSAL_SENTENCE comes from @compass/memos rather than a literal, and memo-window.test.ts pins the civil-date formatting at the route boundary.
+- The rendered report tells the truth about its own data: the freshness panel states the exact ingest window and explains that the seeded history ends 2026-07-31, instead of silently presenting stale data as current.
 
 ## To improve
 
-- `apps/web/app/artifact/[kind]/[artifactId]/page.tsx` (1.4KB) and `apps/web/lib/artifact-source.ts` never complete — all 43 evidence targets fail to reach domcontentloaded in 45s. Give the lookup a bounded, indexed query keyed on (org, kind, artifactId) instead of materializing a snapshot per request, wrap it in an explicit timeout that renders the existing `StatedFailure` component on expiry, and make the page's own render path independent of report generation so it returns in under a second.
-- `apps/web/app/layout.tsx` renders no navigation, which is why the crawl found exactly one reachable page while `app/archive/page.tsx`, `app/archive/merged/[reportDate]`, `app/weekly/page.tsx`, `app/merged/page.tsx`, `app/roster/page.tsx`, `app/goals/page.tsx` and `app/connect/page.tsx` all exist on disk. Add a persistent header linking the archive, merged report, weekly digest, goals, roster and connect screens, plus a team switcher, so the built surfaces are reachable from the front door.
-- `components/time-travel-scrubber.tsx` and `app/api/time-travel/route.ts` are implemented but not mounted on the report view — `app/page.tsx` is 1.4KB and the crawl found 0 forms and 0 inputs, leaving the report frozen at 2026-07-31. Mount the scrubber in `app/page.tsx` (day-step buttons plus a date jump posting to the existing route) so the Release 2 slip can actually be walked through.
-- The report body renders the literal string 'No data', failing the cold-read journey at step 12. Trace the empty branch in `apps/web/lib/view-model.ts` / `components/report-section.tsx` and replace it with either the real value or one of the authored sentences in `lib/empty-states.ts` — the app already has an honest-degradation vocabulary and this path bypasses it.
-- The Manager Memos differentiator has no entry point in the web app: there is no memo route under `apps/web/app/api/` and no form component. Add the memo submission route plus a form on the report page that shows the typed assertion for confirmation, returns the plain 'I can't represent that yet' refusal for out-of-schema text, offers 2–3 candidates on low-confidence subject resolution, and renders the memo citation on the next report.
+- Rendering / takes over 45 seconds because apps/web/app/page.tsx runs the full pipeline through lib/report-source.ts on every request — persist the generated report row and serve it from packages/db/src/repositories/reports.ts, regenerating only on a cache miss, and add an app/loading.tsx streaming boundary so the six-spine shell paints before the analysis completes.
+- apps/web/app/artifact/[kind]/[artifactId]/page.tsx exists but every one of the 43 cited targets (/artifact/issue/PLAT-754, /artifact/pull_request/pull-request-883, /artifact/sprint/sprint-PLAT-6) times out — lib/artifact-source.ts is resolving artifacts by rebuilding the whole seeded run instead of a keyed lookup; index the artifacts by id at ingest and fetch one row, so evidence pages open in under a second.
+- apps/web/app/layout.tsx renders no navigation, so /archive, /weekly, /merged and /roster are unreachable from the report even though the pages are built — add a persistent header linking the archive, weekly digest, merged cross-team report and roster, and put the team switcher in it so a manager can leave the single day they land on.
+- The time-travel control in components/time-travel-scrubber.tsx mutates state in place with no addressable URL — make day-step and jump-to-date push a /?at=YYYY-MM-DD (or /archive/[reportDate]) route that regenerates through the pipeline server-side, so a reviewer can link to, share and step through the Release 2 slip.
+- Nothing bounds the cost of report generation when a request is slow: add a deadline to the pipeline call in lib/report-source.ts that falls back to the last persisted report with a visible 'showing the last completed run' notice, so a slow or failed regeneration degrades honestly instead of hanging the navigation.
 
 ## Summary
 
-A codebase of real engineering quality — enumerable authorization, a deterministic seed generator, and tests that assert invariants rather than restate constants — wired into an app that a user can barely traverse: one reachable page, 43 hanging evidence links, and a dozen implemented surfaces with no route into them. The work needed is integration and performance, not construction.
+Engineering-wise this is a genuinely strong build — layered packages under an enforced architecture gate, a deterministic seed and golden-fixture suite, a table-driven authz matrix, and a green verification across ~2.5k tests — but it is not usable: the single page a manager can reach takes longer than the cold-start promise allows, and every evidence link and secondary page behind it is unreachable in practice. The remaining gap is delivery and performance, not features.
 
 ---
-_Scored 2026-08-06 16:38 by [nous](https://github.com/lordexishigh/nous) — an LLM judge anchored by deterministic readiness checks; regenerated on every re-score._
+_Scored 2026-08-06 20:31 by [nous](https://github.com/lordexishigh/nous) — an LLM judge anchored by deterministic readiness checks; regenerated on every re-score._
