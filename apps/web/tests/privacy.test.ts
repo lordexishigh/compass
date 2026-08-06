@@ -3,6 +3,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { MATRIX_ROUTES, authorize, findRouteRule, isPublicRoute } from '@compass/auth';
+import { ERROR_REPORTING_CONSENTS, PRIVACY_DEFAULTS } from '@compass/db';
 import { describe, expect, it } from 'vitest';
 
 import { buildReportView } from '../lib/view-model';
@@ -287,5 +288,172 @@ describe('the privacy screen and its routes', () => {
     expect(authorize({ route: '/api/privacy/deletion/undo', action: 'GET', principal: 'public' }).allowed).toBe(
       false,
     );
+  });
+});
+
+/**
+ * The error-reporting consent, from the stored value through to what the reader sees.
+ *
+ * Three claims the feature rests on, none of which any other test would notice breaking:
+ * the answer lives in the organization's privacy row rather than in a cookie of its own, only an
+ * owner may give it, and `unset` is a state the API cannot be talked into writing.
+ */
+describe('the error-reporting consent', () => {
+  it('is the organization’s posture, so only an owner may answer', () => {
+    // It decides whether a third party receives anything at all — the same class of decision as a
+    // retention window, and gated by the same route.
+    expect(
+      authorize({ route: '/api/privacy/settings', action: 'PATCH', principal: 'owner', seatActive: true }).allowed,
+    ).toBe(true);
+    for (const principal of ['manager', 'member', 'viewer', 'public'] as const) {
+      expect(
+        authorize({ route: '/api/privacy/settings', action: 'PATCH', principal, seatActive: true }).allowed,
+        `${principal} must not decide for the organization`,
+      ).toBe(false);
+    }
+  });
+
+  it('has no route of its own, because the notice writes through the privacy settings', () => {
+    /**
+     * The design constraint stated as an assertion. A consent banner's usual shape is its own
+     * endpoint writing its own cookie, which is how a product ends up with two places that
+     * disagree about what the user chose. There is exactly one writer here.
+     */
+    expect(findRouteRule('/api/privacy/consent')).toBeNull();
+    expect(findRouteRule('/api/consent')).toBeNull();
+  });
+
+  it('defaults to unset, so a deployment reports nothing until somebody answers', () => {
+    expect(PRIVACY_DEFAULTS.errorReportingConsent).toBe('unset');
+    // And the vocabulary keeps "not asked" distinct from "said no", which is what the notice keys
+    // on: collapse them and it either never appears or never goes away.
+    expect(ERROR_REPORTING_CONSENTS).toContain('unset');
+    expect(ERROR_REPORTING_CONSENTS).toContain('denied');
+  });
+});
+
+/**
+ * The consent question is answerable from the product, not only by hand-crafting a PATCH.
+ *
+ * This is the assertion whose absence let the notice ship undismissable: the gate was built, the
+ * banner was built, the endpoint accepted the field — and no screen offered it, so the one state
+ * the notice's own docstring promises it can leave was unreachable. Every piece existed and the
+ * feature did not work.
+ *
+ * A source scan rather than a render, for the same reason the no-ranking scan above is one: the
+ * page is a Server Component that reaches for a database, and what needs pinning is that the
+ * control is *wired in* — which is a fact about the file, not about a fixture.
+ */
+describe('the error-reporting consent can be answered on /privacy', () => {
+  const source = readFileSync(join(WEB_ROOT, 'app', 'privacy', 'page.tsx'), 'utf8');
+
+  it('renders the control', () => {
+    expect(source, '/privacy does not render ErrorReportingControls').toContain('<ErrorReportingControls');
+    expect(source).toContain("from '../../components/privacy-controls'");
+  });
+
+  it('hands it the stored answer rather than a literal', () => {
+    // A hard-coded `consent="unset"` would render a control that always looked unanswered and
+    // silently discarded what the owner had already chosen.
+    expect(source).toContain('consent={view.retention.errorReportingConsent}');
+  });
+
+  it('gates it to owners, exactly as the retention windows are', () => {
+    /**
+     * `/api/privacy/settings` PATCH is owner-only, so a control a manager could press would 403 —
+     * and a control that refuses when pressed reads as a broken product rather than as a
+     * permission boundary. Asserted against the same `isOwner` the retention selects use, so the
+     * two cannot drift into disagreeing about who may change the organization's posture.
+     */
+    const controlLine = /<ErrorReportingControls[^>]*>/.exec(source)?.[0] ?? '';
+
+    expect(controlLine, 'the control is not owner-gated').toContain('canEdit={isOwner}');
+    expect(source).toContain('<RetentionControls');
+    expect(/<RetentionControls[\s\S]*?\/>/.exec(source)?.[0]).toContain('canEdit={isOwner}');
+  });
+});
+
+/**
+ * Withdrawal detaches the reporter at the moment it is saved, not at the next error.
+ *
+ * ## The gap this closes
+ *
+ * `initErrorReporting` tears a live client down whenever it is passed a non-granted consent, and
+ * that arm is tested directly in `error-reporting.test.ts`. It was also unreachable on withdrawal:
+ * the only caller is `onRequestError`, so the teardown waited for the next server-side error to
+ * arrive. On a healthy deployment that may be hours or never, and `Sentry.init` installs
+ * `uncaughtException` and `unhandledRejection` integrations that report without passing through
+ * `onRequestError` at all — so consent was withdrawn in the database and still standing in the
+ * process, under a response sentence promising "nothing leaves this deployment".
+ *
+ * ## Why this is a source assertion
+ *
+ * The behaviour needs a live Sentry client, a real Postgres and an owner session in one test to
+ * observe, and the teardown itself is already proved against a real client in
+ * `error-reporting.test.ts`. What was missing was never the teardown — it was the *call*. So this
+ * asserts the call exists, is conditioned correctly, and runs before the response is built.
+ */
+describe('withdrawing consent stops the reporter before the response is written', () => {
+  const source = readFileSync(join(WEB_ROOT, 'app', 'api', 'privacy', 'settings', 'route.ts'), 'utf8');
+
+  it('imports the teardown', () => {
+    expect(source, 'the route cannot stop the reporter it promises to have stopped').toContain(
+      "import { stopErrorReporting } from '../../../../lib/error-reporting'",
+    );
+  });
+
+  it('calls it on a change away from granted, and awaits it', () => {
+    expect(source).toContain(
+      "if (applied.errorReportingConsentChanged && applied.errorReportingConsent !== 'granted') {",
+    );
+    expect(source, 'an un-awaited teardown races the response it is meant to make true').toContain(
+      'await stopErrorReporting();',
+    );
+  });
+
+  it('does it before the acknowledgement is returned, so the sentence is true when printed', () => {
+    const teardown = source.indexOf('await stopErrorReporting();');
+    const response = source.indexOf('return jsonOk({');
+
+    expect(teardown, 'the teardown call is missing').toBeGreaterThan(-1);
+    expect(teardown, 'the reporter is stopped after the response claims it already was').toBeLessThan(response);
+  });
+
+  it('keeps it inside the try, so a failed flush is a stated failure rather than a throw', () => {
+    const tryStart = source.indexOf('  try {');
+    const teardown = source.indexOf('await stopErrorReporting();');
+    const catchStart = source.indexOf('} catch (error) {');
+
+    expect(teardown).toBeGreaterThan(tryStart);
+    expect(teardown).toBeLessThan(catchStart);
+  });
+});
+
+/**
+ * The notice tells "nobody decided" from "Compass could not find out".
+ *
+ * It renders from the root layout, so its condition runs on every page in the product. Reading
+ * consent through the flattened helper — which maps a failed read to `unset`, correctly, for the
+ * gate — meant a Postgres outage printed "nobody has decided yet, so it is sending nothing" above
+ * every screen, including for an organization that answered months ago. The gate must fail quiet;
+ * the page must not assert an unanswered question it has no information about.
+ */
+describe('the consent notice does not invent an unanswered question during an outage', () => {
+  const source = readFileSync(join(WEB_ROOT, 'components', 'error-reporting-notice.tsx'), 'utf8');
+
+  it('reads through the helper that distinguishes a failed read', () => {
+    expect(source).toContain("readErrorReportingConsent } from '../lib/error-reporting-consent'");
+    // The flattened one cannot answer this question: it reports `unset` for both cases.
+    expect(source, 'the notice is back on the helper that cannot tell the two apart').not.toContain(
+      'await errorReportingConsent()',
+    );
+  });
+
+  it('renders nothing when the read failed', () => {
+    expect(source).toContain('if (!consent.ok) return null;');
+  });
+
+  it('still renders only for an unanswered question', () => {
+    expect(source).toContain("if (consent.consent !== 'unset') return null;");
   });
 });

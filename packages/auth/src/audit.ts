@@ -88,6 +88,7 @@ export const AUDIT_ACTIONS = [
   // the reversal is its own action rather than the absence of the first.
   'privacy.retention_changed',
   'privacy.llm_mode_changed',
+  'privacy.error_reporting_consent_changed',
   'privacy.channel_ingestion_enabled',
   'privacy.channel_ingestion_disabled',
   'person.anonymized',
@@ -141,6 +142,7 @@ export const AUDIT_ACTION_LABEL: Readonly<Record<AuditAction, string>> = {
   'data.deleted': 'deleted data',
   'privacy.retention_changed': 'changed how long Compass keeps data',
   'privacy.llm_mode_changed': 'changed how much a language model is shown',
+  'privacy.error_reporting_consent_changed': 'decided whether stack traces may leave this deployment',
   'privacy.channel_ingestion_enabled': 'turned on reading of a chat channel',
   'privacy.channel_ingestion_disabled': 'turned off reading of a chat channel',
   'person.anonymized': 'withdrew a person’s name from future reports',

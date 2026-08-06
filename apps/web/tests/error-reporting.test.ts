@@ -1,7 +1,22 @@
-import { RAW_TEXT_FIELD_NAMES, REDACTED, leaksIn } from '@compass/observability';
-import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-import { SENTRY_DSN_ENV_VAR, errorReportingConfigured, initErrorReporting, sentryOptions } from '../lib/error-reporting';
+import { RAW_TEXT_FIELD_NAMES, REDACTED, leaksIn } from '@compass/observability';
+import { afterEach, describe, expect, it } from 'vitest';
+
+import { ERROR_REPORTING_CONSENTS } from '@compass/db';
+
+import * as Sentry from '@sentry/nextjs';
+
+import {
+  SENTRY_DSN_ENV_VAR,
+  errorReportingActive,
+  errorReportingConfigured,
+  initErrorReporting,
+  sentryOptions,
+  stopErrorReporting,
+} from '../lib/error-reporting';
 
 /**
  * The criterion: no email address, token or raw ingested text reaches an error-reporter payload.
@@ -182,12 +197,192 @@ describe('the structural gate', () => {
 });
 
 describe('a deployment with no DSN', () => {
-  it('does not initialize, and says so rather than pretending', () => {
-    expect(initErrorReporting({})).toBe(false);
+  it('does not initialize, and says so rather than pretending', async () => {
+    expect(await initErrorReporting({ consent: 'granted', environment: {} })).toBe(false);
     expect(errorReportingConfigured({})).toBe(false);
   });
 
   it('reports configured when a DSN is present', () => {
     expect(errorReportingConfigured({ [SENTRY_DSN_ENV_VAR]: DSN })).toBe(true);
+  });
+});
+
+/**
+ * The consent gate, as a truth table.
+ *
+ * Two independent conditions decide whether a stack trace can leave the process — the operator has
+ * configured a destination, and the organization has agreed to it — and either one alone used to be
+ * enough because only the first existed. Enumerated rather than spot-checked, because the failure
+ * this guards against is one arm of a boolean quietly inverting and nothing looking different until
+ * an organization's traces are in a third party's dashboard.
+ */
+describe('consent decides whether the reporter starts at all', () => {
+  const withDsn = { [SENTRY_DSN_ENV_VAR]: DSN };
+
+  it.each([
+    ['unset', false],
+    ['denied', false],
+  ] as const)('stays silent with a DSN configured and consent %s', async (consent, expected) => {
+    // The important half. A configured deployment reports *nothing* until somebody answers, so the
+    // window between deploying and deciding is not a window in which data leaves.
+    expect(await initErrorReporting({ consent, environment: withDsn })).toBe(expected);
+  });
+
+  it.each(['unset', 'granted', 'denied'] as const)('stays silent with no DSN and consent %s', async (consent) => {
+    // Consent is permission, not configuration. Agreeing does not conjure a destination.
+    expect(await initErrorReporting({ consent, environment: {} })).toBe(false);
+  });
+
+  it('defaults to unset when the caller says nothing', async () => {
+    /**
+     * The signature's own safety property. `initErrorReporting()` with no argument is what a
+     * careless future call site looks like, and it must fail closed — a default of `granted` would
+     * make the gate opt-out by accident rather than opt-in by design.
+     */
+    expect(await initErrorReporting()).toBe(false);
+  });
+
+  it('treats denied and unset identically here, and they are still different values', async () => {
+    // Same behaviour, different meanings: the banner shows for one and not the other. If these ever
+    // collapse into a boolean, the banner loses the only thing it keys on.
+    expect(ERROR_REPORTING_CONSENTS).toEqual(['unset', 'granted', 'denied']);
+    expect(await initErrorReporting({ consent: 'unset', environment: withDsn })).toBe(
+      await initErrorReporting({ consent: 'denied', environment: withDsn }),
+    );
+  });
+});
+
+/**
+ * The arm that actually sends, and the arm that stops sending.
+ *
+ * Separated from the table above because these two are the only tests in this file that start a
+ * real client, and a live SDK left behind would leak into every later test in the process — the
+ * scrubber tests build events through `sentryOptions()` rather than through a client precisely so
+ * they never need one. `afterEach` tears it down whatever the assertion did.
+ *
+ * The DSN is syntactically valid and points at a host that does not resolve; nothing is sent
+ * because nothing is captured here, only initialised.
+ */
+describe('a granted deployment, and a withdrawal', () => {
+  const withDsn = { [SENTRY_DSN_ENV_VAR]: DSN };
+
+  afterEach(async () => {
+    await stopErrorReporting();
+  });
+
+  it('initializes with a DSN and consent granted — the combination that sends', async () => {
+    // The arm the truth table above was missing. Without it every assertion in this file was
+    // satisfied by a function that returned false unconditionally.
+    expect(await initErrorReporting({ consent: 'granted', environment: withDsn })).toBe(true);
+    expect(errorReportingActive()).toBe(true);
+  });
+
+  it('is idempotent, so a second request does not replace a live client mid-flight', async () => {
+    expect(await initErrorReporting({ consent: 'granted', environment: withDsn })).toBe(true);
+    const first = Sentry.getClient();
+
+    expect(await initErrorReporting({ consent: 'granted', environment: withDsn })).toBe(true);
+    expect(Sentry.getClient()).toBe(first);
+  });
+
+  it('tears the client down when consent is withdrawn, without waiting for a restart', async () => {
+    /**
+     * The defect this closes. An initialized client installs global handlers, so gating only the
+     * capture path left an unhandled rejection still reaching the tracker after the owner said no —
+     * consent withdrawn in the database and not in the process.
+     */
+    await initErrorReporting({ consent: 'granted', environment: withDsn });
+    expect(errorReportingActive()).toBe(true);
+
+    expect(await initErrorReporting({ consent: 'denied', environment: withDsn })).toBe(false);
+    expect(errorReportingActive(), 'the client survived a withdrawal').toBe(false);
+  });
+
+  it('tears it down for unset too, which is what a fresh organization reverts to on a failed read', async () => {
+    // `errorReportingConsent()` answers `unset` when the database cannot be reached, and that path
+    // must stop an already-running client rather than leave it reporting on a guess.
+    await initErrorReporting({ consent: 'granted', environment: withDsn });
+
+    expect(await initErrorReporting({ consent: 'unset', environment: withDsn })).toBe(false);
+    expect(errorReportingActive()).toBe(false);
+  });
+
+  it('can be stopped when nothing is running, so a shutdown hook needs no guard', async () => {
+    await expect(stopErrorReporting()).resolves.toBeUndefined();
+  });
+});
+
+/**
+ * The shape of `instrumentation.ts`, asserted as source rather than as behaviour.
+ *
+ * ## Why a source scan, which this repository is otherwise sparing with
+ *
+ * Next.js compiles `instrumentation.ts` for **every** server runtime the app may run in, Edge
+ * included, and the Edge runtime has no `fs`, `path` or `stream`. `errorReportingConsent` reaches
+ * `@compass/db`, which reaches `pg`, which reaches all three — so importing it at the top of that
+ * file does not merely bloat the Edge bundle, it makes `next build` fail outright with
+ * "Module not found: Can't resolve 'path'".
+ *
+ * Nothing else here can catch that. The module type-checks perfectly, every test in this file
+ * passes, `eslint` and `depcruise` are clean, and `pnpm run verify` — lint, arch, typecheck, test —
+ * does not bundle the app at all. The failure appears only in `next build`, which locally is a
+ * separate command and in CI is inside the container-image job. An earlier attempt at this feature
+ * shipped exactly this defect and the whole improvement round was reverted for it.
+ *
+ * ## What is pinned, and why each half matters
+ *
+ * Both halves of the guard, because either one alone silently stops working:
+ *
+ *  - **`process.env.NEXT_RUNTIME`, in dot form.** Next substitutes it per compilation through
+ *    webpack's DefinePlugin. The bracket form this app uses everywhere else for environment
+ *    variables is not substituted, the branch never folds, and the import is resolved anyway.
+ *  - **The import nested inside the truthy branch.** Webpack drops an `import()` only where it can
+ *    prove it unreachable. Written as an early `return` followed by the import, the import sits in
+ *    the function body, survives the fold and is resolved. Both spellings type-check; only the
+ *    nested one builds.
+ */
+describe('instrumentation keeps the database out of the Edge bundle', () => {
+  const raw = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'instrumentation.ts'), 'utf8');
+
+  /**
+   * Comments stripped, because this is an assertion about what the bundler sees.
+   *
+   * Not fastidiousness: the guard in that file documents the bracket form *as the spelling that
+   * does not work*, so a scan over the raw text finds it in the prose and fails on the very comment
+   * warning against it. Stripping block and line comments is what makes "the file does not contain
+   * this" a claim about code.
+   */
+  const source = raw.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+
+  it('never imports the consent lookup statically', () => {
+    const staticImports = source
+      .split(/\r?\n/)
+      .filter((line) => /^import\s/.test(line))
+      .join('\n');
+
+    expect(
+      staticImports,
+      'a static import of the consent lookup drags `pg` into the Edge compilation and breaks `next build`',
+    ).not.toContain('error-reporting-consent');
+  });
+
+  it('reaches it through a dynamic import nested inside a NEXT_RUNTIME guard', () => {
+    expect(source, 'the dynamic import is gone; nothing reads consent any more').toContain(
+      "await import('./lib/error-reporting-consent')",
+    );
+
+    // Dot form, or DefinePlugin does not substitute it and the branch never folds.
+    expect(source, 'the guard must use the substitutable dot form').toContain(
+      "process.env.NEXT_RUNTIME === 'nodejs'",
+    );
+    expect(source, 'the bracket form is not substituted by DefinePlugin').not.toContain(
+      "process.env['NEXT_RUNTIME']",
+    );
+
+    // The import must sit after the opening of the guarded block and before its close, which is
+    // what makes it eliminable. An early-return guard puts it in the function body instead.
+    const guard = source.indexOf("process.env.NEXT_RUNTIME === 'nodejs'");
+    const dynamic = source.indexOf("await import('./lib/error-reporting-consent')");
+    expect(dynamic, 'the import is not inside the guarded branch').toBeGreaterThan(guard);
   });
 });

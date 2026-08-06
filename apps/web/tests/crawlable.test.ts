@@ -111,6 +111,54 @@ describe('every route on disk is decided, never left out', () => {
       expect(disallow, `${path} is not hidden from crawlers`).toContain(path);
     }
   });
+
+  /**
+   * The share-token permalink, asserted as a path rather than as a prefix rule.
+   *
+   * This is the entry on the disallow list with an actual privacy consequence, and it is the one
+   * the other assertions here would not have caught. `/api/share/[token]` is a **capability URL**:
+   * possession of the link is the authorisation, so a token that reaches a crawler's index is a
+   * report anybody can open, permanently, with no session and no way to tell it happened.
+   *
+   * It is covered by the `/api/` prefix rather than by a rule of its own — which is correct, and
+   * exactly why it needs a test that names the concrete URL. A future edit that narrowed `/api/` to
+   * a handful of specific endpoints would still satisfy "the list contains /api/" and would quietly
+   * uncover every share link. This asserts the property that matters: *this URL is not crawlable*.
+   */
+  it('hides a share-token permalink, which is a capability URL', () => {
+    const disallow = crawlDisallow();
+    const blocks = (path: string): boolean =>
+      disallow.some((rule) => path === rule || path.startsWith(rule.endsWith('/') ? rule : `${rule}/`));
+
+    for (const path of ['/api/share/tok_abc123', '/api/share', '/api/reports/platform', '/archive/2026-07-31']) {
+      expect(blocks(path), `${path} is crawlable`).toBe(true);
+    }
+  });
+
+  /**
+   * The other direction, which no assertion in this file made.
+   *
+   * Everything above proves things are *hidden*. A robots.txt that disallowed the entire site would
+   * pass all of it and take the pricing page and five legal documents out of every search index —
+   * failing the half of the criterion that is about being discoverable at all.
+   */
+  it('leaves the marketing and legal surfaces crawlable', () => {
+    const allowed = indexablePaths();
+    const disallow = crawlDisallow();
+
+    for (const path of ['/', '/pricing', '/legal', '/trust/subprocessors']) {
+      expect(allowed, `${path} is not advertised`).toContain(path);
+      expect(
+        disallow.filter((rule) => path !== '/' && path.startsWith(rule)),
+        `${path} is advertised and forbidden`,
+      ).toEqual([]);
+    }
+
+    // Every published policy, from the content module rather than a list that would drift.
+    for (const document of POLICY_DOCUMENTS) {
+      expect(allowed, `/legal/${document.slug} is not advertised`).toContain(`/legal/${document.slug}`);
+    }
+  });
 });
 
 describe('the sitemap', () => {

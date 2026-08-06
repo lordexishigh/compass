@@ -554,6 +554,58 @@ export const PRIVACY_POLICY: PolicyDocument = Object.freeze({
       ]),
     }),
     Object.freeze({
+      /**
+       * The cookie disclosure, and the reason there is no consent banner.
+       *
+       * ePrivacy Article 5(3) requires *information* about anything stored on a device, and exempts
+       * from *consent* only what is strictly necessary to provide the service the person asked for.
+       * Compass sets two cookies and both are in that class, so the honest surface is this section
+       * rather than a banner. A banner asking permission for cookies that do not need it would be
+       * theatre: its "reject" button could not reject anything without signing the reader out, and
+       * offering a choice that cannot be honoured teaches people the choice is meaningless.
+       *
+       * This stays true only while the inventory does. `legal-content.test.ts` reads the cookie
+       * names out of `apps/web/lib/auth/cookies.ts` and fails if one is set that this section does
+       * not name — so adding a third cookie forces a decision here rather than slipping past.
+       */
+      heading: 'What Compass stores in your browser',
+      paragraphs: Object.freeze([
+        'Two cookies, both strictly necessary, both **HttpOnly** — meaning no script on the page can ' +
+          'read either of them — and both **SameSite=Lax** and **Secure** wherever the connection is ' +
+          'HTTPS. Compass sets nothing else: no **localStorage**, no analytics or advertising cookie, ' +
+          'no third-party script, no tracking pixel, and no fingerprinting. The Content-Security-' +
+          'Policy would block a third-party script even if one were added by mistake.',
+        'There is deliberately **no cookie-consent banner**, and that is a position rather than an ' +
+          'omission. Consent is required for cookies that are not strictly necessary, and Compass ' +
+          'sets none of those. A banner would ask permission for something that needs none, and its ' +
+          '“reject” option could not reject the session cookie without signing you out — a choice ' +
+          'that cannot be honoured is worse than no choice. Refusing both cookies in your browser is ' +
+          'still available and still works; you will not be able to sign in, which is what refusing ' +
+          'a sign-in cookie means.',
+        'Error reports are a separate question and worth stating plainly here rather than leaving to ' +
+          'the subprocessor list: they are generated **on the server**, never in your browser, so ' +
+          'nothing about them is decided by your device. Stack traces pass through a scrubber that ' +
+          'removes addresses, credentials and ingested text before an event leaves the process, and a ' +
+          'deployment with no error-tracking key sends none at all.',
+        'They are also the one thing here Compass asks permission for, and it asks the organization ' +
+          'rather than the browser. Until an owner answers on the privacy screen the setting is ' +
+          '**unset** and **nothing is sent** — errors go to the deployment’s own log and no further. An ' +
+          'owner can grant it, refuse it, or change either answer later, and every change is written ' +
+          'to the audit log with who made it. This is the reason there is no cookie banner asking ' +
+          'about cookies that need no consent: the question worth asking is this one, and it is asked ' +
+          'once, where it can actually be answered.',
+      ]),
+      bullets: Object.freeze([
+        '**compass_session** — proves you are signed in. It holds a random secret; the database keeps ' +
+          'only a hash of it. Expires 30 days after it is issued, and sooner if you are idle, sign ' +
+          'out, or an owner changes your role.',
+        '**compass_sso_nonce** — set only if you sign in through an identity provider, and only for the ' +
+          'ten minutes that round trip lasts. It ties the provider’s answer to the browser that ' +
+          'started the request, which is what stops somebody feeding you their own sign-in. Cleared ' +
+          'the moment the round trip finishes, whatever the outcome.',
+      ]),
+    }),
+    Object.freeze({
       heading: 'What you can do',
       paragraphs: Object.freeze([
         'Every one of these is self-serve, from inside the product, with no approval from a manager and ' +
