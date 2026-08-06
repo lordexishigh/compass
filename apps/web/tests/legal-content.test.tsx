@@ -464,3 +464,53 @@ describe('policy markup is rendered, not printed', () => {
     expect(renderDocument('privacy')).toContain('<strong class="font-medium text-ink-strong">');
   });
 });
+
+/**
+ * An unpaired delimiter renders as itself, rather than marking up the rest of the paragraph.
+ *
+ * `split` makes the wrong behaviour the default one, which is why this needs a test rather than a
+ * comment. `n` delimiters yield `n + 1` segments: a balanced pair leaves the trailing run at an even
+ * index where it falls through, but a single stray delimiter puts it at an odd index and marks it up
+ * to the end. A missing closing backtick in a published legal document would silently restyle
+ * everything after it — and the content module is hand-authored prose, which is exactly where a
+ * dropped delimiter happens.
+ */
+describe('markup that is not closed', () => {
+  const renderParagraph = (paragraph: string): string =>
+    renderToStaticMarkup(
+      <PolicyBody
+        document={{
+          slug: 'probe',
+          title: 'Probe',
+          lede: 'A document that exists only in this test.',
+          lastUpdated: '2026-08-06',
+          sections: [{ heading: 'Heading', paragraphs: [paragraph] }],
+        }}
+      />,
+    );
+
+  it('leaves a stray backtick as a character instead of opening a mono span', () => {
+    const markup = renderParagraph('the cookie is set once `and the rest of this sentence is prose');
+
+    expect(markup, 'an unclosed backtick must not set the remainder in mono').not.toContain('<code');
+    expect(markup).toContain('once `and the rest');
+  });
+
+  it('leaves a stray asterisk pair as characters instead of emboldening the remainder', () => {
+    expect(renderParagraph('the retention window is **90 days and then it is deleted')).not.toContain('<strong');
+  });
+
+  it('still renders a correctly paired backtick inside a paragraph with a stray asterisk', () => {
+    // The two are independent: a typo in one idiom must not disable the other.
+    expect(renderParagraph('a **stray asterisk and a good `compass_session` span')).toContain(
+      '<code class="data-token">compass_session</code>',
+    );
+  });
+
+  it('still renders both when both are balanced, so the guard did not disable the feature', () => {
+    const markup = renderParagraph('**account data** is held in `compass_session`');
+
+    expect(markup).toContain('<strong class="font-medium text-ink-strong">');
+    expect(markup).toContain('<code class="data-token">compass_session</code>');
+  });
+});

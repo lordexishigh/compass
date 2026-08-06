@@ -32,11 +32,27 @@ import type { PolicyDocument } from '@compass/trust';
  * Splits on `**…**` and `` `…` `` and marks up the odd segments. Nothing else in the string is markup.
  *
  * Emphasis is applied first and code inside each resulting run second, so `**a `b`**` is bold with a
- * mono span inside it rather than one of the two winning. An unpaired delimiter leaves its text alone:
- * `split` yields an even final segment, which falls through as the plain string it was.
+ * mono span inside it rather than one of the two winning.
+ *
+ * ## An unpaired delimiter is left alone, and it takes a guard to make that true
+ *
+ * The obvious reading of `split` is that an odd delimiter is harmless — and it is not. `n` delimiters
+ * yield `n + 1` segments, so a *balanced* pair leaves the trailing run at an even index where it falls
+ * through as plain text, but a single stray delimiter puts it at an odd index: `'a `b'` would set `b`
+ * in mono, and `'a **b'` would embolden the rest of the paragraph. A missing closing backtick in a
+ * legal document would silently restyle everything after it to the end of the paragraph.
+ *
+ * `isBalanced` is what makes the harmless reading actually true. An odd count means the author meant a
+ * literal delimiter or made a typo; either way the honest rendering is the text as written, so the
+ * whole run falls through untouched rather than being marked up to the end.
  */
+const isBalanced = (segments: readonly string[]): boolean => segments.length % 2 === 1;
+
 function withCode(text: string, keyPrefix: string): readonly React.ReactNode[] {
-  return text.split('`').map((segment, index) =>
+  const segments = text.split('`');
+  if (!isBalanced(segments)) return [text];
+
+  return segments.map((segment, index) =>
     index % 2 === 1 ? (
       <code key={`${keyPrefix}-c${index}`} className="data-token">
         {segment}
@@ -48,7 +64,12 @@ function withCode(text: string, keyPrefix: string): readonly React.ReactNode[] {
 }
 
 function withEmphasis(text: string): readonly React.ReactNode[] {
-  return text.split('**').map((segment, index) =>
+  const segments = text.split('**');
+  // Unbalanced emphasis falls through, but the run is still offered to `withCode`: a stray asterisk
+  // is no reason to stop rendering a backtick span that is itself correctly paired.
+  if (!isBalanced(segments)) return withCode(text, 'p0');
+
+  return segments.map((segment, index) =>
     index % 2 === 1 ? (
       <strong key={index} className="font-medium text-ink-strong">
         {withCode(segment, `b${index}`)}

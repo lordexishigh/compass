@@ -53,6 +53,27 @@ tags = ["database", "credential"]
 # even though the `{8,}` bound already spares the first, because the allowlist also applies to the
 # inherited default rules.
 #
+# ### `regexTarget = "line"`, without which the second value exempted nothing
+#
+# With `regexTarget` unset, gitleaks matches an allowlist regex against the **finding's secret**, not
+# against the line it came from. The rule above declares no capture group, so the secret is the whole
+# match — and the match terminates at the `@`, because that is where the pattern ends. For the second
+# placeholder the secret is therefore `postgresql://postgres:postgres@` and nothing longer, while the
+# allowlist string is the full URL including the host and database. A pattern strictly longer than the
+# text it is tested against cannot match, so the exemption never fired and the placeholder was a live
+# finding.
+#
+# The place it was a finding is this file. That string exists nowhere else in the repository and never
+# has — `git log -S` finds it only in `.gitleaks.toml` — because every real placeholder uses the
+# seven-character `compass` password that `{8,}` spares. So the allowlist entry written to exempt a
+# credential-shaped string was itself the only credential-shaped string, and it exempted itself from
+# nothing. The same shape of defect as a lint rule tripping its own gate, one file over.
+#
+# `regexTarget = "line"` matches these regexes against the whole line instead, which is what the
+# comment above always described. It does not widen the exemption in any way that matters: both values
+# are complete literal connection strings, so a line matching one *contains* one, and a line containing
+# a real credential still matches neither.
+#
 # ## The one path, and why it is not the same mistake
 #
 # `tools/eslint-plugin-compass/rules/` holds the credential-hygiene rules themselves. A file whose
@@ -70,6 +91,9 @@ tags = ["database", "credential"]
 # path rather than a regex, so it cannot widen by accident.
 [allowlist]
 description = "The loopback placeholders, and the rule sources whose subject matter is credential shapes"
+# Match `regexes` against the whole line rather than against the finding's secret. See the note above:
+# this rule captures nothing, so its secret stops at the `@` and a full-URL exemption could never match.
+regexTarget = "line"
 regexes = [
   '''postgresql://compass:compass@localhost:5432/compass''',
   '''postgresql://postgres:postgres@localhost:5432/compass''',

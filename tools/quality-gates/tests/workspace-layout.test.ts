@@ -9,6 +9,7 @@ import {
   listWorkspacePackages,
   packagesIn,
   readJsonFile,
+  repoRelative,
   type WorkspacePackage,
 } from './helpers/workspace.js';
 
@@ -297,6 +298,37 @@ describe('every workspace declares who owns it', () => {
   it('points the manifest at that file rather than at an SPDX id it does not have', () => {
     const root = readJsonFile<{ readonly license?: string }>(join(REPO_ROOT, 'package.json'));
     expect(root.license).toBe(LICENSE_FIELD);
+  });
+
+  it('resolves the file every manifest points at, so a rename cannot dangle', () => {
+    /**
+     * The assertion that makes `SEE LICENSE IN <file>` safe to use at all.
+     *
+     * The value is not a claim about terms, it is a *reference* — and a reference is only worth
+     * more than a bare keyword while the thing it names is on disk. Renaming `LICENSE` to
+     * `LICENSE.md` breaks 28 manifests at once, silently: every tool that resolves the field gets
+     * nothing back, and the ambiguity this whole gate exists to close quietly re-opens with the
+     * field still populated and still looking correct.
+     *
+     * So the filename is parsed out of the declared value rather than hard-coded, and checked.
+     * A future move only has to update the manifests, and this fails until it does.
+     */
+    const manifests = [
+      join(REPO_ROOT, 'package.json'),
+      ...allPackages.map((workspacePackage) => join(workspacePackage.absoluteDirectory, 'package.json')),
+    ];
+
+    const dangling = manifests
+      .map((path) => ({ path, license: readJsonFile<{ readonly license?: string }>(path).license }))
+      .flatMap(({ path, license }) => {
+        const named = /^SEE LICENSE IN (.+)$/.exec(license ?? '')?.[1];
+        // Only the referencing form has a file to resolve. A bare SPDX id names a published
+        // licence and is answerable without one, so it is not this assertion's business.
+        if (named === undefined) return [];
+        return existsSync(join(REPO_ROOT, named)) ? [] : [`${repoRelative(path)} → ${named}`];
+      });
+
+    expect(dangling, 'these manifests name a licence file that is not at the repository root').toEqual([]);
   });
 
   it.each(asCases(allPackages))('%s declares it too', (_label, workspacePackage) => {
