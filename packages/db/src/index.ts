@@ -513,6 +513,7 @@ export {
 } from './repositories/ingest-runs.js';
 
 export {
+  MAX_CITING_CLAIMS,
   ReportSectionCountError,
   ReportSectionOrdinalError,
   findClaimsCitingArtifact,

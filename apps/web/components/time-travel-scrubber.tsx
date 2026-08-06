@@ -82,6 +82,24 @@ export function TimeTravelScrubber({ bounds, teamKey }: TimeTravelScrubberProps)
     setNote(null);
 
     startTransition(async () => {
+      /**
+       * Every path that does not navigate puts the control back on the day that is on screen.
+       *
+       * `date` is optimistic: it moves before the POST so the input acknowledges the press. On
+       * success that optimism is never observed, because the page navigates away. On refusal it
+       * would be — and a control left reading `2026-07-28` above a report for the 31st is not a
+       * cosmetic slip. It is what `atEarliest`, `atLatest` and the `target === bounds.currentDate`
+       * short-circuit are all computed from, so the next press steps from a day the reader is not
+       * looking at, and one of the two bounds is disabled against the wrong end of the history.
+       *
+       * This is the *default* path, not an edge: stepping needs a seat, so every anonymous reader
+       * on `/` — which is every reader, `/` being session-less — gets the 401 branch.
+       */
+      const refuse = (detail: string): void => {
+        setDate(bounds.currentDate);
+        setNote(detail);
+      };
+
       try {
         const response = await fetch('/api/time-travel', {
           method: 'POST',
@@ -91,7 +109,21 @@ export function TimeTravelScrubber({ bounds, teamKey }: TimeTravelScrubberProps)
         const body = (await response.json()) as { readonly href?: string; readonly detail?: string };
 
         if (!response.ok || body.href === undefined) {
-          setNote(body.detail ?? 'Compass could not regenerate that day, so nothing has changed.');
+          refuse(body.detail ?? 'Compass could not regenerate that day, so nothing has changed.');
+          return;
+        }
+
+        /**
+         * The destination has to be a permalink on this origin.
+         *
+         * `href` is a response body, and `location.assign` follows an absolute URL to another site
+         * as readily as a path. The route only ever answers `archiveHref(reportId)`, so requiring
+         * that shape costs nothing and means a handler that one day echoed something else — or a
+         * response that is not this handler's at all — cannot turn a step into an off-site
+         * navigation.
+         */
+        if (!body.href.startsWith('/archive/')) {
+          refuse('Compass got an answer it did not recognise, so the report in front of you is unchanged.');
           return;
         }
 
@@ -99,7 +131,7 @@ export function TimeTravelScrubber({ bounds, teamKey }: TimeTravelScrubberProps)
         // destination is a Server Component that must be rendered from the row that was just written.
         window.location.assign(body.href);
       } catch {
-        setNote('Compass could not be reached, so the report in front of you is unchanged.');
+        refuse('Compass could not be reached, so the report in front of you is unchanged.');
       }
     });
   };

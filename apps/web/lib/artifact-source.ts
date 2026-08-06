@@ -8,8 +8,8 @@ import {
 } from '@compass/db';
 import { isArtifactRouteKind } from '@compass/pipeline';
 
+import { database } from './database';
 import { resolveProvider } from './foundation-report';
-import { database } from './report-source';
 import { describeArtifact } from './view-model';
 
 /**
@@ -24,6 +24,14 @@ import { describeArtifact } from './view-model';
  * page for still resolves — the page says which kind it was asked for — because
  * dropping the link would leave a claim looking unevidenced when the evidence
  * exists. An artifact nobody has cited resolves too, and says exactly that.
+ *
+ * ## The pool comes from `lib/database.ts`, not from the report path
+ *
+ * `database` is re-exported by `lib/report-source.ts` and this module used to take it from
+ * there, which pulled `ensureDailyReport`, the seeded connector and the narrator into the
+ * module graph of a route that generates nothing. Same reason `/api/health` reaches for the
+ * pool directly: this is a read of stored rows, and it should not load the analysis core to
+ * perform one. `tests/artifact.test.tsx` asserts the import stays this way round.
  */
 
 export interface ArtifactIdentifierView {
@@ -81,8 +89,19 @@ export async function loadArtifactView(kind: string, artifactId: string): Promis
   const provider = resolveProvider();
   const scoped = new ScopedDb(database(), orgScope(provider.organizationId));
 
+  /**
+   * Two bounded reads, and nothing generated.
+   *
+   * The evidence rows are read once and handed on, rather than read again inside
+   * `findClaimsCitingArtifact` — the page needs them for the identifiers across the top and
+   * that resolver needs them for the claim list, and they are the same indexed range.
+   *
+   * The rule this path keeps is `loadArchivedReport`'s: it *reads*. Nothing here resolves a
+   * connector, opens an ingest window or calls the pipeline, so following an evidence marker
+   * costs a lookup rather than a report generation.
+   */
   const evidence = await findEvidenceForArtifact(scoped, kind, artifactId);
-  const claims = await findClaimsCitingArtifact(scoped, kind, artifactId);
+  const claims = await findClaimsCitingArtifact(scoped, kind, artifactId, evidence);
   const first = evidence[0];
 
   return {

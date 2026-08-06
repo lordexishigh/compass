@@ -1,5 +1,5 @@
 import type { Instant, TimeWindow } from '@compass/clock';
-import { and, asc, desc, eq, lt, type InferSelectModel } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, lt, type InferSelectModel } from 'drizzle-orm';
 
 import { fromDatabaseInstant, toDatabaseInstant } from '../schema/columns.js';
 import { narrationTraces } from '../schema/narration.js';
@@ -697,11 +697,27 @@ export async function findReportItemByStableId(
 }
 
 /**
+ * The most claims one artifact page will resolve, and the ceiling on the rows behind them.
+ *
+ * A bound rather than a page, because this is not a list a reader walks: it is "what has Compass
+ * said about this pull request", and a PR with more than two hundred distinct citing claims is a
+ * fixture or a runaway, not a reading task. What the bound actually buys is that the page's cost
+ * cannot be made unbounded by the *data* — the artifact route is linked from every claim in every
+ * report, so an artifact whose history grew without limit would take the whole evidence surface
+ * down with it. `EVIDENCE_SCAN_LIMIT` is the larger of the two because one claim cites an artifact
+ * through several evidence rows.
+ */
+export const MAX_CITING_CLAIMS = 200;
+const EVIDENCE_SCAN_LIMIT = 1000;
+
+/**
  * Every claim that cited one artifact — what the artifact detail page shows.
  *
  * Keyed on `(artifact_kind, artifact_id)` rather than on the label, because two
  * repositories can both have a `#42` and a manager following a link has to land
- * on theirs.
+ * on theirs. Served by `report_item_evidence_org_artifact_idx`, which covers
+ * exactly `(organization_id, artifact_kind, artifact_id)` — the organization
+ * column arrives from `ScopedDb`, so the index matches the whole predicate.
  */
 export async function findEvidenceForArtifact(
   scoped: ScopedDb,
@@ -713,7 +729,8 @@ export async function findEvidenceForArtifact(
       reportItemEvidence,
       and(eq(reportItemEvidence.artifactKind, artifactKind), eq(reportItemEvidence.artifactId, artifactId)),
     )
-    .orderBy(asc(reportItemEvidence.reportItemId), asc(reportItemEvidence.ordinal));
+    .orderBy(asc(reportItemEvidence.reportItemId), asc(reportItemEvidence.ordinal))
+    .limit(EVIDENCE_SCAN_LIMIT);
 
   return rows.map((row) => ({
     id: row.id,
@@ -760,25 +777,58 @@ export async function findClaimsCitingArtifact(
   scoped: ScopedDb,
   artifactKind: string,
   artifactId: string,
+  /**
+   * The evidence rows, when the caller has already read them.
+   *
+   * The artifact page needs both this list and the evidence itself — the typed identifiers
+   * across the top of the page come off the first row — so without this it read the same
+   * indexed range twice per request.
+   */
+  evidence?: readonly StoredReportEvidence[],
 ): Promise<readonly CitingClaim[]> {
-  const evidence = await findEvidenceForArtifact(scoped, artifactKind, artifactId);
-  if (evidence.length === 0) return [];
+  const references = evidence ?? (await findEvidenceForArtifact(scoped, artifactKind, artifactId));
+  if (references.length === 0) return [];
 
-  const claims: CitingClaim[] = [];
-  const seen = new Set<string>();
+  /**
+   * The evidence label per citing item, and the bound.
+   *
+   * `references` is ordered by `(report_item_id, ordinal)`, so the first entry seen for an item
+   * is its lowest ordinal — the same label the old loop kept. `Map` preserves insertion order,
+   * which is what makes taking the first `MAX_CITING_CLAIMS` deterministic rather than
+   * whichever rows the planner happened to return first.
+   */
+  const labelByItem = new Map<string, string>();
+  for (const reference of references) {
+    if (!labelByItem.has(reference.reportItemId)) labelByItem.set(reference.reportItemId, reference.label);
+  }
+  const itemIds = [...labelByItem.keys()].slice(0, MAX_CITING_CLAIMS);
 
-  for (const reference of evidence) {
-    if (seen.has(reference.reportItemId)) continue;
-    seen.add(reference.reportItemId);
+  /**
+   * Four reads, whatever the artifact's history.
+   *
+   * This was three queries per citing item plus one, awaited in sequence — so an artifact a
+   * long-running team keeps touching cost `3n + 1` round trips, and against a managed pooler a
+   * round trip is tens of milliseconds. The count grew with every report written about the
+   * artifact, which is exactly the axis that grows once time travel is reachable and the archive
+   * starts filling: the page got slower the more the product was used, and nothing in the query
+   * said so. Set-based reads make the cost of the page independent of how much history it has.
+   */
+  const items = await scoped.selectFrom(reportItems, inArray(reportItems.id, itemIds));
+  const sectionIds = [...new Set(items.map((item) => item.reportSectionId))];
+  const reportIds = [...new Set(items.map((item) => item.reportId))];
 
-    const [item] = await scoped.selectFrom(reportItems, eq(reportItems.id, reference.reportItemId)).limit(1);
-    if (item === undefined) continue;
-    const [section] = await scoped
-      .selectFrom(reportSections, eq(reportSections.id, item.reportSectionId))
-      .limit(1);
-    const [report] = await scoped.selectFrom(reports, eq(reports.id, item.reportId)).limit(1);
+  const sectionRows =
+    sectionIds.length === 0 ? [] : await scoped.selectFrom(reportSections, inArray(reportSections.id, sectionIds));
+  const reportRows = reportIds.length === 0 ? [] : await scoped.selectFrom(reports, inArray(reports.id, reportIds));
 
-    claims.push({
+  const sectionById = new Map(sectionRows.map((row) => [row.id, row]));
+  const reportById = new Map(reportRows.map((row) => [row.id, row]));
+
+  const claims: CitingClaim[] = items.map((item) => {
+    const section = sectionById.get(item.reportSectionId);
+    const report = reportById.get(item.reportId);
+
+    return {
       reportId: item.reportId,
       reportDate: report?.reportDate ?? '',
       sectionKey: section?.sectionKey ?? '',
@@ -787,9 +837,10 @@ export async function findClaimsCitingArtifact(
       stableId: item.stableId,
       headline: item.headline,
       detail: item.detail,
-      evidenceLabel: reference.label,
-    });
-  }
+      // Present by construction: `itemIds` came from this map's own keys.
+      evidenceLabel: labelByItem.get(item.id) ?? '',
+    };
+  });
 
   return claims.sort(
     (left, right) =>
