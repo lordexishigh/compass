@@ -1,13 +1,14 @@
-import { ROLE_CAPABILITIES, readSeats, seatReadiness } from '@compass/auth';
+import { ROLE_CAPABILITIES, TOKEN_TTL_LABEL, readSeats, seatReadiness } from '@compass/auth';
 import { listEntityRows, teams } from '@compass/db';
 import { headers } from 'next/headers';
 
-import { SeatManager, type SeatView } from '../../components/seat-manager';
-import { StatedFailure } from '../../components/stated-failure';
-import { pageAccess } from '../../lib/auth/guard';
+import { SeatManager } from '../../../components/seat-manager';
+import { StatedFailure } from '../../../components/stated-failure';
+import { pageAccess } from '../../../lib/auth/guard';
+import { toSeatViews } from '../../../lib/seats-source';
 
 /**
- * `/seats` — who can read this organization's reports.
+ * `/settings/members` — who can read this organization's reports.
  *
  * Owner and manager, and the difference between them is visible rather than hidden: a
  * manager gets the same list with no controls, and a sentence saying so. Showing a
@@ -17,11 +18,14 @@ import { pageAccess } from '../../lib/auth/guard';
  * Access comes from `pageAccess`, which asks the same `ROLE_MATRIX` the endpoints ask. A
  * screen that rendered data its API refuses is the leak the matrix exists to prevent, so
  * the page and `/api/seats` cannot disagree by construction.
+ *
+ * `/seats` was this screen's address until the settings tree existed; `next.config.ts`
+ * redirects it here permanently, so links in older mail and anyone's bookmarks still land.
  */
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'Seats — Compass',
+  title: 'Members — Compass',
 };
 
 /**
@@ -41,7 +45,7 @@ function SeatsFrame({
   return (
     <div className="mx-auto w-full max-w-[46rem] px-5 pb-24 pt-8 lg:px-8 lg:pt-16">
       <header>
-        <p className="section-label">seats</p>
+        <p className="section-label">members</p>
         <h1 className="mt-2 text-[28px] font-semibold leading-tight tracking-tight text-ink-strong">{heading}</h1>
       </header>
       {children}
@@ -55,7 +59,7 @@ export default async function SeatsPage() {
   // Deciding whether you may read this needs the database. `pageAccess` returns an
   // `unavailable` arm rather than throwing, so an owner arriving during an outage gets a
   // sentence instead of the framework's error page.
-  const access = await pageAccess({ route: '/seats', cookieHeader });
+  const access = await pageAccess({ route: '/settings/members', cookieHeader });
 
   if (access.kind === 'unavailable') {
     return (
@@ -100,22 +104,19 @@ export default async function SeatsPage() {
   const teamRows = await listEntityRows(access.scoped, teams);
   const knownTeamKeys = teamRows.map((row) => row.naturalKey).sort();
 
-  const views: readonly SeatView[] = seats.map((seat) => ({
-    membershipId: seat.id,
-    email: seat.email,
-    displayName: seat.displayName,
-    role: seat.role,
-    status: seat.status,
-    hasPassword: seat.hasPassword,
-    teamKeys: seat.teamKeys,
-    invitedAtLabel: new Date(seat.createdAt).toISOString().slice(0, 10),
-    isYou: seat.userId === access.identity?.user.id,
-  }));
+  // `access.now` rather than a clock read here: the elapsed facts below — "last active 6
+  // days ago", "this invitation expired" — are computed from the one instant the edge
+  // resolved for this request, so every sentence on the page agrees about when now is.
+  const views = toSeatViews({
+    seats,
+    now: access.now,
+    viewerUserId: access.identity?.user.id ?? null,
+  });
 
   return (
     <div className="mx-auto w-full max-w-[46rem] px-5 pb-24 pt-8 lg:px-8 lg:pt-16">
       <header>
-        <p className="section-label">seats</p>
+        <p className="section-label">members</p>
         <h1 className="mt-2 text-[28px] font-semibold leading-tight tracking-tight text-ink-strong">
           Who can read these reports
         </h1>
@@ -153,6 +154,7 @@ export default async function SeatsPage() {
         canManage={canManage}
         knownTeamKeys={knownTeamKeys}
         roleCapabilities={ROLE_CAPABILITIES}
+        inviteTtlLabel={TOKEN_TTL_LABEL.invite}
       />
     </div>
   );

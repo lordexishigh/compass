@@ -197,6 +197,10 @@ export async function inviteSeat(input: InviteInput): Promise<InviteResult> {
       displayName: user.displayName,
       hasPassword: false,
       teamKeys,
+      // Newly invited: nobody has signed in on this seat, and the invitation just issued
+      // is the live one. Both stated rather than left for the caller to re-read.
+      lastActiveAt: null,
+      inviteExpiresAt: issued.expiresAt,
     },
     membership,
     link: issued.link,

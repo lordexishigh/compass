@@ -31,6 +31,11 @@ export interface SeatView {
   readonly hasPassword: boolean;
   readonly teamKeys: readonly string[];
   readonly invitedAtLabel: string;
+  /** "last active 6 days ago", or "never signed in". Never blank — see `seats-source.ts`. */
+  readonly lastActiveLabel: string;
+  /** What the outstanding invitation is doing, for a pending seat. Null for any other status. */
+  readonly inviteState: 'live' | 'expired' | 'none' | null;
+  readonly invitePhrase: string | null;
   readonly isYou: boolean;
 }
 
@@ -42,6 +47,15 @@ export interface SeatManagerProps {
   readonly canManage: boolean;
   readonly knownTeamKeys: readonly string[];
   readonly roleCapabilities: Readonly<Record<SeatRoleName, string>>;
+  /**
+   * How long an invitation lasts, worded.
+   *
+   * Passed in rather than written here. `TOKEN_TTL_LABEL.invite` in `@compass/auth` is the
+   * only place the number exists, and this is a client component — a copy of the string in
+   * the bundle is a copy that goes stale the day the lifetime changes, which is exactly
+   * what happened when three screens each spelled out "seven days".
+   */
+  readonly inviteTtlLabel: string;
 }
 
 const ROLES: readonly SeatRoleName[] = ['owner', 'manager', 'member', 'viewer'];
@@ -172,6 +186,31 @@ export function SeatManager(props: SeatManagerProps) {
                 <span className="stated-absence"> —— signs in by emailed link, no password set</span>
               )}
             </p>
+
+            {/*
+              The two elapsed facts, on their own line and in the same order for every seat.
+              Continuity is the interface: a reader learns that the line under the role is
+              always "when were they last here, and what is their invitation doing", so a
+              seat that has gone quiet or an invitation that has run out is found by
+              position rather than by scanning.
+
+              An expired invitation is set in the same faint ink as everything else. It is
+              bad news, and Compass does not colour-code bad news — the words carry it.
+            */}
+            <p className="mt-1 text-[13px] text-ink-faint">
+              <span className={seat.lastActiveLabel === 'never signed in' ? 'stated-absence' : undefined}>
+                {seat.lastActiveLabel}
+              </span>
+              {seat.invitePhrase !== null && (
+                <>
+                  {' —— '}
+                  <span className={seat.inviteState === 'live' ? undefined : 'stated-absence'}>
+                    {seat.invitePhrase}
+                  </span>
+                </>
+              )}
+            </p>
+
             <p className="mt-1 text-[13px] text-ink-faint">{props.roleCapabilities[seat.role]}</p>
 
             {props.canManage && seat.status !== 'revoked' && (
@@ -245,8 +284,8 @@ export function SeatManager(props: SeatManagerProps) {
         <section id="invite-seat" className="mt-14 hairline pt-8">
           <h2 className="section-label">invite a seat</h2>
           <p className="prose-narration mt-2 text-[15px]">
-            The invitation works once and expires in seven days. Resending it revokes the previous link, so there is
-            never more than one that works.
+            The invitation works once and expires in {props.inviteTtlLabel}. Resending it revokes the previous link, so
+            there is never more than one that works.
           </p>
 
           <form onSubmit={invite} className="mt-6 max-w-[26rem]">

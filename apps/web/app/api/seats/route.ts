@@ -1,4 +1,4 @@
-import { inviteSeat, isSeatRole, readSeats, seatReadiness } from '@compass/auth';
+import { TOKEN_TTL_LABEL, inviteSeat, isSeatRole, readSeats, seatReadiness } from '@compass/auth';
 import type { NextResponse } from 'next/server';
 
 import { baseUrlFor, guard, mailer, organizationName } from '../../../lib/auth/guard';
@@ -20,7 +20,7 @@ import {
  * reading a report does not make someone an administrator of it.
  *
  * `POST` is owner only, creates a `pending` Membership, and mails a single-use
- * invitation that expires in seven days. The link is also returned in the response,
+ * invitation whose lifetime is `TOKEN_TTL_LABEL.invite`. The link is also returned in the response,
  * because a deployment whose mail transport is the process log would otherwise have no
  * way to hand the invitation over — and a silently undeliverable invite is worse than a
  * visible one.
@@ -99,7 +99,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         invitationExpiresAt: new Date(invited.expiresAt).toISOString(),
         invitationLink: invited.link,
         detail:
-          'Invitation sent. The link works once and expires in 7 days; resending it revokes the previous one.',
+          `Invitation sent. The link works once and expires in ${TOKEN_TTL_LABEL.invite}; resending it revokes the previous one.`,
       },
       201,
     );

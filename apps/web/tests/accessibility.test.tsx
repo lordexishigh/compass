@@ -339,6 +339,9 @@ describe('axe reports no critical or serious violations on the configuration scr
               hasPassword: true,
               teamKeys: ['platform'],
               invitedAtLabel: '2026-07-01 09:00',
+              lastActiveLabel: 'last active today',
+              inviteState: null,
+              invitePhrase: null,
               isYou: true,
             },
             {
@@ -350,10 +353,15 @@ describe('axe reports no critical or serious violations on the configuration scr
               hasPassword: false,
               teamKeys: [],
               invitedAtLabel: '2026-07-30 11:20',
+              lastActiveLabel: 'never signed in',
+              inviteState: 'expired' as const,
+              invitePhrase:
+                'invitation expired 2026-08-13 and can no longer be redeemed — resend to issue a new link',
               isYou: false,
             },
           ]}
           canManage
+          inviteTtlLabel="14 days"
           knownTeamKeys={['platform', 'checkout']}
           // The real table, so the sentence beside each seat is the one a reader gets.
           roleCapabilities={ROLE_CAPABILITIES}
@@ -371,6 +379,7 @@ describe('axe reports no critical or serious violations on the configuration scr
         <SeatManager
           seats={[]}
           canManage={false}
+          inviteTtlLabel="14 days"
           knownTeamKeys={['platform']}
           roleCapabilities={ROLE_CAPABILITIES}
         />,

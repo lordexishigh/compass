@@ -132,7 +132,7 @@ export default async function RosterPage() {
             <a href="/goals" className="tertiary-action">
               goal hierarchy
             </a>
-            <a href="/seats" className="tertiary-action">
+            <a href="/settings/members" className="tertiary-action">
               seats
             </a>
           </p>

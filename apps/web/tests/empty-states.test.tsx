@@ -84,7 +84,7 @@ const LIST_SCREENS: readonly {
     entries: [EMPTY_STATES.correctedFlags, EMPTY_STATES.suppressions, EMPTY_STATES.snoozes],
   },
   {
-    route: '/seats',
+    route: '/settings/members',
     file: ['components', 'seat-manager.tsx'],
     entries: [EMPTY_STATES.seats],
     rendered: renderToStaticMarkup(
@@ -93,6 +93,7 @@ const LIST_SCREENS: readonly {
         canManage
         knownTeamKeys={[]}
         roleCapabilities={{ owner: 'everything', manager: 'reads', member: 'reads', viewer: 'reads' }}
+        inviteTtlLabel="14 days"
       />,
     ),
   },
@@ -232,7 +233,7 @@ describe('the screens that can be rendered here show their copy when empty', () 
     // `/archive` joined the moment its index became a component rather than inline JSX in a Server
     // Component. Enumerated rather than counted, so a screen that stops being renderable is a
     // visible edit here instead of a silently smaller suite.
-    expect(renderable.map((screen) => screen.route).sort()).toEqual(['/archive', '/goals', '/roster', '/seats']);
+    expect(renderable.map((screen) => screen.route).sort()).toEqual(['/archive', '/goals', '/roster', '/settings/members']);
   });
 
   it.each(renderable.map((screen) => [screen.route, screen] as const))(

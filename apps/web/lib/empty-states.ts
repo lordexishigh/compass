@@ -80,16 +80,19 @@ export const EMPTY_STATES = {
   },
 
   // -------------------------------------------------------------------------
-  // /seats
+  // /settings/members
   // -------------------------------------------------------------------------
   seats: {
     id: 'seats',
-    route: '/seats',
+    route: '/settings/members',
     disposition: 'unconfigured',
     statement: 'This organization has no seats to list.',
+    // The lifetime is deliberately not spelled out here. `TOKEN_TTL_LABEL.invite` owns
+    // that number and this module is imported by a client component, so a copy of it in
+    // this bundle is one that goes stale silently. The invite form states it, from source.
     explanation:
       'Seats are how colleagues read the report: each one carries a role and the teams it may read. Inviting somebody ' +
-      'sends a single-use link that expires in seven days.',
+      'sends a single-use link that expires.',
     action: { label: 'Invite the first seat', href: '#invite-seat' },
     secondary: [{ label: '← today’s report', href: '/' }],
   },
