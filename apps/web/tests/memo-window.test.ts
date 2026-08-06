@@ -1,7 +1,7 @@
 import { instantFromIso } from '@compass/clock';
 import { describe, expect, it } from 'vitest';
 
-import { civilWindow } from '../app/api/memos/route';
+import { civilWindow } from '../lib/memo-window';
 
 /**
  * The memo window leaves the server as civil dates, and this is where that is pinned.

@@ -5,8 +5,8 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { civilWindow } from '../app/api/memos/route';
 import { MemoForm } from '../components/memo-form';
+import { civilWindow } from '../lib/memo-window';
 
 /**
  * The Manager Memo entry point, which is the headline differentiator and had no UI at all.
@@ -76,7 +76,7 @@ const status = (): string => container.querySelector('[role="status"]')?.textCon
 /**
  * A `recorded` body in the shape the route actually returns.
  *
- * Built by running the route's own `civilWindow` over `Instant`s rather than by typing the dates
+ * Built by running the edge's own `civilWindow` over `Instant`s rather than by typing the dates
  * that were wanted. The fixtures here used to be hand-written with `effectiveFrom: '2026-08-03'`
  * while the route serialised the raw `Instant`, so this suite was green against a product that
  * printed `1754179200000 → 1754438400000` — a fixture that asserts what the code ought to do
@@ -228,6 +228,49 @@ describe('the memo form is an entry point, not a decoration', () => {
      */
     expect(sent['offeredCandidates']).toBeUndefined();
     expect(sent['rawText']).toBe('Marcus is out tomorrow');
+  });
+
+  /**
+   * The answer belongs to the sentence the question was about.
+   *
+   * `choose` used to read the textarea live, so a manager who tidied their wording while the
+   * candidate list was on screen sent the chosen key against different text. `submitMemo`
+   * re-derives the offer and would answer `needs_subject` again rather than mis-bind — a dead end
+   * rather than a wrong memo, but a baffling one, because the question had been about the sentence
+   * they submitted and the answer silently was not.
+   */
+  it('disambiguates the sentence that was asked about, not whatever is in the box now', async () => {
+    respondWith(409, {
+      status: 'needs_subject',
+      detail: 'Two people match “Marcus”.',
+      candidates: [
+        { subjectKind: 'developer', subjectKey: 'developer:hale', label: 'Marcus Hale', reason: 'commits on platform' },
+        { subjectKind: 'developer', subjectKey: 'developer:webb', label: 'Marcus Webb', reason: 'commits on checkout' },
+      ],
+      pending: { rawText: 'Marcus is out tomorrow', channel: 'web' },
+    });
+    await submit('Marcus is out tomorrow');
+
+    // The manager tidies the wording while the candidates are on screen.
+    act(() => {
+      const field = textarea();
+      const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')?.set;
+      setter?.call(field, 'Marcus is out all week');
+      field.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+
+    const recorded = respondWith(201, {
+      ...recordedBody({ subjectLabel: 'Marcus Hale', from: '2026-08-04T00:00:00Z', until: '2026-08-04T00:00:00Z' }),
+    });
+
+    const choice = [...container.querySelectorAll('button')].find((b) => b.textContent?.includes('Marcus Hale'));
+    await act(async () => choice?.click());
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const sent = JSON.parse(String((recorded.mock.calls[0]?.[1] as RequestInit).body)) as Record<string, unknown>;
+    expect(sent['rawText'], 'the choice answers the question that was asked').toBe('Marcus is out tomorrow');
   });
 
   it('states a failure rather than leaving the manager thinking it saved', async () => {

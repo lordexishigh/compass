@@ -89,6 +89,17 @@ function AssertionField({ label, value }: { readonly label: string; readonly val
 
 export function MemoForm() {
   const [text, setText] = useState('');
+  /**
+   * The sentence that was actually asked about, frozen at submit.
+   *
+   * `choose` re-posts the memo text with the chosen key, and reading it live off the textarea
+   * meant a manager who tidied their wording after the "which Marcus?" question would send the
+   * chosen key against a *different* sentence. `submitMemo` re-derives the offer from the store,
+   * so the outcome was another `needs_subject` rather than a mis-bound memo — a dead end rather
+   * than a wrong answer, but a confusing one: the question was about the sentence they had sent,
+   * and the answer silently was not.
+   */
+  const [asked, setAsked] = useState('');
   const [outcome, setOutcome] = useState<Outcome | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -125,9 +136,11 @@ export function MemoForm() {
 
   const submit = (event: React.FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
-    if (text.trim().length === 0) return;
+    const asking = text.trim();
+    if (asking.length === 0) return;
     setOutcome(null);
-    send({ rawText: text.trim() });
+    setAsked(asking);
+    send({ rawText: asking });
   };
 
   /**
@@ -142,7 +155,8 @@ export function MemoForm() {
    * pins it rather than reading it, so sending one would be payload the server is right to ignore.
    */
   const choose = (candidate: SubjectCandidateView): void => {
-    send({ rawText: text.trim(), chosenSubjectKey: candidate.subjectKey });
+    // `asked`, not `text`: the answer belongs to the sentence the question was about.
+    send({ rawText: asked, chosenSubjectKey: candidate.subjectKey });
   };
 
   return (
