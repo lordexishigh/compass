@@ -361,6 +361,19 @@ describe('the report page carries the date control', () => {
     expect(buttonWith('Step back one day')).not.toContain('disabled');
   });
 
+  /**
+   * `/` performs no session lookup — the assertions above in this file hold it to that — so the
+   * control cannot hide itself from a reader who has no seat. Stepping is a write and the role
+   * matrix admits owners and managers only, so the alternative to saying so is a reader clicking a
+   * control, receiving a 401 in a status line, and concluding the feature is broken.
+   */
+  it('says up front that stepping needs a seat, and where the credentials are', () => {
+    const control = renderToStaticMarkup(<TimeTravelScrubber bounds={bounds} teamKey="platform" />);
+
+    expect(control).toContain('needs a seat');
+    expect(control).toContain('href="/account"');
+  });
+
   it('renders nothing at all where stepping `now` is not a meaningful act', () => {
     // A live organization. Absent rather than disabled: a disabled control is an invitation to ask
     // why it is disabled, and this one would never become enabled.

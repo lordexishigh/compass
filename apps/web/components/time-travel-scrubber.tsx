@@ -115,7 +115,26 @@ export function TimeTravelScrubber({ bounds, teamKey }: TimeTravelScrubberProps)
       <p className="prose-narration mt-2 text-[15px] text-ink-muted">
         This deployment runs on a simulated clock, so you can step <span className="italic">now</span> across the seeded
         history and read the report Compass would have written that morning. Each step runs the whole pipeline for that
-        instant — it is not a stored snapshot of a demo.
+        instant — it is not a stored snapshot of a demo.{' '}
+        {/*
+          Said before the click rather than after it, and this is the only place it can be said.
+
+          Stepping *writes*: it runs the pipeline and persists a report row, so the role matrix admits
+          owners and managers and nobody else. `/` deliberately performs no session lookup at all — the
+          zero-config promise is that the first request passes no gate, and `tests/cold-start.test.tsx`
+          asserts the route contains no `cookies(` or session read — so this component cannot know who
+          is reading and cannot hide itself from a reader without a seat.
+
+          Stating the requirement is therefore better than discovering it: a reader who would other-
+          wise click a control, get a 401 in a status line and conclude the feature is broken instead
+          learns what it costs and where the published demonstration credentials are. One hop, which is
+          the property `tests/demo-credentials.test.tsx` holds every unauthenticated surface to.
+        */}
+        Stepping writes a report, so it needs a seat —{' '}
+        <a href="/account" className="tertiary-action">
+          the demonstration credentials are on /account
+        </a>
+        .
       </p>
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
