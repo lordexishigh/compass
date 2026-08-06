@@ -118,15 +118,16 @@ export function MemoForm() {
     send({ rawText: text.trim(), channel: 'web' });
   };
 
-  /** Finishing a memo Compass understood but could not attribute. */
-  const choose = (candidate: SubjectCandidateView, candidates: readonly SubjectCandidateView[]): void => {
-    send({
-      rawText: text.trim(),
-      channel: 'web',
-      chosenSubjectKey: candidate.subjectKey,
-      // Echoed back so the row records what the choice was made between, not merely what was chosen.
-      offeredCandidates: candidates,
-    });
+  /**
+   * Finishing a memo Compass understood but could not attribute.
+   *
+   * Only the key travels. The alternatives it was chosen between are deliberately *not* echoed
+   * back: `submitMemo` re-derives the offer from the store and refuses a key that is not in it, so
+   * sending them would be handing the server the client's account of the server's own question —
+   * and that account is what ends up on the row as "why Marcus Hale rather than Marcus Webb".
+   */
+  const choose = (candidate: SubjectCandidateView): void => {
+    send({ rawText: text.trim(), channel: 'web', chosenSubjectKey: candidate.subjectKey });
   };
 
   return (
@@ -136,7 +137,27 @@ export function MemoForm() {
       </h2>
       <p className="prose-narration mt-2 text-[15px] text-ink-muted">
         Tell Compass something it cannot see — somebody is away, a deadline moved, a team is blocked on another team.
-        One sentence. It is read into a typed assertion you can check before tomorrow&apos;s report honours it.
+        One sentence. It is read into a typed assertion you can check before tomorrow&apos;s report honours it.{' '}
+        {/*
+          Said before the submit rather than after it, in the same words and for the same reason as
+          the time-travel control directly above.
+
+          A memo *writes to the org model* — it can suppress a named person's findings for a week —
+          so the role matrix admits owners and managers and nobody else. `/` performs no session
+          lookup at all (the zero-config promise is that the first request passes no gate, and
+          `tests/cold-start.test.tsx` asserts the route contains no `cookies(`), so this component
+          cannot know who is reading and cannot hide itself from a reader without a seat.
+
+          The alternative is a manager typing a sentence, pressing the button and meeting the
+          matrix's denial — having already done the work. `tests/demo-credentials.test.tsx` holds
+          every unauthenticated surface to being one hop from the published credentials; this is
+          that hop, and it is also the sentence that stops the trip being wasted.
+        */}
+        Recording one writes to the org model, so it needs a seat —{' '}
+        <a href="/account" className="tertiary-action">
+          the demonstration credentials are on /account
+        </a>
+        .
       </p>
 
       <form onSubmit={submit} className="mt-4">
@@ -203,7 +224,7 @@ export function MemoForm() {
                       type="button"
                       className="tertiary-action"
                       disabled={pending}
-                      onClick={() => choose(candidate, outcome.candidates)}
+                      onClick={() => choose(candidate)}
                     >
                       {candidate.label}
                     </button>{' '}

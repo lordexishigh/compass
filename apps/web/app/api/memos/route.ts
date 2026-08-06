@@ -1,10 +1,4 @@
-import {
-  DeterministicExtractor,
-  isMemoSourceChannel,
-  isMemoSubjectKind,
-  submitMemo,
-  type SubjectCandidate,
-} from '@compass/memos';
+import { DeterministicExtractor, isMemoSourceChannel, submitMemo } from '@compass/memos';
 import { resolveSeededRun } from '@compass/seed-connector';
 import type { NextResponse } from 'next/server';
 
@@ -46,37 +40,18 @@ export const runtime = 'nodejs';
 const ROUTE = '/api/memos';
 
 /**
- * The candidates echoed back with a choice, validated field by field.
+ * ## The candidate list is not accepted from the client, deliberately
  *
- * They are stored on the memo so that "why is this about Marcus Hale rather than Marcus Webb" is
- * answerable later, which means they arrive from the client and are therefore untrusted. Anything
- * malformed is dropped rather than coerced: a candidate list with an invented `subjectKind` would
- * be a record of an offer that was never made.
+ * A `chosenSubjectKey` arrives here and the alternatives it was chosen *between* do not. They
+ * used to: the form echoed them back and they were stored on the memo as the record of the offer.
+ * That made the row the caller's testimony rather than evidence — a caller could bind a memo to
+ * any key and write its own account of the alternatives beside it, and "why Marcus Hale rather
+ * than Marcus Webb" would be answered by the party with a reason to shade the answer.
+ *
+ * `submitMemo` now re-derives the offer from the store and refuses a choice that is not in it, so
+ * the field is Compass's own and there is nothing here to validate. Deleting the parameter is the
+ * fix; validating its shape only ever confirmed that a forgery was well-formed.
  */
-function readOfferedCandidates(raw: unknown): readonly SubjectCandidate[] | undefined {
-  if (!Array.isArray(raw)) return undefined;
-
-  const candidates = raw.flatMap((entry): readonly SubjectCandidate[] => {
-    if (typeof entry !== 'object' || entry === null) return [];
-    const record = entry as Record<string, unknown>;
-    const { subjectKind, subjectKey, label, reason } = record;
-
-    if (
-      typeof subjectKey !== 'string' ||
-      typeof label !== 'string' ||
-      typeof reason !== 'string' ||
-      typeof subjectKind !== 'string' ||
-      !isMemoSubjectKind(subjectKind)
-    ) {
-      return [];
-    }
-
-    return [{ subjectKind, subjectKey, label, reason }];
-  });
-
-  return candidates.length === 0 ? undefined : candidates;
-}
-
 export async function POST(request: Request): Promise<NextResponse> {
   const admitted = await guard({ request, route: ROUTE, action: 'POST' });
   if (!admitted.allowed) return admitted.response;
@@ -114,7 +89,6 @@ export async function POST(request: Request): Promise<NextResponse> {
      * from the one their team's report will honour.
      */
     const run = resolveSeededRun({ hostNow: admitted.now });
-    const offeredCandidates = readOfferedCandidates(parsed.body['offeredCandidates']);
 
     const outcome = await submitMemo(
       { scoped: admitted.scoped, extractor: new DeterministicExtractor() },
@@ -125,7 +99,6 @@ export async function POST(request: Request): Promise<NextResponse> {
         now: admitted.now,
         timezone: run.timezone,
         ...(typeof chosen === 'string' ? { chosenSubjectKey: chosen.trim() } : {}),
-        ...(offeredCandidates === undefined ? {} : { offeredCandidates }),
       },
     );
 

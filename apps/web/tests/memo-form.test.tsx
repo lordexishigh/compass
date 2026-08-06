@@ -132,7 +132,7 @@ describe('the memo form is an entry point, not a decoration', () => {
     expect(shown).toContain('commits on platform');
   });
 
-  it('re-posts the chosen subject with the candidates it was chosen between', async () => {
+  it('re-posts only the chosen key, leaving the offer for the server to re-derive', async () => {
     respondWith(409, {
       status: 'needs_subject',
       detail: 'Two people match “Marcus”.',
@@ -161,8 +161,15 @@ describe('the memo form is an entry point, not a decoration', () => {
 
     const sent = JSON.parse(String((recorded.mock.calls[0]?.[1] as RequestInit).body)) as Record<string, unknown>;
     expect(sent['chosenSubjectKey']).toBe('developer:hale');
-    // Echoed back so the row records what the human chose *between*, not merely what they chose.
-    expect((sent['offeredCandidates'] as unknown[]).length).toBe(2);
+
+    /**
+     * The alternatives must *not* travel. They are stored on the memo as the record of the offer —
+     * the answer to "why Marcus Hale rather than Marcus Webb" — so taking them from the client
+     * would make that field the caller's account of Compass's own question. `submitMemo` re-derives
+     * the offer from the store and refuses a key that is not in it.
+     */
+    expect(sent['offeredCandidates']).toBeUndefined();
+    expect(sent['rawText']).toBe('Marcus is out tomorrow');
   });
 
   it('states a failure rather than leaving the manager thinking it saved', async () => {

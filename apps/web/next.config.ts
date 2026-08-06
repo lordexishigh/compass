@@ -35,9 +35,19 @@ const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
  * is not a detail: `docker compose` passes the database url as a real environment variable, and a root
  * `.env.local` left behind on a developer's machine must not quietly redirect a container at it.
  * Nothing here overwrites a value the process was actually given.
+ *
+ * **The file order below is that precedence, and it reads backwards.** The rule is *first assignment
+ * wins* — the guard skips a name that already holds a value — so the highest-priority source is
+ * applied first, and `.env.local` is therefore read before `.env`.
+ *
+ * It was the other way round, which made the paragraph above false: `.env` beat `.env.local`, so a
+ * developer's local override was ignored in favour of the committed default. Nothing failed loudly,
+ * which is why it survived — and why `packages/db/src/migrate.ts`, which copied this function,
+ * carried the same inversion where it would have pointed a migration at the wrong database.
  */
 function loadRootEnvironment(): void {
-  for (const file of ['.env', '.env.local']) {
+  // Highest precedence first. See above: first assignment wins.
+  for (const file of ['.env.local', '.env']) {
     let text: string;
     try {
       text = readFileSync(join(REPO_ROOT, file), 'utf8');

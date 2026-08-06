@@ -137,13 +137,9 @@ describe('a memo naming somebody two people could be', () => {
   });
 
   it('binds the memo once a candidate is chosen, and records the disambiguation', async () => {
-    const outcome = await submit('Marcus is out until Wednesday', {
-      chosenSubjectKey: 'marcus-hale',
-      offeredCandidates: [
-        { subjectKind: 'developer', subjectKey: 'marcus-hale', label: 'Marcus Hale', reason: 'shares the name' },
-        { subjectKind: 'developer', subjectKey: 'marcus-webb', label: 'Marcus Webb', reason: 'shares the name' },
-      ],
-    });
+    // Only the key travels. The alternatives are re-derived from the store, so the row records the
+    // offer Compass made rather than the caller's account of it.
+    const outcome = await submit('Marcus is out until Wednesday', { chosenSubjectKey: 'marcus-hale' });
 
     expect(outcome.status).toBe('recorded');
     if (outcome.status !== 'recorded') return;
@@ -160,6 +156,45 @@ describe('a memo naming somebody two people could be', () => {
       [outcome.memoKey],
     );
     expect(audit.rows.map((row) => row.action)).toEqual(['memo.created', 'memo.disambiguated']);
+  });
+
+  /**
+   * The stored candidate list is evidence, not testimony.
+   *
+   * `subjectCandidates` is the answer to "why Marcus Hale rather than Marcus Webb". It used to be
+   * whatever the caller posted beside its choice, which meant a caller could bind a memo to any
+   * key at all and write its own account of the alternatives next to it — the record and the
+   * thing it was supposed to record came from the same untrusted place.
+   */
+  it('refuses a chosen subject that is not among the candidates it would offer', async () => {
+    const before = await countOf('manager_memos');
+
+    const outcome = await submit('Marcus is out until Wednesday', { chosenSubjectKey: 'priya-raman' });
+
+    // Priya is a real person and still not an answer to "which Marcus": she was never offered.
+    expect(outcome.status).toBe('needs_subject');
+    if (outcome.status !== 'needs_subject') return;
+    expect(outcome.candidates.map((candidate) => candidate.subjectKey).sort()).toEqual([
+      'marcus-hale',
+      'marcus-webb',
+    ]);
+
+    expect(await countOf('manager_memos'), 'a forged choice must not write a memo').toBe(before);
+  });
+
+  it('records the candidates it derived itself, not the ones it was handed', async () => {
+    const outcome = await submit('Marcus is out until Wednesday', { chosenSubjectKey: 'marcus-webb' });
+
+    expect(outcome.status).toBe('recorded');
+    if (outcome.status !== 'recorded') return;
+
+    const stored = await store.read('manager_memo', outcome.memoKey);
+    const candidates = stored?.fields['subjectCandidates'] as readonly { subjectKey: string; label: string }[] | null;
+
+    expect(candidates).not.toBeNull();
+    expect(candidates?.map((candidate) => candidate.subjectKey).sort()).toEqual(['marcus-hale', 'marcus-webb']);
+    // The label is Compass's too — a caller cannot relabel the person it bound the memo to.
+    expect(outcome.subjectLabel).toBe('Marcus Webb');
   });
 
   it('resolves a unique first name without asking', async () => {

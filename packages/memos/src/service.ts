@@ -60,14 +60,6 @@ export interface MemoSubmission {
    * and binds the memo to exactly this entity, recording that a human decided.
    */
   readonly chosenSubjectKey?: string;
-  /**
-   * The candidates that were offered, echoed back with the choice.
-   *
-   * Stored on the memo so "why is this about Marcus Hale rather than Marcus Webb" is answerable
-   * later. Without it the row would say a human chose but not what they chose *between*, which
-   * is the half that makes the record worth keeping.
-   */
-  readonly offeredCandidates?: readonly SubjectCandidate[];
 }
 
 export interface RecordedMemo {
@@ -147,38 +139,76 @@ export async function submitMemo(
   let candidates: readonly SubjectCandidate[] | null = null;
   let disambiguatedByUserId: string | null = null;
 
-  if (submission.chosenSubjectKey !== undefined) {
-    // The manager already answered. Their choice is authoritative and is recorded as such —
-    // confidence 1 because a human decided, not because the matcher improved.
-    const chosen = submission.chosenSubjectKey;
-    subjectKey = chosen;
-    subjectLabel =
-      submission.offeredCandidates?.find((candidate) => candidate.subjectKey === chosen)?.label ?? chosen;
-    confidence = 1;
-    candidates = submission.offeredCandidates ?? null;
-    disambiguatedByUserId = submission.authorUserId;
-  } else {
-    const resolution: SubjectResolution = await resolveSubject(store, assertion.subjectKind, assertion.subjectHint);
+  /**
+   * The offer is re-derived here, on both paths, and never taken from the caller.
+   *
+   * `subjectCandidates` on the stored row is the answer to "why Marcus Hale rather than Marcus
+   * Webb". It used to be whatever the client posted alongside its choice, which made it the
+   * caller's *testimony* about an offer rather than evidence that Compass made one — a caller
+   * could bind a memo to any key and write its own account of the alternatives beside it. The
+   * resolution is a deterministic function of the store and the assertion, so asking again is
+   * both cheap and the only way that field can mean what it says.
+   */
+  const resolution: SubjectResolution = await resolveSubject(store, assertion.subjectKind, assertion.subjectHint);
 
-    if (resolution.status === 'not_found') {
-      return { status: 'subject_unknown', detail: resolution.detail };
-    }
-    if (resolution.status === 'ambiguous' || resolution.confidence < SUBJECT_CONFIDENCE_THRESHOLD) {
-      const offered =
-        resolution.status === 'ambiguous'
-          ? resolution.candidates
-          : [
-              {
-                subjectKind: assertion.subjectKind,
-                subjectKey: resolution.subjectKey,
-                label: resolution.label,
-                reason: 'the closest match, but not close enough to assume',
-              },
-            ];
+  if (resolution.status === 'not_found') {
+    return { status: 'subject_unknown', detail: resolution.detail };
+  }
+
+  const uncertain = resolution.status === 'ambiguous' || resolution.confidence < SUBJECT_CONFIDENCE_THRESHOLD;
+
+  /** Exactly the list a `needs_subject` answer would carry — the set a choice may come from. */
+  const offered: readonly SubjectCandidate[] =
+    resolution.status === 'ambiguous'
+      ? resolution.candidates
+      : [
+          {
+            subjectKind: assertion.subjectKind,
+            subjectKey: resolution.subjectKey,
+            label: resolution.label,
+            reason: uncertain ? 'the closest match, but not close enough to assume' : 'the only match',
+          },
+        ];
+
+  const uncertainDetail =
+    resolution.status === 'ambiguous' ? resolution.detail : 'Compass is not sure who this is about.';
+
+  if (submission.chosenSubjectKey !== undefined) {
+    const chosen = submission.chosenSubjectKey;
+    const match = offered.find((candidate) => candidate.subjectKey === chosen);
+
+    /**
+     * A choice that is not among the candidates Compass would offer is refused, not honoured.
+     *
+     * Two ways to arrive here and both want the same answer. A forged `chosenSubjectKey` is the
+     * hostile one. The ordinary one is that the roster moved between the question and the answer —
+     * somebody merged an identity while the manager was reading — and binding the memo to a key
+     * nobody offered would be just as wrong for being accidental. Returning the *current* offer
+     * puts the manager back on the question with the answer that is true now.
+     */
+    if (match === undefined) {
       return {
         status: 'needs_subject',
         candidates: offered,
-        detail: resolution.status === 'ambiguous' ? resolution.detail : 'Compass is not sure who this is about.',
+        detail: uncertainDetail,
+        pending: { rawText: submission.rawText, channel: submission.channel },
+      };
+    }
+
+    // The manager answered. Their choice is authoritative and is recorded as such — confidence 1
+    // because a human decided, not because the matcher improved. The label and the alternatives
+    // are Compass's own, so the row records the offer it actually made.
+    subjectKey = match.subjectKey;
+    subjectLabel = match.label;
+    confidence = 1;
+    candidates = offered;
+    disambiguatedByUserId = submission.authorUserId;
+  } else {
+    if (uncertain) {
+      return {
+        status: 'needs_subject',
+        candidates: offered,
+        detail: uncertainDetail,
         pending: { rawText: submission.rawText, channel: submission.channel },
       };
     }

@@ -30,12 +30,23 @@ const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '
  * wins over `.env`, and **anything already in `process.env` wins over both**. CI and a hosted
  * deploy pass the connection string as a real environment variable, and a `.env.local` left on a
  * developer's machine must never redirect a migration at a database it was not aimed at.
+ *
+ * **The file order below is that precedence, and it reads backwards.** The rule is *first
+ * assignment wins* — the guard skips a name that already holds a value — so the highest-priority
+ * source has to be applied first. That is why `.env.local` is read before `.env`, and why
+ * reversing this list would silently invert the rule rather than break anything visibly.
+ *
+ * It was the other way round, and on this file of all files the consequence is the sharp one: a
+ * developer with committed defaults in `.env` and a scratch database in `.env.local` would run
+ * `pnpm db:migrate` and apply DDL to the shared database — a migration aimed at the wrong
+ * database, which is the exact failure the paragraph above says must not happen.
  */
-function loadRootEnvironment(): void {
-  for (const file of ['.env', '.env.local']) {
+export function loadRootEnvironment(root: string = REPO_ROOT, env: NodeJS.ProcessEnv = process.env): void {
+  // Highest precedence first. See above: first assignment wins.
+  for (const file of ['.env.local', '.env']) {
     let text: string;
     try {
-      text = readFileSync(join(REPO_ROOT, file), 'utf8');
+      text = readFileSync(join(root, file), 'utf8');
     } catch {
       // Absent is the normal case in CI and on a hosted deploy, which pass the environment
       // directly. A missing file is not a failure and must not be reported as one.
@@ -51,9 +62,9 @@ function loadRootEnvironment(): void {
       // `#`, so this deliberately does not treat one as a trailing comment.
       const value = assignment[2]!.trim().replace(/^(["'])([\s\S]*)\1$/, '$2');
 
-      const existing = process.env[name];
+      const existing = env[name];
       if (existing !== undefined && existing.length > 0) continue;
-      process.env[name] = value;
+      env[name] = value;
     }
   }
 }
