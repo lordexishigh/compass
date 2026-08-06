@@ -189,7 +189,7 @@ export function AccountPanel(props: AccountPanelProps) {
               : `sign out everywhere (${live.length} live)`}
           </button>
           {props.canManageSeats && (
-            <a href="/settings/members" className="tertiary-action">
+            <a href="/seats" className="tertiary-action">
               manage seats
             </a>
           )}

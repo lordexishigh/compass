@@ -398,7 +398,7 @@ const EXPECTED: Readonly<Record<string, Partial<Record<Action, readonly Principa
    * destination, never an interception: nothing redirects to it.
    */
   '/start': { GET: ['owner', 'manager'] },
-  '/settings/members': { GET: ['owner', 'manager'] },
+  '/seats': { GET: ['owner', 'manager'] },
   '/roster': { GET: ['owner', 'manager'] },
   // What a manager has told Compass to stop saying. Owner and manager, exactly like the roster:
   // a suppression a manager cannot find is indistinguishable from a detector that broke, so the
@@ -873,52 +873,5 @@ describe('team scoping', () => {
     // `/api/time-travel` joins them because it regenerates *one team's* report: a manager scoped to
     // `platform` must not be able to rewrite the checkout team's daily by naming it in the body.
     expect(teamScoped).toEqual(['/api/reports/[teamKey]', '/api/feedback', '/api/time-travel']);
-  });
-});
-
-/**
- * Addresses this app used to serve.
- *
- * A route that moves has two failure modes and this covers both. The first is a dead link:
- * `/seats` is in every invitation Compass has ever sent, so it has to keep landing
- * somewhere. The second is subtler — a redirect left pointing at a route that has itself
- * been renamed again sends people to a 404 with no error anywhere, so the destination is
- * checked against `ROLE_MATRIX` rather than spelled out twice.
- */
-describe('the routes that moved still land', () => {
-  it('redirects /seats to the members screen, permanently', async () => {
-    const config = (await import('../next.config')).default;
-
-    expect(typeof config.redirects, 'next.config.ts declares no redirects at all').toBe('function');
-    const declared = await config.redirects!();
-
-    const moved = declared.find((entry) => entry.source === '/seats');
-    expect(moved, '/seats is in sent invitations and must not 404').toBeDefined();
-    expect(moved?.destination).toBe('/settings/members');
-    expect(moved?.permanent, 'the move is not coming back, so a 308 is the honest status').toBe(true);
-  });
-
-  it('points every redirect at a route the matrix actually authorizes', async () => {
-    const config = (await import('../next.config')).default;
-    const declared = await config.redirects!();
-
-    for (const entry of declared) {
-      expect(
-        findRouteRule(entry.destination),
-        `${entry.source} redirects to ${entry.destination}, which has no ROLE_MATRIX entry`,
-      ).toBeDefined();
-    }
-  });
-
-  it('leaves no page on disk at an address it also redirects away from', async () => {
-    // A `page.tsx` wins over a redirect in Next, so the two together would be a redirect
-    // that silently does nothing — and a second screen to keep in step with the first.
-    const config = (await import('../next.config')).default;
-    const declared = await config.redirects!();
-    const pages = new Set(pageRoutesOnDisk());
-
-    for (const entry of declared) {
-      expect(pages.has(entry.source), `${entry.source} is both a redirect source and a page`).toBe(false);
-    }
   });
 });

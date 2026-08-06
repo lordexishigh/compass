@@ -281,7 +281,7 @@ export default async function StartPage() {
               <a href="/archive" className="tertiary-action">
                 the archive
               </a>
-              <a href="/settings/members" className="tertiary-action">
+              <a href="/seats" className="tertiary-action">
                 invite a colleague
               </a>
             </p>

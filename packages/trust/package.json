@@ -2,7 +2,6 @@
   "name": "@compass/trust",
   "version": "0.1.0",
   "private": true,
-  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "description": "The published legal and trust content: policies, the DPIA, the Article 22 statement and the subprocessor list.",
   "main": "./dist/index.js",

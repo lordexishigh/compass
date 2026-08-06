@@ -189,25 +189,6 @@ export interface SeatRow extends MembershipRow {
   readonly displayName: string;
   readonly hasPassword: boolean;
   readonly teamKeys: readonly string[];
-  /**
-   * When this person's most recent session was last used, or null if they never signed in.
-   *
-   * Read from `sessions.last_used_at` rather than stored on the membership, because the
-   * session layer already maintains it on every authenticated request and a second copy
-   * would be a second thing to forget to write. Revoked and expired sessions count: the
-   * question is "when was this person last here", and signing out does not un-happen a
-   * visit. Null is the honest answer for a pending invitation and is rendered as one.
-   */
-  readonly lastActiveAt: Instant | null;
-  /**
-   * When this seat's outstanding invitation stops working, or null if none is live.
-   *
-   * Only ever set for a `pending` seat with an unused, unrevoked invite token. The seat
-   * screen needs it to tell "invited, waiting" from "invited, and the link has expired —
-   * resend it", which are different situations with different remedies and which the
-   * status column alone cannot distinguish.
-   */
-  readonly inviteExpiresAt: Instant | null;
 }
 
 const toMembershipRow = (row: typeof memberships.$inferSelect): MembershipRow => ({
@@ -299,7 +280,7 @@ export async function setMembershipStatus(
  */
 const ROLE_RANK: Readonly<Record<MembershipRole, number>> = { owner: 0, manager: 1, member: 2, viewer: 3 };
 
-/** Every seat in the organization, with its person, its team scopes and its two dates. */
+/** Every seat in the organization, with its person and its team scopes. */
 export async function listSeats(scoped: ScopedDb): Promise<readonly SeatRow[]> {
   const membershipRows = await scoped.selectFrom(memberships).orderBy(asc(memberships.createdAt));
   const userRows = await scoped.selectFrom(users);
@@ -307,48 +288,12 @@ export async function listSeats(scoped: ScopedDb): Promise<readonly SeatRow[]> {
     .selectFrom(membershipTeamScopes)
     .orderBy(asc(membershipTeamScopes.membershipId), asc(membershipTeamScopes.teamKey));
 
-  /**
-   * Last-active and live-invite, read whole and reduced here rather than as two
-   * aggregate subqueries.
-   *
-   * `ScopedDb.selectFrom` is the only way to reach the database in this package, and it
-   * is deliberately a row reader rather than a query builder — that is what lets
-   * `scoped-repositories.test.ts` prove every read is organization-scoped. A `MAX(…)
-   * GROUP BY` would have to bypass it. Both tables are bounded by the seat count times a
-   * handful of rows per person, and this list is a settings screen rather than a hot
-   * path, so folding them in memory costs nothing that matters.
-   */
-  const sessionRows = await scoped.selectFrom(sessions);
-  const inviteRows = await scoped.selectFrom(
-    authTokens,
-    and(eq(authTokens.purpose, 'invite'), isNull(authTokens.consumedAt), isNull(authTokens.revokedAt)),
-  );
-
   const userById = new Map(userRows.map((row) => [row.id, row]));
   const scopesByMembership = new Map<string, string[]>();
   for (const row of scopeRows) {
     const bucket = scopesByMembership.get(row.membershipId);
     if (bucket === undefined) scopesByMembership.set(row.membershipId, [row.teamKey]);
     else bucket.push(row.teamKey);
-  }
-
-  // The most recent use of any session, revoked ones included — the question is when the
-  // person was last here, and signing out does not un-happen a visit.
-  const lastActiveByUser = new Map<string, Instant>();
-  for (const row of sessionRows) {
-    const lastUsedAt = fromDatabaseInstant(row.lastUsedAt);
-    const seen = lastActiveByUser.get(row.userId);
-    if (seen === undefined || lastUsedAt > seen) lastActiveByUser.set(row.userId, lastUsedAt);
-  }
-
-  // Issuing an invitation revokes the previous one, so there is at most one live token
-  // per person. `max` rather than `find` anyway: a tie would otherwise resolve by row
-  // order, and the later deadline is the truthful one.
-  const inviteExpiryByUser = new Map<string, Instant>();
-  for (const row of inviteRows) {
-    const expiresAt = fromDatabaseInstant(row.expiresAt);
-    const seen = inviteExpiryByUser.get(row.userId);
-    if (seen === undefined || expiresAt > seen) inviteExpiryByUser.set(row.userId, expiresAt);
   }
 
   return membershipRows
@@ -360,12 +305,6 @@ export async function listSeats(scoped: ScopedDb): Promise<readonly SeatRow[]> {
         displayName: user?.displayName ?? '',
         hasPassword: (user?.passwordHash ?? null) !== null,
         teamKeys: scopesByMembership.get(row.id) ?? [],
-        lastActiveAt: lastActiveByUser.get(row.userId) ?? null,
-        // Only a pending seat has an invitation outstanding. An active seat can hold an
-        // unconsumed token — accepting sets the status and consumes the token in the same
-        // flow, but a magic-link sign-in activates the seat without spending the invite —
-        // and reporting that as a live invitation would be wrong.
-        inviteExpiresAt: row.status === 'pending' ? (inviteExpiryByUser.get(row.userId) ?? null) : null,
       };
     })
     .sort((left, right) => {

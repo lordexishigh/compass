@@ -106,29 +106,24 @@ const apply = (
   });
 
 describe('the action vocabulary is closed', () => {
-  it('has exactly seven actions', () => {
+  it('has exactly six actions', () => {
     expect([...FEEDBACK_ACTIONS].sort()).toEqual([
       'accept_recommendation',
       'blocker_already_resolved',
       'dismiss_risk',
-      'explain_unattributed',
       'off_goal_flag_wrong',
       'reject_recommendation',
       'snooze',
     ]);
   });
 
-  it('refuses an eighth', () => {
+  it('refuses a seventh', () => {
     expect(isFeedbackAction('dismiss_risk')).toBe(true);
     expect(isFeedbackAction('thumbs_up')).toBe(false);
   });
 
-  it('names which are permanent, so a manager can be told', () => {
-    expect([...TERMINAL_FEEDBACK_ACTIONS].sort()).toEqual([
-      'explain_unattributed',
-      'off_goal_flag_wrong',
-      'reject_recommendation',
-    ]);
+  it('names which two are permanent, so a manager can be told', () => {
+    expect([...TERMINAL_FEEDBACK_ACTIONS].sort()).toEqual(['off_goal_flag_wrong', 'reject_recommendation']);
   });
 });
 
@@ -148,37 +143,12 @@ describe('which actions an item offers', () => {
     ).toEqual(['off_goal_flag_wrong', 'snooze']);
   });
 
-  it('offers an answer and a snooze on the unattributed question, and nothing else', () => {
-    // It is a question — "what were these 3 commits for?" — so neither "wrong" nor "dismiss"
-    // applies: Compass has stated no verdict to be wrong about and nothing to dismiss. What a
-    // question needs is a way to answer it and a way to defer it, and those are the two.
+  it('offers only a snooze on the unattributed question', () => {
+    // It is a question — "what were these 3 commits for?" — and neither "wrong" nor "dismiss" is an
+    // answer to one. Compass has stated no verdict to be wrong about.
     expect(feedbackOffersFor('risks', cause({ causeKind: 'unattributed' })).map((offer) => offer.action)).toEqual([
-      'explain_unattributed',
       'snooze',
     ]);
-  });
-
-  it('words the answer as the manager’s side of the question', () => {
-    /**
-     * The label is the acceptance criterion's own phrase, and it is load-bearing rather than
-     * cosmetic. The item above the button asks what the work was for; a verb reading "Dismiss" or
-     * "Mark reviewed" would turn the question into a thing to be cleared, which is the accusatory
-     * reading the whole bucket is designed to avoid.
-     */
-    const [answer] = feedbackOffersFor('risks', cause({ causeKind: 'unattributed' }));
-
-    expect(answer?.label).toBe('Tell us what these were for');
-  });
-
-  it('offers the answer nowhere else — it answers one question and no other item asks it', () => {
-    for (const causeKind of ['review_latency', OFF_GOAL_CAUSE_KIND]) {
-      expect(
-        feedbackOffersFor('risks', cause({ causeKind })).map((offer) => offer.action),
-        causeKind,
-      ).not.toContain('explain_unattributed');
-    }
-    expect(feedbackActionIsOffered('risks', cause({ causeKind: 'unattributed' }), 'explain_unattributed')).toBe(true);
-    expect(feedbackActionIsOffered('risks', cause(), 'explain_unattributed')).toBe(false);
   });
 
   it('refuses an action the item does not offer', () => {

@@ -2,7 +2,6 @@ import {
   AUDIT_ACTIONS,
   LastOwnerError,
   TOKEN_TTL_LABEL,
-  TOKEN_TTL_MILLIS,
   acceptInvite,
   changeSeat,
   consumeMagicLink,
@@ -73,22 +72,6 @@ const invite = (email: string, role: 'owner' | 'manager' | 'member' | 'viewer' =
     ...mailContext(harness.mailer),
   });
 
-describe('the documented invitation lifetime', () => {
-  /**
-   * The one place the number is written down twice on purpose.
-   *
-   * Every other assertion in this file derives from `TOKEN_TTL_MILLIS.invite`, so they all
-   * keep passing if it changes — which is right for the flows and wrong for the figure
-   * itself. Fourteen days is a product commitment (`docs/BLUEPRINT.md`: "expired invites
-   * (14 days) cannot be redeemed"), so shortening it has to be a deliberate edit here
-   * rather than a constant nudged in passing.
-   */
-  it('is fourteen days, stated in code and in the words the product shows', () => {
-    expect(TOKEN_TTL_MILLIS.invite).toBe(14 * MILLIS_PER_DAY);
-    expect(TOKEN_TTL_LABEL.invite).toBe('14 days');
-  });
-});
-
 describe('inviting a seat', () => {
   it('creates a pending Membership and mails a single-use expiring token', async () => {
     const result = await invite('priya@example.com', 'manager', ['platform']);
@@ -97,9 +80,8 @@ describe('inviting a seat', () => {
     expect(result.membership.role).toBe('manager');
     expect(result.seat.teamKeys).toEqual(['platform']);
 
-    // From the documented table rather than from a literal here. The number itself is
-    // pinned once, in 'the documented invitation lifetime' below.
-    expect(result.expiresAt).toBe(addMillis(T0, TOKEN_TTL_MILLIS.invite));
+    // Seven days, from the documented table rather than from a literal here.
+    expect(result.expiresAt).toBe(addMillis(T0, 7 * MILLIS_PER_DAY));
 
     const message = harness.mailer.lastTo('priya@example.com');
     expect(message, 'no invitation was mailed').not.toBeNull();
@@ -157,111 +139,6 @@ describe('inviting a seat', () => {
 
   it('refuses an address that is not one', async () => {
     await expect(invite('not-an-address')).rejects.toThrow(/email address/i);
-  });
-});
-
-/**
- * The two dates the members screen states for every seat.
- *
- * Both are read off `listSeats` rather than recomputed by the screen, and both have a
- * meaningful null: nobody has ever signed in, and no invitation is outstanding. A screen
- * that could not tell "never here" from "no data" would have to render a blank, which is
- * the one thing the brief forbids.
- */
-describe('what the members list states about time', () => {
-  const seatFor = async (membershipId: string) =>
-    (await readSeats(scoped)).find((candidate) => candidate.id === membershipId);
-
-  it('reports a pending seat as never signed in, with its invitation still live', async () => {
-    const invited = await invite('priya@example.com');
-    const seat = await seatFor(invited.membership.id);
-
-    expect(seat?.status).toBe('pending');
-    expect(seat?.lastActiveAt, 'an invitee has never signed in').toBeNull();
-    expect(seat?.inviteExpiresAt).toBe(addMillis(T0, TOKEN_TTL_MILLIS.invite));
-  });
-
-  it('keeps stating the expiry after it has passed, because that is the fact', async () => {
-    // The row does not change when the deadline goes by — nothing runs at that moment. So
-    // the screen decides "expired" by comparing this date against now, exactly as
-    // `tokenRejection` does, and both have to be looking at the same date.
-    const invited = await invite('priya@example.com');
-    const seat = await seatFor(invited.membership.id);
-
-    const wellPast = addMillis(T0, TOKEN_TTL_MILLIS.invite + MILLIS_PER_DAY);
-    expect(seat?.inviteExpiresAt).not.toBeNull();
-    expect(wellPast >= seat!.inviteExpiresAt!).toBe(true);
-  });
-
-  it('records last-active once the seat is used, and drops the invitation', async () => {
-    const invited = await invite('priya@example.com');
-    const acceptedAt = addMillis(T0, 2 * MILLIS_PER_DAY);
-
-    const accepted = await acceptInvite({
-      scoped,
-      secret: tokenFromLink(invited.link),
-      displayName: 'Priya Raman',
-      password: 'priyas-own-long-passphrase',
-      now: acceptedAt,
-    });
-    expect(accepted.ok).toBe(true);
-
-    const seat = await seatFor(invited.membership.id);
-    expect(seat?.status).toBe('active');
-    expect(seat?.lastActiveAt, 'accepting starts a session, which is a sign-in').toBe(acceptedAt);
-    // Accepting consumes the token, and an active seat has no invitation outstanding
-    // whatever is left in the table.
-    expect(seat?.inviteExpiresAt).toBeNull();
-  });
-
-  it('moves last-active forward as the session is used again', async () => {
-    const invited = await invite('priya@example.com');
-    const accepted = await acceptInvite({
-      scoped,
-      secret: tokenFromLink(invited.link),
-      displayName: 'Priya Raman',
-      password: 'priyas-own-long-passphrase',
-      now: T0,
-    });
-    expect(accepted.ok).toBe(true);
-    if (!accepted.ok) return;
-
-    const later = addMillis(T0, 3 * MILLIS_PER_DAY);
-    await resolveIdentity({ scoped, secret: accepted.started.secret, now: later });
-
-    expect((await seatFor(invited.membership.id))?.lastActiveAt).toBe(later);
-  });
-
-  it('reports a revoked invitation as pending with nothing outstanding', async () => {
-    // Revoking sets the membership to `revoked`, so this asks the other shape: a seat put
-    // back to pending by a re-invite whose token was then revoked has no live invitation,
-    // and the screen has to offer a resend rather than imply a link is in flight.
-    const invited = await invite('priya@example.com');
-    await revokeInvite({
-      scoped,
-      membershipId: invited.membership.id,
-      actorUserId: owner.userId,
-      now: addMillis(T0, MILLIS_PER_HOUR),
-    });
-
-    const seat = await seatFor(invited.membership.id);
-    expect(seat?.status).toBe('revoked');
-    expect(seat?.inviteExpiresAt, 'a revoked seat has no invitation outstanding').toBeNull();
-  });
-
-  it('never reports one organization’s activity on another’s seat', async () => {
-    const invited = await invite('priya@example.com');
-    await acceptInvite({
-      scoped,
-      secret: tokenFromLink(invited.link),
-      displayName: 'Priya Raman',
-      password: 'priyas-own-long-passphrase',
-      now: T0,
-    });
-
-    // The other tenant's list must not gain a row, and must not gain a date.
-    const theirs = await readSeats(harness.other);
-    expect(theirs.some((seat) => seat.email === 'priya@example.com')).toBe(false);
   });
 });
 
@@ -330,7 +207,7 @@ describe('accepting an invitation', () => {
       secret: tokenFromLink(invited.link),
       displayName: 'Priya Raman',
       password: 'priyas-own-long-passphrase',
-      now: addMillis(T0, TOKEN_TTL_MILLIS.invite),
+      now: addMillis(T0, 7 * MILLIS_PER_DAY),
     });
 
     expect(tooLate.ok).toBe(false);
@@ -352,7 +229,7 @@ describe('resending an invitation', () => {
     });
 
     expect(second.link).not.toBe(first.link);
-    expect(second.expiresAt).toBe(addMillis(T0, MILLIS_PER_HOUR + TOKEN_TTL_MILLIS.invite));
+    expect(second.expiresAt).toBe(addMillis(T0, MILLIS_PER_HOUR + 7 * MILLIS_PER_DAY));
 
     // Exactly one live token — never two.
     expect(await listLiveAuthTokens(scoped, first.membership.userId, 'invite')).toHaveLength(1);

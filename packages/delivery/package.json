@@ -2,7 +2,6 @@
   "name": "@compass/delivery",
   "version": "0.1.0",
   "private": true,
-  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "description": "Email and Slack channels over one structured report: six sections inline, never a click-to-view stub.",
   "main": "./dist/index.js",

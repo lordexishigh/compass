@@ -3,7 +3,6 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { MATRIX_ROUTES, authorize, findRouteRule, isPublicRoute } from '@compass/auth';
-import { ERROR_REPORTING_CONSENTS, PRIVACY_DEFAULTS } from '@compass/db';
 import { describe, expect, it } from 'vitest';
 
 import { buildReportView } from '../lib/view-model';
@@ -288,87 +287,5 @@ describe('the privacy screen and its routes', () => {
     expect(authorize({ route: '/api/privacy/deletion/undo', action: 'GET', principal: 'public' }).allowed).toBe(
       false,
     );
-  });
-});
-
-/**
- * The error-reporting consent, from the stored value through to what the reader sees.
- *
- * Three claims the feature rests on, none of which any other test would notice breaking:
- * the answer lives in the organization's privacy row rather than in a cookie of its own, only an
- * owner may give it, and `unset` is a state the API cannot be talked into writing.
- */
-describe('the error-reporting consent', () => {
-  it('is the organization’s posture, so only an owner may answer', () => {
-    // It decides whether a third party receives anything at all — the same class of decision as a
-    // retention window, and gated by the same route.
-    expect(
-      authorize({ route: '/api/privacy/settings', action: 'PATCH', principal: 'owner', seatActive: true }).allowed,
-    ).toBe(true);
-    for (const principal of ['manager', 'member', 'viewer', 'public'] as const) {
-      expect(
-        authorize({ route: '/api/privacy/settings', action: 'PATCH', principal, seatActive: true }).allowed,
-        `${principal} must not decide for the organization`,
-      ).toBe(false);
-    }
-  });
-
-  it('has no route of its own, because the notice writes through the privacy settings', () => {
-    /**
-     * The design constraint stated as an assertion. A consent banner's usual shape is its own
-     * endpoint writing its own cookie, which is how a product ends up with two places that
-     * disagree about what the user chose. There is exactly one writer here.
-     */
-    expect(findRouteRule('/api/privacy/consent')).toBeNull();
-    expect(findRouteRule('/api/consent')).toBeNull();
-  });
-
-  it('defaults to unset, so a deployment reports nothing until somebody answers', () => {
-    expect(PRIVACY_DEFAULTS.errorReportingConsent).toBe('unset');
-    // And the vocabulary keeps "not asked" distinct from "said no", which is what the notice keys
-    // on: collapse them and it either never appears or never goes away.
-    expect(ERROR_REPORTING_CONSENTS).toContain('unset');
-    expect(ERROR_REPORTING_CONSENTS).toContain('denied');
-  });
-});
-
-/**
- * The consent question is answerable from the product, not only by hand-crafting a PATCH.
- *
- * This is the assertion whose absence let the notice ship undismissable: the gate was built, the
- * banner was built, the endpoint accepted the field — and no screen offered it, so the one state
- * the notice's own docstring promises it can leave was unreachable. Every piece existed and the
- * feature did not work.
- *
- * A source scan rather than a render, for the same reason the no-ranking scan above is one: the
- * page is a Server Component that reaches for a database, and what needs pinning is that the
- * control is *wired in* — which is a fact about the file, not about a fixture.
- */
-describe('the error-reporting consent can be answered on /privacy', () => {
-  const source = readFileSync(join(WEB_ROOT, 'app', 'privacy', 'page.tsx'), 'utf8');
-
-  it('renders the control', () => {
-    expect(source, '/privacy does not render ErrorReportingControls').toContain('<ErrorReportingControls');
-    expect(source).toContain("from '../../components/privacy-controls'");
-  });
-
-  it('hands it the stored answer rather than a literal', () => {
-    // A hard-coded `consent="unset"` would render a control that always looked unanswered and
-    // silently discarded what the owner had already chosen.
-    expect(source).toContain('consent={view.retention.errorReportingConsent}');
-  });
-
-  it('gates it to owners, exactly as the retention windows are', () => {
-    /**
-     * `/api/privacy/settings` PATCH is owner-only, so a control a manager could press would 403 —
-     * and a control that refuses when pressed reads as a broken product rather than as a
-     * permission boundary. Asserted against the same `isOwner` the retention selects use, so the
-     * two cannot drift into disagreeing about who may change the organization's posture.
-     */
-    const controlLine = /<ErrorReportingControls[^>]*>/.exec(source)?.[0] ?? '';
-
-    expect(controlLine, 'the control is not owner-gated').toContain('canEdit={isOwner}');
-    expect(source).toContain('<RetentionControls');
-    expect(/<RetentionControls[\s\S]*?\/>/.exec(source)?.[0]).toContain('canEdit={isOwner}');
   });
 });

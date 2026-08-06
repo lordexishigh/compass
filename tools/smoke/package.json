@@ -2,7 +2,6 @@
   "name": "@compass/smoke",
   "version": "0.1.0",
   "private": true,
-  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "description": "The zero-config cold-start smoke test: fetch /, assert six sections and a source link.",
   "main": "./dist/index.js",

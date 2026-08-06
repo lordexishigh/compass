@@ -3,7 +3,6 @@ import {
   assertUnattributedNamesNobody,
   assessAlignment,
   developerDisplayNames,
-  unattributedRefId,
   type AlignmentVerdict,
 } from './alignment.js';
 import { detectBlockers, type DetectedBlocker } from './blockers.js';
@@ -833,17 +832,7 @@ function alignmentItem(instant: Instant, scope: ResolvedScope, verdict: Alignmen
           causeDiscriminator: '',
         }
       : {
-          // Derived through the same helper `alignment.ts` keyed the verdict with, rather than
-          // spelled out again. The two spellings drifted once already — the scope key was added to
-          // one side only — and `assertItemIdsMatchTheirCause` is what caught it. Sharing the
-          // function means there is no second spelling left to drift.
-          entityRef: entityRef(
-            'commit',
-            unattributedRefId(
-              scope.teamKey ?? 'merged',
-              verdict.subjects.map((subject) => ({ subjectKey: subject.key })),
-            ),
-          ),
+          entityRef: entityRef('commit', `unattributed:${scope.teamKey ?? 'merged'}`),
           causeKind: 'unattributed',
           causeDiscriminator: '',
         };

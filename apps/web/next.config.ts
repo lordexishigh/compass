@@ -94,20 +94,6 @@ const config: NextConfig = {
   // So middleware owns all six, `apps/web/lib/security-headers.ts` is the single source
   // of their values, and `tests/security-headers.test.ts` asserts this file declares no
   // `headers()` at all — the comment is not what keeps the ownership single.
-
-  /**
-   * Addresses this app used to serve, kept working.
-   *
-   * `/seats` was the seat screen until the settings tree existed. It is in sent
-   * invitations, in anyone's bookmarks, and in the audit trail of every organization that
-   * has used Compass, so deleting it would break links Compass itself published.
-   *
-   * A redirect rather than a second `page.tsx`: two pages would be two things to keep in
-   * step and two entries in `ROLE_MATRIX` to authorize identically. `permanent: true`
-   * because the move is not coming back — that is a 308, which preserves the method, and
-   * this is a GET screen either way.
-   */
-  redirects: async () => [{ source: '/seats', destination: '/settings/members', permanent: true }],
 };
 
 export default config;

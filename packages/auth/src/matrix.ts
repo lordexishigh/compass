@@ -864,13 +864,7 @@ export const ROLE_MATRIX: readonly RouteRule[] = [
     allow: { GET: ['owner', 'manager'] },
   },
   {
-    /**
-     * Seat management. `/seats` until the settings tree existed, and `next.config.ts`
-     * redirects that address here permanently — a redirect rather than a second matrix
-     * entry, so there is exactly one route to authorize and no second page to keep in
-     * step with this one.
-     */
-    route: '/settings/members',
+    route: '/seats',
     summary: 'Seat management. Owners change things here; managers read who is on the team.',
     allow: { GET: ['owner', 'manager'] },
   },

@@ -67,16 +67,6 @@ export const orgPrivacySettings = pgTable(
     derivedRetentionYears: integer('derived_retention_years'),
     /** `full` | `redacted` | `none`. See `@compass/narrator`'s minimization module. */
     llmMinimizationMode: text('llm_minimization_mode').notNull(),
-    /**
-     * `unset` | `granted` | `denied` — whether stack traces may leave the process.
-     *
-     * Three values rather than a boolean because `unset` is *not yet asked*, which a boolean
-     * cannot express: `false` would be indistinguishable from a deliberate refusal, and the
-     * consent banner would have nothing to key on. Defaulted `unset` in migration `0021`, so
-     * every organization that predates the column is treated as not having been asked rather
-     * than as having agreed.
-     */
-    errorReportingConsent: text('error_reporting_consent').notNull(),
     ...recordTimestamps(),
   },
   (table) => [
@@ -92,10 +82,6 @@ export const orgPrivacySettings = pgTable(
     check(
       'org_privacy_settings_llm_mode',
       sql`${table.llmMinimizationMode} in ('full', 'redacted', 'none')`,
-    ),
-    check(
-      'org_privacy_settings_error_reporting_consent',
-      sql`${table.errorReportingConsent} in ('unset', 'granted', 'denied')`,
     ),
   ],
 );

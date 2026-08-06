@@ -47,7 +47,6 @@ const ACTION_LABEL: Readonly<Record<FeedbackAction, string>> = {
   accept_recommendation: 'accepted step',
   reject_recommendation: 'rejected step',
   blocker_already_resolved: 'blocker already resolved',
-  explain_unattributed: 'told Compass what the work was for',
   snooze: 'snoozed',
 };
 
@@ -58,9 +57,6 @@ const ACTION_DURATION: Readonly<Record<FeedbackAction, string>> = {
   accept_recommendation: 'until the condition lapses and returns',
   reject_recommendation: 'permanently',
   blocker_already_resolved: 'until a new triggering signal appears',
-  // Scoped rather than absolute: the cause carries the commit set, so the answer covers those
-  // commits and no others. Different unattributed work next week is asked about again.
-  explain_unattributed: 'for the commits it was written about',
   snooze: 'until the snooze ends',
 };
 

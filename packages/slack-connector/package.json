@@ -2,7 +2,6 @@
   "name": "@compass/slack-connector",
   "version": "0.1.0",
   "private": true,
-  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "description": "A live chat ConnectorPort implementation, read-only and channel-scoped, proving the port is provider-neutral.",
   "main": "./dist/index.js",

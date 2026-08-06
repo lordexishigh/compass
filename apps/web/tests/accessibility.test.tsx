@@ -18,12 +18,10 @@ import {
   AnonymizeControl,
   ChannelToggle,
   DeletionControls,
-  ErrorReportingControls,
   MinimizationControls,
   RetentionControls,
 } from '../components/privacy-controls';
 import { ReportDiffDocument } from '../components/report-diff';
-import { ErrorReportingNoticeBody } from '../components/error-reporting-notice';
 import { ReportDocument } from '../components/report-document';
 import { SeatManager } from '../components/seat-manager';
 import { SignInPanel } from '../components/sign-in-panel';
@@ -341,9 +339,6 @@ describe('axe reports no critical or serious violations on the configuration scr
               hasPassword: true,
               teamKeys: ['platform'],
               invitedAtLabel: '2026-07-01 09:00',
-              lastActiveLabel: 'last active today',
-              inviteState: null,
-              invitePhrase: null,
               isYou: true,
             },
             {
@@ -355,15 +350,10 @@ describe('axe reports no critical or serious violations on the configuration scr
               hasPassword: false,
               teamKeys: [],
               invitedAtLabel: '2026-07-30 11:20',
-              lastActiveLabel: 'never signed in',
-              inviteState: 'expired' as const,
-              invitePhrase:
-                'invitation expired 2026-08-13 and can no longer be redeemed — resend to issue a new link',
               isYou: false,
             },
           ]}
           canManage
-          inviteTtlLabel="14 days"
           knownTeamKeys={['platform', 'checkout']}
           // The real table, so the sentence beside each seat is the one a reader gets.
           roleCapabilities={ROLE_CAPABILITIES}
@@ -381,7 +371,6 @@ describe('axe reports no critical or serious violations on the configuration scr
         <SeatManager
           seats={[]}
           canManage={false}
-          inviteTtlLabel="14 days"
           knownTeamKeys={['platform']}
           roleCapabilities={ROLE_CAPABILITIES}
         />,
@@ -1110,128 +1099,5 @@ describe('the ladder states its rung in text, which is what exempts the hairline
         'the rung a reader hears must name a rung or state that none was crossed',
       ).toMatch(/R[1-5]|no rung crossed/);
     }
-  });
-});
-
-/**
- * The consent notice, audited as the landmark it is.
- *
- * A consent surface is the control most often shipped as a focus-trapping modal that lands on the
- * page before the content and cannot be escaped with a keyboard. This one is deliberately none of
- * that — a labelled `complementary` landmark at the end of the document, containing prose and two
- * links — and these assertions are what stop it quietly becoming the other thing.
- */
-describe('the error-reporting consent notice is a landmark, not a modal', () => {
-  const markup = () => renderToStaticMarkup(<ErrorReportingNoticeBody />);
-
-  it('has no critical or serious axe violations', async () => {
-    await expectNoBlockingViolations('the error-reporting notice', markup());
-  });
-
-  it('is a labelled region, so a screen reader can find and name it', () => {
-    // `<aside>` is `complementary`; the heading gives it an accessible name. An unlabelled landmark
-    // is announced as "complementary" and nothing else, which is no more use than a `<div>`.
-    const html = markup();
-
-    expect(html).toContain('aria-labelledby="error-reporting-notice-heading"');
-    expect(html).toContain('id="error-reporting-notice-heading"');
-    expect(html).toMatch(/<aside[^>]*>/);
-  });
-
-  it('traps nothing: no dialog role, no modal, no autofocus, no tabindex', () => {
-    /**
-     * The four ways this could take over the page, each refused by name. `role="dialog"` and
-     * `aria-modal` would make a screen reader treat the rest of the document as inert;
-     * `autofocus` would move the caret before the reader had read a word; a positive `tabindex`
-     * would reorder the whole page around it.
-     */
-    const html = markup();
-
-    expect(html).not.toContain('role="dialog"');
-    expect(html).not.toContain('aria-modal');
-    expect(html).not.toContain('autofocus');
-    expect(html).not.toContain('autoFocus');
-    expect(html).not.toMatch(/tabindex="[0-9]/i);
-  });
-
-  it('adds nothing to the tab order but the two links it needs', () => {
-    // No buttons, because the decision is not made here — it is made on /privacy by an owner. A
-    // reader tabbing past the report meets two links and nothing that can be pressed by mistake.
-    const html = markup();
-    const focusable = html.match(/<(a|button|input|select|textarea)\b/g) ?? [];
-
-    expect(focusable).toEqual(['<a', '<a']);
-    expect(html).toContain('href="/privacy"');
-    expect(html).toContain('href="/legal/privacy"');
-  });
-
-  it('states what is happening now, not only what could happen', () => {
-    // Honest degradation: while the question is open the reader is told the current behaviour
-    // rather than left to assume the worst — or the best.
-    const text = markup().replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
-
-    expect(text).toContain('it is sending nothing');
-    expect(text).toContain('go nowhere else');
-  });
-});
-
-/**
- * The control that answers the notice — the half that was missing when the notice shipped.
- *
- * `ErrorReportingNoticeBody` promises the question "disappears when the decision is made, either
- * way", and for one review cycle nothing on `/privacy` could make it. These assertions are what
- * keep the promise checkable: the control exists, it offers both answers, and it never offers the
- * third value the route refuses.
- */
-describe('the error-reporting consent control', () => {
-  it('has no critical or serious axe violations as an owner sees it', async () => {
-    await expectNoBlockingViolations(
-      'the error-reporting control',
-      renderToStaticMarkup(<ErrorReportingControls consent="unset" canEdit />),
-    );
-  });
-
-  it('has none in the read-only rendering a manager sees', async () => {
-    await expectNoBlockingViolations(
-      'the read-only error-reporting control',
-      renderToStaticMarkup(<ErrorReportingControls consent="granted" canEdit={false} />),
-    );
-  });
-
-  it('offers both answers and never `unset`, which the route refuses by design', () => {
-    const markup = renderToStaticMarkup(<ErrorReportingControls consent="unset" canEdit />);
-
-    expect(markup).toContain('value="granted"');
-    expect(markup).toContain('value="denied"');
-    // Offering it would be offering "un-ask the question", which deletes a consent record rather
-    // than withdrawing consent — and `/api/privacy/settings` would 400 the request anyway.
-    expect(markup).not.toContain('value="unset"');
-  });
-
-  it('says nobody has answered when nothing is stored, rather than preselecting one', () => {
-    const markup = renderToStaticMarkup(<ErrorReportingControls consent="unset" canEdit />);
-
-    expect(markup).toContain('Nobody has answered yet');
-    // A checked radio would show an answer nobody gave.
-    expect(markup).not.toContain('checked=""');
-  });
-
-  it('marks the stored answer once one exists, and drops the unanswered sentence', () => {
-    const markup = renderToStaticMarkup(<ErrorReportingControls consent="denied" canEdit />);
-
-    expect(markup).not.toContain('Nobody has answered yet');
-    // Attribute order is React's business; what matters is that the denied input is the checked one.
-    const deniedInput = /<input[^>]*id="error-reporting-denied"[^>]*>/.exec(markup)?.[0] ?? '';
-    expect(deniedInput).toContain('checked');
-    const grantedInput = /<input[^>]*id="error-reporting-granted"[^>]*>/.exec(markup)?.[0] ?? '';
-    expect(grantedInput).not.toContain('checked');
-  });
-
-  it('tells a manager who may not change it who can, rather than disabling in silence', () => {
-    // Same rule the retention windows follow: a control a reader cannot use and cannot account for
-    // reads as a bug.
-    expect(renderToStaticMarkup(<ErrorReportingControls consent="granted" canEdit={false} />)).toContain(
-      'Only an owner can answer this',
-    );
   });
 });

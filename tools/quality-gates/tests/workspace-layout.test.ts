@@ -9,7 +9,6 @@ import {
   listWorkspacePackages,
   packagesIn,
   readJsonFile,
-  repoRelative,
   type WorkspacePackage,
 } from './helpers/workspace.js';
 
@@ -248,114 +247,5 @@ describe('the connector-port testkit is reachable as a subpath', () => {
     const barrel = readFileSync(join(REPO_ROOT, 'packages/connector-port/src/index.ts'), 'utf8');
 
     expect(barrel).not.toContain('./testkit');
-  });
-});
-
-/**
- * Ownership terms, declared once and everywhere.
- *
- * A monorepo where the root says one thing and nineteen workspaces say nothing is not
- * ambiguous only in the abstract: `npm pack`, every SBOM generator and every corporate
- * licence scanner read the *manifest*, not the LICENSE file, and a manifest with no
- * `license` field is reported as "UNKNOWN" — which a procurement review reads as a risk
- * rather than as an omission. So the field is asserted on every workspace rather than on
- * the root alone, and a new package is a build failure until it declares one.
- *
- * The value is `SEE LICENSE IN LICENSE` rather than an SPDX identifier, and that is the
- * correct spelling rather than a cop-out: SPDX ids name *published* licences, and these
- * terms are not one of them. npm documents this exact form for a licence that is not on
- * the SPDX list, and it has the property the bare `UNLICENSED` keyword lacks — it points
- * a reader at the file that states the terms instead of asserting them in four syllables.
- * A permissive identifier here would be a grant nobody made.
- */
-describe('every workspace declares who owns it', () => {
-  /** The one place the value is written. Every assertion below compares against it. */
-  const LICENSE_FIELD = 'SEE LICENSE IN LICENSE';
-  const LICENSE_PATH = join(REPO_ROOT, 'LICENSE');
-
-  it('ships a LICENSE at the repository root', () => {
-    expect(existsSync(LICENSE_PATH), 'a repository with no LICENSE leaves reuse terms to guesswork').toBe(true);
-
-    const text = readFileSync(LICENSE_PATH, 'utf8');
-    expect(text).toContain('All rights reserved');
-    expect(text.length, 'a stub LICENSE is worse than none — it looks settled').toBeGreaterThan(500);
-  });
-
-  it('names a real holder rather than a placeholder', () => {
-    /**
-     * `packages/trust/src/content.ts` refuses to publish the `[DATE]`-bearing legal drafts on
-     * the grounds that a document with a bracket in it is worse than no document. A LICENSE
-     * with `[COMPANY]` in it is the same defect, and it is the single likeliest thing to be
-     * left behind when one is added in a hurry.
-     */
-    const text = readFileSync(LICENSE_PATH, 'utf8');
-    const placeholders = text.match(/\[[A-Z][A-Z _-]{2,}\]|<[a-z ]+entity[a-z ]*>|TODO|FIXME|XXX/g) ?? [];
-
-    expect(placeholders, 'the LICENSE still carries a fill-in-the-blank').toEqual([]);
-    expect(text, 'the LICENSE names no copyright holder').toMatch(/Copyright \(c\) \d{4} \S/);
-  });
-
-  it('points the manifest at that file rather than at an SPDX id it does not have', () => {
-    const root = readJsonFile<{ readonly license?: string }>(join(REPO_ROOT, 'package.json'));
-    expect(root.license).toBe(LICENSE_FIELD);
-  });
-
-  it('resolves the file every manifest points at, so a rename cannot dangle', () => {
-    /**
-     * The assertion that makes `SEE LICENSE IN <file>` safe to use at all.
-     *
-     * The value is not a claim about terms, it is a *reference* — and a reference is only worth
-     * more than a bare keyword while the thing it names is on disk. Renaming `LICENSE` to
-     * `LICENSE.md` breaks 28 manifests at once, silently: every tool that resolves the field gets
-     * nothing back, and the ambiguity this whole gate exists to close quietly re-opens with the
-     * field still populated and still looking correct.
-     *
-     * So the filename is parsed out of the declared value rather than hard-coded, and checked.
-     * A future move only has to update the manifests, and this fails until it does.
-     */
-    const manifests = [
-      join(REPO_ROOT, 'package.json'),
-      ...allPackages.map((workspacePackage) => join(workspacePackage.absoluteDirectory, 'package.json')),
-    ];
-
-    const dangling = manifests
-      .map((path) => ({ path, license: readJsonFile<{ readonly license?: string }>(path).license }))
-      .flatMap(({ path, license }) => {
-        const named = /^SEE LICENSE IN (.+)$/.exec(license ?? '')?.[1];
-        // Only the referencing form has a file to resolve. A bare SPDX id names a published
-        // licence and is answerable without one, so it is not this assertion's business.
-        if (named === undefined) return [];
-        return existsSync(join(REPO_ROOT, named)) ? [] : [`${repoRelative(path)} → ${named}`];
-      });
-
-    expect(dangling, 'these manifests name a licence file that is not at the repository root').toEqual([]);
-  });
-
-  it.each(asCases(allPackages))('%s declares it too', (_label, workspacePackage) => {
-    const manifest = readJsonFile<{ readonly license?: string; readonly private?: boolean }>(
-      join(workspacePackage.absoluteDirectory, 'package.json'),
-    );
-
-    expect(manifest.license, `${workspacePackage.relativeDirectory} has no license field`).toBe(LICENSE_FIELD);
-    // Proprietary terms and a publishable package would be a contradiction: the field says
-    // nobody may use it and the absent `private` flag says npm may publish it to everybody.
-    expect(manifest.private, `${workspacePackage.relativeDirectory} is proprietary but publishable`).toBe(true);
-  });
-
-  it('says the same thing in every manifest, so no workspace is on different terms', () => {
-    /**
-     * The assertion the per-package one cannot make. Each case above checks a manifest against
-     * the constant; this checks the manifests against *each other*, so a future change that
-     * relicenses the repo has to move all 28 together or fail here — a monorepo where one
-     * package is BUSL and the rest are proprietary is the ambiguity this gate exists to stop,
-     * and it would pass a per-file check that had been edited to match.
-     */
-    const declared = new Set(
-      [join(REPO_ROOT, 'package.json'), ...allPackages.map((p) => join(p.absoluteDirectory, 'package.json'))].map(
-        (path) => readJsonFile<{ readonly license?: string }>(path).license ?? '(none)',
-      ),
-    );
-
-    expect([...declared], 'the workspaces do not agree on their licence').toEqual([LICENSE_FIELD]);
   });
 });

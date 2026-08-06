@@ -66,18 +66,8 @@ export interface FeedbackActionsProps {
 
 type Outcome = { readonly kind: 'applied' | 'refused'; readonly detail: string };
 
-/**
- * Actions whose whole point is the manager's own words. Nothing else asks for a reason.
- *
- * `explain_unattributed` is the clearest case of the three: the item above it is a question, and
- * this verb opens the field the answer goes in. `feedback-source.ts` refuses an empty one, so the
- * field is not merely encouraged.
- */
-const NEEDS_REASON: ReadonlySet<string> = new Set([
-  'dismiss_risk',
-  'off_goal_flag_wrong',
-  'explain_unattributed',
-]);
+/** Actions whose whole point is the manager's own words. Nothing else asks for a reason. */
+const NEEDS_REASON: ReadonlySet<string> = new Set(['dismiss_risk', 'off_goal_flag_wrong']);
 
 export function FeedbackActions({ stableId, headline, offers, existing }: FeedbackActionsProps) {
   const [outcome, setOutcome] = useState<Outcome | null>(null);

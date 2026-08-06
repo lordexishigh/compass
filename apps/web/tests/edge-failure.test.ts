@@ -216,7 +216,7 @@ describe('pageAccess with no DATABASE_URL', () => {
   it('says nothing about the driver, for the same reason the 503 does not', async () => {
     const { pageAccess } = await import('../lib/auth/guard');
 
-    const access = await pageAccess({ route: '/settings/members', cookieHeader: null });
+    const access = await pageAccess({ route: '/seats', cookieHeader: null });
     const detail = access.kind === 'unavailable' ? access.detail : '';
 
     expect(detail).not.toContain('DATABASE_URL');

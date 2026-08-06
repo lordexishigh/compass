@@ -2,7 +2,6 @@
   "name": "@compass/quality-gates",
   "version": "0.1.0",
   "private": true,
-  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "description": "Workspace-wide gates: the no-system-clock source scan and the per-package layout contract.",
   "scripts": {

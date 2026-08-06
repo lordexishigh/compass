@@ -3,9 +3,9 @@
  *
  * ## The defect this exists for
  *
- * `packages/auth/src/bootstrap.ts` exported a `DEMO_OWNER_PASSWORD` constant holding a working
- * owner password as a plain string literal, in a published package, defended as a documented
- * demonstration default. It was reachable by any deployment that forgot to set
+ * `packages/auth/src/bootstrap.ts` carried `export const DEMO_OWNER_PASSWORD =
+ * 'compass-demo-owner'` — a working owner password, in a published package, defended as a
+ * documented demonstration default. It was reachable by any deployment that forgot to set
  * `COMPASS_OWNER_PASSWORD`, which is the definition of a hardcoded credential however the
  * comment above it reads. Nothing in the build objected, because every existing gate here
  * asks about *disclosure* — `no-secret-disclosure` bans a credential going into a log line
@@ -14,11 +14,10 @@
  * ## Why an AST rule and not a secret scanner
  *
  * `gitleaks` already runs over history and catches credentials that *look* like credentials:
- * a GitHub personal-access token, a live Stripe key, a connection string with a password in
- * it. Each of those is recognised by a provider prefix, and the prefixes are deliberately not
- * written out here — see the note below. It could not catch the demonstration owner password,
- * because that string looked like nothing. It had no provider prefix and low entropy — it was
- * only a credential because of the *name it was bound to*, and a name is a syntactic fact.
+ * a `ghp_`-prefixed token, an `sk_live_` key, a connection string with a password in it. It
+ * cannot catch `'compass-demo-owner'`, because that string looks like nothing. It has no
+ * provider prefix and low entropy — it is only a credential because of the *name it is bound
+ * to*, and a name is a syntactic fact.
  *
  * So the two gates are complementary rather than redundant: entropy and provider shape for
  * the values that betray themselves, and this rule for the ones that only a binding name
@@ -27,40 +26,12 @@
  * ## What is flagged
  *
  * A non-empty string literal (or a template literal with no interpolation, which is the same
- * thing) assigned to a name that ends in a credential word. The four binding forms:
+ * thing) assigned to a name that ends in a credential word:
  *
- *   const DEMO_OWNER_PASSWORD = <string literal>   // variable
- *   const config = { apiKey: <string literal> }    // object property
- *   class C { #signingSecret = <string literal> }  // class field
- *   function f(password = <string literal>) {}     // default parameter
- *
- * ## Why the examples elide their values, and why no provider prefix is spelled out
- *
- * Written out, each of those four lines *is* a credential-shaped literal sitting in shipped
- * source — a credential name, an assignment, a quoted value — and that is precisely the text an
- * entropy-and-shape secret scanner reports. No scanner can tell an illustration in a doc comment
- * from the defect it illustrates, so this file used to be reported as holding four hardcoded
- * secrets of its own.
- *
- * The same reasoning covers provider prefixes. A file *about* credential hygiene naturally wants
- * to name the shapes it is contrasting itself with, and every one of those names is a substring a
- * scanner keys on. So they are described rather than quoted — "a GitHub personal-access token"
- * rather than the four characters it starts with. Nothing is lost: this rule matches on **binding
- * names**, never on provider prefixes, so there is no pattern here whose precision depends on the
- * literal being present. `CREDENTIAL_PHRASES` below is the whole vocabulary, and it is English
- * words.
- *
- * So the shape is named and the value is left to the RuleTester fixtures in
- * `tools/eslint-plugin-compass/tests/rules.test.js`, which are a test tree and are exempt for the
- * same reason the rule itself skips tests. `security-posture.test.ts` in `tools/quality-gates`
- * scans shipped text — comments included, which is the half ESLint's AST never sees — and holds
- * this file to it.
- *
- * `.gitleaks.toml` additionally allowlists this directory. That is a second belt rather than the
- * belt: the exemption is scoped to `tools/eslint-plugin-compass/rules/` alone and exists so that a
- * future edit to the vocabulary cannot re-trip the gate, *not* so that findings here can be
- * ignored. The quality gate above still scans this file and still fails on a real literal, which
- * is what stops the allowlist from becoming cover.
+ *   const DEMO_OWNER_PASSWORD = 'compass-demo-owner'   // variable
+ *   const config = { apiKey: 'sk_test_abc' }           // object property
+ *   class C { #signingSecret = 'shhh' }                // class field
+ *   function f(password = 'letmein') {}                // default parameter
  *
  * Suffix-matched rather than exact, which is the difference from `no-secret-disclosure`'s
  * vocabulary: that rule asks "is this field *the* credential" of a flat name like `token`,
@@ -69,9 +40,9 @@
  *
  * ## What is deliberately allowed, and why each
  *
- *  - **`…_ENV_VAR` and any `…EnvVar`.** A constant named `OWNER_PASSWORD_ENV_VAR` holds the
- *    *name* of a variable — the string `COMPASS_OWNER_PASSWORD` — and not its value. This is the
- *    pattern the fix uses, so banning it would ban the remedy.
+ *  - **`…_ENV_VAR` and any `…EnvVar`.** `OWNER_PASSWORD_ENV_VAR = 'COMPASS_OWNER_PASSWORD'`
+ *    holds the *name* of a variable, not its value. This is the pattern the fix uses, so
+ *    banning it would ban the remedy.
  *  - **`…Hash`, `…Digest`.** The storage form. Compass stores digests precisely so a leak of
  *    the row is not a leak of the credential.
  *  - **`…Problem`, `…Label`, `…Kind`, `…Version`, `…Message`, `…Placeholder`, `…Pattern`,
@@ -86,7 +57,7 @@
  * ## Scope
  *
  * Registered in `eslint.config.js` over the `SHIPPED_SOURCES` globs — every package's and app's
- * own source, and nothing else. Test files legitimately hold fixture credentials (a provider-shaped token whose
+ * own source, and nothing else. Test files legitimately hold fixture credentials (a `ghp_`-shaped token whose
  * whole job is to be searched for in a database column), and pointing this rule at them would
  * either flood or force the fixtures into a shape that no longer tests anything. The tests
  * that hold such values name them as explicit fixture constants for a reader's benefit; the
@@ -187,9 +158,9 @@ function isCredentialName(rawName) {
 /**
  * Values that name a location rather than open one.
  *
- * `sign-in-panel.tsx` holds a route table keyed by sign-in mode, whose `password` entry is the
- * path `/api/auth/login`. A credential is never a path or a URL, so recognising the shape is
- * cheaper and clearer than special-casing the file.
+ * `{ password: '/api/auth/login' }` is a route table keyed by sign-in mode, and
+ * `sign-in-panel.tsx` has one. A credential is never a path or a URL, so recognising the
+ * shape is cheaper and clearer than special-casing the file.
  */
 const isLocation = (value) => /^(?:\/|https?:\/\/|mailto:)/.test(value);
 
@@ -253,30 +224,30 @@ const rule = {
     };
 
     return {
-      // const PASSWORD = <string literal>
+      // const PASSWORD = 'literal'
       VariableDeclarator(node) {
         check(node.id, node.init, node);
       },
 
-      // { apiKey: <string literal> } — including inside a nested config object, because the
-      // visitor reaches every Property in the file rather than only top-level ones.
+      // { apiKey: 'literal' } — including inside a nested config object, because the visitor
+      // reaches every Property in the file rather than only top-level ones.
       Property(node) {
         if (node.computed) return;
         check(node.key, node.value, node);
       },
 
-      // class C { #signingSecret = <string literal> }
+      // class C { #signingSecret = 'literal' }
       PropertyDefinition(node) {
         if (node.computed) return;
         check(node.key, node.value, node);
       },
 
-      // function f(password = <string literal>) {}
+      // function f(password = 'literal') {}
       AssignmentPattern(node) {
         check(node.left, node.right, node);
       },
 
-      // this.#token = <string literal> — a later assignment, not an initialiser.
+      // this.#token = 'literal' — a later assignment, not an initialiser.
       AssignmentExpression(node) {
         if (node.operator !== '=') return;
         const { left } = node;

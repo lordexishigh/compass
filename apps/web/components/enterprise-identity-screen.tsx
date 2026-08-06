@@ -350,7 +350,7 @@ export function EnterpriseIdentityScreen({ view, stated = null }: EnterpriseIden
       </section>
 
       <p className="mt-12 border-t border-t-[color:var(--rule)] pt-6">
-        <a href="/settings/members" className="tertiary-action">
+        <a href="/seats" className="tertiary-action">
           ← seats
         </a>
       </p>

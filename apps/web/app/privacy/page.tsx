@@ -5,7 +5,6 @@ import {
   AnonymizeControl,
   ChannelToggle,
   DeletionControls,
-  ErrorReportingControls,
   MinimizationControls,
   RetentionControls,
 } from '../../components/privacy-controls';
@@ -259,25 +258,7 @@ export default async function PrivacyPage() {
         <MinimizationControls mode={view.retention.llmMinimizationMode} canEdit={isOwner} />
       </Section>
 
-      <Section numeral="03" title="Whether error reports leave this deployment">
-        <p className="prose-narration mt-4">
-          When Compass throws, it can send the stack trace to an error tracker so the fault is fixed rather than
-          guessed at. That is the one piece of processing here Compass asks permission for, and it asks the
-          organization rather than each reader — which is why it sits with the other settings on this page and not in
-          a banner. The trace passes through a scrubber first: no addresses, no credentials, and none of the ingested
-          text a commit message or a ticket comment carries.
-        </p>
-        <p className="prose-narration mt-3">
-          Answering either way ends the notice at the foot of every page. Both answers are written to the audit log
-          with who made them, and either can be changed here later.
-        </p>
-        {/* `canEdit={isOwner}`, matching the retention windows above and for the same reason:
-            `/api/privacy/settings` PATCH is owner-only, so a control a manager could press would
-            403 and read as a broken product rather than as a permission boundary. */}
-        <ErrorReportingControls consent={view.retention.errorReportingConsent} canEdit={isOwner} />
-      </Section>
-
-      <Section numeral="04" title="Which chat channels Compass reads">
+      <Section numeral="03" title="Which chat channels Compass reads">
         <p className="prose-narration mt-4">
           Opt-in, one named channel at a time. Direct messages and private channels are never read — the database
           refuses to mark one as read, and the ingest path drops the message a second time regardless. When a channel is
@@ -327,7 +308,7 @@ export default async function PrivacyPage() {
         )}
       </Section>
 
-      <Section numeral="05" title="Whose name Compass prints">
+      <Section numeral="04" title="Whose name Compass prints">
         <p className="prose-narration mt-4">
           Withdrawing a name replaces it with a stable pseudonym in every report from now on. Reports already written
           render &ldquo;a former team member&rdquo; where the name was and keep every ticket key, pull request number and
@@ -367,7 +348,7 @@ export default async function PrivacyPage() {
         )}
       </Section>
 
-      <Section numeral="06" title="Taking your data, or ending this">
+      <Section numeral="05" title="Taking your data, or ending this">
         <p className="prose-narration mt-4">
           The export is available at any time, not only on the way out: a copy of your own data should not cost you the
           product. Deletion enters a seven-day grace period, mails an undo link, and completes within thirty days with a

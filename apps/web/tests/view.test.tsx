@@ -357,53 +357,6 @@ describe('every alignment verdict has its evidence one click away', () => {
     expect(markup.indexOf('alignment-question')).toBeLessThan(markup.lastIndexOf('evidence-disclosure__body'));
   });
 
-  /**
-   * The acceptance criterion, asserted as one thing rather than four.
-   *
-   * "The report reads '3 commits could not be tied to a sprint objective' with the SHAs listed and
-   * a 'tell us what these were for' action — and no developer is named as off-goal." Each half was
-   * checkable on its own and the feature still was not usable: the question rendered, the SHAs
-   * rendered, and the only control under them was a snooze, so the manager could silence the
-   * question and could not answer it.
-   */
-  it('states the count, lists the SHAs, offers the answer, and names nobody', () => {
-    const unattributed = alignmentClaims.find((claim) => claim.alignment?.kind === 'unattributed');
-    expect(unattributed, 'the fixture no longer contains an unattributed item').toBeDefined();
-
-    // The count, in the criterion's own words.
-    expect(markup).toContain('commits could not be tied to a sprint objective');
-
-    // The SHAs, each one, so the manager can go and look at the work being asked about.
-    for (const sha of unattributed!.alignment!.subjectLabels) {
-      expect(markup, `${sha} is asked about but not shown`).toContain(sha);
-    }
-    expect(unattributed!.alignment!.subjectLabels.length).toBeGreaterThan(0);
-
-    // The action, which is the half that was missing.
-    expect(markup, 'the question offers no way to answer it').toContain('Tell us what these were for');
-
-    // And still nobody named. The offer must not have smuggled an author in with it.
-    expect(unattributed!.alignment!.label).toBeNull();
-    for (const name of ['Priya', 'Marcus', 'Nadia', 'Sasha']) {
-      const questionBlock = markup.slice(
-        markup.indexOf('alignment-question'),
-        markup.indexOf('Tell us what these were for'),
-      );
-      expect(questionBlock, `${name} is named on the unattributed question`).not.toContain(name);
-    }
-  });
-
-  it('offers the answer beside a snooze and nothing that reads as a verdict', () => {
-    // "Dismiss" or "This is wrong" under a question would make it an accusation to be argued with,
-    // which is the reading the whole bucket is built to avoid.
-    const unattributed = alignmentClaims.find((claim) => claim.alignment?.kind === 'unattributed');
-
-    expect(unattributed?.feedbackOffers.map((offer) => offer.action)).toEqual([
-      'explain_unattributed',
-      'snooze',
-    ]);
-  });
-
   it('labels only the verdicts the gate produced', () => {
     const labels = alignmentClaims.map((claim) => claim.alignment?.label);
 

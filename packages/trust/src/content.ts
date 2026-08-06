@@ -123,28 +123,13 @@ export const SUBPROCESSOR_NOTICE_DAYS = 30;
  * A stable digest of the published list.
  *
  * The notice job compares this against the last value it announced, so "the list changed" is decided by
- * the *content* rather than by somebody remembering to send an email. Every declared field is in the
- * line — a copy-edit to `purpose` is a change worth announcing; reordering the array is not, so the ids
- * are sorted first.
- *
- * ## Why `purpose` and `optional` are in here, having once been left out
- *
- * They were excluded while the docstring above claimed `purpose` was covered, so the module documented a
- * guarantee it did not implement: rewriting a subprocessor's purpose from "runs the database" to
- * anything at all — including something a data protection officer would want thirty days' warning of —
- * produced an identical digest and sent nobody an email. `optional` is the same class of fact: it flips
- * when a deployment can no longer switch a subprocessor off, which changes what the reader is agreeing
- * to even though no other field moved.
- *
- * New fields go on the **end**. `describeSubprocessorChanges` reads the first three positionally, and
- * inserting a column would have silently relabelled every sentence in a notice email.
+ * the *content* rather than by somebody remembering to send an email. Built from the fields a customer
+ * would care about — a copy-edit to `purpose` is a change worth announcing; reordering the array is not,
+ * so the ids are sorted first.
  */
 export const subprocessorDigest = (list: readonly Subprocessor[] = SUBPROCESSORS): string =>
   list
-    .map(
-      (entry) =>
-        `${entry.id}|${entry.name}|${entry.dataCategory}|${entry.region}|${entry.purpose}|${entry.optional}`,
-    )
+    .map((entry) => `${entry.id}|${entry.name}|${entry.dataCategory}|${entry.region}`)
     .slice()
     .sort()
     .join('\n');
@@ -185,25 +170,6 @@ export function describeSubprocessorChanges(
   const after = parse(currentDigest);
   const changes: string[] = [];
 
-  /**
-   * Whether two rows differ in a way worth announcing, tolerant of a row written before a column
-   * existed.
-   *
-   * A subscriber's stored digest is whatever the format was when they were last told, so widening the
-   * line — `purpose` and `optional` were added to it — makes every stored row shorter than every
-   * current one. Comparing the raw strings would report all six subprocessors as "Changed" on the first
-   * run after that deploy, and the sentence it would send names a category and region that did not
-   * move: a false statement to the one reader who is relying on these emails being true.
-   *
-   * So only the columns both rows have are compared. A field the previous row never recorded cannot
-   * have changed — nobody was told its old value, so there is nothing to contrast — and it is announced
-   * the next time it actually moves.
-   */
-  const differsMeaningfully = (previous: readonly string[], current: readonly string[]): boolean => {
-    const shared = Math.min(previous.length, current.length);
-    return previous.slice(0, shared).join('|') !== current.slice(0, shared).join('|');
-  };
-
   for (const [id, fields] of after) {
     const previous = before.get(id);
     const [name, category, region] = fields;
@@ -211,7 +177,7 @@ export function describeSubprocessorChanges(
       changes.push(`Added: ${name ?? id} — ${category ?? 'purpose not stated'} (${region ?? 'region not stated'})`);
       continue;
     }
-    if (differsMeaningfully(previous, fields)) {
+    if (previous.join('|') !== fields.join('|')) {
       const [wasName, , wasRegion] = previous;
       changes.push(
         `Changed: ${name ?? id} — now ${category ?? 'purpose not stated'} (${region ?? 'region not stated'})` +
@@ -549,7 +515,7 @@ export const PRIVACY_POLICY: PolicyDocument = Object.freeze({
   slug: 'privacy',
   title: 'Privacy policy',
   lede: 'What Compass holds, why, who else sees it, and what you can do about all three.',
-  lastUpdated: '2026-08-06',
+  lastUpdated: '2026-08-05',
   sections: Object.freeze([
     Object.freeze({
       heading: 'What Compass holds',
@@ -585,58 +551,6 @@ export const PRIVACY_POLICY: PolicyDocument = Object.freeze({
         'Raw chat message bodies for 90 days by default, derived data and reports for three years, both ' +
           'settable by an owner. A scheduled purge enforces the windows and records each run whether or ' +
           'not it deleted anything.',
-      ]),
-    }),
-    Object.freeze({
-      /**
-       * The cookie disclosure, and the reason there is no consent banner.
-       *
-       * ePrivacy Article 5(3) requires *information* about anything stored on a device, and exempts
-       * from *consent* only what is strictly necessary to provide the service the person asked for.
-       * Compass sets two cookies and both are in that class, so the honest surface is this section
-       * rather than a banner. A banner asking permission for cookies that do not need it would be
-       * theatre: its "reject" button could not reject anything without signing the reader out, and
-       * offering a choice that cannot be honoured teaches people the choice is meaningless.
-       *
-       * This stays true only while the inventory does. `legal-content.test.ts` reads the cookie
-       * names out of `apps/web/lib/auth/cookies.ts` and fails if one is set that this section does
-       * not name — so adding a third cookie forces a decision here rather than slipping past.
-       */
-      heading: 'What Compass stores in your browser',
-      paragraphs: Object.freeze([
-        'Two cookies, both strictly necessary, both `HttpOnly` — meaning no script on the page can ' +
-          'read either of them — and both `SameSite=Lax` and `Secure` wherever the connection is ' +
-          'HTTPS. Compass sets nothing else: no `localStorage`, no analytics or advertising cookie, ' +
-          'no third-party script, no tracking pixel, and no fingerprinting. The Content-Security-' +
-          'Policy would block a third-party script even if one were added by mistake.',
-        'There is deliberately **no cookie-consent banner**, and that is a position rather than an ' +
-          'omission. Consent is required for cookies that are not strictly necessary, and Compass ' +
-          'sets none of those. A banner would ask permission for something that needs none, and its ' +
-          '“reject” option could not reject the session cookie without signing you out — a choice ' +
-          'that cannot be honoured is worse than no choice. Refusing both cookies in your browser is ' +
-          'still available and still works; you will not be able to sign in, which is what refusing ' +
-          'a sign-in cookie means.',
-        'Error reports are a separate question and worth stating plainly here rather than leaving to ' +
-          'the subprocessor list: they are generated **on the server**, never in your browser, so ' +
-          'nothing about them is decided by your device. Stack traces pass through a scrubber that ' +
-          'removes addresses, credentials and ingested text before an event leaves the process, and a ' +
-          'deployment with no error-tracking key sends none at all.',
-        'They are also the one thing here Compass asks permission for, and it asks the organization ' +
-          'rather than the browser. Until an owner answers on the privacy screen the setting is ' +
-          '`unset` and **nothing is sent** — errors go to the deployment’s own log and no further. An ' +
-          'owner can grant it, refuse it, or change either answer later, and every change is written ' +
-          'to the audit log with who made it. This is the reason there is no cookie banner asking ' +
-          'about cookies that need no consent: the question worth asking is this one, and it is asked ' +
-          'once, where it can actually be answered.',
-      ]),
-      bullets: Object.freeze([
-        '`compass_session` — proves you are signed in. It holds a random secret; the database keeps ' +
-          'only a hash of it. Expires 30 days after it is issued, and sooner if you are idle, sign ' +
-          'out, or an owner changes your role.',
-        '`compass_sso_nonce` — set only if you sign in through an identity provider, and only for the ' +
-          'ten minutes that round trip lasts. It ties the provider’s answer to the browser that ' +
-          'started the request, which is what stops somebody feeding you their own sign-in. Cleared ' +
-          'the moment the round trip finishes, whatever the outcome.',
       ]),
     }),
     Object.freeze({

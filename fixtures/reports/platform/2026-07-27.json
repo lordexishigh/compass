@@ -3069,7 +3069,7 @@
           "objectiveTitle": null,
           "question": "What were these 2 commits for?",
           "resolvedTier": "unattributed",
-          "stableId": "v1:b57a1b523b8ba9eb",
+          "stableId": "v1:4f8eb21feae5a38d",
           "subjects": [
             {
               "key": "platform-api@78d6330",
@@ -11435,7 +11435,7 @@
           "cause": {
             "causeDiscriminator": "",
             "causeKind": "unattributed",
-            "entityRef": "commit:unattributed:platform:09ff2de5d1e6"
+            "entityRef": "commit:unattributed:platform"
           },
           "changeTag": "new",
           "detail": "78d6330, a1b2c35 name no tracker key in a commit message or a branch, and the closest goal wording scored 0.2222 against a threshold of 0.3. The closest goal was \"Give merchants same-day settlement insight\".",
@@ -11457,7 +11457,7 @@
           "headline": "2 commits could not be tied to a sprint objective",
           "severityScore": 20,
           "signalOnsetAt": 1785142800000,
-          "stableId": "v1:b57a1b523b8ba9eb"
+          "stableId": "v1:4f8eb21feae5a38d"
         }
       ],
       "key": "risks",
