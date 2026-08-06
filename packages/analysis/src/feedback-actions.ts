@@ -25,6 +25,7 @@ export const FEEDBACK_ACTIONS = [
   'accept_recommendation',
   'reject_recommendation',
   'blocker_already_resolved',
+  'explain_unattributed',
   'snooze',
 ] as const;
 
@@ -42,6 +43,10 @@ export const isFeedbackAction = (value: string): value is FeedbackAction =>
 export const TERMINAL_FEEDBACK_ACTIONS: readonly FeedbackAction[] = Object.freeze([
   'reject_recommendation',
   'off_goal_flag_wrong',
+  // An answer does not expire, but it also does not travel: the unattributed question is keyed on
+  // the commits it is about, so "permanent" here means "for these commits". A different set next
+  // week is a different cause and asks again. See `unattributedRefId` in `alignment.ts`.
+  'explain_unattributed',
 ]);
 
 /**

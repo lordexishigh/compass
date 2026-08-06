@@ -3386,7 +3386,7 @@
           "objectiveTitle": null,
           "question": "What were these 2 commits for?",
           "resolvedTier": "unattributed",
-          "stableId": "v1:4f8eb21feae5a38d",
+          "stableId": "v1:b7e120889bdece4c",
           "subjects": [
             {
               "key": "platform-api@a1b2c36",
@@ -12208,7 +12208,7 @@
           "cause": {
             "causeDiscriminator": "",
             "causeKind": "unattributed",
-            "entityRef": "commit:unattributed:platform"
+            "entityRef": "commit:unattributed:platform:8e09084ed0ed"
           },
           "changeTag": "new",
           "detail": "a1b2c36, a1b2c38 name no tracker key in a commit message or a branch, and the closest goal wording scored 0 against a threshold of 0.3. Nothing in the goal hierarchy shared a word with them.",
@@ -12230,7 +12230,7 @@
           "headline": "2 commits could not be tied to a sprint objective",
           "severityScore": 20,
           "signalOnsetAt": 1785488400000,
-          "stableId": "v1:4f8eb21feae5a38d"
+          "stableId": "v1:b7e120889bdece4c"
         }
       ],
       "key": "risks",

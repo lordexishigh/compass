@@ -12,6 +12,7 @@ import {
   assertEveryClaimHasEvidence,
   assertOffGoalGate,
   assertUnattributedNamesNobody,
+  unattributedRefId,
   assertWholeDayAges,
   createEmptyStructuredReport,
   generateStructuredReport,
@@ -559,5 +560,54 @@ describe('the unattributed bucket accuses nobody', () => {
         NAMES,
       ),
     ).not.toThrow();
+  });
+});
+
+/**
+ * The question is keyed on the commits it is about, which is what makes an answer bindable.
+ *
+ * Feedback is matched by cause. With a scope-only key — which this had — a manager's answer
+ * attached to "this team's unattributed question" in the abstract, so it went on suppressing the
+ * bucket after the window rolled and the bucket held three commits nobody had explained. Silencing
+ * an unanswered question is the one outcome this feature must not produce, because the manager
+ * believes they answered it and Compass believes it was told.
+ */
+describe('the unattributed question is identified by the work it asks about', () => {
+  const orphans = (...keys: string[]) => keys.map((subjectKey) => ({ subjectKey }));
+
+  it('gives the same set the same id however it is ordered', () => {
+    // Resolution order is not meaningful, and an id that moved with it would make an answer stop
+    // matching the very next generation for no reason a manager could see.
+    expect(unattributedRefId('platform', orphans('repo@aaa', 'repo@bbb', 'repo@ccc'))).toBe(
+      unattributedRefId('platform', orphans('repo@ccc', 'repo@aaa', 'repo@bbb')),
+    );
+  });
+
+  it('gives a different set a different id, so an answer does not cover work it never saw', () => {
+    const answered = unattributedRefId('platform', orphans('repo@aaa', 'repo@bbb'));
+
+    // One commit added: a different question, asked again.
+    expect(unattributedRefId('platform', orphans('repo@aaa', 'repo@bbb', 'repo@ccc'))).not.toBe(answered);
+    // One commit gone, and one swapped for another.
+    expect(unattributedRefId('platform', orphans('repo@aaa'))).not.toBe(answered);
+    expect(unattributedRefId('platform', orphans('repo@aaa', 'repo@zzz'))).not.toBe(answered);
+  });
+
+  it('keeps the scope in the key, so one team’s answer is not another’s', () => {
+    /**
+     * The collision this key already had to fix once. Two teams — or a team and the merged view —
+     * can hold exactly the same unattributed commits, and before the scope was in the key that made
+     * their questions one item: a dismissal on one suppressed the other, and the merged report
+     * could not attribute it. Adding the commit set must not quietly undo that.
+     */
+    const same = orphans('repo@aaa', 'repo@bbb');
+
+    expect(unattributedRefId('platform', same)).not.toBe(unattributedRefId('checkout', same));
+    expect(unattributedRefId('platform', same)).not.toBe(unattributedRefId('merged', same));
+  });
+
+  it('is stable across calls, so an unchanged set stays answered tomorrow', () => {
+    const set = orphans('repo@aaa', 'repo@bbb');
+    expect(unattributedRefId('platform', set)).toBe(unattributedRefId('platform', set));
   });
 });

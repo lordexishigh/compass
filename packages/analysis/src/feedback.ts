@@ -207,6 +207,24 @@ export function verdictFromRecord(
         statement: `You marked this off-goal flag wrong on ${dayLabel(record.submittedAt)}, so it is suppressed and recorded as a correction${because}.`,
       };
 
+    case 'explain_unattributed':
+      /**
+       * An answer, so the question stops being asked — of *these* commits.
+       *
+       * No expiry and no re-ask condition, and neither is an oversight. The cause this record is
+       * matched against carries a digest of the commit set (`unattributedRefId`), so the record
+       * simply does not match a bucket holding different work: a commit that arrives tomorrow with
+       * no ticket produces a different cause, which no answer covers, and the question is put
+       * again. Suppressing "until a new signal" the way a resolved blocker does would be the wrong
+       * shape here — there is no onset to compare, and the set *is* the signal.
+       */
+      return {
+        kind: 'suppressed',
+        action: 'explain_unattributed',
+        at: record.submittedAt,
+        statement: `You told Compass what this work was for on ${dayLabel(record.submittedAt)}${because}. Commits it does not cover are asked about again.`,
+      };
+
     case 'blocker_already_resolved': {
       // A later onset is a different episode: the same ticket blocked again next week is a new
       // triggering signal, not the one that was already dealt with.
@@ -322,6 +340,9 @@ const OFFER: Readonly<Record<FeedbackAction, string>> = Object.freeze({
   accept_recommendation: 'Accept this step',
   reject_recommendation: 'Reject this step',
   blocker_already_resolved: 'Already resolved',
+  // The one offer that asks rather than asserts. Phrased as the manager's side of the question the
+  // item just put to them, so the button reads as the answer slot and not as a verdict.
+  explain_unattributed: 'Tell us what these were for',
   snooze: 'Snooze 7 days',
 });
 
@@ -339,9 +360,14 @@ const offer = (action: FeedbackAction): FeedbackOffer => ({ action, label: OFFER
  * sprint; there is no verdict to give, and a "dismiss" under them would invite a manager to argue
  * with their own team's merge history.
  *
- * The unattributed alignment question offers only a snooze. It is a *question* — "what were these 3
- * commits for?" — and neither "wrong" nor "dismiss" is an answer to one: Compass has stated no
- * verdict to be wrong about, so the only sensible instruction is "not now".
+ * The unattributed alignment question offers an answer and a snooze, and nothing else. It is a
+ * *question* — "what were these 3 commits for?" — so neither "wrong" nor "dismiss" applies: Compass
+ * has stated no verdict to be wrong about and nothing to dismiss. What a question needs is a way to
+ * answer it, which `explain_unattributed` is, and a way to say "not now", which snooze already was.
+ *
+ * Offering only the snooze — which is what this did — left the manager able to silence the question
+ * and unable to resolve it, so the same commits came back a week later still unexplained. A product
+ * that asks a question it will not let you answer is not asking one.
  */
 export function feedbackOffersFor(sectionKey: SectionKey, cause: ItemCause): readonly FeedbackOffer[] {
   switch (sectionKey) {
@@ -349,7 +375,7 @@ export function feedbackOffersFor(sectionKey: SectionKey, cause: ItemCause): rea
       return [offer('blocker_already_resolved'), offer('snooze')];
     case 'risks':
       if (cause.causeKind === OFF_GOAL_CAUSE_KIND) return [offer('off_goal_flag_wrong'), offer('snooze')];
-      if (cause.causeKind === UNATTRIBUTED_CAUSE_KIND) return [offer('snooze')];
+      if (cause.causeKind === UNATTRIBUTED_CAUSE_KIND) return [offer('explain_unattributed'), offer('snooze')];
       return [offer('dismiss_risk'), offer('snooze')];
     case 'recommendations':
       return [offer('accept_recommendation'), offer('reject_recommendation'), offer('snooze')];

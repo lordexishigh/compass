@@ -899,7 +899,7 @@
           "objectiveTitle": null,
           "question": "What were these 3 commits for?",
           "resolvedTier": "unattributed",
-          "stableId": "v1:1da0fc49c9c06f90",
+          "stableId": "v1:c5442ba85e88a799",
           "subjects": [
             {
               "key": "checkout-web@88854e4",
@@ -6275,7 +6275,7 @@
           "cause": {
             "causeDiscriminator": "",
             "causeKind": "unattributed",
-            "entityRef": "commit:unattributed:checkout"
+            "entityRef": "commit:unattributed:checkout:2b955b752d96"
           },
           "changeTag": "new",
           "detail": "88854e4, dd96901, e4243ef name no tracker key in a commit message or a branch, and the closest goal wording scored 0 against a threshold of 0.3. Nothing in the goal hierarchy shared a word with them.",
@@ -6303,7 +6303,7 @@
           "headline": "3 commits could not be tied to a sprint objective",
           "severityScore": 30,
           "signalOnsetAt": 1785488400000,
-          "stableId": "v1:1da0fc49c9c06f90"
+          "stableId": "v1:c5442ba85e88a799"
         }
       ],
       "key": "risks",

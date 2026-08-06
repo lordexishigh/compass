@@ -2994,7 +2994,7 @@
           "objectiveTitle": null,
           "question": "What were these 2 commits for?",
           "resolvedTier": "unattributed",
-          "stableId": "v1:4f8eb21feae5a38d",
+          "stableId": "v1:4c471df135492382",
           "subjects": [
             {
               "key": "platform-api@a1b2c33",
@@ -11238,7 +11238,7 @@
           "cause": {
             "causeDiscriminator": "",
             "causeKind": "unattributed",
-            "entityRef": "commit:unattributed:platform"
+            "entityRef": "commit:unattributed:platform:a6f2935fabb7"
           },
           "changeTag": "new",
           "detail": "a1b2c33, 9bfad75 name no tracker key in a commit message or a branch, and the closest goal wording scored 0.2 against a threshold of 0.3. The closest goal was \"Ship guest checkout to every merchant\".",
@@ -11260,7 +11260,7 @@
           "headline": "2 commits could not be tied to a sprint objective",
           "severityScore": 20,
           "signalOnsetAt": 1785229200000,
-          "stableId": "v1:4f8eb21feae5a38d"
+          "stableId": "v1:4c471df135492382"
         }
       ],
       "key": "risks",

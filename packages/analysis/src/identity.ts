@@ -238,6 +238,21 @@ export const isStableItemId = (value: string): boolean => STABLE_ID_PATTERN.test
 export const entityRef = (kind: string, naturalKey: string): string => `${kind}:${naturalKey}`;
 
 /**
+ * A short deterministic digest, for folding a *set* of things into one natural key.
+ *
+ * The unattributed question is the caller: it is about a set of commits rather than one entity, and
+ * a natural key listing every SHA would be unbounded and unreadable in exactly the log line
+ * `itemCauseKey` exists to be read in.
+ *
+ * Twelve hex digits of the same FNV-1a the ids use, and it carries the same caveat for the same
+ * reason: an identifier, never a secret. Nothing is authorised by knowing one. Collision resistance
+ * is what matters, and at twelve digits two different commit sets in one team's window colliding is
+ * far below the odds of the item ids themselves colliding, which the note at the top of this file
+ * already sizes.
+ */
+export const shortDigest = (value: string): string => fnv1a64(value).toString(16).padStart(16, '0').slice(0, 12);
+
+/**
  * The three tenant-independent coordinates, as a value a detector can carry.
  *
  * Identical to `ItemIdentity` minus the organization, and that omission is the point: the

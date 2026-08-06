@@ -581,6 +581,7 @@ export {
   developerDisplayNames,
   offGoalVerdict,
   passesOffGoalGate,
+  unattributedRefId,
   type AlignmentAssessment,
   type AlignmentClass,
   type AlignmentCoverageRow,
