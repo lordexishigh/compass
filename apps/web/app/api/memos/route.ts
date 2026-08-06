@@ -1,4 +1,5 @@
-import { DeterministicExtractor, isMemoSourceChannel, submitMemo } from '@compass/memos';
+import { formatCivilDate } from '@compass/clock';
+import { DeterministicExtractor, submitMemo, type ResolvedWindow } from '@compass/memos';
 import { resolveSeededRun } from '@compass/seed-connector';
 import type { NextResponse } from 'next/server';
 
@@ -40,6 +41,46 @@ export const runtime = 'nodejs';
 const ROUTE = '/api/memos';
 
 /**
+ * This route's channel, pinned rather than read off the request.
+ *
+ * Compass has three memo intakes — web, email, Slack — and the design rests on them producing an
+ * *identical row apart from the source field*. That guarantee is only as good as the field, and it
+ * used to be a request parameter: a seated manager posting from this form could stamp their memo
+ * `slack`, and the row would claim an origin it never had. Nothing legitimate does that. The Slack
+ * and email adapters set their own channel because they *are* the other intakes; this one is the
+ * web form and can only ever be `web`.
+ *
+ * It is also part of the memo's identity — `memoKey` hashes the channel — so a caller able to vary
+ * it could store the same sentence from the same minute twice under two keys, which is the one
+ * thing that key exists to prevent.
+ */
+const WEB_CHANNEL = 'web' as const;
+
+/**
+ * The memo window, in civil dates, in the run's zone.
+ *
+ * `ResolvedWindow` carries `Instant`s — epoch milliseconds — and `jsonOk` serialises them as the
+ * numbers they are, so the confirmation read *"in force 1754179200000 → 1754438400000"*. The whole
+ * point of that line is that a manager can check Compass's reading of "until Thursday" against the
+ * Thursday they meant, and a millisecond count cannot be checked by anybody.
+ *
+ * Formatted here rather than in the component for the reason every date in this app is: the client
+ * has no timezone, `apps/web` components do no date arithmetic, and `lib/view-model.ts` and
+ * `TimeTravelBounds` already hand pre-formatted strings down. The zone is the run's — the calendar
+ * the report is written in — so the date shown back is the date tomorrow's report will honour.
+ */
+export function civilWindow(
+  window: ResolvedWindow,
+  timezone: string,
+): { readonly effectiveFrom: string; readonly effectiveUntil: string | null; readonly openEnded: boolean } {
+  return {
+    effectiveFrom: formatCivilDate(window.effectiveFrom, timezone),
+    effectiveUntil: window.effectiveUntil === null ? null : formatCivilDate(window.effectiveUntil, timezone),
+    openEnded: window.openEnded,
+  };
+}
+
+/**
  * ## The candidate list is not accepted from the client, deliberately
  *
  * A `chosenSubjectKey` arrives here and the alternatives it was chosen *between* do not. They
@@ -62,19 +103,6 @@ export async function POST(request: Request): Promise<NextResponse> {
   const rawText = requiredString(parsed.body, 'rawText');
   if ('response' in rawText) return rawText.response;
 
-  /**
-   * The channel is validated against the port's own vocabulary rather than defaulted.
-   *
-   * A memo's channel is part of its identity — `memoKey` hashes it — so silently substituting
-   * `web` for a misspelled value would let the same sentence from the same minute be stored twice
-   * under two keys, which is precisely what that key exists to prevent.
-   */
-  const rawChannel = parsed.body['channel'];
-  const channel = rawChannel === undefined ? 'web' : rawChannel;
-  if (typeof channel !== 'string' || !isMemoSourceChannel(channel)) {
-    return jsonError('invalid_request', '`channel` must be one of the memo source channels.', 400);
-  }
-
   const chosen = parsed.body['chosenSubjectKey'];
   if (chosen !== undefined && (typeof chosen !== 'string' || chosen.trim().length === 0)) {
     return jsonError('invalid_request', '`chosenSubjectKey` must be a non-empty string when present.', 400);
@@ -94,7 +122,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       { scoped: admitted.scoped, extractor: new DeterministicExtractor() },
       {
         rawText: rawText.value,
-        channel,
+        channel: WEB_CHANNEL,
         authorUserId: admitted.identity?.user.id ?? null,
         now: admitted.now,
         timezone: run.timezone,
@@ -104,11 +132,16 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     switch (outcome.status) {
       case 'recorded':
-        return jsonOk(outcome, 201);
+        // The one field that is reshaped on the way out. Everything else is the outcome verbatim.
+        return jsonOk({ ...outcome, window: civilWindow(outcome.window, run.timezone) }, 201);
       case 'needs_subject':
         return jsonOk(outcome, 409);
       default:
         // `refused` and `subject_unknown`: understood the request, will not represent it.
+        //
+        // A refusal carries *two* sentences and both travel: `message` is `REFUSAL_SENTENCE`, the
+        // product's own "I can't represent that yet", and `detail` names what could not be
+        // represented. Rendering only the second would drop the sentence the feature is known by.
         return jsonOk(outcome, 422);
     }
   } catch (error) {

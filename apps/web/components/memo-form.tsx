@@ -21,12 +21,15 @@ import { useState, useTransition } from 'react';
  * The refusal — *"I can't represent that yet"* — is the product's most characteristic sentence and
  * comes from `REFUSAL_SENTENCE` in `@compass/memos` by way of the route, never from this file. A
  * memo outside the closed five-kind schema is declined in plain words rather than stored as
- * something nothing downstream can honour.
+ * something nothing downstream can honour. It arrives as `message`, with `detail` naming what
+ * could not be represented; both are rendered, because for a while only the second was and the
+ * sentence the feature is known by never reached the screen.
  *
  * The candidate picker is the second: Compass understood the assertion and cannot tell which
  * Marcus it is about, so it asks rather than guessing. Choosing re-posts the same text with
- * `chosenSubjectKey`, and the offered candidates travel with it so the memo records what the
- * choice was made *between*.
+ * `chosenSubjectKey` and nothing else — `submitMemo` re-derives the offer from the store and
+ * refuses a key that is not in it, so the alternatives recorded on the memo are Compass's own
+ * rather than the client's account of them.
  *
  * Every rule behind those three lives in `@compass/memos` — the threshold, the refusal, the
  * candidate list. This component renders outcomes and decides nothing, which is what stops the web
@@ -61,7 +64,16 @@ type Outcome =
       readonly window?: WindowView;
     }
   | { readonly status: 'needs_subject'; readonly detail: string; readonly candidates: readonly SubjectCandidateView[] }
-  | { readonly status: 'refused'; readonly detail: string }
+  /**
+   * A refusal carries two sentences, and the headline one is `message`.
+   *
+   * `ExtractionRefusal` declares `message` — always `REFUSAL_SENTENCE`, the product's own *"I
+   * can't represent that yet"* — and `detail`, one sentence naming what could not be represented.
+   * This branch used to render `detail` alone, so the sentence the feature is *known by* never
+   * reached the screen while a supporting clause did. The package's own comment on `detail` says
+   * "shown beneath the refusal", which is exactly the arrangement below.
+   */
+  | { readonly status: 'refused'; readonly message?: string; readonly detail?: string }
   | { readonly status: 'subject_unknown'; readonly detail: string }
   | { readonly status: 'error'; readonly detail: string };
 
@@ -115,7 +127,7 @@ export function MemoForm() {
     event.preventDefault();
     if (text.trim().length === 0) return;
     setOutcome(null);
-    send({ rawText: text.trim(), channel: 'web' });
+    send({ rawText: text.trim() });
   };
 
   /**
@@ -125,9 +137,12 @@ export function MemoForm() {
    * back: `submitMemo` re-derives the offer from the store and refuses a key that is not in it, so
    * sending them would be handing the server the client's account of the server's own question —
    * and that account is what ends up on the row as "why Marcus Hale rather than Marcus Webb".
+   *
+   * The channel does not travel either. It is `web` by virtue of being this form, and the route
+   * pins it rather than reading it, so sending one would be payload the server is right to ignore.
    */
   const choose = (candidate: SubjectCandidateView): void => {
-    send({ rawText: text.trim(), channel: 'web', chosenSubjectKey: candidate.subjectKey });
+    send({ rawText: text.trim(), chosenSubjectKey: candidate.subjectKey });
   };
 
   return (
@@ -235,9 +250,22 @@ export function MemoForm() {
             </div>
           )}
 
-          {(outcome.status === 'refused' || outcome.status === 'subject_unknown' || outcome.status === 'error') && (
-            // Set in the stated-absence voice — the same serif italic a missing deploy signal gets,
-            // because it is the same kind of sentence: a thing Compass will not pretend to know.
+          {outcome.status === 'refused' && (
+            // Both sentences, in the order the package intends them: `REFUSAL_SENTENCE` first,
+            // then what it was about. Set in the stated-absence voice — the same serif italic a
+            // missing deploy signal gets, because it is the same kind of sentence: a thing Compass
+            // will not pretend to know.
+            <div className="border-l-2 border-rule-strong pl-4">
+              {outcome.message !== undefined && (
+                <p className="stated-absence text-[15px]">{outcome.message}</p>
+              )}
+              {outcome.detail !== undefined && (
+                <p className="stated-absence mt-1 text-[13px]">{outcome.detail}</p>
+              )}
+            </div>
+          )}
+
+          {(outcome.status === 'subject_unknown' || outcome.status === 'error') && (
             <p className="stated-absence border-l-2 border-rule-strong pl-4 text-[15px]">{outcome.detail}</p>
           )}
         </div>
