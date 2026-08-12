@@ -1,19 +1,19 @@
 # Build report — Compass
 
-[![nous score](https://img.shields.io/badge/nous%20score-74%2F100-yellow)](#) ![readiness](https://img.shields.io/badge/readiness-caution-yellow)
+[![nous score](https://img.shields.io/badge/nous%20score-55%2F100-red)](#) ![readiness](https://img.shields.io/badge/readiness-blocked-red)
 
-**Overall: 74/100** · readiness: **caution** · **launch-ready** 🚀 · build verified ✓
+**Overall: 55/100** · readiness: **blocked**
 
-**Live:** https://compass-in1avxuv1-lordexishighs-projects.vercel.app
+**Live:** https://compass-7xzuh9wj8-lordexishighs-projects.vercel.app
 
 ## Quality dimensions
 
 | Dimension | Score | |
 |---|---:|---|
-| Spec coverage | 66 | `█████████████░░░░░░░` |
-| Code quality | 88 | `██████████████████░░` |
-| Robustness & error handling | 70 | `██████████████░░░░░░` |
-| Builds & tests | 90 | `██████████████████░░` |
+| Spec coverage | 64 | `█████████████░░░░░░░` |
+| Code quality | 86 | `█████████████████░░░` |
+| Robustness & error handling | 68 | `██████████████░░░░░░` |
+| Builds & tests | 24 | `█████░░░░░░░░░░░░░░░` |
 | UX & design | 58 | `████████████░░░░░░░░` |
 
 ## Readiness checks
@@ -22,13 +22,14 @@
 - ⚠️ No hardcoded secrets — 15 in test fixtures only (not shipped code): hardcoded secret in apps/web/tests/demo-credentials.test.tsx; hardcoded secret in apps/web/tests/sso-routes.test.ts; hardcoded secret in apps/worker/tests/first-run.test.ts
 - ✅ Secrets file ignored — .env present but gitignored
 - ✅ Row-Level Security — RLS enabled on the schema
+- ✅ Dependency vulnerabilities — no critical/high vulnerabilities in the last audit
 
 **Quality**
 - ✅ Automated tests — test files present
 - ✅ No stub/placeholder code — no stub markers found
 - ✅ Dependencies pinned — lockfile/requirements present
 - ✅ License declared — license present
-- ✅ Builds & tests pass — final smoke test passed
+- ❌ Builds & tests pass — final product smoke test did not pass
 - ✅ Accessibility basics — images have alt text
 
 **Compliance**
@@ -41,22 +42,23 @@
 
 ## Strengths
 
-- The cold-open promise is delivered: `/` renders a fully narrated six-section report for the seeded org with no login, with a Data-freshness panel stating the real ingest window (2026-07-30 → 2026-07-31) and concrete per-section counts tied to named artifacts (PLAT-529, PLAT-754/755, pull-request-883) — the freshness and named-artifact journeys passed 7/7 and 8/8.
-- Authorization is a single enumerable table (`packages/auth/src/matrix.ts`) with `public` modelled as a fifth principal and `demoOnlyPublic` scoping the zero-config page, held in place by a test that fails the build when any `app/api/**/route.ts` lacks an entry — the correct shape for 'checked server-side on every route'.
-- The seed layer is genuinely deterministic and provider-neutral: `packages/seed-connector/src/generator.ts` expands checked-in fixtures with no host clock, no `Math.random`, and no locale-sensitive comparison, verified by regenerate-then-`git diff --exit-code`.
-- Comments encode invariants and the reasoning behind rejected alternatives (why crawlability is editorial rather than derived from the matrix; why Sentry init is an exported options function), which makes the boundaries maintainable rather than merely present.
+- The deterministic core is real, not narrated: `packages/seed-connector/src/generator.ts` expands checked-in fixtures into ~3,000 records with no host clock, no Math.random and no locale-sensitive ordering, self-checking so `pnpm seed:generate && git diff --exit-code` is the determinism proof.
+- Authorization is expressed as one enumerable table (`packages/auth/src/matrix.ts`) with `public` modelled as a fifth principal confined to the demo tenant, and `tests/authz-matrix.test.ts` walks every role × route × action triple and fails the build for any `app/api/**/route.ts` with no entry.
+- The Manager Memo differentiator is properly layered: `app/api/memos/route.ts` decides nothing, delegating extraction, refusal and subject resolution to `@compass/memos` so the web form and the inbound email path cannot disagree about what Compass will represent.
+- The rendered report is honest about its own limits — the data-freshness panel states its ingest window and explains the seeded history ends 2026-07-31 rather than silently showing stale data as current.
 
 ## To improve
 
-- `apps/web/app/artifact/[kind]/[artifactId]/page.tsx` (1.4KB) and `apps/web/lib/artifact-source.ts` never complete — all 43 evidence targets fail to reach domcontentloaded in 45s. Give the lookup a bounded, indexed query keyed on (org, kind, artifactId) instead of materializing a snapshot per request, wrap it in an explicit timeout that renders the existing `StatedFailure` component on expiry, and make the page's own render path independent of report generation so it returns in under a second.
-- `apps/web/app/layout.tsx` renders no navigation, which is why the crawl found exactly one reachable page while `app/archive/page.tsx`, `app/archive/merged/[reportDate]`, `app/weekly/page.tsx`, `app/merged/page.tsx`, `app/roster/page.tsx`, `app/goals/page.tsx` and `app/connect/page.tsx` all exist on disk. Add a persistent header linking the archive, merged report, weekly digest, goals, roster and connect screens, plus a team switcher, so the built surfaces are reachable from the front door.
-- `components/time-travel-scrubber.tsx` and `app/api/time-travel/route.ts` are implemented but not mounted on the report view — `app/page.tsx` is 1.4KB and the crawl found 0 forms and 0 inputs, leaving the report frozen at 2026-07-31. Mount the scrubber in `app/page.tsx` (day-step buttons plus a date jump posting to the existing route) so the Release 2 slip can actually be walked through.
-- The report body renders the literal string 'No data', failing the cold-read journey at step 12. Trace the empty branch in `apps/web/lib/view-model.ts` / `components/report-section.tsx` and replace it with either the real value or one of the authored sentences in `lib/empty-states.ts` — the app already has an honest-degradation vocabulary and this path bypasses it.
-- The Manager Memos differentiator has no entry point in the web app: there is no memo route under `apps/web/app/api/` and no form component. Add the memo submission route plus a form on the report page that shows the typed assertion for confirmation, returns the plain 'I can't represent that yet' refusal for out-of-schema text, offers 2–3 candidates on low-confidence subject resolution, and renders the memo citation on the next report.
+- Builds & tests pass: final product smoke test did not pass
+- `/` server-renders by regenerating the report through the live pipeline on every request, which blows past a 45s navigation timeout and fails all five journeys — materialize the seeded org's report into the `reports` table at seed time (`packages/db/src/first-run.ts`) and have `apps/web/lib/report-source.ts` read the persisted row, regenerating only on cache miss, so the cold-start page is a database read.
+- `apps/web/app/artifact/[kind]/[artifactId]/page.tsx` is 1.4KB over `lib/artifact-source.ts` and never renders — all 43 cited Jira keys, PR numbers and sprint links time out. Make artifact lookup a single indexed query against the knowledge-model rows for that entity id instead of building or scanning a snapshot per request, and add a `notFound()` path so an unknown id returns 404 fast rather than hanging.
+- `apps/web/app/layout.tsx` renders no navigation, so the archive, weekly, merged and roster pages that exist on disk are unreachable from the product — add a header linking `/archive`, `/weekly`, `/merged`, `/roster`, `/goals`, and a team switcher wired to `components/team-switcher.tsx` so a manager can leave the single report page.
+- `components/time-travel-scrubber.tsx` posts to `/api/time-travel` but never yields a second, linkable page — give the report a date-parameterized route (e.g. `/report/[teamKey]/[date]`) that the scrubber navigates to, so stepping days produces distinct permalinks and the Release 2 slip is observable as one stable item ID across dates.
+- Nothing in the repo gates the runtime budget the spec promises — add a test that boots the built app and asserts `/` and a sample `/artifact/...` respond under a fixed threshold, wired into `.github/workflows/ci.yml`, so a regression that makes the page unopenable fails the build instead of passing 2,496 unit tests.
 
 ## Summary
 
-A codebase of real engineering quality — enumerable authorization, a deterministic seed generator, and tests that assert invariants rather than restate constants — wired into an app that a user can barely traverse: one reachable page, 43 hanging evidence links, and a dozen implemented surfaces with no route into them. The work needed is integration and performance, not construction.
+An unusually well-architected codebase — pure analysis layer, deterministic seed generator, one enumerable permission matrix, the memo differentiator properly packaged — undermined by a runtime that fails everything: the smoke test does not pass, `/` times out at 45s, every evidence link is dead, and the dozens of pages present on disk are unreachable. This is a strong engine behind a door that will not open; the fix is performance and navigation, not more features.
 
 ---
-_Scored 2026-08-06 16:38 by [nous](https://github.com/lordexishigh/nous) — an LLM judge anchored by deterministic readiness checks; regenerated on every re-score._
+_Scored 2026-08-07 18:20 by [nous](https://github.com/lordexishigh/nous) — an LLM judge anchored by deterministic readiness checks; regenerated on every re-score._

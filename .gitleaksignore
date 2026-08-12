@@ -1,0 +1,80 @@
+# Findings the secret-scan gate has already been shown to be wrong about.
+#
+# Each line is a gitleaks *fingerprint* — `commit:file:rule-id:line`. That is the narrowest
+# exemption this tool offers, and it is deliberately the one used here: a fingerprint spares one
+# known string at one line of one commit under one rule. A genuinely new credential in the same
+# file, on a different line, or under a different rule is still a finding. Nothing here switches
+# scanning off for a path, a rule, or a directory — see the argument in `.gitleaks.toml`, which
+# holds path exemptions to a high bar and is unchanged by this file.
+#
+# ## Why these seven exist
+#
+# All seven are test fixtures, and the gate has failed on them on *every* run since they were
+# written — including the nightly that filed #9 as a credential-in-history finding. They cannot
+# clear themselves: the commits are immutable, so without this file the gate is structurally
+# incapable of ever going green.
+#
+# Two were read at the flagged commit rather than trusted by filename:
+#
+#   * `tools/eslint-plugin-compass/tests/rules.test.js:251` assigns a twelve-character alphanumeric
+#     literal to an `apiToken` key, inside a case asserting that `no-credential-literal` FLAGS a
+#     hardcoded token. The fixture has to look like a token or the test asserts nothing. The value
+#     is deliberately NOT reproduced here — see "One more thing this file learned" at the bottom.
+#     Note `.gitleaks.toml` exempts the plugin's
+#     `rules/` directory and deliberately not its `tests/`, which is why this line is here and not
+#     covered there — and that narrowness is correct, so it is preserved rather than widened.
+#
+#   * `apps/web/tests/error-reporting.test.ts:33` is an `sk_live_`-prefixed string whose body is a
+#     hand-written descending-hex pattern repeated twice, beside a JWT signed
+#     `abcdefghijklmnopqrstuvwxyz012345` and an `@northwind.example` address. Synthetic on every
+#     axis except the prefix — and the prefix is the whole reason `stripe-access-token` fired.
+#
+# The remaining five are the `ghp_`/`ghr_` token-handling fixtures in `token-storage.test.ts` and
+# `integration-tokens.test.ts`, at commits predating their reshaping.
+#
+# ## The part worth keeping
+#
+# At HEAD these fixtures read `ghp_EXAMPLE-FIXTURE-NOT-A-REAL-CREDENTIAL`, and
+# `packages/auth/tests/integration-tokens.test.ts` explains why: a fixture written in a live
+# token's shape "is indistinguishable from a real leaked credential to every reader and every
+# scanner … so it costs a reviewer real time to rule out and trains everyone to wave through the
+# pattern that matters." That reasoning is right, and this file is the bill for the period before
+# it was applied. Keep writing fixtures that way and this list never needs another entry.
+#
+# ## The standard for adding a line here
+#
+# Read the value at the flagged commit and satisfy yourself it is not a credential. Do not add a
+# fingerprint to make a build green — a real leak and a fixture look identical in the report, which
+# is the entire reason this file demands the commit be opened. If a value turns out to be real, the
+# fix is rotation, not an entry here.
+#
+# ## One more thing this file learned, the hard way
+#
+# The first version of these comments quoted the flagged fixture value verbatim to justify sparing
+# it. The gate then reported `.gitleaksignore:19` at entropy 3.584963 — the same entropy as the
+# finding it was explaining. Seven findings became one, and the one was this file.
+#
+# Deleting the line at HEAD fixed nothing, and that is the part worth internalising: the gate scans
+# **history**, so the commit carrying the bad line still reported it. The finding was only removable
+# because the branch was unmerged and could be squashed — a commit is editable for exactly as long
+# as it has not reached `master`, and not one moment longer.
+#
+# The alternative would have been adding a fingerprint for the offending commit, which *would* have
+# worked (a historical commit's fingerprint is stable). It was the wrong fix: it permanently exempts
+# a mistake that could still be erased, and every such entry makes this list a worse signal.
+#
+# `.gitleaks.toml` already warned about exactly this shape — the ESLint `rules/` directory "reports
+# itself" because it describes credential shapes for a living — and this file walked into it anyway.
+#
+# So: **describe flagged values, never reproduce them.** "A twelve-character alphanumeric literal
+# assigned to `apiToken`" carries the whole argument and matches no rule. A prefix on its own
+# (`sk_live_`, `ghp_`) is safe to name, because a prefix is not a secret and naming it is often the
+# only way to say which rule fired.
+
+0559f6596b259efdb2ae587d9292f5713142e4b9:apps/web/tests/error-reporting.test.ts:stripe-access-token:33
+0559f6596b259efdb2ae587d9292f5713142e4b9:packages/observability/tests/log.test.ts:stripe-access-token:133
+09d86237195d537ecff36b18fd5f198378b250ac:apps/web/tests/token-storage.test.ts:github-pat:101
+09d86237195d537ecff36b18fd5f198378b250ac:apps/web/tests/token-storage.test.ts:github-pat:107
+09d86237195d537ecff36b18fd5f198378b250ac:packages/auth/tests/integration-tokens.test.ts:generic-api-key:43
+09d86237195d537ecff36b18fd5f198378b250ac:packages/auth/tests/integration-tokens.test.ts:github-pat:42
+360fdf1d68f65c219e63c0d6bb72ff3ee64863a9:tools/eslint-plugin-compass/tests/rules.test.js:generic-api-key:251

@@ -3,12 +3,22 @@
 # The gate runs on every pull request over the whole of git *history* — a credential committed and
 # then reverted is still leaked — and fails the build on a detected credential.
 #
-# Exactly three things are exempt, and they are listed here so this paragraph can be checked against
-# the file rather than trusted:
+# Exactly three things are exempt *by this file*, and they are listed here so this paragraph can be
+# checked against the file rather than trusted:
 #
 #   1. `postgresql://compass:compass@localhost:5432/compass`   — a value
 #   2. `postgresql://postgres:postgres@localhost:5432/compass` — a value
 #   3. `tools/eslint-plugin-compass/rules/`                    — a path
+#
+# There is a fourth kind of exemption and it lives in `.gitleaksignore`: seven individual findings,
+# pinned by fingerprint (`commit:file:rule-id:line`), each a test fixture the gate has been wrong
+# about since the day it was written. They are named there with the reasoning. This sentence exists
+# so that reading only this file cannot leave you believing the list above is the whole of it.
+#
+# A fingerprint is narrower than anything expressible here — one string, one line, one commit, one
+# rule — so it does not weaken the argument this file makes; it is the instrument that argument
+# implies. Path exemptions stay held to the bar set in `## The path, and the trade it makes` below,
+# and `.gitleaksignore` must never be used to smuggle one in by listing out every finding in a file.
 #
 # The first two are loopback placeholders that appear in documentation. The third is the directory
 # holding the ESLint rules that detect credentials for a living, which therefore describes credential
