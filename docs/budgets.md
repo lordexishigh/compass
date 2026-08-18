@@ -29,10 +29,11 @@ sections that go into each one:
 
 - **Gated end to end.** The two performance budgets, by the `perf` job in
   `.github/workflows/ci.yml`, against a running container. The merged 400-word ceiling, by the
-  renderer refusing to emit prose over it.
+  renderer refusing to emit prose over it. **The `perf` job runs on pushes to `master` and on
+  `workflow_dispatch`, not on pull requests** — see "Where these run" below.
 - **Gated end to end**, also: cold start, by the `cold-start` job, at 60000 ms. The image build runs
   in its own step so it is outside the measured window — see below for why that is the difference
-  between a gate and a formality.
+  between a gate and a formality. Same trigger caveat as `perf`.
 - **Gated on one path only.** The 900-word daily ceiling fails closed on the *narrated* path; the
   seeded corpus renders 1,400–2,000 words through the template renderer and is over it today. See
   below.
@@ -113,7 +114,22 @@ which is a gate in name only. Two assertions hold the number now:
 - `tools/smoke/tests/probe.test.ts` asserts the constant and the probe's behaviour at it — a report
   at 59 s passes, one at 61 s fails, and elapsed time is measured from the first attempt rather than
   per-attempt. That runs in `pnpm test` on every push.
-- The `cold-start` job asserts it against a real container.
+- The `cold-start` job asserts it against a real container, on pushes to `master` rather than on
+  every pull request.
+
+### Where these run
+
+`perf` and `cold-start` build and boot containers, which made them the two most expensive jobs in
+the workflow. compass consumed 67% of the account's Actions minutes and exhausted the 2,000-minute
+allowance for *every* repository on the account (issue #12), so both moved off pull requests to
+`master` pushes and `workflow_dispatch`.
+
+**The trade-off, stated plainly:** a budget regression now surfaces on the merge commit rather than
+on the pull request that caused it. When that happens, fix forward from the `master` run — do not
+assume the pull request was mis-tested. What stops this from being a silent loosening is that the
+number itself is unchanged and still asserted against a real container; only the trigger moved.
+`tools/smoke/tests/probe.test.ts` still asserts the constant in `pnpm test` on every pull request,
+so a change to the *budget* is still caught there.
 
 `pnpm smoke` prints the measured elapsed time either way, so a regression that stays under the budget
 is still visible in the log.

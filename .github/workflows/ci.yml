@@ -23,58 +23,76 @@ jobs:
   # already name the offending artifact — so nothing here echoes a summary that could drift from what
   # actually failed. The job *name* supplies the gate; the test output supplies the artifact.
   # ---------------------------------------------------------------------------
-  gate-lint:
-    name: 'gate: lint (clock reads, no charts, secret disclosure, jsx-a11y)'
+  # The four gates below share one runner deliberately.
+  #
+  # Each was its own job, and each pays a checkout, a pnpm/node setup and a
+  # `pnpm install --frozen-lockfile` — about a minute of billed time — before doing
+  # seconds of work. Four runner setups for four fast checks is most of their cost.
+  # compass consumed 67% of the account's Actions minutes this way and exhausted the
+  # 2,000-minute allowance for every repository on the account (issue #12).
+  #
+  # WHAT THIS GIVES UP, STATED PLAINLY: the check *title* no longer names which of the
+  # four failed — the failing *step* does. That is a real loss against the rule the
+  # fan-out below still follows ("a failure names the gate"), and it is accepted only
+  # for gates whose runner setup costs more than their work. The nine `gate-suites`
+  # legs keep their own jobs, because there the work dominates the setup and the check
+  # title is the only place a reviewer sees which gate broke.
+  #
+  # Every step runs even after an earlier one fails (`if: always()`), so this reports
+  # all four verdicts per run rather than stopping at the first — the same property
+  # `fail-fast: false` gives the matrix below.
+  static-gates:
+    name: 'gates: secret scan · lint · architecture · typecheck'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Gitleaks scans *history*, so a shallow clone would silently check one commit
+          # and pass. A credential committed and then reverted is still a leaked
+          # credential. The full clone is why the secret scan shares this job rather than
+          # the other way round: the pnpm gates do not care about depth.
+          fetch-depth: 0
+
+      # First, and before the install: a leaked credential should fail without anybody
+      # paying for a dependency tree first.
+      - name: 'gate: secret scan (gitleaks, full history)'
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+
       - uses: pnpm/action-setup@v4
+        if: always()
         with:
           version: 10.15.0
+
       - uses: actions/setup-node@v4
+        if: always()
         with:
           node-version: 22
           cache: pnpm
+
       - run: pnpm install --frozen-lockfile
+        if: always()
+
       # `compass/no-system-clock`, `no-time-library-imports`, `no-clock-instantiation`,
-      # `no-analysis-io`, `no-secret-disclosure`, plus the jsx-a11y set over apps/web. The clock and
-      # purity rules are also enforced by an independent textual scan in `gate-quality-gates`, so each
-      # is checked twice by two mechanisms that cannot both be switched off by one edit.
-      - run: pnpm run lint
+      # `no-analysis-io`, `no-secret-disclosure`, plus the jsx-a11y set over apps/web. The
+      # clock and purity rules are also enforced by an independent textual scan in
+      # `gate-quality-gates`, so each is checked twice by two mechanisms that cannot both
+      # be switched off by one edit.
+      - name: 'gate: lint (clock reads, no charts, secret disclosure, jsx-a11y)'
+        if: always()
+        run: pnpm run lint
 
-  gate-architecture:
-    name: 'gate: architecture (layer boundaries, analysis purity)'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.15.0
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
       # dependency-cruiser over packages/apps/tools. Names the offending edge on failure.
-      - run: pnpm run arch
+      - name: 'gate: architecture (layer boundaries, analysis purity)'
+        if: always()
+        run: pnpm run arch
 
-  gate-typecheck:
-    name: 'gate: typecheck'
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.15.0
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm run typecheck
+      - name: 'gate: typecheck'
+        if: always()
+        run: pnpm run typecheck
 
   gate-suites:
     # Fanned out per workspace so a failure names the gate in the check title rather than only in a
@@ -196,23 +214,6 @@ jobs:
   # `.github/workflows/nightly.yml` — same scanners, different trigger, because a dependency that
   # becomes vulnerable on a Tuesday does so without anybody opening a pull request.
   # ---------------------------------------------------------------------------
-  secret-scan:
-    name: 'gate: secret scan'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          # Gitleaks scans *history*, so a shallow clone would silently check one commit and pass. A
-          # credential committed and then reverted is still a leaked credential.
-          fetch-depth: 0
-
-      - name: gitleaks
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_CONFIG: .gitleaks.toml
-
   dependency-scan:
     name: 'gate: dependency scan (critical CVE with a fix blocks)'
     runs-on: ubuntu-latest
@@ -338,6 +339,15 @@ jobs:
   cold-start:
     name: docker compose cold start
     runs-on: ubuntu-latest
+    # Off pull requests deliberately (issue #12). This job builds and boots containers,
+    # which is the most expensive thing in this workflow and the least likely to be broken
+    # by a typical change. It still runs on every push to `master` and on
+    # `workflow_dispatch`, so the coverage moves rather than disappears.
+    #
+    # THE TRADE-OFF, STATED PLAINLY: a regression here now surfaces on the merge commit
+    # rather than on the pull request that caused it. When that happens, fix forward from
+    # the master run — do not assume the pull request was mis-tested.
+    if: github.event_name != 'pull_request'
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -408,6 +418,15 @@ jobs:
   perf:
     name: performance budgets
     runs-on: ubuntu-latest
+    # Off pull requests deliberately (issue #12). This job builds and boots containers,
+    # which is the most expensive thing in this workflow and the least likely to be broken
+    # by a typical change. It still runs on every push to `master` and on
+    # `workflow_dispatch`, so the coverage moves rather than disappears.
+    #
+    # THE TRADE-OFF, STATED PLAINLY: a regression here now surfaces on the merge commit
+    # rather than on the pull request that caused it. When that happens, fix forward from
+    # the master run — do not assume the pull request was mis-tested.
+    if: github.event_name != 'pull_request'
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
