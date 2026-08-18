@@ -26,7 +26,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "0.115.0",
+    "@anthropic-ai/sdk": "0.117.1",
     "@compass/analysis": "workspace:*",
     "@compass/clock": "workspace:*",
     "@compass/renderers": "workspace:*"
