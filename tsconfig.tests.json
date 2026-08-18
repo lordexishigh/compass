@@ -18,6 +18,11 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "types": ["node"],
+    // TypeScript 6 reports `baseUrl` as a deprecation ERROR (TS5101), not a warning,
+    // and it stops functioning in 7.0. This silences it for the 6.x line without
+    // changing resolution; the real fix is dropping `baseUrl` in favour of paths
+    // relative to this file, which belongs with the TypeScript 7 migration.
+    "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
       "@compass/clock": ["packages/clock/src/index.ts"],

@@ -48,7 +48,7 @@
     "axe-core": "4.13.0",
     "jsdom": "^30.0.1",
     "tailwindcss": "4.3.3",
-    "typescript": "5.9.3",
+    "typescript": "6.0.3",
     "vitest": "4.1.10"
   }
 }
