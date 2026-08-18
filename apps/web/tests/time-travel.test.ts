@@ -9,6 +9,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { SESSION_COOKIE_NAME } from '../lib/auth/cookies';
 import { instantForDate, simulatedClockAvailable, timeTravelBounds } from '../lib/archive-source';
+import { edgeNow } from './helpers/edge-now';
 
 /**
  * The time-travel control's gate.
@@ -96,7 +97,7 @@ beforeAll(async () => {
     })
     .execute();
 
-  session = (await startSession({ scoped, userId: USER, now: T0 })).secret;
+  session = (await startSession({ scoped, userId: USER, now: edgeNow() })).secret;
 }, 240_000);
 
 afterAll(async () => {

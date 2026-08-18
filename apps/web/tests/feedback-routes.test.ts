@@ -28,6 +28,7 @@ import { SEEDED_ORGANIZATION_ID } from '@compass/seed-connector';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { SESSION_COOKIE_NAME } from '../lib/auth/cookies';
+import { edgeNow } from './helpers/edge-now';
 import {
   FIXTURE_FEEDBACK_LINK_SECRET,
   FIXTURE_OTHER_SIGNING_SECRET,
@@ -617,7 +618,7 @@ describe('POST /api/feedback', () => {
   let managerSession = '';
 
   beforeAll(async () => {
-    const started = await startSession({ scoped: scoped(), userId: USER, now: T0 });
+    const started = await startSession({ scoped: scoped(), userId: USER, now: edgeNow() });
     managerSession = started.secret;
   });
 

@@ -6,6 +6,7 @@ import { SEEDED_ORGANIZATION_ID } from '@compass/seed-connector';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { SESSION_COOKIE_NAME } from '../lib/auth/cookies';
+import { edgeNow } from './helpers/edge-now';
 import { FIXTURE_PASSPHRASE, WRONG_PASSPHRASE } from './helpers/fixture-credentials';
 
 /**
@@ -265,7 +266,7 @@ describe('GET /api/auth/session', () => {
     const started = await startSession({
       scoped: scoped(),
       userId: (await findUserByEmail(scoped(), EMAIL))?.id ?? '',
-      now: T0,
+      now: edgeNow(),
     });
     const ask = () =>
       GET(
