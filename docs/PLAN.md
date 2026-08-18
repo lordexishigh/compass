@@ -662,6 +662,14 @@ Wire the full CI/CD pipeline running every gate (determinism, clock lint, purity
 
 - **launch-release-engineering-and-monitoring-001** CI pipeline running every quality gate
   - [ ] Every documented gate runs on every pull request and the build fails on any gate failure
+    - **Amended 2026-08-18 (issue #12).** Two exceptions, deliberate and recorded rather than
+      silently taken: `cold-start` and `perf` run on `master` pushes and `workflow_dispatch`, not on
+      pull requests. They build and boot containers, and paying that on every pull request was a
+      material part of exhausting the account's entire Actions allowance — which took CI down for
+      every repository, so the fan-out was costing more coverage than it bought. Every other gate,
+      including base-image scanning and the secret scan, still runs on every pull request. The
+      criterion is otherwise unchanged, and `docs/budgets.md` records the same exception beside the
+      numbers it affects.
   - [ ] The cold-start smoke test boots a clean container, fetches `/` and asserts a full six-section report within 60 seconds
   - [ ] Gate failures report a readable message naming the gate and the offending artifact
 - **launch-release-engineering-and-monitoring-002** Dependency, secret and image scanning
