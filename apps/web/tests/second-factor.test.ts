@@ -23,6 +23,7 @@ import { createMigratedTestDatabase, type TestDatabase } from '@compass/db/testi
 import { SEEDED_ORGANIZATION_ID } from '@compass/seed-connector';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { edgeNow } from './helpers/edge-now';
 import { SESSION_COOKIE_NAME } from '../lib/auth/cookies';
 import { FIXTURE_PASSPHRASE, WRONG_PASSPHRASE, fixtureCredential } from './helpers/fixture-credentials';
 
@@ -103,19 +104,6 @@ afterEach(async () => {
   await deleteSecondFactor(scoped(), userId);
 });
 
-/**
- * The instant the handlers will themselves use.
- *
- * `guard` reads the process edge's own clock (`nowAtEdge`), so a challenge or a TOTP code minted against a
- * fixed `T0` is genuinely expired by the time the route evaluates it — correctly refused, and useless as a
- * test. `T0` therefore stays where it belongs, seeding the database fixture, and anything the running code
- * will compare against real time is built from real time.
- *
- * This is the one place a test reads a clock, and it does it through `instantFromIso` rather than by
- * instantiating one, because `compass/no-clock-instantiation` is right that a `SystemClock` in a test is
- * usually a bug.
- */
-const edgeNow = (): Instant => instantFromIso(new Date().toISOString());
 
 /** An activated enrollment with a known secret, so the test can compute the code the app would show. */
 async function enroll(at: Instant = edgeNow()): Promise<string> {

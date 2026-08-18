@@ -16,6 +16,7 @@ import { SEEDED_ORGANIZATION_ID } from '@compass/seed-connector';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { SESSION_COOKIE_NAME } from '../lib/auth/cookies';
+import { edgeNow } from './helpers/edge-now';
 
 /**
  * The billing routes, executed end to end.
@@ -121,8 +122,8 @@ beforeAll(async () => {
       .execute();
   }
 
-  sessions.owner = (await startSession({ scoped: scoped(), userId: OWNER, now: T0 })).secret;
-  sessions.manager = (await startSession({ scoped: scoped(), userId: MANAGER, now: T0 })).secret;
+  sessions.owner = (await startSession({ scoped: scoped(), userId: OWNER, now: edgeNow() })).secret;
+  sessions.manager = (await startSession({ scoped: scoped(), userId: MANAGER, now: edgeNow() })).secret;
 }, 120_000);
 
 afterAll(async () => {

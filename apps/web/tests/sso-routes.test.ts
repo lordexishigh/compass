@@ -27,6 +27,7 @@ import { SEEDED_ORGANIZATION_ID } from '@compass/seed-connector';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { SESSION_COOKIE_NAME, SSO_NONCE_COOKIE_NAME } from '../lib/auth/cookies';
+import { edgeNow } from './helpers/edge-now';
 
 /**
  * The single-sign-on, SAML and SCIM routes, executed end to end.
@@ -130,8 +131,8 @@ beforeAll(async () => {
       .execute();
   }
 
-  sessions.owner = (await startSession({ scoped: scoped(), userId: OWNER, now: T0 })).secret;
-  sessions.member = (await startSession({ scoped: scoped(), userId: MEMBER, now: T0 })).secret;
+  sessions.owner = (await startSession({ scoped: scoped(), userId: OWNER, now: edgeNow() })).secret;
+  sessions.member = (await startSession({ scoped: scoped(), userId: MEMBER, now: edgeNow() })).secret;
 }, 180_000);
 
 afterAll(async () => {
@@ -546,7 +547,7 @@ describe('the SCIM endpoints', () => {
     );
     const userId = membership.rows[0]?.user_id ?? '';
     expect(userId).not.toBe('');
-    await startSession({ scoped: scoped(), userId, now: T0 });
+    await startSession({ scoped: scoped(), userId, now: edgeNow() });
 
     const liveBefore = await database.client.query<{ count: string }>(
       'select count(*)::text as count from sessions where user_id = $1 and revoked_at is null',
