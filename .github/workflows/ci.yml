@@ -39,10 +39,10 @@ jobs:
   # title is the only place a reviewer sees which gate broke.
   #
   # Every step runs even after an earlier one fails (`if: always()`), so this reports
-  # all four verdicts per run rather than stopping at the first — the same property
+  # all five verdicts per run rather than stopping at the first — the same property
   # `fail-fast: false` gives the matrix below.
   static-gates:
-    name: 'gates: secret scan · lint · architecture · typecheck'
+    name: 'gates: secret scan · lint · architecture · typecheck · build'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -93,6 +93,16 @@ jobs:
       - name: 'gate: typecheck'
         if: always()
         run: pnpm run typecheck
+
+      # A type check is not a build. `next build` runs Turbopack, PostCSS and the route
+      # collector — none of which `tsc` touches — and it is the step a dependency bump is
+      # most likely to break. Next 16.3.1 was merged here on 2026-08-18 having broken it,
+      # and nothing on a pull request noticed, because the only thing that built the app was
+      # the `docker compose` pair below and those are `push`-only. This is the cheap half of
+      # that coverage: no Docker, no database, reuses the install this job already paid for.
+      - name: 'gate: build (the app actually compiles)'
+        if: always()
+        run: pnpm run build
 
   gate-suites:
     # Fanned out per workspace so a failure names the gate in the check title rather than only in a

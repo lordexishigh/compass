@@ -1,4 +1,10 @@
-@import 'tailwindcss';
+/* Tailwind's stylesheet by its explicit export path, not the bare `tailwindcss` specifier.
+   Next 16's Turbopack resolves a CSS `@import` itself, and its resolver does not offer the
+   `style` condition — so tailwindcss's `.` export (`types`, `style`, `require`, `import`, and
+   no `default`) matches nothing and the build dies with "no valid target file was found".
+   `./index.css` is an exported subpath, so no condition matching is involved. The emitted
+   stylesheet is unchanged: same 398 selectors as the last Next 15 build. */
+@import 'tailwindcss/index.css';
 
 /* ---------------------------------------------------------------------------
    Design tokens — defined once, referenced everywhere.

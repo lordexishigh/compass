@@ -19,7 +19,7 @@
     "golden:update": "pnpm --filter @compass/golden run update",
     "lint": "eslint .",
     "arch": "depcruise --config .dependency-cruiser.cjs packages apps tools",
-    "verify": "pnpm run lint && pnpm run arch && pnpm run typecheck && pnpm run test",
+    "verify": "pnpm run lint && pnpm run arch && pnpm run typecheck && pnpm run test && pnpm run build",
     "dev": "node tools/dev.mjs",
     "worker": "pnpm --filter @compass/worker run start",
     "db:generate": "pnpm --filter @compass/db run generate",

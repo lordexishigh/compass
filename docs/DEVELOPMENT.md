@@ -19,9 +19,13 @@ pnpm run worker      # the second process: ingest, generation, delivery, privacy
 `docker compose up` does all of that in one command and is the canonical cold start. Both paths are
 documented, with the credentials the seed provisions, in [`../README.md`](../README.md).
 
-**`pnpm run verify` is the gate** — `lint`, `arch`, `typecheck`, `test`, in that order. It is the
-same sequence CI runs, and it takes several minutes, so run it before a commit rather than after
-every edit.
+**`pnpm run verify` is the gate** — `lint`, `arch`, `typecheck`, `test`, `build`, in that order. It
+is the same sequence CI runs, and it takes several minutes, so run it before a commit rather than
+after every edit.
+
+`build` is last and it is not redundant with `typecheck`: `tsc` never runs Turbopack, PostCSS or the
+route collector, so a dependency bump can leave the types perfect and the app uncompilable. That is
+not hypothetical — Next 16.3.1 landed on `master` in exactly that state on 2026-08-18.
 
 Individual steps, when you want one:
 
@@ -31,6 +35,7 @@ Individual steps, when you want one:
 | `pnpm run arch` | dependency-cruiser: every layer boundary in `docs/ARCHITECTURE.md`, as a rule |
 | `pnpm run typecheck` | `tsc -b` over the packages, the test projects, and the web app |
 | `pnpm run test` | every package's own vitest project |
+| `pnpm run build` | `tsc -b` over the packages, then a real `next build` of the web app |
 | `pnpm run test:golden` | the checked-in report fixtures — see [Golden fixtures](#golden-fixtures) |
 | `pnpm run smoke` / `pnpm run perf` | the running product: a cold boot, then the numbered budgets in [`budgets.md`](budgets.md) |
 
