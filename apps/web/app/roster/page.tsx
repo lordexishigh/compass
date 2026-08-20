@@ -3,6 +3,7 @@ import { headers } from 'next/headers';
 import { RosterScreen } from '../../components/roster-screen';
 import { StatedFailure } from '../../components/stated-failure';
 import { pageAccess } from '../../lib/auth/guard';
+import { UNAVAILABLE_SENTENCE } from '../../lib/auth/http';
 import { readRoster } from '../../lib/roster-source';
 
 /**
@@ -95,17 +96,31 @@ export default async function RosterPage() {
   }
 
   let roster: Awaited<ReturnType<typeof readRoster>> | null = null;
-  let unreadable: string | null = null;
   try {
     roster = await readRoster(access.scoped, access.now);
   } catch (error) {
-    unreadable = error instanceof Error ? error.message : 'The configuration could not be read.';
+    /*
+      Logged, never rendered — the same split `guard()`, `pageAccess()` and `failure()` make.
+
+      A driver or connection error's `message` carries host, port, user and sometimes the
+      database name, which is why `UNAVAILABLE_SENTENCE` exists and why `http.ts` says so next
+      to it. This branch used to render `error.message`, and that was survivable only while the
+      matrix gated this route to owner and manager. It no longer does: on the demonstration
+      tenant an anonymous reader reaches this line, so the driver's words would go to a stranger.
+
+      Rendering the same constant `pageAccess` hands back as `access.detail` also makes the two
+      failure branches on this page say one thing rather than two.
+    */
+    console.error(
+      `[compass] /roster could not read the configuration: ` +
+        `${error instanceof Error ? (error.stack ?? error.message) : String(error)}`,
+    );
   }
 
   if (roster === null) {
     return (
       <Frame heading="The configuration could not be read">
-        <StatedFailure detail={`${unreadable} Nothing has been changed.`}>
+        <StatedFailure detail={`${UNAVAILABLE_SENTENCE} Nothing has been changed.`}>
           <a href="/api/health" className="tertiary-action">
             system readiness
           </a>

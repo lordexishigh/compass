@@ -1,3 +1,7 @@
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -209,5 +213,42 @@ describe('a reader without a seat gets the document and none of the controls', (
   it('still lists the tracked repository and project', () => {
     expect(readOnly).toContain('acme/api');
     expect(readOnly).toContain('PLAT');
+  });
+});
+
+/**
+ * The store-read failure says Compass's sentence, not the driver's.
+ *
+ * A source check rather than a render, for the reason `empty-states.test.tsx` states about the
+ * archive: `/roster` is an async Server Component that reaches the database, and this suite
+ * cannot execute the branch where that read throws.
+ *
+ * The rule is `lib/auth/http.ts`'s own — a driver or connection error's `message` carries host,
+ * port, user and sometimes the database name, so it is logged and never returned. This page
+ * rendered `error.message` until the matrix widening above, and that was survivable only while
+ * the route was gated to owner and manager. Opening the read to `public` on the demonstration
+ * tenant is exactly what turned it into a leak to a stranger, which is why the assertion lives
+ * in this file next to the widening that caused it.
+ */
+describe('the /roster store-read failure is sanitised and logged', () => {
+  const page = readFileSync(
+    join(dirname(fileURLToPath(import.meta.url)), '..', 'app', 'roster', 'page.tsx'),
+    'utf8',
+  );
+
+  it('renders the shared unavailable sentence rather than the thrown message', () => {
+    expect(page).toContain("import { UNAVAILABLE_SENTENCE } from '../../lib/auth/http'");
+    // The exact rendered string, so a future edit cannot quietly put the driver's words back.
+    expect(page).toContain('${UNAVAILABLE_SENTENCE} Nothing has been changed.');
+  });
+
+  it('logs the stack for the operator, so the failure is not silent', () => {
+    expect(page).toContain('console.error');
+    expect(page).toContain('/roster could not read the configuration');
+  });
+
+  it('keeps no variable carrying the thrown text into the render', () => {
+    // `unreadable` was that variable. Its absence is the shape of the fix, not a rename.
+    expect(page).not.toContain('unreadable');
   });
 });
