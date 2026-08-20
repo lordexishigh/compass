@@ -1,6 +1,13 @@
 import { formatCivilDateTime } from '@compass/clock';
 import { listSubscriptionsForUser, type ScopedDb } from '@compass/db';
-import { defaultScopeFor, type DeliveryChannel, type DeliveryScope } from '@compass/delivery';
+import {
+  RESEND_API_KEY_ENV_VAR,
+  RESEND_FROM_ENV_VAR,
+  SLACK_BOT_TOKEN_ENV_VAR,
+  defaultScopeFor,
+  type DeliveryChannel,
+  type DeliveryScope,
+} from '@compass/delivery';
 
 /**
  * What the account screen needs to show about the manager's own daily.
@@ -56,6 +63,31 @@ export const SUGGESTED_TIME_ZONES: readonly string[] = [
 /** The scope a form offers. `default` follows the roster rather than pinning a choice. */
 export type DeliveryScopeChoice = DeliveryScope | 'default';
 
+/**
+ * Whether this deployment can actually put a message on a wire for one channel.
+ *
+ * Read here as well as on `/api/health` because the two audiences are different and the health
+ * endpoint's audience is not the one setting a send time. A manager who saves a 07:30 daily on a
+ * deployment with no mail transport has configured something that will be recorded as `skipped`
+ * every morning — the worker states the reason and drops nothing, but nobody reads a delivery log
+ * before breakfast. So the screen says it where the decision is made.
+ *
+ * The same environment variables `mailCheck` and `slackCheck` read, through the constants
+ * `@compass/delivery` exports, so the two answers cannot drift apart.
+ */
+export type TransportState = 'ready' | 'not_configured';
+
+const transportFor = (channel: DeliveryChannel, env: NodeJS.ProcessEnv = process.env): TransportState => {
+  if (channel === 'slack') {
+    return (env[SLACK_BOT_TOKEN_ENV_VAR] ?? '').length > 0 ? 'ready' : 'not_configured';
+  }
+  // Both, because Resend refuses a message with no verified `from` — a key on its own delivers
+  // nothing, so calling it configured would be the same lie one variable further along.
+  return (env[RESEND_API_KEY_ENV_VAR] ?? '').length > 0 && (env[RESEND_FROM_ENV_VAR] ?? '').length > 0
+    ? 'ready'
+    : 'not_configured';
+};
+
 export interface DeliveryChannelView {
   readonly channel: DeliveryChannel;
   /** True when a row exists at all, whether or not it is switched on. */
@@ -68,6 +100,8 @@ export interface DeliveryChannelView {
   readonly scopeChoice: DeliveryScopeChoice;
   /** When the subscription was last changed, or null if it has never been written. */
   readonly changedLabel: string | null;
+  /** Whether this deployment has a transport for the channel at all. Stated, never hidden. */
+  readonly transport: TransportState;
 }
 
 export interface DeliveryView {
@@ -118,6 +152,7 @@ export async function loadDeliveryView(input: {
          */
         scopeChoice: input.teamKeys.length === 0 ? 'merged' : 'default',
         changedLabel: null,
+        transport: transportFor(channel),
       };
     }
 
@@ -133,6 +168,7 @@ export async function loadDeliveryView(input: {
       // manager's morning is the one that matters, and a UTC timestamp here would need mental
       // arithmetic to check against the send time three lines below it.
       changedLabel: formatCivilDateTime(row.updatedAt, row.timezone),
+      transport: transportFor(channel),
     };
   });
 

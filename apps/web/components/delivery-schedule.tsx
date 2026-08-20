@@ -139,6 +139,29 @@ function ChannelBlock({
         )}
       </p>
 
+      {channel.transport === 'not_configured' && (
+        /*
+          Stated where the decision is made, not only on `/api/health`.
+
+          A 07:30 daily saved on a deployment with no transport is recorded as `skipped` with the
+          reason every morning. Nothing is lost and nothing is silently dropped — but nobody reads a
+          delivery log before breakfast, so a screen that took the schedule and said nothing would be
+          the confident-polish version of a report that never arrives.
+
+          Not a warning colour: severity is carried by the rule and the type, per the design brief.
+        */
+        <p className="stated-absence mt-3 border-l-2 border-rule-strong pl-3 text-[13px] leading-relaxed">
+          This deployment has no{' '}
+          {channel.channel === 'email' ? 'email transport configured' : 'Slack bot token configured'}, so a
+          scheduled send is recorded as skipped with the reason rather than delivered. The schedule below is
+          still saved and starts arriving the day one is configured — the report itself is unaffected and
+          readable here.{' '}
+          <a href="/api/health" className="tertiary-action">
+            system readiness
+          </a>
+        </p>
+      )}
+
       <form method="post" action="/api/delivery/subscription" className="mt-5">
         <input type="hidden" name="channel" value={channel.channel} />
         <input type="hidden" name="intent" value="save" />

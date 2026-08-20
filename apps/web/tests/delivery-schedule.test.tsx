@@ -66,6 +66,7 @@ const UNCONFIGURED: DeliveryView = {
       timezone: '',
       scopeChoice: 'default',
       changedLabel: null,
+      transport: 'ready',
     },
     {
       channel: 'slack',
@@ -76,6 +77,7 @@ const UNCONFIGURED: DeliveryView = {
       timezone: '',
       scopeChoice: 'default',
       changedLabel: null,
+      transport: 'ready',
     },
   ],
 };
@@ -93,6 +95,7 @@ const CONFIGURED: DeliveryView = {
       timezone: 'Europe/London',
       scopeChoice: 'merged',
       changedLabel: '2026-08-03 10:00',
+      transport: 'ready',
     },
     {
       channel: 'slack',
@@ -103,6 +106,7 @@ const CONFIGURED: DeliveryView = {
       timezone: 'America/New_York',
       scopeChoice: 'team',
       changedLabel: '2026-08-03 05:00',
+      transport: 'ready',
     },
   ],
 };
@@ -169,6 +173,28 @@ describe('the delivery screen a manager configures their daily on', () => {
     // never sends. The screen says so instead of letting it happen quietly.
     expect(markup).toContain('nothing would be sent');
     expect(markup).toContain('The merged report is preselected');
+  });
+
+  it('says so when the deployment has no transport for the channel', () => {
+    const noTransport: DeliveryView = {
+      ...UNCONFIGURED,
+      channels: UNCONFIGURED.channels.map((channel) => ({ ...channel, transport: 'not_configured' as const })),
+    };
+
+    const markup = renderToStaticMarkup(<DeliverySchedule view={noTransport} stated={null} />);
+
+    // The worker records a send with no transport as `skipped` with the reason. Nobody reads a
+    // delivery log before breakfast, so the screen states it where the schedule is set.
+    expect(markup).toContain('no email transport configured');
+    expect(markup).toContain('no Slack bot token configured');
+    expect(markup).toContain('recorded as skipped');
+    // And it still takes the schedule: this is a stated condition, not a disabled form.
+    expect(markup).toContain('name="sendTime"');
+
+    // Absent when both transports are configured — the sentence is a fact, not decoration.
+    expect(renderToStaticMarkup(<DeliverySchedule view={UNCONFIGURED} stated={null} />)).not.toContain(
+      'recorded as skipped',
+    );
   });
 
   it('offers zone suggestions without limiting the field to them', () => {
@@ -269,6 +295,8 @@ describe('what the screen reads out of the database', () => {
     expect(view.channels[0]?.sendTime).toBe(DEFAULT_SEND_TIME);
     // No team scope, so the only deliverable scope is the merged report.
     expect(view.channels[0]?.scopeChoice).toBe('merged');
+    // Read from the same environment variables `/api/health` reads, and this process sets neither.
+    expect(view.channels.map((channel) => channel.transport)).toEqual(['not_configured', 'not_configured']);
   });
 
   it('reads a saved subscription back as the form prefill', async () => {
