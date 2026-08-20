@@ -673,6 +673,45 @@ describe('the seeded demo report route stays publicly readable', () => {
     expect(decision.allowed === false ? decision.reason : null).toBe('authentication_required');
   });
 
+  /**
+   * The same closure, for **every** demo-only route rather than just `/`.
+   *
+   * The assertion above proves `authorize` honours the flag on one route; the list assertion
+   * below proves which routes carry it. Neither on its own proves that each of those routes
+   * actually closes, and the gap is not academic: `demoOnlyPublic` confines only the `public`
+   * principal, so a row whose grant was widened to a role list that already covered a reader
+   * would keep serving on a real tenant while still appearing in the demo-only list and looking
+   * confined. Walking every flagged route and every verb it grants closes that off — a new
+   * demonstration-only surface is held to the same behaviour as `/` without anybody adding a
+   * test for it.
+   *
+   * This is what makes the roster read safe to open. `/roster` and `/api/roster` are readable
+   * without a seat on the seeded tenant and answer `authentication_required` off it, which is the
+   * whole basis on which an organization's identity mapping may be world-readable at all.
+   */
+  it('refuses an anonymous caller every demo-only route once the tenant is not the demo', () => {
+    const demoOnly = ROLE_MATRIX.filter((rule) => rule.demoOnlyPublic === true);
+    expect(demoOnly.length, 'no demo-only routes were found, so this proves nothing').toBeGreaterThan(5);
+
+    for (const rule of demoOnly) {
+      for (const action of ACTIONS) {
+        if (rule.allow[action]?.includes('public') !== true) continue;
+
+        const decision = authorize({
+          route: rule.route,
+          action,
+          principal: 'public',
+          demoOrganization: false,
+        });
+
+        expect(decision.allowed, `${action} ${rule.route} still served an anonymous caller off the demo tenant`).toBe(
+          false,
+        );
+        expect(decision.allowed === false ? decision.reason : null).toBe('authentication_required');
+      }
+    }
+  });
+
   it('marks every route whose public grant is demo-only', () => {
     const demoOnly = ROLE_MATRIX.filter((rule) => rule.demoOnlyPublic === true).map((rule) => rule.route);
 
