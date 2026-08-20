@@ -280,6 +280,20 @@ export default async function ConnectPage({
               'owner’s to do. Your role can read every report Compass writes from it.'
           }
         >
+          {/*
+            Two different refusals reach here, and only one of them has a way forward.
+
+            A signed-in reader whose role is not the owner's is simply told no — there is nothing for
+            them to do on this screen. Somebody who is not signed in at all was refused for a reason
+            they can act on, and offering only "today's report" left the owner of a fresh deployment
+            on a dead end: the screen that connects the sources refused them and did not say where
+            the door was.
+          */}
+          {access.identity === null && (
+            <a href="/account" className="tertiary-action">
+              sign in
+            </a>
+          )}
           <a href="/" className="tertiary-action">
             ← today&apos;s report
           </a>

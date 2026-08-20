@@ -43,6 +43,35 @@ Individual steps, when you want one:
 packages behind it. When something fails, re-run that one package directly —
 `pnpm --filter @compass/analysis run test` — and re-run the whole suite only once it passes.
 
+## Deploying
+
+The web app is hosted on Vercel, and **a push deploys nothing**. There is no Git integration on the
+project; production moves only when somebody runs the CLI from a checkout:
+
+```bash
+vercel deploy --prod          # builds on Vercel and promotes it
+```
+
+Two things about that build are configuration rather than convention, and both exist because
+production once sat fourteen days behind `master` without anybody being told.
+
+**`apps/web/vercel.json` builds the packages before the app.** The project's Root Directory is
+`apps/web`, so Vercel's default is `next build` and nothing else — but `next build` resolves
+`@compass/*` through each package's `exports` map, which points at `dist`. Without a build command
+that produces those, the deploy either fails or, worse, succeeds against whatever `dist` the
+deploying machine happened to upload. The build command is `cd ../.. && pnpm run build`, which is the
+same one command a developer runs.
+
+**`.vercelignore` excludes every build output.** The CLI does not read `.gitignore`, so
+`packages/*/dist` and its `*.tsbuildinfo` *were* being uploaded. That is how a laptop got into the
+deployment: a `tsc` run that has errored still emits, only with its type declarations degraded to
+`any`, and a remote `next build` then failed type-checking a file (`apps/web/lib/health.ts`) that
+nobody had touched. Excluding the outputs makes the upload the source tree, so what deploys is what
+is committed.
+
+A failed build never becomes production — Vercel only aliases a deployment that finished — so the
+honest check after a deploy is the URL, not the exit code alone.
+
 ## Project layout
 
 A pnpm workspace over `packages/*`, `apps/*` and `tools/*`. Every package exposes exactly one entry

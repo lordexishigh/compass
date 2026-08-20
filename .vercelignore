@@ -1,0 +1,36 @@
+# What is NOT uploaded to a Vercel build.
+#
+# The CLI does not read `.gitignore`, so without this file `vercel deploy` uploaded whatever the
+# deploying machine happened to have on disk — including every `packages/*/dist` and its
+# `*.tsbuildinfo`. That is how production came to depend on one laptop: the web build resolves
+# `@compass/*` through each package's `exports` map, which points at `dist`, so the deployed app was
+# compiled against locally emitted JavaScript and type declarations rather than against this
+# repository. A `dist` emitted by a `tsc` run that had errored still emits, only with its types
+# degraded to `any`, and the symptom was a remote `next build` failing type check inside
+# `apps/web/lib/health.ts` — a file nobody had touched.
+#
+# So build outputs are excluded here and `apps/web/vercel.json` builds the packages remotely instead.
+# The upload is now the source tree: what deploys is what is committed.
+
+# Build outputs — rebuilt remotely by the build command.
+node_modules/
+dist/
+build/
+.next/
+coverage/
+*.tsbuildinfo
+.pglite/
+
+# Secrets. The CLI ignores `.gitignore`, so these have to be named again here or a stray local
+# environment file would be uploaded into the build.
+.env
+.env.*
+!.env.example
+
+# Local state that is not an input to the build.
+.git/
+.nous/
+.vercel/
+.DS_Store
+.idea/
+.vscode/

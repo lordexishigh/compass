@@ -173,6 +173,15 @@ const EXPECTED: Readonly<Record<string, Partial<Record<Action, readonly Principa
    */
   '/api/delivery/unsubscribe': { POST: ['public', 'owner', 'manager', 'member', 'viewer'] },
   '/api/share/[token]': { GET: ['public', 'owner', 'manager', 'member', 'viewer'] },
+  /**
+   * Setting up your own daily is every seat's, and is not `public`.
+   *
+   * The row is keyed on the session's user id, so a viewer can only decide when their own copy of a
+   * report they may already read arrives — the narrowest write in this table, which is why it is also
+   * the widest set. `public` is excluded because an anonymous caller has no row to own: admitting it
+   * would let a stranger ask Compass to mail a report to an address of their choosing.
+   */
+  '/api/delivery/subscription': { POST: ['owner', 'manager', 'member', 'viewer'] },
 
   /**
    * Feedback, and why two of the three are `public` at the matrix level.

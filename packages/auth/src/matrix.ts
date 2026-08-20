@@ -416,6 +416,23 @@ export const ROLE_MATRIX: readonly RouteRule[] = [
     summary: 'RFC 8058 one-click unsubscribe. Token-authorised, idempotent, POST only.',
     allow: { POST: ANYONE },
   },
+  /**
+   * Your own daily: when it arrives, where it goes, and stopping it.
+   *
+   * `EVERY_SEAT`, which is wider than any other write route in this table, and deliberately so: the
+   * row this writes is keyed on the *session's* user id, so the widest thing a viewer can do here is
+   * decide when their own copy of a report they are already allowed to read shows up. Restricting it
+   * to owners would mean a member could receive a daily only if somebody else configured it for them,
+   * which is the admin-only setup this product exists to avoid.
+   *
+   * No `demoOnlyPublic`. An anonymous reader has no address to send to and no row to own, so the
+   * public arm would be a way to make Compass send mail to a stranger's mailbox on request.
+   */
+  {
+    route: '/api/delivery/subscription',
+    summary: 'Sets or stops the caller’s own scheduled delivery — channel, target, send time, zone.',
+    allow: { POST: EVERY_SEAT },
+  },
   {
     route: '/api/share/[token]',
     summary: 'A shared report permalink. Org-members-only by default; every access is logged.',

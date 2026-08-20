@@ -64,7 +64,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   if (token === null) {
     return jsonError(
       'invalid_request',
-      'This unsubscribe link carries no token. Use the link from the email, or turn the daily off on the report page.',
+      'This unsubscribe link carries no token. Use the link from the email, or turn the daily off under “your daily” on /account.',
       400,
     );
   }
@@ -91,7 +91,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       channel: subscription.channel,
       detail:
         `The ${subscription.channel === 'email' ? 'email' : 'Slack'} daily is switched off. The report is still ` +
-        'readable in Compass, and you can turn delivery back on from the report page whenever you want it again.',
+        'readable in Compass, and you can turn delivery back on under “your daily” on /account whenever you want it again.',
     });
   } catch (error) {
     return failure(error);

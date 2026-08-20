@@ -12,9 +12,11 @@ import { listSessionsForUser } from '@compass/db';
 import { headers } from 'next/headers';
 
 import { AccountPanel, type AccountSessionView } from '../../components/account-panel';
+import { DeliverySchedule } from '../../components/delivery-schedule';
 import { SignInPanel } from '../../components/sign-in-panel';
 import { StatedFailure } from '../../components/stated-failure';
 import { pageAccess, type PageAccessResolved } from '../../lib/auth/guard';
+import { deliveryOutcomeStatement, loadDeliveryView } from '../../lib/delivery-source';
 import {
   buildLinkedIdentities,
   samlRefusalStatement,
@@ -170,6 +172,27 @@ export default async function AccountPage({
           absoluteTtlDays={SESSION_ABSOLUTE_TTL_DAYS}
           idleTtlDays={SESSION_IDLE_TTL_DAYS}
           sessions={sessions}
+        />
+      )}
+
+      {/*
+        The manager's own daily: when it arrives, where, and how to stop it.
+
+        Here rather than on `/` because it is a fact about *you* rather than about the report, and
+        this is the screen the report footer already sends people to for those. Above single
+        sign-on because switching the daily on is the thing a new manager came to do — the whole
+        product is one report a day, and until this is set they have to remember to come and read
+        it.
+      */}
+      {identity !== null && (
+        <DeliverySchedule
+          view={await loadDeliveryView({
+            scoped: access.scoped,
+            userId: identity.user.id,
+            teamKeys: identity.teamScopes,
+            accountEmail: identity.user.email,
+          })}
+          stated={deliveryOutcomeStatement(single('delivery'))}
         />
       )}
 
