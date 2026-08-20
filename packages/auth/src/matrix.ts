@@ -342,13 +342,34 @@ export const ROLE_MATRIX: readonly RouteRule[] = [
   // a wrong attribution files a request instead of correcting it, and the wrong name stays
   // in tomorrow's report. Every write is audited with the actor either way.
   //
-  // Members and viewers are refused: reading a report does not make somebody an editor of
-  // the roster it is computed from.
+  // Members and viewers are refused every *write*: reading a report does not make somebody an
+  // editor of the roster it is computed from.
   // -------------------------------------------------------------------------
+  /**
+   * Reading this configuration and writing it are deliberately not the same grant.
+   *
+   * The read names `public` and carries `demoOnlyPublic` — the posture `/`, `/archive`,
+   * `/artifact/[kind]/[artifactId]`, `/merged`, `/weekly` and `/goals` already have, and for the
+   * reason the receipts exist at all. Every claim in the report is computed *from* this
+   * configuration, so a reader who can see the report but not the roster behind it cannot check
+   * why it said what it said: which git email attributes to whom, which identifiers no link
+   * covers, and who was marked out so their work does not read as stalled. On the demonstration
+   * tenant the report already names these people by name, so the roster discloses no person the
+   * report does not — and the flag closes it the moment the organization is not the seeded one.
+   *
+   * The principal list is `public`, `owner`, `manager` and **not** `ANYONE`, which matters
+   * because `demoOnlyPublic` confines only the `public` principal: spelling this `ANYONE` would
+   * hand every member and viewer the whole org's identity mapping on a *real* tenant, which is a
+   * different decision from opening the demonstration one and is not the one being made here.
+   *
+   * Every write below stays owner-and-manager. That is the line the demonstration tenant holds:
+   * its configuration is world-readable and never world-writable.
+   */
   {
     route: '/api/roster',
     summary: 'The whole configuration: teams, membership, calendars, tracked sources, people, identities, absences.',
-    allow: { GET: ['owner', 'manager'] },
+    allow: { GET: ['public', 'owner', 'manager'] },
+    demoOnlyPublic: true,
   },
   {
     route: '/api/roster/teams',
@@ -896,9 +917,24 @@ export const ROLE_MATRIX: readonly RouteRule[] = [
     allow: { GET: ['owner', 'manager'] },
   },
   {
+    /**
+     * The configuration screen, on exactly its endpoint's terms.
+     *
+     * Same principals and the same `demoOnlyPublic` as `/api/roster`, because this table exists so
+     * that a page and the endpoint behind it cannot disagree about who may read it — and here the
+     * disagreement would run the other way from the usual one: a screen refusing what its API
+     * serves is how a receipt the report links to becomes a dead end.
+     *
+     * A reader who may not write gets the document and none of the controls. `RosterScreen` takes
+     * `canEdit`, and the page passes it false for anybody the write rows above would refuse, so
+     * the forms are not rendered rather than rendered and refused. That is the `/privacy` and
+     * `/settings/members` treatment — the facts are stated, the buttons are simply not offered —
+     * and deliberately not `/goals`, which renders its editor to everyone and lets the writes 403.
+     */
     route: '/roster',
     summary: 'Configuration: teams, tracked repositories and projects, the identity roster and absences.',
-    allow: { GET: ['owner', 'manager'] },
+    allow: { GET: ['public', 'owner', 'manager'] },
+    demoOnlyPublic: true,
   },
   {
     /**

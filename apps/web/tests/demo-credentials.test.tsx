@@ -77,6 +77,20 @@ const UNAUTHENTICATED_PAGES: readonly {
   { route: '/login', file: ['app', 'login', 'route.ts'], showsCredentials: false, reaches: "'/account'" },
   { route: '/', file: ['components', 'report-document.tsx'], showsCredentials: false },
   { route: '/goals', file: ['app', 'goals', 'page.tsx'], showsCredentials: false },
+  /**
+   * The configuration screen, readable without a seat on the demonstration tenant.
+   *
+   * It is the one public page whose reader has a *specific* reason to want a seat: they came to
+   * check an attribution or an absence the report was computed from, and the next thing they want
+   * is to correct it. So unlike `/goals`, which reaches the credentials by way of the report, this
+   * page names `/account` itself — the link sits in the same run of cross-links, and only for the
+   * reader who cannot edit.
+   *
+   * The controls are not merely refused to that reader, they are not rendered:
+   * `apps/web/tests/roster-screen.test.tsx` asserts the read-only render contains no button, form,
+   * select or input at all, while still stating the people, identifiers, calendar and absences.
+   */
+  { route: '/roster', file: ['app', 'roster', 'page.tsx'], showsCredentials: false },
   { route: '/account/invite', file: ['app', 'account', 'invite', 'page.tsx'], showsCredentials: false },
   { route: '/account/reset', file: ['app', 'account', 'reset', 'page.tsx'], showsCredentials: false },
   /**

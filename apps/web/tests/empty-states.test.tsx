@@ -118,6 +118,8 @@ const LIST_SCREENS: readonly {
           unmatched: [],
           absences: [],
         }}
+        // The editable render, because the empty states carry the calls to action.
+        canEdit
       />,
     ),
   },

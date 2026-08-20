@@ -127,6 +127,24 @@ Five groups, and each is public for a different reason:
   `/artifact/[kind]/[artifactId]`, `/api/reports/[teamKey]`, `/api/goals`, `/api/goals/[nodeId]`,
   `/api/feedback/app`. All carry `demoOnlyPublic`, so the grant applies to the seeded demonstration
   tenant and to nothing else: a real customer's blockers and risks are not a landing page.
+- **The configuration those claims resolve against** — `/roster` and `/api/roster`, the **read**
+  only. Same `demoOnlyPublic` confinement as the group above, and public for the reason the
+  receipts are: every figure the report cites is computed from this configuration, so a reader who
+  can open the report but not the roster behind it cannot check *why* it said what it said — which
+  git email attributes to whom, which identifiers no link covers, and who was marked out so their
+  work does not read as stalled. On the seeded tenant the report already names these people, so the
+  roster discloses nobody the report does not.
+
+  Two limits make this narrower than it looks. The five roster **write** endpoints — teams,
+  tracked sources, identities, merges and absences — are owner-and-manager, and they are
+  deliberately not enumerated here for the same reason the billing writes below are not: this
+  section is the documented set of *public* routes, and naming a non-public route in it would be a
+  claim the matrix contradicts. So the demonstration tenant's configuration is world-readable and
+  never world-writable. And the two rows name `public`, `owner`, `manager` rather than every
+  principal: `demoOnlyPublic` confines only the `public` principal, so spelling them `ANYONE` would
+  hand every member and viewer the whole organization's identity mapping on a *real* tenant, which
+  is a different decision. The screen renders through `RosterScreen`'s `canEdit`, so a reader who
+  cannot write is not offered controls that would answer 403.
 - **The price list** — `/pricing`, and it is the one group that is public in *every* tenant rather
   than only the demonstration one. It carries no organizational data at all: it reads the plan table
   out of `@compass/billing` and nothing else, so there is nothing for `demoOnlyPublic` to confine. A

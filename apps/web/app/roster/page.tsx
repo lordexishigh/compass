@@ -114,6 +114,19 @@ export default async function RosterPage() {
     );
   }
 
+  /*
+    Who may change this, as opposed to read it.
+
+    The matrix admits `public` here on the demonstration tenant, so being past the refusal above
+    no longer implies a seat that can write. Owner and manager are exactly the principals the five
+    `/api/roster/*` write rows name, so a control offered to anybody else would be a control its
+    own endpoint refuses — which is the failure `RosterScreen`'s `canEdit` exists to prevent.
+
+    Derived from the principal, the way `/me` and `/weekly` derive theirs. An inactive seat cannot
+    reach this line at all: `authorize` refuses `seat_not_active` before it allows the route.
+  */
+  const canEdit = access.principal === 'owner' || access.principal === 'manager';
+
   return (
     <Frame
       heading="What the reports are computed from"
@@ -125,6 +138,14 @@ export default async function RosterPage() {
             stays on disk, so a report generated for a past instant still resolves the configuration that was in force
             then.
           </p>
+          {!canEdit && (
+            // Stated in the prose voice, in the reading column, as a fact about this reader —
+            // never a greyed-out page or a banner. The document is the point; the controls are not.
+            <p className="stated-absence mt-3 text-[15px]">
+              You are reading this without a seat, so it is the configuration as it stands and nothing here can be
+              changed. Every figure the report cites resolves against exactly these teams, links and absences.
+            </p>
+          )}
           <p className="mt-4 flex flex-wrap gap-x-5 text-[13px]">
             <a href="/" className="tertiary-action">
               ← today&apos;s report
@@ -132,14 +153,28 @@ export default async function RosterPage() {
             <a href="/goals" className="tertiary-action">
               goal hierarchy
             </a>
-            <a href="/settings/members" className="tertiary-action">
-              seats
-            </a>
+            {canEdit ? (
+              <a href="/settings/members" className="tertiary-action">
+                seats
+              </a>
+            ) : (
+              /*
+                The way out for a reader with no seat.
+
+                Named here rather than left to the report's footer: `apps/web/tests/demo-credentials.test.tsx`
+                holds every publicly-readable page to offering a route to the credentials, and a
+                reader who came to this screen to check an attribution they believe is wrong is
+                exactly the one who then needs to sign in and correct it.
+              */
+              <a href="/account" className="tertiary-action">
+                sign in to change any of this
+              </a>
+            )}
           </p>
         </>
       }
     >
-      <RosterScreen roster={roster} />
+      <RosterScreen roster={roster} canEdit={canEdit} />
     </Frame>
   );
 }

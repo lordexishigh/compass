@@ -335,7 +335,8 @@ const EXPECTED: Readonly<Record<string, Partial<Record<Action, readonly Principa
   },
 
   /**
-   * Configuration and the identity roster: owner *and* manager on every verb.
+   * Configuration and the identity roster: owner *and* manager on every **write**, and the read
+   * on the report's own terms.
    *
    * Restated here as intent rather than copied as fact. The widening to managers is
    * deliberate — team scoping is the basis of every aggregate and a bad identity merge
@@ -343,12 +344,21 @@ const EXPECTED: Readonly<Record<string, Partial<Record<Action, readonly Principa
    * be able to fix the configuration behind it rather than filing a request while the wrong
    * name stays in tomorrow's report. Every write is audited with its actor either way.
    *
-   * Members and viewers are absent from every row, which is the half worth stating: reading a
-   * report does not make somebody an editor of the roster it is computed from. `public` is
-   * absent too, and unlike `/` and `/api/goals` these rows carry no `demoOnlyPublic` escape —
-   * the demonstration tenant's configuration is not world-writable.
+   * Members and viewers are absent from every write row, which is the half worth stating:
+   * reading a report does not make somebody an editor of the roster it is computed from.
+   *
+   * The **read** — `GET /api/roster` and the `/roster` screen — additionally names `public` under
+   * `demoOnlyPublic`, exactly as `/`, `/goals` and the archive do. Every claim in the report is
+   * computed from this configuration, so a reader who can see the report but not the roster
+   * behind it cannot check why it said what it said; and on the seeded tenant the report already
+   * names these people, so the roster discloses nobody new. Note the list is `public`, `owner`,
+   * `manager` and *not* `ANYONE`: `demoOnlyPublic` confines only the `public` principal, so
+   * `ANYONE` would hand every member and viewer the org's identity mapping on a real tenant.
+   *
+   * The line the demonstration tenant holds is therefore precise: its configuration is
+   * world-readable and never world-writable.
    */
-  '/api/roster': { GET: ['owner', 'manager'] },
+  '/api/roster': { GET: ['public', 'owner', 'manager'] },
   '/api/roster/teams': { POST: ['owner', 'manager'], PATCH: ['owner', 'manager'], PUT: ['owner', 'manager'] },
   '/api/roster/sources': { PATCH: ['owner', 'manager'] },
   '/api/roster/identities': { POST: ['owner', 'manager'], DELETE: ['owner', 'manager'] },
@@ -410,10 +420,18 @@ const EXPECTED: Readonly<Record<string, Partial<Record<Action, readonly Principa
    */
   '/start': { GET: ['owner', 'manager'] },
   '/settings/members': { GET: ['owner', 'manager'] },
-  '/roster': { GET: ['owner', 'manager'] },
-  // What a manager has told Compass to stop saying. Owner and manager, exactly like the roster:
-  // a suppression a manager cannot find is indistinguishable from a detector that broke, so the
-  // people whose verdicts these are must be able to read them back.
+  /*
+    The screen, on exactly the terms of the endpoint behind it — see `/api/roster` above.
+
+    The contrast with `/start` two rows up is the point, and the two are not in tension: `/start`
+    is *only* writes, so a seatless reader would get a wizard whose every button 403s, whereas
+    `/roster` is read first and edited second. It is also why this screen takes `canEdit` and
+    `/goals` does not: the controls are not rendered to a reader who cannot use them.
+  */
+  '/roster': { GET: ['public', 'owner', 'manager'] },
+  // What a manager has told Compass to stop saying. Owner and manager, and unlike the roster this
+  // one is not opened to a seatless reader: a suppression is a manager's own editorial act on
+  // their team's report, not a fact about the org the report is computed from.
   '/corrections': { GET: ['owner', 'manager'] },
 
   /**
@@ -671,6 +689,10 @@ describe('the seeded demo report route stays publicly readable', () => {
       '/api/goals',
       '/api/goals/[nodeId]',
       '/api/reports/[teamKey]',
+      // The configuration the whole report is computed from, read-only. Its five write rows carry
+      // no such flag, so the demonstration tenant's roster is world-readable and never
+      // world-writable — and on a real tenant the read closes with everything else here.
+      '/api/roster',
       '/archive',
       '/archive/[reportId]',
       '/archive/diff',
@@ -679,6 +701,7 @@ describe('the seeded demo report route stays publicly readable', () => {
       '/artifact/[kind]/[artifactId]',
       '/goals',
       '/merged',
+      '/roster',
       '/weekly',
     ]);
   });
@@ -716,6 +739,10 @@ describe('the seeded demo report route stays publicly readable', () => {
       '/api/goals',
       '/api/goals/[nodeId]',
       '/api/reports/[teamKey]',
+      // The configuration those claims are computed from — the read only, and only on the
+      // demonstration tenant. The five `/api/roster/*` write rows are deliberately absent.
+      '/roster',
+      '/api/roster',
       // How a session is obtained. Public by definition: requiring one would be circular.
       '/account',
       '/account/deletion',

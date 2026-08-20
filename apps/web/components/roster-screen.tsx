@@ -109,7 +109,24 @@ const Count = ({ value, unit }: { readonly value: number; readonly unit: string 
   </span>
 );
 
-export function RosterScreen({ roster }: { readonly roster: RosterScreenView }) {
+export function RosterScreen({
+  roster,
+  canEdit,
+}: {
+  readonly roster: RosterScreenView;
+  /**
+   * False for a reader the `/api/roster/*` write rows would refuse — on the demonstration tenant,
+   * anybody without a seat.
+   *
+   * When it is false the controls are **not rendered**, rather than rendered disabled. A disabled
+   * form still reads as an offer, and every one of these writes would come back 403 from its own
+   * endpoint: the honest surface for somebody who cannot act is the document without the buttons.
+   * The facts they would have edited are still stated — the calendar as a sentence rather than a
+   * fieldset, the absences and unmatched identities as the lists they already are — because this
+   * screen's job for a reader is to explain what the report was computed from.
+   */
+  readonly canEdit: boolean;
+}) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [stated, setStated] = useState<string | null>(null);
@@ -216,52 +233,60 @@ export function RosterScreen({ roster }: { readonly roster: RosterScreenView }) 
                       {member.impliedByDeveloperRow && (
                         <span className="stated-absence"> —— on the team through their own record, not a membership</span>
                       )}
-                      <button
-                        type="button"
-                        disabled={busy !== null}
-                        onClick={() => {
-                          void act(
-                            '/api/roster/teams',
-                            'PATCH',
-                            { teamKey: team.key, developerKey: member.developerKey, active: !member.active },
-                            `member:${team.key}:${member.developerKey}`,
-                          ).then((result) => settle(result));
-                        }}
-                        className="tertiary-action ml-3"
-                      >
-                        {member.active ? 'remove' : 'add back'}
-                      </button>
+                      {canEdit && (
+                        <button
+                          type="button"
+                          disabled={busy !== null}
+                          onClick={() => {
+                            void act(
+                              '/api/roster/teams',
+                              'PATCH',
+                              { teamKey: team.key, developerKey: member.developerKey, active: !member.active },
+                              `member:${team.key}:${member.developerKey}`,
+                            ).then((result) => settle(result));
+                          }}
+                          className="tertiary-action ml-3"
+                        >
+                          {member.active ? 'remove' : 'add back'}
+                        </button>
+                      )}
                     </li>
                   ))}
                 </ul>
 
-                <AddMemberForm
-                  teamKey={team.key}
-                  developers={roster.developers}
-                  taken={new Set(team.members.filter((member) => member.active).map((member) => member.developerKey))}
-                  busy={busy !== null}
-                  onSubmit={(developerKey, membershipRole) =>
-                    act(
-                      '/api/roster/teams',
-                      'PATCH',
-                      { teamKey: team.key, developerKey, membershipRole, active: true },
-                      `add:${team.key}`,
-                    ).then((result) => settle(result))
-                  }
-                />
+                {canEdit && (
+                  <AddMemberForm
+                    teamKey={team.key}
+                    developers={roster.developers}
+                    taken={new Set(team.members.filter((member) => member.active).map((member) => member.developerKey))}
+                    busy={busy !== null}
+                    onSubmit={(developerKey, membershipRole) =>
+                      act(
+                        '/api/roster/teams',
+                        'PATCH',
+                        { teamKey: team.key, developerKey, membershipRole, active: true },
+                        `add:${team.key}`,
+                      ).then((result) => settle(result))
+                    }
+                  />
+                )}
 
-                <CalendarForm
-                  team={team}
-                  busy={busy !== null}
-                  onSubmit={(workingWeekdays, holidays, timezone) =>
-                    act(
-                      '/api/roster/teams',
-                      'PUT',
-                      { teamKey: team.key, workingWeekdays, holidays, timezone },
-                      `calendar:${team.key}`,
-                    ).then((result) => settle(result))
-                  }
-                />
+                {canEdit ? (
+                  <CalendarForm
+                    team={team}
+                    busy={busy !== null}
+                    onSubmit={(workingWeekdays, holidays, timezone) =>
+                      act(
+                        '/api/roster/teams',
+                        'PUT',
+                        { teamKey: team.key, workingWeekdays, holidays, timezone },
+                        `calendar:${team.key}`,
+                      ).then((result) => settle(result))
+                    }
+                  />
+                ) : (
+                  <CalendarFacts team={team} />
+                )}
               </li>
             ))}
           </ul>
@@ -279,6 +304,7 @@ export function RosterScreen({ roster }: { readonly roster: RosterScreenView }) 
           kind="repository"
           emptyStatement="No repository has been ingested yet."
           busy={busy !== null}
+          canEdit={canEdit}
           onToggle={(key, tracked) =>
             act('/api/roster/sources', 'PATCH', { kind: 'repository', key, tracked }, `repo:${key}`).then((result) =>
               settle(result),
@@ -297,6 +323,7 @@ export function RosterScreen({ roster }: { readonly roster: RosterScreenView }) 
           kind="project"
           emptyStatement="No project has been ingested yet."
           busy={busy !== null}
+          canEdit={canEdit}
           onToggle={(key, tracked) =>
             act('/api/roster/sources', 'PATCH', { kind: 'project', key, tracked }, `project:${key}`).then((result) =>
               settle(result),
@@ -348,43 +375,48 @@ export function RosterScreen({ roster }: { readonly roster: RosterScreenView }) 
                             merged
                           </span>
                         )}
-                        <button
-                          type="button"
-                          disabled={busy !== null}
-                          onClick={() => {
-                            void act(
-                              '/api/roster/identities',
-                              'DELETE',
-                              { kind: identity.kind, value: identity.value },
-                              `unlink:${identity.identityKey}`,
-                            ).then((result) => settle(result));
-                          }}
-                          className="tertiary-action ml-3"
-                        >
-                          unlink
-                        </button>
+                        {canEdit && (
+                          <button
+                            type="button"
+                            disabled={busy !== null}
+                            onClick={() => {
+                              void act(
+                                '/api/roster/identities',
+                                'DELETE',
+                                { kind: identity.kind, value: identity.value },
+                                `unlink:${identity.identityKey}`,
+                              ).then((result) => settle(result));
+                            }}
+                            className="tertiary-action ml-3"
+                          >
+                            unlink
+                          </button>
+                        )}
                       </li>
                     ))}
                   </ul>
                 )}
 
-                <AddIdentityForm
-                  developerKey={developer.key}
-                  busy={busy !== null}
-                  onSubmit={(kind, value) =>
-                    act(
-                      '/api/roster/identities',
-                      'POST',
-                      { kind, value, developerKey: developer.key },
-                      `link:${developer.key}`,
-                    ).then((result) => settle(result))
-                  }
-                />
+                {canEdit && (
+                  <AddIdentityForm
+                    developerKey={developer.key}
+                    busy={busy !== null}
+                    onSubmit={(kind, value) =>
+                      act(
+                        '/api/roster/identities',
+                        'POST',
+                        { kind, value, developerKey: developer.key },
+                        `link:${developer.key}`,
+                      ).then((result) => settle(result))
+                    }
+                  />
+                )}
 
                 <AbsenceForm
                   developerKey={developer.key}
                   absences={developer.absences}
                   busy={busy !== null}
+                  canEdit={canEdit}
                   onSubmit={(kind, startAt, endAt, note) =>
                     act(
                       '/api/roster/absences',
@@ -489,7 +521,7 @@ export function RosterScreen({ roster }: { readonly roster: RosterScreenView }) 
                   <p className="mt-2 text-[13px] text-ink-muted">
                     Merged into <code className="data-token">{row.resolvedDeveloperKey}</code>.
                   </p>
-                ) : (
+                ) : canEdit ? (
                   <MergeForm
                     identityKey={row.identityKey}
                     developers={roster.developers}
@@ -500,6 +532,12 @@ export function RosterScreen({ roster }: { readonly roster: RosterScreenView }) 
                       )
                     }
                   />
+                ) : (
+                  // The state itself is the fact worth stating: this is why the report asks about
+                  // the work rather than crediting anybody for it.
+                  <p className="stated-absence mt-2 text-[13px]">
+                    Not merged, so the report asks about this work rather than attributing it.
+                  </p>
                 )}
               </li>
             ))}
@@ -610,12 +648,14 @@ function TrackedList({
   kind,
   emptyStatement,
   busy,
+  canEdit,
   onToggle,
 }: {
   readonly rows: RosterScreenView['repositories'];
   readonly kind: 'repository' | 'project';
   readonly emptyStatement: string;
   readonly busy: boolean;
+  readonly canEdit: boolean;
   readonly onToggle: (key: string, tracked: boolean) => void;
 }) {
   if (rows.length === 0) return <p className="stated-absence text-[15px]">{emptyStatement}</p>;
@@ -639,17 +679,57 @@ function TrackedList({
               prior row kept
             </span>
           )}
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => onToggle(row.key, !row.tracked)}
-            className="tertiary-action"
-          >
-            {row.tracked ? `archive this ${kind}` : 'track it again'}
-          </button>
+          {canEdit && (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => onToggle(row.key, !row.tracked)}
+              className="tertiary-action"
+            >
+              {row.tracked ? `archive this ${kind}` : 'track it again'}
+            </button>
+          )}
         </li>
       ))}
     </ul>
+  );
+}
+
+/**
+ * The working calendar as prose, for a reader who cannot change it.
+ *
+ * `CalendarForm`'s fieldset *is* the only place these three facts are shown, so hiding the form
+ * from a seatless reader would hide what "three working days" means — and that phrase is load
+ * bearing in every stalled-work finding the report makes. Same facts, one sentence, no controls.
+ */
+function CalendarFacts({ team }: { readonly team: RosterScreenView['teams'][number] }) {
+  const configured = team.calendar;
+
+  return (
+    <div className="mt-5">
+      <p className="section-label">working calendar</p>
+      {configured === null ? (
+        <p className="stated-absence mt-1 text-[13px]">
+          Not configured, so working days are counted Monday to Friday, UTC.
+        </p>
+      ) : (
+        <p className="mt-1 text-[13px] leading-relaxed text-ink-muted">
+          <span className="font-mono">
+            {configured.workingWeekdays.map((day) => WEEKDAY_NAMES[day]).join(' ')}
+          </span>{' '}
+          in <span className="font-mono">{configured.timezone}</span>
+          {configured.holidays.length === 0 ? (
+            <span className="stated-absence"> —— no holidays recorded</span>
+          ) : (
+            <>
+              {' — '}
+              <Count value={configured.holidays.length} unit="holiday" />:{' '}
+              <span className="font-mono tabular-nums">{configured.holidays.join(', ')}</span>
+            </>
+          )}
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -870,12 +950,20 @@ function AbsenceForm({
   developerKey,
   absences,
   busy,
+  canEdit,
   onSubmit,
   onEnd,
 }: {
   readonly developerKey: string;
   readonly absences: RosterScreenView['developers'][number]['absences'];
   readonly busy: boolean;
+  /**
+   * False hides the form and the "end it now" control, and keeps the list.
+   *
+   * The list is the half a reader needs: an absence in force is *why* the report withheld a
+   * stalled-work finding naming this person, so removing it would remove the explanation.
+   */
+  readonly canEdit: boolean;
   readonly onSubmit: (kind: string, startAt: string, endAt: string, note: string | null) => void;
   /** Ends it now. The instant is the server's, so this takes no date. */
   readonly onEnd: (absenceKey: string) => void;
@@ -885,22 +973,22 @@ function AbsenceForm({
   const [endAt, setEndAt] = useState('');
   const [note, setNote] = useState('');
 
-  return (
-    <div className="mt-4">
-      {absences.length > 0 && (
-        <ul className="mb-2 grid gap-1">
-          {absences.map((absence) => (
-            <li key={absence.naturalKey} className="text-[13px] leading-relaxed text-ink-muted">
-              {absence.kind.replace(/_/g, ' ')}{' '}
-              <span className="font-mono tabular-nums">
-                {dateOf(absence.startAt)} → {lastCoveredDay(absence.endAt)}
-              </span>
-              {absence.activeNow && (
-                <>
-                  {' '}
-                  <span className="rounded border border-authored px-1 font-mono text-[11px] text-authored-text">
-                    in force
-                  </span>
+  const recorded =
+    absences.length === 0 ? null : (
+      <ul className="mb-2 grid gap-1">
+        {absences.map((absence) => (
+          <li key={absence.naturalKey} className="text-[13px] leading-relaxed text-ink-muted">
+            {absence.kind.replace(/_/g, ' ')}{' '}
+            <span className="font-mono tabular-nums">
+              {dateOf(absence.startAt)} → {lastCoveredDay(absence.endAt)}
+            </span>
+            {absence.activeNow && (
+              <>
+                {' '}
+                <span className="rounded border border-authored px-1 font-mono text-[11px] text-authored-text">
+                  in force
+                </span>
+                {canEdit && (
                   <button
                     type="button"
                     disabled={busy}
@@ -909,12 +997,20 @@ function AbsenceForm({
                   >
                     end it now
                   </button>
-                </>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
+                )}
+              </>
+            )}
+          </li>
+        ))}
+      </ul>
+    );
+
+  // A reader without a seat gets the record, and not the means to add one.
+  if (!canEdit) return <div className="mt-4">{recorded}</div>;
+
+  return (
+    <div className="mt-4">
+      {recorded}
 
       <form
         onSubmit={(event: FormEvent<HTMLFormElement>) => {
