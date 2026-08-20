@@ -1,6 +1,6 @@
 # Compass
 
-[![nous score](https://img.shields.io/badge/nous%20score-55%2F100-red)](docs/REPORT.md) <!-- nous-score-badge -->
+[![nous score](https://img.shields.io/badge/nous%20score-25%2F100-red)](docs/REPORT.md) <!-- nous-score-badge -->
 
 > Compass is an AI Engineering Manager that maintains a stateful knowledge model of an engineering org and delivers one prose daily report — Yesterday, Progress, Blockers, Risks, Recommendations, Wins — that tells a manager of one to three teams what happened, what matters, what to do next, and which work does not serve the current objective.
 
